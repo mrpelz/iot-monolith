@@ -1,0 +1,15 @@
+{
+  "name": "iot-monolith",
+  "version": "1.0.0",
+  "description": "monolithic aproach to Node.js-enabled home automation",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "usp.wurstsalat.cloud:git/iot-monolith.git"
+  },
+  "author": "Lennart Pelz <mail@mrpelz.de>",
+  "license": "ISC"
+}
