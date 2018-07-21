@@ -1,0 +1,90 @@
+const { URL } = require('url');
+const { request: httpRequest } = require('http');
+const { request: httpsRequest } = require('https');
+
+function http(method, url, options = {}, data) {
+  const {
+    auth,
+    host,
+    pathname = '/',
+    protocol,
+    search
+  } = (typeof url === 'string') ? new URL(url) : url;
+
+  if (!host) {
+    throw new Error('unknown host in url');
+  }
+
+  let request;
+
+  switch (protocol) {
+    case 'http:':
+      request = httpRequest;
+      break;
+    case 'https:':
+      request = httpsRequest;
+      break;
+    default:
+      throw new Error('unknown protocol in url');
+  }
+
+  const defaultHeaders = {
+    'Accept-Encoding': 'gzip, deflate',
+    'User-Agent': `node ${process.version}`
+  };
+
+  const { headers: additionalHeaders = {} } = options;
+
+  const mergedOptions = Object.assign({
+    auth,
+    host,
+    method,
+    path: `${pathname}${search}`,
+    protocol
+  }, options, {
+    headers: Object.assign(defaultHeaders, additionalHeaders),
+  });
+
+
+  return new Promise((resolve, reject) => {
+    const req = request(mergedOptions, (res) => {
+      if (res.statusCode < 200 || res.statusCode > 299) {
+        reject(new Error(`failed to load page, status code: ${res.statusCode}`));
+        return;
+      }
+
+      const cache = [];
+
+      res.on('data', (chunk) => {
+        cache.push(chunk);
+      });
+
+      res.on('end', () => {
+        resolve(Buffer.concat(cache));
+      });
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+
+    if (data) {
+      req.write(data);
+    }
+
+    req.end();
+  });
+}
+
+function get(url, options) {
+  return http('GET', url, options);
+}
+
+function post(url, data, options) {
+  return http('POST', url, options, data);
+}
+
+module.exports = {
+  get,
+  post
+};
