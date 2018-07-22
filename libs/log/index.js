@@ -10,6 +10,8 @@ const Journald = (
     : null
 );
 
+const { chatIds, TelegramChat } = require('../telegram');
+
 const {
   levelNames
 } = require('./config.json');
@@ -29,10 +31,18 @@ class Logger {
         ? new Journald(this._defaultFields)
         : null
     );
+
+    this._telegramChat = new TelegramChat(chatIds.log);
   }
 
   log(message = '', level = 6, addnFields = {}) {
-    const { _appName, _defaultFields, _journal } = this;
+    const {
+      _appName,
+      _defaultFields,
+      _journal,
+      _telegramChat
+    } = this;
+
     const name = levelNames[level];
 
     if (isProd && _journal) {
@@ -69,9 +79,9 @@ class Logger {
       console.log(`[${name}] ${_appName}: ${message}`);
     }
 
-    // if (level <= 3) {
-    //   telegramSend(`_${name}_  \n${message}`, 'log');
-    // }
+    if (level <= 3) {
+      _telegramChat.send(`_${name}_  \n${message}`);
+    }
   }
 }
 
