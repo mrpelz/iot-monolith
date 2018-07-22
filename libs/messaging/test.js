@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { MessageClient } from './index';
+const { MessageClient } = require('./index');
 
 // MESSAGE TEST
 const client = new MessageClient({

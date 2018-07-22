@@ -1,5 +1,9 @@
-export function rebind(context, ...names) {
+function rebind(context, ...names) {
   names.forEach((name) => {
     context[name] = context[name].bind(context);
   });
 }
+
+module.exports = {
+  rebind
+};

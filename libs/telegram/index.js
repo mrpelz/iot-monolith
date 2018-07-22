@@ -23,7 +23,7 @@ const telegramMessageOptions = {
   disable_web_page_preview: true
 };
 
-export const chatIds = telegramChatIds;
+const chatIds = telegramChatIds;
 
 function telegramRequest(text, chatId) {
   const request = httpsRequest(telegramHttpOptions, (response) => {
@@ -43,14 +43,19 @@ function telegramRequest(text, chatId) {
   })));
 }
 
-export class TelegramChat {
-  constructor(chatId) {
-    this._chatId = chatId;
-  }
+// class TelegramChat {
+//   constructor(chatId) {
+//     this._chatId = chatId;
+//   }
 
-  send(message) {
-    return new Promise((resolve, reject) => {
-      
-    });
-  }
-}
+//   send(message) {
+//     return new Promise((resolve, reject) => {
+
+//     });
+//   }
+// }
+
+module.exports = {
+  chatIds,
+  // TelegramChat
+};

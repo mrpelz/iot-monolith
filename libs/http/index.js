@@ -2,7 +2,7 @@ const { URL } = require('url');
 const { request: httpRequest } = require('http');
 const { request: httpsRequest } = require('https');
 
-function http(method, url, options = {}, data) {
+function http(method, url = {}, options = {}, data) {
   const {
     auth,
     host,

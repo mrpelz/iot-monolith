@@ -1,4 +1,4 @@
-export function writeNumber(input, bytes) {
+function writeNumber(input, bytes) {
   const cache = Buffer.alloc(bytes);
 
   switch (bytes) {
@@ -15,3 +15,7 @@ export function writeNumber(input, bytes) {
   }
   return cache;
 }
+
+module.exports = {
+  writeNumber
+};

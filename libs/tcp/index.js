@@ -1,15 +1,14 @@
-import { rebind } from '../utils/oop';
-import { writeNumber } from '../utils/conversion';
-import { Logger } from '../log';
-
 const net = require('net');
 const EventEmitter = require('events');
 
-const logPrefix = 'tcp';
+const { rebind } = require('../utils/oop');
+const { writeNumber } = require('../utils/conversion');
+const { Logger } = require('../log');
 
+const logPrefix = 'tcp';
 const { log } = new Logger(logPrefix);
 
-export class PersistentSocket extends EventEmitter {
+class PersistentSocket extends EventEmitter {
   constructor(options) {
     super();
 
@@ -307,3 +306,7 @@ export class PersistentSocket extends EventEmitter {
   // disconnect
   // write
 }
+
+module.exports = {
+  PersistentSocket
+};

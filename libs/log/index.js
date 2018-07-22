@@ -16,7 +16,7 @@ const {
 
 const { PROD_ENV: isProd } = process.env;
 
-export class Logger {
+class Logger {
   constructor(appName = '') {
     this._appName = appName;
 
@@ -74,3 +74,7 @@ export class Logger {
     // }
   }
 }
+
+module.exports = {
+  Logger
+};

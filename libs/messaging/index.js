@@ -1,12 +1,11 @@
-import { rebind } from '../utils/oop';
-import { PersistentSocket } from '../tcp';
-// import { Log } from '../log';
-
 const EventEmitter = require('events');
 
-// const logPrefix = 'messaging';
+const { rebind } = require('../utils/oop');
+const { PersistentSocket } = require('../tcp');
+// const { Logger } = require('../log');
 
-// const { log } = new Log(logPrefix);
+// const logPrefix = 'messaging';
+// const { log } = new Logger(logPrefix);
 
 const minCallId = 1;
 const maxCallId = 254;
@@ -59,7 +58,7 @@ function callId(state) {
   return id;
 }
 
-export class MessageClient extends EventEmitter {
+class MessageClient extends EventEmitter {
   constructor(options) {
     super();
 
@@ -216,3 +215,7 @@ export class MessageClient extends EventEmitter {
   // stop
   // request
 }
+
+module.exports = {
+  MessageClient
+};
