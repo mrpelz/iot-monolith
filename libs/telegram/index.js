@@ -23,6 +23,10 @@ function makeUrl(method) {
 
 class TelegramChat {
   constructor(chatId) {
+    if (!chatId) {
+      throw new Error('chatId not defined!');
+    }
+
     this._chatId = chatId;
   }
 
@@ -33,7 +37,7 @@ class TelegramChat {
       makeUrl('sendMessage'),
       Buffer.from(JSON.stringify(Object.assign(telegramMessageOptions, {
         chat_id: _chatId,
-        message
+        text: message
       }))),
       telegramHttpOptions
     );

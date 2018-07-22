@@ -1,18 +1,9 @@
-const { telegramSend } = require('./index.js');
+/* eslint-disable no-console */
+const { chatIds, TelegramChat } = require('./index');
 
 const message = 'testMessage';
-const cases = [
-  'WARNING',
-  'ERROR',
-  'CRITICAL',
-  'ALERT',
-  'EMERG'
-];
+const telegramChat = new TelegramChat(chatIds.log);
 
-const testInterval = setInterval(() => {
-  if (cases.length) {
-    telegramSend(cases.shift(), message);
-  } else {
-    clearInterval(testInterval);
-  }
-}, 2000);
+telegramChat.send(message).catch((reason) => {
+  console.error(reason);
+});

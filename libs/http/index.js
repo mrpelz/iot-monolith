@@ -45,14 +45,8 @@ function http(method, url = {}, options = {}, data) {
     headers: Object.assign(defaultHeaders, additionalHeaders),
   });
 
-
   return new Promise((resolve, reject) => {
     const req = request(mergedOptions, (res) => {
-      if (res.statusCode < 200 || res.statusCode > 299) {
-        reject(new Error(`failed to load page, status code: ${res.statusCode}`));
-        return;
-      }
-
       const cache = [];
 
       res.on('data', (chunk) => {
@@ -60,7 +54,15 @@ function http(method, url = {}, options = {}, data) {
       });
 
       res.on('end', () => {
-        resolve(Buffer.concat(cache));
+        const result = Buffer.concat(cache);
+
+        if (res.statusCode < 200 || res.statusCode > 299) {
+          reject(new Error(
+            `failed to load page, status code: ${res.statusCode}, content: ${result.toString()}`
+          ));
+        } else {
+          resolve(result);
+        }
       });
     });
 
