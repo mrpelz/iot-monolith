@@ -8,7 +8,7 @@ const {
 const { join } = require('path');
 const { tmpdir } = require('os');
 
-const { Logger } = require('../log');
+// const { Logger } = require('../log');
 const { rebind } = require('../utils/oop');
 
 const tmp = tmpdir();
