@@ -107,9 +107,7 @@ class MessageClient extends EventEmitter {
       this.emit('disconnect');
     });
 
-    this._socket.on('data', (input) => {
-      this._handleData(input);
-    });
+    this._socket.on('data', this._handleData);
   }
 
   _emitEvent(payload) {

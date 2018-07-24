@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /* eslint import/no-extraneous-dependencies: ["error", {"optionalDependencies": true}] */
 const { platform } = require('os');
+const { rebind } = require('../utils/oop');
 
 const isLinux = (platform() === 'linux');
 
@@ -33,6 +34,8 @@ class Logger {
     );
 
     this._telegramChat = new TelegramChat(chatIds.log);
+
+    rebind(this, 'log');
   }
 
   log(message = '', level = 6, addnFields = {}) {

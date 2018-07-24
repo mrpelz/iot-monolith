@@ -4,6 +4,13 @@ function rebind(context, ...names) {
   });
 }
 
+function resolveAlways(promise) {
+  return promise.catch(() => {
+    return null;
+  });
+}
+
 module.exports = {
-  rebind
+  rebind,
+  resolveAlways
 };
