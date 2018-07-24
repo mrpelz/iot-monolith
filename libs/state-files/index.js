@@ -20,7 +20,7 @@ function makePath(name) {
 class StateFile extends EventEmitter {
   constructor(name) {
     if (!name) {
-      throw new Error('id not defined!');
+      throw new Error('name not defined!');
     }
 
     super();

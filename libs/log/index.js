@@ -19,11 +19,11 @@ const {
 const { PROD_ENV: isProd } = process.env;
 
 class Logger {
-  constructor(appName = '') {
-    this._appName = appName;
+  constructor(app = '') {
+    this._app = app;
 
     this._defaultFields = {
-      syslog_identifier: this._appName
+      syslog_identifier: this._app
     };
 
     this._journal = (
@@ -37,7 +37,7 @@ class Logger {
 
   log(message = '', level = 6, addnFields = {}) {
     const {
-      _appName,
+      _app,
       _defaultFields,
       _journal,
       _telegramChat
@@ -76,11 +76,11 @@ class Logger {
           break;
       }
     } else {
-      console.log(`[${name}] ${_appName}: ${message}`);
+      console.log(`[${name}] ${_app}: ${message}`);
     }
 
     if (level <= 3) {
-      _telegramChat.send(`_${name}_  \n${message}`);
+      _telegramChat.send(`_${name}_  \n*${_app}*  \n${message}`);
     }
   }
 }

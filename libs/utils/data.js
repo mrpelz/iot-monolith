@@ -1,3 +1,5 @@
+const emptyBuffer = Buffer.from([]);
+
 function writeNumber(input, bytes) {
   const cache = Buffer.alloc(bytes);
 
@@ -17,5 +19,6 @@ function writeNumber(input, bytes) {
 }
 
 module.exports = {
+  emptyBuffer,
   writeNumber
 };

@@ -1,0 +1,14 @@
+[Unit]
+Description=iot-monolith
+
+[Service]
+Type=simple
+PIDFile=/run/iot-monolith/iot-monolith.pid
+WorkingDirectory=/usr/local/scripts/iot/iot-monolith/
+ExecStart=/usr/local/scripts/iot/iot-monolith/run.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+Alias=iot-monolith.service

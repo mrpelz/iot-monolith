@@ -1,6 +1,6 @@
-const { URL } = require('url');
 const { request: httpRequest } = require('http');
 const { request: httpsRequest } = require('https');
+const { URL } = require('url');
 
 function http(method, url = {}, options = {}, data) {
   const {

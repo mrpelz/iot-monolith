@@ -1,6 +1,7 @@
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
+const { emptyBuffer } = require('../utils/data');
 const { PersistentSocket } = require('../tcp');
 // const { Logger } = require('../log');
 
@@ -13,7 +14,6 @@ const eventId = 0;
 const keepAliveId = 255;
 
 const defaultTimeout = 5000;
-const emptyBuffer = Buffer.from([]);
 
 function bufferBeginsWith(input, head) {
   if (!head.length) {

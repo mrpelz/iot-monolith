@@ -13,6 +13,6 @@ const { StateFile } = require('./index');
     const data = await stateB.get();
     console.log(data);
   } catch (error) {
-    throw error;
+    console.error(error);
   }
 }());

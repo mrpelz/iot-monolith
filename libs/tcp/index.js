@@ -2,7 +2,7 @@ const net = require('net');
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
-const { writeNumber } = require('../utils/conversion');
+const { writeNumber } = require('../utils/data');
 const { Logger } = require('../log');
 
 const logPrefix = 'tcp';

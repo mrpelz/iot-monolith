@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const { MessageClient } = require('./index');
+const { emptyBuffer } = require('../utils/data');
 
 // MESSAGE TEST
 const client = new MessageClient({
@@ -14,7 +15,7 @@ const client = new MessageClient({
     {
       name: 'test2',
       head: Buffer.from([0x02]),
-      tail: Buffer.from([]),
+      tail: emptyBuffer,
       parser: (x) => { return x; },
       generator: (x) => { return Buffer.from(x); },
       timeout: 2000

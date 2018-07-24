@@ -14,6 +14,6 @@ const { get, post } = require('./index');
 
     console.log(test1.toString(), test3.toString());
   } catch (error) {
-    throw error;
+    console.error(error);
   }
 }());
