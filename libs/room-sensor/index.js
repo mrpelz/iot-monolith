@@ -117,6 +117,12 @@ class RoomSensor extends MessageClient {
       return arraysToObject(this._metrics, values);
     });
   }
+
+  // Public methods:
+  // start
+  // stop
+  // getMetric
+  // getAll
 }
 
 module.exports = {

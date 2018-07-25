@@ -1,4 +1,6 @@
 const emptyBuffer = Buffer.from([]);
+const falseBuffer = Buffer.from([0]);
+const trueBuffer = Buffer.from([1]);
 
 function arraysToObject(keyArray, valueArray) {
   if (!Array.isArray(keyArray) || !Array.isArray(valueArray)) {
@@ -17,7 +19,7 @@ function arraysToObject(keyArray, valueArray) {
   return result;
 }
 
-function readNumber(input, bytes) {
+function readNumber(input, bytes = 1) {
   if (input.length < bytes) {
     throw new Error('number cannot be represented');
   }
@@ -32,6 +34,14 @@ function readNumber(input, bytes) {
     default:
       throw new Error('illegal number of bytes specified');
   }
+}
+
+function booleanToBuffer(input) {
+  return input ? trueBuffer : falseBuffer;
+}
+
+function bufferToBoolean(input) {
+  return Boolean(readNumber(input, 1));
 }
 
 function sanity(input, options) {
@@ -55,7 +65,7 @@ function sanity(input, options) {
   return value;
 }
 
-function writeNumber(input, bytes) {
+function writeNumber(input, bytes = 1) {
   if ((input < 0) || (input >= 2 ** (bytes * 8))) {
     throw new Error('number cannot be represented');
   }
@@ -80,8 +90,12 @@ function writeNumber(input, bytes) {
 
 module.exports = {
   arraysToObject,
+  booleanToBuffer,
+  bufferToBoolean,
   emptyBuffer,
+  falseBuffer,
   readNumber,
   sanity,
+  trueBuffer,
   writeNumber
 };

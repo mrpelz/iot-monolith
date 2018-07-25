@@ -1,12 +1,12 @@
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
-const { emptyBuffer } = require('../utils/data');
+const { emptyBuffer, readNumber } = require('../utils/data');
 const { PersistentSocket } = require('../tcp');
-// const { Logger } = require('../log');
+const { Logger } = require('../log');
 
-// const logPrefix = 'messaging';
-// const { log } = new Logger(logPrefix);
+const logPrefix = 'messaging';
+const { log } = new Logger(logPrefix);
 
 const minCallId = 1;
 const maxCallId = 254;
@@ -15,8 +15,34 @@ const keepAliveId = 255;
 
 const defaultTimeout = 5000;
 
+function prepareMessageTypes(types) {
+  return types.map((msg) => {
+    const {
+      eventName,
+      eventParser = (x) => { return x; },
+      generator = (x) => { return x; },
+      head = emptyBuffer,
+      name,
+      parser = (x) => { return x; },
+      tail = emptyBuffer,
+      timeout = defaultTimeout
+    } = msg;
+
+    return {
+      eventName,
+      eventParser,
+      generator,
+      head,
+      name,
+      parser,
+      tail,
+      timeout
+    };
+  });
+}
+
 function bufferBeginsWith(input, head) {
-  if (!head.length) {
+  if (!head || !head.length) {
     return true;
   }
   return [...head].reduce((acc, curr, index) => {
@@ -25,7 +51,7 @@ function bufferBeginsWith(input, head) {
 }
 
 function bufferEndsWith(input, tail) {
-  if (!tail.length) {
+  if (!tail || !tail.length) {
     return true;
   }
   const start = input.length - tail.length;
@@ -66,7 +92,7 @@ class MessageClient extends EventEmitter {
       host = null,
       port = null,
       lengthBytes = 1,
-      timeout = 5000,
+      timeout = 10000,
       messageTypes = []
     } = options;
 
@@ -79,7 +105,7 @@ class MessageClient extends EventEmitter {
       port,
       keepAlive: {
         send: true,
-        receive: false,
+        receive: true,
         time: timeout,
         data: Buffer.from([0xff])
       },
@@ -87,7 +113,7 @@ class MessageClient extends EventEmitter {
       delimiter: false
     });
 
-    this._types = messageTypes;
+    this._types = prepareMessageTypes(messageTypes);
 
     this._state = {
       isConnected: false,
@@ -116,9 +142,9 @@ class MessageClient extends EventEmitter {
     } = this;
     const msg = findRequestPatternMatch(_types, payload);
 
-    if (msg) {
-      const data = msg.parser(payload);
-      this.emit(msg.name, data);
+    if (msg && msg.eventName) {
+      const data = msg.eventParser(payload);
+      this.emit(msg.eventName, msg.name, data);
     }
   }
 
@@ -127,8 +153,8 @@ class MessageClient extends EventEmitter {
       _state: { calls }
     } = this;
 
-    const [id, ...rest] = data;
-    const payload = Buffer.from(rest);
+    const id = readNumber(data.slice(0, 1), 1);
+    const payload = data.slice(1);
     const { [id]: resolver } = calls;
 
     switch (id) {
@@ -152,30 +178,28 @@ class MessageClient extends EventEmitter {
       _types
     } = this;
 
+    if (!isConnected) {
+      throw new Error('socket is not connected!');
+    }
+
+    const msg = findRequestNameMatch(_types, name);
+
+    if (!msg) {
+      throw new Error(`no configured request for "${name}"`);
+    }
+
+    const {
+      head,
+      tail,
+      parser,
+      generator,
+      timeout
+    } = msg;
+
+    const id = callId(_state);
+    const payload = generator(data);
+
     return new Promise((resolve, reject) => {
-      if (!isConnected) {
-        reject(new Error('socket is not connected!'));
-        return;
-      }
-
-      const msg = findRequestNameMatch(_types, name);
-
-      if (!msg) {
-        reject(new Error(`no configured request for "${name}"`));
-        return;
-      }
-
-      const {
-        head = emptyBuffer,
-        tail = emptyBuffer,
-        parser = (x) => { return x; },
-        generator = (x) => { return Buffer.from(x); },
-        timeout = defaultTimeout
-      } = msg;
-
-      const id = callId(_state);
-      const payload = generator(data);
-
       const timeoutId = setTimeout(() => {
         if (calls[id]) {
           reject(new Error(`call timed out after ${timeout}ms`));
@@ -195,6 +219,8 @@ class MessageClient extends EventEmitter {
         payload,
         tail
       ]));
+    }).catch((reason) => {
+      log(reason);
     });
   }
 

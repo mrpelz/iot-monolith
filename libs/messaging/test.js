@@ -10,6 +10,7 @@ const client = new MessageClient({
     {
       name: 'test1',
       head: Buffer.from([0x01]),
+      generator: (x) => { return Buffer.from(x); },
       timeout: 60000
     },
     {
@@ -18,7 +19,8 @@ const client = new MessageClient({
       tail: emptyBuffer,
       parser: (x) => { return x; },
       generator: (x) => { return Buffer.from(x); },
-      timeout: 2000
+      timeout: 2000,
+      eventName: 'test2'
     }
   ]
 });
