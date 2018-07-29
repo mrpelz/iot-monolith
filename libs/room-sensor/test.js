@@ -12,7 +12,7 @@ const roomSensor = new RoomSensor({
   ]
 });
 
-roomSensor.start();
+roomSensor.connect();
 
 roomSensor.on('connect', async () => {
   try {
@@ -26,5 +26,5 @@ roomSensor.on('connect', async () => {
     console.error('error', error);
   }
 
-  roomSensor.stop();
+  roomSensor.disconnect();
 });

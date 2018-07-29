@@ -96,8 +96,8 @@ class ObiJack extends Switch {
   }
 
   // Public methods:
-  // start
-  // stop
+  // connect
+  // disconnect
   // relay
   // led
   // ledBlink

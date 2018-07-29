@@ -1,8 +1,6 @@
-const EventEmitter = require('events');
-
-const { rebind } = require('../utils/oop');
-const { emptyBuffer, readNumber } = require('../utils/data');
 const { PersistentSocket } = require('../tcp');
+const { emptyBuffer, readNumber } = require('../utils/data');
+const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
 const logPrefix = 'messaging';
@@ -84,10 +82,8 @@ function callId(state) {
   return id;
 }
 
-class MessageClient extends EventEmitter {
+class MessageClient extends PersistentSocket {
   constructor(options) {
-    super();
-
     const {
       host = null,
       port = null,
@@ -100,7 +96,7 @@ class MessageClient extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    this._socket = new PersistentSocket({
+    super({
       host,
       port,
       keepAlive: {
@@ -113,34 +109,24 @@ class MessageClient extends EventEmitter {
       delimiter: false
     });
 
-    this._types = prepareMessageTypes(messageTypes);
+    this._messaging = {};
 
-    this._state = {
-      isConnected: false,
+    this._messaging.types = prepareMessageTypes(messageTypes);
+
+    this._messaging.state = {
       callCount: minCallId,
       calls: {}
     };
 
-    rebind(this, '_handleData');
-
-    this._socket.on('connect', () => {
-      this._state.isConnected = true;
-      this.emit('connect');
-    });
-
-    this._socket.on('disconnect', () => {
-      this._state.isConnected = false;
-      this.emit('disconnect');
-    });
-
-    this._socket.on('data', this._handleData);
+    rebind(this, '_handleResponse');
+    this.on('data', this._handleResponse);
   }
 
   _emitEvent(payload) {
     const {
-      _types
-    } = this;
-    const msg = findRequestPatternMatch(_types, payload);
+      types
+    } = this._messaging;
+    const msg = findRequestPatternMatch(types, payload);
 
     if (msg && msg.eventName) {
       const data = msg.eventParser(payload);
@@ -148,10 +134,10 @@ class MessageClient extends EventEmitter {
     }
   }
 
-  _handleData(data) {
+  _handleResponse(data) {
     const {
-      _state: { calls }
-    } = this;
+      state: { calls }
+    } = this._messaging;
 
     const id = readNumber(data.slice(0, 1), 1);
     const payload = data.slice(1);
@@ -172,17 +158,22 @@ class MessageClient extends EventEmitter {
 
   request(name, data = emptyBuffer) {
     const {
-      _socket,
-      _state,
-      _state: { calls, isConnected },
-      _types
-    } = this;
+      state: {
+        isConnected
+      }
+    } = this._persistentSocket;
+
+    const {
+      state,
+      state: { calls },
+      types
+    } = this._messaging;
 
     if (!isConnected) {
       throw new Error('socket is not connected!');
     }
 
-    const msg = findRequestNameMatch(_types, name);
+    const msg = findRequestNameMatch(types, name);
 
     if (!msg) {
       throw new Error(`no configured request for "${name}"`);
@@ -196,7 +187,7 @@ class MessageClient extends EventEmitter {
       timeout
     } = msg;
 
-    const id = callId(_state);
+    const id = callId(state);
     const payload = generator(data);
 
     return new Promise((resolve, reject) => {
@@ -213,7 +204,7 @@ class MessageClient extends EventEmitter {
         delete calls[id];
       };
 
-      _socket.write(Buffer.concat([
+      this.write(Buffer.concat([
         Buffer.from([id]),
         head,
         payload,
@@ -224,19 +215,9 @@ class MessageClient extends EventEmitter {
     });
   }
 
-  start() {
-    const { _socket } = this;
-    _socket.connect();
-  }
-
-  stop() {
-    const { _socket } = this;
-    _socket.disconnect();
-  }
-
   // Public methods:
-  // start
-  // stop
+  // connect
+  // disconnect
   // request
 }
 

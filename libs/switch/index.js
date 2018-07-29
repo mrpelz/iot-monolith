@@ -97,7 +97,8 @@ class Switch extends MessageClient {
       messageTypes: getMessageTypesForCapabilities(capabilities)
     });
 
-    this._capabilities = getCapabilityNames(capabilities);
+    this._switch = {};
+    this._switch.capabilities = getCapabilityNames(capabilities);
 
     rebind(this, '_addListener', '_handleEvent');
     setUpListeners(capabilities, this._addListener);
@@ -116,13 +117,19 @@ class Switch extends MessageClient {
   }
 
   set(name, on) {
-    const { _capabilities, _state: { isConnected } } = this;
+    const {
+      state: {
+        isConnected
+      }
+    } = this._persistentSocket;
+
+    const { capabilities } = this._switch;
 
     if (!isConnected) {
       throw new Error('device not connected');
     }
 
-    if (!_capabilities.includes(name)) {
+    if (!capabilities.includes(name)) {
       throw new Error('capability is not configured');
     }
 
@@ -132,8 +139,8 @@ class Switch extends MessageClient {
   }
 
   // Public methods:
-  // start
-  // stop
+  // connect
+  // disconnect
   // get
   // set
 }

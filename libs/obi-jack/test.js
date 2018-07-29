@@ -34,4 +34,4 @@ jack.on('connect', () => {
   });
 });
 
-jack.start();
+jack.connect();

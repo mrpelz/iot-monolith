@@ -49,4 +49,4 @@ client.on('disconnect', () => {
   console.log('disconnected');
 });
 
-client.start();
+client.connect();

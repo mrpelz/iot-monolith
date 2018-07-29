@@ -89,15 +89,26 @@ class RoomSensor extends MessageClient {
       messageTypes: getMessageTypesForMetrics(metrics)
     });
 
-    this._metrics = metrics;
+    this._roomSensor = {};
+    this._roomSensor.metrics = metrics;
   }
 
   getMetric(metric) {
-    if (!this._state.isConnected) {
+    const {
+      state: {
+        isConnected
+      }
+    } = this._persistentSocket;
+
+    const {
+      metrics
+    } = this._roomSensor;
+
+    if (!isConnected) {
       throw new Error('sensor not connected');
     }
 
-    if (!this._metrics.includes(metric)) {
+    if (!metrics.includes(metric)) {
       throw new Error('metric not configured');
     }
 
@@ -107,20 +118,30 @@ class RoomSensor extends MessageClient {
   }
 
   getAll() {
-    if (!this._state.isConnected) {
+    const {
+      state: {
+        isConnected
+      }
+    } = this._persistentSocket;
+
+    const {
+      metrics
+    } = this._roomSensor;
+
+    if (!isConnected) {
       throw new Error('sensor not connected');
     }
 
-    return Promise.all(this._metrics.map((metric) => {
+    return Promise.all(metrics.map((metric) => {
       return resolveAlways(this.request(metric));
     })).then((values) => {
-      return arraysToObject(this._metrics, values);
+      return arraysToObject(metrics, values);
     });
   }
 
   // Public methods:
-  // start
-  // stop
+  // connect
+  // disconnect
   // getMetric
   // getAll
 }
