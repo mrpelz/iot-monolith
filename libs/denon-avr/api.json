@@ -1,0 +1,1208 @@
+[
+  {
+    "method": "power",
+    "api": "PW",
+    "payload": [
+      {
+        "method": "1",
+        "api": "ON"
+      },
+      {
+        "method": "0",
+        "api": "STANDBY"
+      },
+      {
+        "method": "?"
+      }
+    ]
+  },
+  {
+    "method": "master-volume",
+    "api": "MV",
+    "payload": [
+      {
+        "method": "+",
+        "api": "UP"
+      },
+      {
+        "method": "-",
+        "api": "DOWN"
+      },
+      {
+        "method": {
+          "bounds": [
+            0,
+            98
+          ],
+          "inputOffset": 80
+        },
+        "api": {
+          "bounds": [
+            0,
+            98
+          ],
+          "inputOffset": -80
+        }
+      },
+      {
+        "method": "?"
+      }
+    ]
+  },
+  {
+    "method": "channel-volume",
+    "api": "CV",
+    "parameters": [
+      {
+        "method": "front-left",
+        "api": "FL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "front-right",
+        "api": "FR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "center",
+        "api": "C ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "subwoofer",
+        "api": "SW ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "subwoofer2",
+        "api": "SW2 ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-left",
+        "api": "SL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-right",
+        "api": "SR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-back-left",
+        "api": "SBL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-back-right",
+        "api": "SBR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-back",
+        "api": "SB ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-height-left",
+        "api": "SHL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-height-right",
+        "api": "SHR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "front-wide-left",
+        "api": "SWL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "front-wide-right",
+        "api": "FWR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-front-left",
+        "api": "TFL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-front-right",
+        "api": "TFR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-middle-left",
+        "api": "TML ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-middle-right",
+        "api": "TMR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-rear-left",
+        "api": "TRL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-rear-right",
+        "api": "TRR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "rear-height-left",
+        "api": "RHL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "rear-height-right",
+        "api": "RHR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "front-dolby-left",
+        "api": "FDL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "front-dolby-right",
+        "api": "FDR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-dolby-left",
+        "api": "SDL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-dolby-right",
+        "api": "SDR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "back-dolby-left",
+        "api": "BDL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "back-dolby-right",
+        "api": "BDR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-height-left",
+        "api": "SHL ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "surround-height-right",
+        "api": "SHR ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "top-surround",
+        "api": "TS ",
+        "payload": [
+          {
+            "method": "+",
+            "api": "UP"
+          },
+          {
+            "method": "-",
+            "api": "DOWN"
+          },
+          {
+            "method": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": 50
+            },
+            "api": {
+              "bounds": [
+                38,
+                62
+              ],
+              "inputOffset": -50
+            }
+          }
+        ]
+      },
+      {
+        "method": "reset-all",
+        "api": "ZRL"
+      },
+      {
+        "method": "?"
+      },
+      {
+        "api": "END",
+        "returnComplete": true
+      }
+    ]
+  },
+  {
+    "method": "mute",
+    "api": "MU",
+    "payload": [
+      {
+        "method": "1",
+        "api": "ON"
+      },
+      {
+        "method": "0",
+        "api": "OFF"
+      },
+      {
+        "method": "?"
+      }
+    ]
+  },
+  {
+    "method": "input-source",
+    "api": "SI",
+    "payload": [
+      {
+        "method": "cd",
+        "api": "CD"
+      },
+      {
+        "method": "tuner",
+        "api": "TUNER"
+      },
+      {
+        "method": "dvd",
+        "api": "DVD"
+      },
+      {
+        "method": "bluray",
+        "api": "BD"
+      },
+      {
+        "method": "tv",
+        "api": "TV"
+      },
+      {
+        "method": "sat",
+        "api": "SAT/CBL"
+      },
+      {
+        "method": "media",
+        "api": "MPLAY"
+      },
+      {
+        "method": "game",
+        "api": "GAME"
+      },
+      {
+        "method": "hdradio",
+        "api": "HDRADIO"
+      },
+      {
+        "method": "network",
+        "api": "NET"
+      },
+      {
+        "method": "pandora",
+        "api": "PANDORA"
+      },
+      {
+        "method": "sirius",
+        "api": "SIRIUSXM"
+      },
+      {
+        "method": "spotify",
+        "api": "SPOTIFY"
+      },
+      {
+        "method": "lastfm",
+        "api": "LASTFM"
+      },
+      {
+        "method": "flickr",
+        "api": "FLICKR"
+      },
+      {
+        "method": "i-radio",
+        "api": "IRADIO"
+      },
+      {
+        "method": "server",
+        "api": "SERVER"
+      },
+      {
+        "method": "favorites",
+        "api": "FAVORITES"
+      },
+      {
+        "method": "aux1",
+        "api": "AUX1"
+      },
+      {
+        "method": "aux2",
+        "api": "AUX2"
+      },
+      {
+        "method": "aux3",
+        "api": "AUX3"
+      },
+      {
+        "method": "aux4",
+        "api": "AUX4"
+      },
+      {
+        "method": "aux5",
+        "api": "AUX5"
+      },
+      {
+        "method": "aux6",
+        "api": "AUX6"
+      },
+      {
+        "method": "aux7",
+        "api": "AUX7"
+      },
+      {
+        "method": "bluetooth",
+        "api": "BT"
+      },
+      {
+        "method": "ipodusb",
+        "api": "USB/IPOD"
+      },
+      {
+        "method": "usb",
+        "api": "USB"
+      },
+      {
+        "method": "ipod",
+        "api": "IPD"
+      },
+      {
+        "method": "internetradio",
+        "api": "IRP"
+      },
+      {
+        "method": "network-favorites",
+        "api": "FVP"
+      },
+      {
+        "method": "?"
+      }
+    ]
+  },
+  {
+    "method": "main-zone",
+    "api": "ZM",
+    "payload": [
+      {
+        "method": "1",
+        "api": "ON"
+      },
+      {
+        "method": "0",
+        "api": "OFF"
+      },
+      {
+        "method": "?"
+      }
+    ],
+    "parameters": [
+      {
+        "method": "fav1",
+        "api": "FAVORITE1",
+        "payload": [
+          {
+            "method": "memory",
+            "api": "MEMORY"
+          }
+        ]
+      },
+      {
+        "method": "fav2",
+        "api": "FAVORITE2",
+        "payload": [
+          {
+            "method": "memory",
+            "api": "MEMORY"
+          }
+        ]
+      },
+      {
+        "method": "fav3",
+        "api": "FAVORITE3",
+        "payload": [
+          {
+            "method": "memory",
+            "api": "MEMORY"
+          }
+        ]
+      },
+      {
+        "method": "fav4",
+        "api": "FAVORITE4",
+        "payload": [
+          {
+            "method": "memory",
+            "api": "MEMORY"
+          }
+        ]
+      }
+    ]
+  }
+]

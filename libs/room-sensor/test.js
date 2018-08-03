@@ -12,8 +12,6 @@ const roomSensor = new RoomSensor({
   ]
 });
 
-roomSensor.connect();
-
 roomSensor.on('connect', async () => {
   try {
     console.log(`getAll result: ${JSON.stringify(await roomSensor.getAll())}`);
@@ -28,3 +26,5 @@ roomSensor.on('connect', async () => {
 
   roomSensor.disconnect();
 });
+
+roomSensor.connect();
