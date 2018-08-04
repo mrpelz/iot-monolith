@@ -28,6 +28,15 @@ class Cache {
   }
 }
 
+function sleep(time, data) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(data);
+    }, time);
+  });
+}
+
 module.exports = {
-  Cache
+  Cache,
+  sleep
 };
