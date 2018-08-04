@@ -52,12 +52,20 @@ class StateFile extends EventEmitter {
       throw new Error('data is not an object!');
     }
 
+    let json;
+
+    try {
+      json = JSON.stringify(data, undefined, 2);
+    } catch (error) {
+      throw new Error('could not JSON-stringify data!');
+    }
+
     return new Promise((resolve, reject) => {
       this._doWatch = false;
 
       write(
         this._descriptor,
-        Buffer.from(JSON.stringify(data, undefined, 2)),
+        Buffer.from(json),
         (error) => {
           this._doWatch = true;
 
