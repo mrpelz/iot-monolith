@@ -61,7 +61,7 @@ class PersistentSocket extends EventEmitter {
       buffer: []
     };
 
-    rebind(this, '_handleData', '_handleConnection', '_handleDisconnection');
+    rebind(this, '_handleData', '_onConnection', '_onDisconnection');
 
     this._persistentSocket.socket = new net.Socket();
   }
@@ -144,7 +144,7 @@ class PersistentSocket extends EventEmitter {
     }
   }
 
-  _handleConnection() {
+  _onConnection() {
     const { state, options: { host, port, keepAlive }, socket } = this._persistentSocket;
 
     if (!state.isConnected) {
@@ -173,7 +173,7 @@ class PersistentSocket extends EventEmitter {
     }
   }
 
-  _handleDisconnection() {
+  _onDisconnection() {
     const { state, options: { host, port, keepAlive }, socket } = this._persistentSocket;
 
     if (state.isConnected) {
@@ -236,7 +236,7 @@ class PersistentSocket extends EventEmitter {
           PORT: port
         });
 
-        this._handleDisconnection();
+        this._onDisconnection();
       }, Math.round(keepAlive.time * 1.5));
     }
   }
@@ -275,9 +275,9 @@ class PersistentSocket extends EventEmitter {
       PORT: port
     });
 
-    socket.on('connect', this._handleConnection);
-    socket.on('end', this._handleDisconnection);
-    socket.on('error', this._handleDisconnection);
+    socket.on('connect', this._onConnection);
+    socket.on('end', this._onDisconnection);
+    socket.on('error', this._onDisconnection);
 
     this._doConnect();
 
@@ -305,11 +305,11 @@ class PersistentSocket extends EventEmitter {
       state.watcherInterval = null;
     }
 
-    socket.removeListener('connect', this._handleConnection);
-    socket.removeListener('end', this._handleDisconnection);
-    socket.removeListener('error', this._handleDisconnection);
+    socket.removeListener('connect', this._onConnection);
+    socket.removeListener('end', this._onDisconnection);
+    socket.removeListener('error', this._onDisconnection);
 
-    this._handleDisconnection();
+    this._onDisconnection();
   }
 
   // Public methods:

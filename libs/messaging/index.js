@@ -16,7 +16,7 @@ const defaultTimeout = 5000;
 function prepareMessageTypes(types) {
   return types.map((msg) => {
     const {
-      eventName,
+      eventName = null,
       eventParser = (x) => { return x; },
       generator = (x) => { return x; },
       head = emptyBuffer,

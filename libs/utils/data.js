@@ -19,6 +19,22 @@ function arraysToObject(keyArray, valueArray) {
   return result;
 }
 
+function numberToDigits(input, pad = 0, radix = 10) {
+  if (typeof input !== 'number') {
+    throw new Error('input not a number');
+  }
+
+  const number = Math.abs(input);
+
+  if (Math.floor(number) !== number) {
+    throw new Error('input not an integer');
+  }
+
+  return number.toString(radix).padStart(pad, '0').split('').map((x) => {
+    return Number.parseInt(x, radix);
+  });
+}
+
 function readNumber(input, bytes = 1) {
   if (input.length < bytes) {
     throw new Error('number cannot be represented');
@@ -94,6 +110,7 @@ module.exports = {
   bufferToBoolean,
   emptyBuffer,
   falseBuffer,
+  numberToDigits,
   readNumber,
   sanity,
   trueBuffer,
