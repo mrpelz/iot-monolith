@@ -1,5 +1,6 @@
 const { MessageClient } = require('../messaging');
-const { arraysToObject, readNumber, sanity } = require('../utils/data');
+const { readNumber, sanity } = require('../utils/data');
+const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
 
 const metricOptions = {

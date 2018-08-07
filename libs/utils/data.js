@@ -2,23 +2,6 @@ const emptyBuffer = Buffer.from([]);
 const falseBuffer = Buffer.from([0]);
 const trueBuffer = Buffer.from([1]);
 
-function arraysToObject(keyArray, valueArray) {
-  if (!Array.isArray(keyArray) || !Array.isArray(valueArray)) {
-    throw new Error('inputs are not arrays');
-  }
-  if (keyArray.length !== valueArray.length) {
-    throw new Error('array lengths do not match');
-  }
-
-  const result = {};
-
-  keyArray.forEach((key, index) => {
-    result[key] = valueArray[index];
-  });
-
-  return result;
-}
-
 function numberToDigits(input, pad = 0, radix = 10) {
   if (typeof input !== 'number') {
     throw new Error('input not a number');
@@ -105,7 +88,6 @@ function writeNumber(input, bytes = 1) {
 }
 
 module.exports = {
-  arraysToObject,
   booleanToBuffer,
   bufferToBoolean,
   emptyBuffer,
