@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { get, post } = require('./index');
 
-(async function test() {
+(async function clientTest() {
   try {
     // GET TEST (HTTP)
     const test1 = await get('http://httpbin.org/get?this=is&a=test#hash');

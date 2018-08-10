@@ -121,7 +121,7 @@ class Logger {
           break;
       }
     } else {
-      console.log(`[${levelName}]\n${message}\n`);
+      console.log(`\n[${levelName}]\n${message}\n`);
     }
 
     if (
