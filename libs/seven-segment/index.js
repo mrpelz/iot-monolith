@@ -3,8 +3,7 @@ const { bufferToBoolean, numberToDigits, sanity } = require('../utils/data');
 const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
-const logPrefix = 'seven-segment';
-const { log } = new Logger(logPrefix);
+const libName = 'seven-segment';
 
 const displayLength = 4;
 const signLength = 1;
@@ -128,6 +127,8 @@ class SevenSegment extends MessageClient {
 
     rebind(this, '_handleConnection');
     this.on('connect', this._handleConnection);
+
+    this._sevenSegment.log = new Logger(libName, `${host}:${port}`);
   }
 
   _handleConnection() {
@@ -135,11 +136,15 @@ class SevenSegment extends MessageClient {
   }
 
   _commit() {
+    const { log } = this._sevenSegment;
     // console.log(this.display.map((x) => {
     //   return x.toString(2);
     // }));
     return this.request('display', this.display).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'display error',
+        attachment: reason
+      });
     });
   }
 

@@ -2,8 +2,7 @@ const { Switch } = require('../switch');
 const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
-const logPrefix = 'obi-jack';
-const { log } = new Logger(logPrefix);
+const libName = 'obi-jack';
 
 const obiCapabilities = [
   {
@@ -52,6 +51,8 @@ class ObiJack extends Switch {
 
     rebind(this, '_handleConnection');
     this.on('connect', this._handleConnection);
+
+    this._obiJack.log = new Logger(libName, `${host}:${port}`);
   }
 
   _handleConnection() {
@@ -59,6 +60,8 @@ class ObiJack extends Switch {
   }
 
   relay(on) {
+    const { log } = this._obiJack;
+
     return this.set('relay', on).then((value) => {
       if (value !== on) {
         throw new Error('could not set relay');
@@ -67,11 +70,16 @@ class ObiJack extends Switch {
       this.relayState = value;
       return value;
     }).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'relay error',
+        attachment: reason
+      });
     });
   }
 
   led(on) {
+    const { log } = this._obiJack;
+
     return this.set('led', on).then((value) => {
       if (value !== on) {
         throw new Error('could not set led');
@@ -79,11 +87,16 @@ class ObiJack extends Switch {
 
       return value;
     }).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'led error',
+        attachment: reason
+      });
     });
   }
 
   ledBlink(count) {
+    const { log } = this._obiJack;
+
     return this.set('ledBlink', count).then((result) => {
       if (result !== count) {
         throw new Error('could not set ledBlink');
@@ -91,7 +104,10 @@ class ObiJack extends Switch {
 
       return result;
     }).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'led-blink error',
+        attachment: reason
+      });
     });
   }
 

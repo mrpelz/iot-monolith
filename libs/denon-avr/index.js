@@ -2,8 +2,7 @@ const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
-const logPrefix = 'denon-avr';
-const { log } = new Logger(logPrefix);
+const libName = 'denon-avr';
 
 const apiDelimiter = 0x0d;
 const apiEncoding = 'ascii';
@@ -37,6 +36,8 @@ class DenonAvr extends PersistentSocket {
 
     rebind(this, '_handleResponse');
     this.on('data', this._handleResponse);
+
+    this._denonAvr.log = new Logger(libName, `${host}:${port}`);
   }
 
   _handleResponse(input) {
@@ -59,7 +60,7 @@ class DenonAvr extends PersistentSocket {
       throw new Error('no cmd specified');
     }
 
-    const { calls } = this._denonAvr;
+    const { calls, log } = this._denonAvr;
 
     if (calls[cmd]) {
       throw new Error(`already running call for ${cmd}`);
@@ -81,7 +82,10 @@ class DenonAvr extends PersistentSocket {
 
       this.write(Buffer.from(`${cmd}${parameter}`, apiEncoding));
     }).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'request error',
+        attachment: reason
+      });
     });
   }
 

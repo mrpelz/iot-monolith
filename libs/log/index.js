@@ -1,30 +1,47 @@
 /* eslint-disable no-console */
 /* eslint import/no-extraneous-dependencies: ["error", {"optionalDependencies": true}] */
 const { platform } = require('os');
-const { rebind } = require('../utils/oop');
 
 const isLinux = (platform() === 'linux');
 
 const Journald = (
   isLinux
+    /* eslint-disable-next-line import/no-unresolved */
     ? require('systemd-journald')
     : null
 );
 
 const { chatIds, TelegramChat } = require('../telegram');
-
-const {
-  levelNames
-} = require('./config.json');
+const { levelNames, globalPrefix } = require('./config.json');
 
 const { PROD_ENV: isProd } = process.env;
 
+function options(level, input) {
+  return Object.assign(
+    (typeof input === 'string' ? {
+      head: input
+    } : input),
+    {
+      level
+    }
+  );
+}
+
+function indent(input) {
+  return input.split('\n').map((line) => {
+    return `  ${line}`;
+  }).join('\n');
+}
+
 class Logger {
-  constructor(app = '') {
-    this._app = app;
+  constructor(libName, instanceName) {
+    this._libName = libName;
+    this._instanceName = instanceName;
 
     this._defaultFields = {
-      syslog_identifier: this._app
+      syslog_identifier: globalPrefix,
+      LIB_NAME: libName,
+      INSTANCE_NAME: instanceName
     };
 
     this._journal = (
@@ -35,21 +52,46 @@ class Logger {
 
     this._telegramChat = new TelegramChat(chatIds.log);
 
-    rebind(this, 'log');
+    this.info('instance created');
   }
 
-  log(message = '', level = 6, addnFields = {}) {
+  _log(opts) {
     const {
-      _app,
+      _libName,
+      _instanceName,
       _defaultFields,
       _journal,
       _telegramChat
     } = this;
 
-    const name = levelNames[level];
+    const {
+      level,
+      head,
+      value = null,
+      attachment = null,
+      telegram = null
+    } = opts;
+
+    const messageHead = (
+      `${_libName} → ${_instanceName}`
+    );
+    const messageBody = (
+      `${head}${value === null ? '' : ` = ${value}`}`
+    );
+    const messageAttachment = (
+      `${attachment === null ? '' : `:\n${indent(attachment)}`}`
+    );
+    const message = (
+      `${messageHead}:\n${messageBody}${messageAttachment}`
+    );
+
+    const levelName = levelNames[level];
 
     if (isProd && _journal) {
-      const fields = Object.assign({}, _defaultFields, addnFields);
+      const fields = Object.assign({
+        STATE: head,
+        VALUE: value
+      }, _defaultFields);
 
       switch (level) {
         case 7:
@@ -79,12 +121,49 @@ class Logger {
           break;
       }
     } else {
-      console.log(`[${name}] ${_app}: ${message}`);
+      console.log(`[${levelName}]\n${message}\n`);
     }
 
-    if (level <= 3) {
-      _telegramChat.send(`_${name}_  \n*${_app}*  \n${message}`);
+    if (
+      telegram === true
+      || (telegram !== false && level <= 3)
+    ) {
+      _telegramChat.send(
+        `*${levelName}*  \n_${messageHead}_  \n${messageBody}\`${messageAttachment}\``
+      );
     }
+  }
+
+  debug(opts) {
+    this._log(options(7, opts));
+  }
+
+  info(opts) {
+    this._log(options(6, opts));
+  }
+
+  notice(opts) {
+    this._log(options(5, opts));
+  }
+
+  warning(opts) {
+    this._log(options(4, opts));
+  }
+
+  error(opts) {
+    this._log(options(3, opts));
+  }
+
+  critical(opts) {
+    this._log(options(2, opts));
+  }
+
+  alert(opts) {
+    this._log(options(1, opts));
+  }
+
+  emerg(opts) {
+    this._log(options(0, opts));
   }
 }
 

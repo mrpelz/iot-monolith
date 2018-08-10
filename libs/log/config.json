@@ -8,5 +8,6 @@
     "NOTICE",
     "INFO",
     "DEBUG"
-  ]
+  ],
+  "globalPrefix": "iot-monolith"
 }

@@ -2,6 +2,9 @@ const { MessageClient } = require('../messaging');
 const { readNumber, sanity } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
+const { Logger } = require('../log');
+
+const libName = 'room-sensor';
 
 const metricOptions = {
   temperature: {
@@ -92,6 +95,8 @@ class RoomSensor extends MessageClient {
 
     this._roomSensor = {};
     this._roomSensor.metrics = metrics;
+
+    this._roomSensor.log = new Logger(libName, `${host}:${port}`);
   }
 
   getMetric(metric) {
@@ -102,6 +107,7 @@ class RoomSensor extends MessageClient {
     } = this._persistentSocket;
 
     const {
+      log,
       metrics
     } = this._roomSensor;
 
@@ -114,7 +120,10 @@ class RoomSensor extends MessageClient {
     }
 
     return this.request(metric).catch((reason) => {
-      throw new Error(`cannot request ${metric}: ${reason}`);
+      log.notice({
+        head: `metric (${metric}) error`,
+        attachment: reason
+      });
     });
   }
 

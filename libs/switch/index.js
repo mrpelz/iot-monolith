@@ -9,8 +9,7 @@ const { rebind } = require('../utils/oop');
 const { camel } = require('../utils/string');
 const { Logger } = require('../log');
 
-const logPrefix = 'switch';
-const { log } = new Logger(logPrefix);
+const libName = 'switch';
 
 const messageHeads = {
   indicator: 0,
@@ -102,6 +101,8 @@ class Switch extends MessageClient {
 
     rebind(this, '_addListener', '_handleEvent');
     setUpListeners(capabilities, this._addListener);
+
+    this._switch.log = new Logger(libName, `${host}:${port}`);
   }
 
   _addListener(name) {
@@ -123,7 +124,7 @@ class Switch extends MessageClient {
       }
     } = this._persistentSocket;
 
-    const { capabilities } = this._switch;
+    const { capabilities, log } = this._switch;
 
     if (!isConnected) {
       throw new Error('device not connected');
@@ -134,7 +135,10 @@ class Switch extends MessageClient {
     }
 
     return this.request(name, on).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'set error',
+        attachment: reason
+      });
     });
   }
 

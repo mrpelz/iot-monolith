@@ -1,12 +1,11 @@
-const net = require('net');
+const { Socket } = require('net');
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
 const { writeNumber } = require('../utils/data');
 const { Logger } = require('../log');
 
-const logPrefix = 'tcp';
-const { log } = new Logger(logPrefix);
+const libName = 'tcp';
 
 class PersistentSocket extends EventEmitter {
   constructor(options) {
@@ -63,7 +62,9 @@ class PersistentSocket extends EventEmitter {
 
     rebind(this, '_handleData', '_onConnection', '_onDisconnection');
 
-    this._persistentSocket.socket = new net.Socket();
+    this._persistentSocket.socket = new Socket();
+
+    this._persistentSocket.log = new Logger(libName, `${host}:${port}`);
   }
 
   _read(input) {
@@ -145,13 +146,19 @@ class PersistentSocket extends EventEmitter {
   }
 
   _onConnection() {
-    const { state, options: { host, port, keepAlive }, socket } = this._persistentSocket;
+    const {
+      log,
+      state,
+      options: {
+        keepAlive
+      },
+      socket
+    } = this._persistentSocket;
 
     if (!state.isConnected) {
-      log(`socket "${host}:${port}" is connected`, 6, {
-        TYPE: 'is_connected',
-        HOST: host,
-        PORT: port
+      log.info({
+        head: 'is connected',
+        value: true
       });
 
       state.isConnected = true;
@@ -174,13 +181,19 @@ class PersistentSocket extends EventEmitter {
   }
 
   _onDisconnection() {
-    const { state, options: { host, port, keepAlive }, socket } = this._persistentSocket;
+    const {
+      log,
+      state,
+      options: {
+        keepAlive
+      },
+      socket
+    } = this._persistentSocket;
 
     if (state.isConnected) {
-      log(`socket "${host}:${port}" is disconnected`, 6, {
-        TYPE: 'is_connected',
-        HOST: host,
-        PORT: port
+      log.info({
+        head: 'is connected',
+        value: false
       });
 
       state.isConnected = false;
@@ -202,14 +215,18 @@ class PersistentSocket extends EventEmitter {
   }
 
   _doConnect() {
-    const { state, options: { host, port }, socket } = this._persistentSocket;
+    const {
+      log,
+      state,
+      options: {
+        host,
+        port
+      },
+      socket
+    } = this._persistentSocket;
 
     if (!state.isConnected) {
-      log(`trying to connect socket "${host}:${port}"`, 6, {
-        TYPE: 'do_connect',
-        HOST: host,
-        PORT: port
-      });
+      log.info('connection try');
 
       socket.connect({
         host,
@@ -219,7 +236,7 @@ class PersistentSocket extends EventEmitter {
   }
 
   _timeoutTick(stop) {
-    const { state, options: { host, port, keepAlive } } = this._persistentSocket;
+    const { log, state, options: { keepAlive } } = this._persistentSocket;
 
     if (state.tcpTimeout) {
       clearTimeout(state.tcpTimeout);
@@ -230,11 +247,7 @@ class PersistentSocket extends EventEmitter {
       state.tcpTimeout = setTimeout(() => {
         state.tcpTimeout = null;
 
-        log(`timeout on socket "${host}:${port}"`, 6, {
-          TYPE: 'connection_timeout',
-          HOST: host,
-          PORT: port
-        });
+        log.notice('timeout');
 
         this._onDisconnection();
       }, Math.round(keepAlive.time * 1.5));
@@ -267,12 +280,18 @@ class PersistentSocket extends EventEmitter {
   }
 
   connect() {
-    const { state, options: { host, port, keepAlive }, socket } = this._persistentSocket;
+    const {
+      log,
+      state,
+      options: {
+        keepAlive
+      },
+      socket
+    } = this._persistentSocket;
 
-    log(`connecting socket "${host}:${port}"`, 6, {
-      TYPE: 'connect',
-      HOST: host,
-      PORT: port
+    log.info({
+      head: 'set connect',
+      value: true
     });
 
     socket.on('connect', this._onConnection);
@@ -292,12 +311,11 @@ class PersistentSocket extends EventEmitter {
   }
 
   disconnect() {
-    const { state, options: { host, port }, socket } = this._persistentSocket;
+    const { log, state, socket } = this._persistentSocket;
 
-    log(`disconnecting socket "${host}:${port}"`, 6, {
-      TYPE: 'disconnect',
-      HOST: host,
-      PORT: port
+    log.info({
+      head: 'set connect',
+      value: false
     });
 
     if (state.watcherInterval) {

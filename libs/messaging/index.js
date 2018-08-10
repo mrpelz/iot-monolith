@@ -3,8 +3,7 @@ const { emptyBuffer, readNumber } = require('../utils/data');
 const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
-const logPrefix = 'messaging';
-const { log } = new Logger(logPrefix);
+const libName = 'messaging';
 
 const minCallId = 1;
 const maxCallId = 254;
@@ -120,6 +119,8 @@ class MessageClient extends PersistentSocket {
 
     rebind(this, '_handleResponse');
     this.on('data', this._handleResponse);
+
+    this._messaging.log = new Logger(libName, `${host}:${port}`);
   }
 
   _emitEvent(payload) {
@@ -164,6 +165,7 @@ class MessageClient extends PersistentSocket {
     } = this._persistentSocket;
 
     const {
+      log,
       state,
       state: { calls },
       types
@@ -211,7 +213,10 @@ class MessageClient extends PersistentSocket {
         tail
       ]));
     }).catch((reason) => {
-      log(reason);
+      log.notice({
+        head: 'request error',
+        attachment: reason
+      });
     });
   }
 
