@@ -10,6 +10,10 @@ function camel(...input) {
   }).join('');
 }
 
+function leftPad(input, pad = '') {
+  return `${pad}${input}`.slice(-pad.length);
+}
+
 function pascal(...input) {
   return input.map((tile) => {
     const first = tile.charAt(0).toUpperCase();
@@ -24,6 +28,7 @@ function scope(...input) {
 
 module.exports = {
   camel,
+  leftPad,
   pascal,
   scope
 };

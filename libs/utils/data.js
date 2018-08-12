@@ -1,3 +1,5 @@
+const { leftPad } = require('./string');
+
 const emptyBuffer = Buffer.from([]);
 const falseBuffer = Buffer.from([0]);
 const trueBuffer = Buffer.from([1]);
@@ -6,6 +8,28 @@ function concatBytes(input) {
   return Buffer.concat(input.map((byte) => {
     return Buffer.from([byte]);
   }));
+}
+
+function humanPayload(input) {
+  const columnPad = '          ';
+  const bitPadBin = '00000000';
+  const bitPadHex = '00';
+  const payload = [...input];
+
+  return [
+    payload.map((byte) => {
+      const byteString = leftPad(byte.toString(2), bitPadBin);
+      return leftPad(`0b${byteString}`, columnPad);
+    }).join(' | '),
+    payload.map((byte) => {
+      const byteString = byte.toString(10);
+      return leftPad(`${byteString}`, columnPad);
+    }).join(' | '),
+    payload.map((byte) => {
+      const byteString = leftPad(byte.toString(16), bitPadHex);
+      return leftPad(`0x${byteString}`, columnPad);
+    }).join(' | ')
+  ].join('\n');
 }
 
 function numberToDigits(input, pad = 0, radix = 10) {
@@ -109,6 +133,7 @@ module.exports = {
   emptyBuffer,
   falseBuffer,
   concatBytes,
+  humanPayload,
   numberToDigits,
   readNumber,
   sanity,

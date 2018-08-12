@@ -2,7 +2,7 @@ const { Socket } = require('net');
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
-const { writeNumber } = require('../utils/data');
+const { humanPayload, writeNumber } = require('../utils/data');
 const { Logger } = require('../log');
 
 const libName = 'tcp';
@@ -68,7 +68,16 @@ class PersistentSocket extends EventEmitter {
   }
 
   _read(input) {
-    this.emit('data', Buffer.from(input));
+    const { log } = this._persistentSocket;
+
+    const payload = Buffer.from(input);
+
+    log.debug({
+      head: 'payload received',
+      attachment: humanPayload(payload)
+    });
+
+    this.emit('data', payload);
   }
 
   _resetReading() {
@@ -263,12 +272,18 @@ class PersistentSocket extends EventEmitter {
         lengthPreamble,
         delimiter
       },
+      log,
       socket
     } = this._persistentSocket;
 
     if (!isConnected) {
       throw new Error('socket is not connected!');
     }
+
+    log.debug({
+      head: 'payload send',
+      attachment: humanPayload(input)
+    });
 
     socket.write(Buffer.concat(lengthPreamble ? [
       writeNumber(input.length, lengthPreamble),
