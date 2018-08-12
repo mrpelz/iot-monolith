@@ -3,7 +3,7 @@ const { SevenSegment } = require('./index');
 const { sleep } = require('../utils/time');
 
 const display = new SevenSegment({
-  host: '10.97.4.2',
+  host: '127.0.0.1',
   port: 3000
 });
 

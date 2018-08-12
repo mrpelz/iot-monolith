@@ -28,7 +28,11 @@ function options(level, input) {
 }
 
 function indent(input) {
-  return input.split('\n').map((line) => {
+  const text = typeof input === 'string'
+    ? input
+    : input.toString();
+
+  return text.split('\n').map((line) => {
     return `  ${line}`;
   }).join('\n');
 }
