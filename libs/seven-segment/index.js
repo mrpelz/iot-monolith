@@ -1,5 +1,11 @@
 const { MessageClient } = require('../messaging');
-const { bufferToBoolean, numberToDigits, sanity } = require('../utils/data');
+const {
+  concatBytes,
+  bufferToBoolean,
+  numberToDigits,
+  sanity,
+  swapByte
+} = require('../utils/data');
 const { rebind } = require('../utils/oop');
 const { Logger } = require('../log');
 
@@ -9,8 +15,7 @@ const displayLength = 4;
 const signLength = 1;
 const negativeDisplayLength = displayLength - signLength;
 
-const empty = 0;
-const minus = 1;
+const empty = 0b0000000;
 
 const digitMap = [
   0b1111110,
@@ -31,7 +36,22 @@ const letterMap = {
   c: 0b1001110,
   d: 0b0111101,
   e: 0b1001111,
-  f: 0b1000111
+  f: 0b1000111,
+  g: 0b1111011,
+  h: 0b0010111,
+  i: 0b0110000,
+  j: 0b1111100,
+  l: 0b0001110,
+  n: 0b0010101,
+  o: 0b0011101,
+  p: 0b1100111,
+  r: 0b0000101,
+  s: 0b1011011,
+  u: 0b0011100,
+  y: 0b0111011,
+  z: 0b1101101,
+  _: 0b0001000,
+  '-': 0b0000001
 };
 
 const emptyDisplay = Array(displayLength).fill(empty);
@@ -49,9 +69,12 @@ function numberToBitmap(number = 0) {
   }
 
   if (number < 0) {
-    return [minus, ...numberToDigits(number, negativeDisplayLength).map((x) => {
-      return digitMap[x];
-    })];
+    return [
+      letterMap['-'],
+      ...numberToDigits(number, negativeDisplayLength).map((x) => {
+        return digitMap[x];
+      })
+    ];
   }
 
   return numberToDigits(number, displayLength).map((x) => {
@@ -113,9 +136,9 @@ class SevenSegment extends MessageClient {
       messageTypes: [
         {
           name: 'display',
-          generator: (x) => {
-            return Buffer.concat(x.map((y) => {
-              return Buffer.from([y]);
+          generator: (input) => {
+            return concatBytes(input.map((byte) => {
+              return swapByte(byte);
             }));
           },
           parser: bufferToBoolean
@@ -123,7 +146,9 @@ class SevenSegment extends MessageClient {
       ]
     });
 
-    this.display = emptyDisplay;
+    this._sevenSegment = {
+      display: emptyDisplay
+    };
 
     rebind(this, '_handleConnection');
     this.on('connect', this._handleConnection);
@@ -136,11 +161,11 @@ class SevenSegment extends MessageClient {
   }
 
   _commit() {
-    const { log } = this._sevenSegment;
-    // console.log(this.display.map((x) => {
+    const { display, log } = this._sevenSegment;
+    // console.log(display.map((x) => {
     //   return x.toString(2);
     // }));
-    return this.request('display', this.display).catch((reason) => {
+    return this.request('display', display).catch((reason) => {
       log.notice({
         head: 'display error',
         attachment: reason
@@ -149,22 +174,22 @@ class SevenSegment extends MessageClient {
   }
 
   clear() {
-    this.display = emptyDisplay;
+    this._sevenSegment.display = emptyDisplay;
     return this._commit();
   }
 
   setNumber(number) {
-    this.display = numberToBitmap(number);
+    this._sevenSegment.display = numberToBitmap(number);
     return this._commit();
   }
 
   setString(string) {
-    this.display = stringToBitmap(string);
+    this._sevenSegment.display = stringToBitmap(string);
     return this._commit();
   }
 
   setSegments(...segments) {
-    this.display = segmentGuard(segments);
+    this._sevenSegment.display = segmentGuard(segments);
     return this._commit();
   }
 

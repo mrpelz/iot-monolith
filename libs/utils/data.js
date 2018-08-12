@@ -2,6 +2,12 @@ const emptyBuffer = Buffer.from([]);
 const falseBuffer = Buffer.from([0]);
 const trueBuffer = Buffer.from([1]);
 
+function concatBytes(input) {
+  return Buffer.concat(input.map((byte) => {
+    return Buffer.from([byte]);
+  }));
+}
+
 function numberToDigits(input, pad = 0, radix = 10) {
   if (typeof input !== 'number') {
     throw new Error('input not a number');
@@ -64,6 +70,16 @@ function sanity(input, options) {
   return value;
 }
 
+function swapByte(input) {
+  let byte = input;
+  /* eslint-disable no-bitwise */
+  byte = ((byte & 0b11110000) >> 4) | ((byte & 0b1111) << 4);
+  byte = ((byte & 0b11001100) >> 2) | ((byte & 0b110011) << 2);
+  byte = ((byte & 0b10101010) >> 1) | ((byte & 0b1010101) << 1);
+  /* eslint-enable no-bitwise */
+  return byte;
+}
+
 function writeNumber(input, bytes = 1) {
   if ((input < 0) || (input >= 2 ** (bytes * 8))) {
     throw new Error('number cannot be represented');
@@ -92,9 +108,11 @@ module.exports = {
   bufferToBoolean,
   emptyBuffer,
   falseBuffer,
+  concatBytes,
   numberToDigits,
   readNumber,
   sanity,
+  swapByte,
   trueBuffer,
   writeNumber
 };
