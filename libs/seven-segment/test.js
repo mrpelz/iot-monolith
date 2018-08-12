@@ -120,52 +120,52 @@ display.once('connect', async () => {
     await display.clear();
     await sleep(2000);
     await display.setSegments(
+      0b10000000,
+      0b10000000,
+      0b10000000,
+      0b10000000,
+    );
+    await sleep(2000);
+    await display.setSegments(
       0b1000000,
-      0b1000000,
-      0b1000000,
+      0b11000000,
+      0b11000000,
       0b1000000,
     );
     await sleep(2000);
     await display.setSegments(
       0b100000,
-      0b1100000,
-      0b1100000,
+      0b11100000,
+      0b11100000,
       0b100000,
     );
     await sleep(2000);
     await display.setSegments(
       0b10000,
-      0b1110000,
-      0b1110000,
+      0b11110000,
+      0b11110000,
       0b10000,
     );
     await sleep(2000);
     await display.setSegments(
       0b1000,
-      0b1111000,
-      0b1111000,
+      0b11111000,
+      0b11111000,
       0b1000,
     );
     await sleep(2000);
     await display.setSegments(
       0b100,
-      0b1111100,
-      0b1111100,
+      0b11111100,
+      0b11111100,
       0b100,
     );
     await sleep(2000);
     await display.setSegments(
-      0b10,
-      0b1111110,
-      0b1111110,
-      0b10,
-    );
-    await sleep(2000);
-    await display.setSegments(
-      1,
-      1,
-      1,
-      1,
+      10,
+      10,
+      10,
+      10,
     );
     await sleep(2000);
     await display.clear();

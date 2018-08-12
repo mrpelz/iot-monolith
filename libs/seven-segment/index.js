@@ -15,43 +15,43 @@ const displayLength = 4;
 const signLength = 1;
 const negativeDisplayLength = displayLength - signLength;
 
-const empty = 0b0000000;
+const empty = 0b00000000;
 
 const digitMap = [
-  0b1111110,
-  0b0110000,
-  0b1101101,
-  0b1111001,
-  0b0110011,
-  0b1011011,
-  0b1011111,
-  0b1110000,
-  0b1111111,
-  0b1111011
+  0b11111100,
+  0b01100000,
+  0b11011010,
+  0b11110010,
+  0b01100110,
+  0b10110110,
+  0b10111110,
+  0b11100000,
+  0b11111110,
+  0b11110110
 ];
 
 const letterMap = {
-  a: 0b1110111,
-  b: 0b0011111,
-  c: 0b1001110,
-  d: 0b0111101,
-  e: 0b1001111,
-  f: 0b1000111,
-  g: 0b1111011,
-  h: 0b0010111,
-  i: 0b0110000,
-  j: 0b1111100,
-  l: 0b0001110,
-  n: 0b0010101,
-  o: 0b0011101,
-  p: 0b1100111,
-  r: 0b0000101,
-  s: 0b1011011,
-  u: 0b0011100,
-  y: 0b0111011,
-  z: 0b1101101,
-  _: 0b0001000,
-  '-': 0b0000001
+  a: 0b11101110,
+  b: 0b00111110,
+  c: 0b10011100,
+  d: 0b01111010,
+  e: 0b10011110,
+  f: 0b10001110,
+  g: 0b11110110,
+  h: 0b00101110,
+  i: 0b01100000,
+  j: 0b11111000,
+  l: 0b00011100,
+  n: 0b00101010,
+  o: 0b00111010,
+  p: 0b11001110,
+  r: 0b00001010,
+  s: 0b10110110,
+  u: 0b00111000,
+  y: 0b01110110,
+  z: 0b11011010,
+  _: 0b00010000,
+  '-': 0b00000010
 };
 
 const emptyDisplay = Array(displayLength).fill(empty);
@@ -72,12 +72,20 @@ function numberToBitmap(number = 0) {
     return [
       letterMap['-'],
       ...numberToDigits(number, negativeDisplayLength).map((x) => {
+        if (x === 0) {
+          return empty;
+        }
+
         return digitMap[x];
       })
     ];
   }
 
   return numberToDigits(number, displayLength).map((x) => {
+    if (x === 0) {
+      return empty;
+    }
+
     return digitMap[x];
   });
 }
