@@ -120,7 +120,7 @@ function segmentGuard(segments = emptyDisplay) {
   }
 
   segments.forEach((segment) => {
-    if (segment > ((2 ** 7) - 1)) {
+    if (segment > ((2 ** 8) - 0b10)) {
       throw new Error(`segment "${segment.toString(2)}" cannot be displayed`);
     }
   });
