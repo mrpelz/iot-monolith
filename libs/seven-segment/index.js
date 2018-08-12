@@ -156,17 +156,38 @@ class SevenSegment extends MessageClient {
     });
 
     this._sevenSegment = {
-      display: emptyDisplay
+      display: emptyDisplay,
+      onConnectTimeout: null
     };
 
-    rebind(this, '_handleConnection');
+    rebind(this, '_handleConnection', '_handleDisconnection');
     this.on('connect', this._handleConnection);
+    this.on('disconnect', this._handleDisconnection);
 
     this._sevenSegment.log = new Logger(libName, `${host}:${port}`);
   }
 
   _handleConnection() {
-    this.clear();
+    const { onConnectTimeout } = this._sevenSegment;
+
+    if (onConnectTimeout) {
+      clearTimeout(onConnectTimeout);
+    }
+
+    this._sevenSegment.onConnectTimeout = setTimeout(() => {
+      this._sevenSegment.onConnectTimeout = null;
+
+      this.clear();
+    }, 500);
+  }
+
+  _handleDisconnection() {
+    const { onConnectTimeout } = this._sevenSegment;
+
+    if (onConnectTimeout) {
+      clearTimeout(onConnectTimeout);
+      this._sevenSegment.onConnectTimeout = null;
+    }
   }
 
   _commit() {
