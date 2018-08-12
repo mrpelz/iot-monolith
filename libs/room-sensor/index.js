@@ -112,7 +112,7 @@ class RoomSensor extends MessageClient {
     } = this._roomSensor;
 
     if (!isConnected) {
-      throw new Error('sensor not connected');
+      return Promise.reject(new Error('sensor not connected'));
     }
 
     if (!metrics.includes(metric)) {
@@ -139,7 +139,7 @@ class RoomSensor extends MessageClient {
     } = this._roomSensor;
 
     if (!isConnected) {
-      throw new Error('sensor not connected');
+      return Promise.reject(new Error('sensor not connected'));
     }
 
     return Promise.all(metrics.map((metric) => {

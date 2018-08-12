@@ -172,7 +172,7 @@ class MessageClient extends PersistentSocket {
     } = this._messaging;
 
     if (!isConnected) {
-      throw new Error('socket is not connected!');
+      return Promise.reject(new Error('socket is not connected!'));
     }
 
     const msg = findRequestNameMatch(types, name);

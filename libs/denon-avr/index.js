@@ -63,7 +63,7 @@ class DenonAvr extends PersistentSocket {
     const { calls, log } = this._denonAvr;
 
     if (calls[cmd]) {
-      throw new Error(`already running call for ${cmd}`);
+      return Promise.reject(new Error(`already running call for ${cmd}`));
     }
 
     return new Promise((resolve, reject) => {

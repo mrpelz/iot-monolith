@@ -127,7 +127,7 @@ class Switch extends MessageClient {
     const { capabilities, log } = this._switch;
 
     if (!isConnected) {
-      throw new Error('device not connected');
+      return Promise.reject(new Error('device not connected'));
     }
 
     if (!capabilities.includes(name)) {
