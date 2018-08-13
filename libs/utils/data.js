@@ -1,8 +1,30 @@
-const { leftPad } = require('./string');
-
 const emptyBuffer = Buffer.from([]);
 const falseBuffer = Buffer.from([0]);
 const trueBuffer = Buffer.from([1]);
+
+function arrayPadLeft(input, length, value = null) {
+  if (typeof input !== 'object' || !Array.isArray(input)) {
+    throw new Error('input is not an array');
+  }
+
+  while (input.length >= length) {
+    input.unshift(value);
+  }
+
+  return input;
+}
+
+function arrayPadRight(input, length, value = null) {
+  if (typeof input !== 'object' || !Array.isArray(input)) {
+    throw new Error('input is not an array');
+  }
+
+  while (input.length >= length) {
+    input.push(value);
+  }
+
+  return input;
+}
 
 function concatBytes(input) {
   return Buffer.concat(input.map((byte) => {
@@ -11,23 +33,20 @@ function concatBytes(input) {
 }
 
 function humanPayload(input) {
-  const columnPad = '          ';
-  const bitPadBin = '00000000';
-  const bitPadHex = '00';
   const payload = [...input];
 
   return [
     payload.map((byte) => {
-      const byteString = leftPad(byte.toString(2), bitPadBin);
-      return leftPad(`0b${byteString}`, columnPad);
+      const byteString = byte.toString(2).padStart(8, '0');
+      return (`0b${byteString}`).padStart(10, ' ');
     }).join(' | '),
     payload.map((byte) => {
       const byteString = byte.toString(10);
-      return leftPad(`${byteString}`, columnPad);
+      return byteString.padStart(10, ' ');
     }).join(' | '),
     payload.map((byte) => {
-      const byteString = leftPad(byte.toString(16), bitPadHex);
-      return leftPad(`0x${byteString}`, columnPad);
+      const byteString = byte.toString(16).padStart(2, '0');
+      return (`0x${byteString}`).padStart(10, ' ');
     }).join(' | ')
   ].join('\n');
 }
@@ -132,6 +151,8 @@ module.exports = {
   bufferToBoolean,
   emptyBuffer,
   falseBuffer,
+  arrayPadLeft,
+  arrayPadRight,
   concatBytes,
   humanPayload,
   numberToDigits,

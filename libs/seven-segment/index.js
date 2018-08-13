@@ -1,5 +1,6 @@
 const { MessageClient } = require('../messaging');
 const {
+  arrayPadLeft,
   concatBytes,
   bufferToBoolean,
   numberToDigits,
@@ -61,7 +62,17 @@ const emptyDisplay = Array(displayLength).fill(empty);
 const minNumber = ~((digitMap.length ** negativeDisplayLength) - 1) + 1;
 const maxNumber = (digitMap.length ** displayLength) - 1;
 
-function numberToBitmap(number = 0) {
+function digitsToBytemap(digits, length) {
+  return arrayPadLeft(digits, length).map((digit) => {
+    if (digit === null) {
+      return empty;
+    }
+
+    return digitMap[digit];
+  });
+}
+
+function numberToBytemap(number = 0) {
   if (sanity(number, {
     min: minNumber,
     max: maxNumber
@@ -72,26 +83,14 @@ function numberToBitmap(number = 0) {
   if (number < 0) {
     return [
       letterMap['-'],
-      ...numberToDigits(number, negativeDisplayLength).map((x) => {
-        if (x === 0) {
-          return empty;
-        }
-
-        return digitMap[x];
-      })
+      ...digitsToBytemap(numberToDigits(number), negativeDisplayLength)
     ];
   }
 
-  return numberToDigits(number, displayLength).map((x) => {
-    if (x === 0) {
-      return empty;
-    }
-
-    return digitMap[x];
-  });
+  return digitsToBytemap(numberToDigits(number), displayLength);
 }
 
-function stringToBitmap(input) {
+function stringToBytemap(input) {
   if (typeof input !== 'string') {
     throw new Error('input is not a string');
   }
@@ -209,12 +208,12 @@ class SevenSegment extends MessageClient {
   }
 
   setNumber(number) {
-    this._sevenSegment.display = numberToBitmap(number);
+    this._sevenSegment.display = numberToBytemap(number);
     return this._commit();
   }
 
   setString(string) {
-    this._sevenSegment.display = stringToBitmap(string);
+    this._sevenSegment.display = stringToBytemap(string);
     return this._commit();
   }
 
