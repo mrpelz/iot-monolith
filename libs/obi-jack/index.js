@@ -49,13 +49,13 @@ class ObiJack extends Switch {
 
     this.relayState = false;
 
-    rebind(this, '_handleConnection');
-    this.on('connect', this._handleConnection);
+    rebind(this, '_handleObiJackConnection');
+    this.on('connect', this._handleObiJackConnection);
 
     this._obiJack.log = new Logger(libName, `${host}:${port}`);
   }
 
-  _handleConnection() {
+  _handleObiJackConnection() {
     this.set('relay', this.relayState);
   }
 

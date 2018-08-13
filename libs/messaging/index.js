@@ -117,8 +117,9 @@ class MessageClient extends PersistentSocket {
       calls: {}
     };
 
-    rebind(this, '_handleResponse');
+    rebind(this, '_handleResponse', '_handleDisconnection');
     this.on('data', this._handleResponse);
+    this.on('disconnect', this._handleDisconnection);
 
     this._messaging.log = new Logger(libName, `${host}:${port}`);
   }
@@ -133,6 +134,22 @@ class MessageClient extends PersistentSocket {
       const data = msg.eventParser(payload);
       this.emit(msg.eventName, msg.name, data);
     }
+  }
+
+  _handleDisconnection() {
+    const {
+      log,
+      state: { calls }
+    } = this._messaging;
+
+    log.notice('disconnect call abortion');
+    const errorMsg = 'call aborted due to disconnection';
+
+    Object.keys(calls).forEach((id) => {
+      const { [id]: resolver } = calls;
+
+      resolver(errorMsg);
+    });
   }
 
   _handleResponse(data) {
@@ -152,7 +169,7 @@ class MessageClient extends PersistentSocket {
         break;
       default:
         if (resolver) {
-          resolver(payload);
+          resolver(null, payload);
         }
     }
   }
@@ -200,8 +217,13 @@ class MessageClient extends PersistentSocket {
         }
       }, timeout);
 
-      calls[id] = (input) => {
-        resolve(parser(input));
+      calls[id] = (error, input) => {
+        if (error) {
+          reject(new Error(error));
+        } else {
+          resolve(parser(input));
+        }
+
         clearTimeout(timeoutId);
         delete calls[id];
       };

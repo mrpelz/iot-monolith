@@ -16,7 +16,7 @@
 //     }
 
 //     rebind(this, '_handleRequest');
-//     this.on('connect', this._handleConnection);
+//     this.on('connect', this._handlePrometheusConnection);
 //   }
 // }
 
