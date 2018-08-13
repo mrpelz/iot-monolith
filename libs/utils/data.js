@@ -7,7 +7,7 @@ function arrayPadLeft(input, length, value = null) {
     throw new Error('input is not an array');
   }
 
-  while (input.length >= length) {
+  while (input.length < length) {
     input.unshift(value);
   }
 
