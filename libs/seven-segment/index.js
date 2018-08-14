@@ -32,26 +32,33 @@ const digitMap = [
 ];
 
 const letterMap = {
-  a: 0b11101110,
+  A: 0b11101110,
   b: 0b00111110,
-  c: 0b10011100,
+  C: 0b10011100,
+  c: 0b00011010,
   d: 0b01111010,
-  e: 0b10011110,
-  f: 0b10001110,
+  E: 0b10011110,
+  F: 0b10001110,
   g: 0b11110110,
-  h: 0b01101110,
-  i: 0b01100000,
+  H: 0b01101110,
+  h: 0b00101110,
+  I: 0b01100000,
+  i: 0b00100000,
+  J: 0b11111000,
   j: 0b01111000,
   l: 0b00011100,
   n: 0b00101010,
+  O: 0b11111100,
   o: 0b00111010,
-  p: 0b11001110,
+  P: 0b11001110,
   q: 0b11100110,
   r: 0b00001010,
-  s: 0b10110110,
+  S: 0b10110110,
+  t: 0b00011110,
+  U: 0b01111100,
   u: 0b00111000,
-  y: 0b01110110,
-  z: 0b11011010,
+  Y: 0b01110110,
+  Z: 0b11011010,
   _: 0b00010000,
   '-': 0b00000010
 };
@@ -99,14 +106,18 @@ function stringToBytemap(input) {
     throw new Error('wrong number of characters');
   }
 
-  return input.split('').map((character) => {
-    const x = character.toLowerCase();
-    const sign = (x === ' ') ? empty : (
-      letterMap[x] || digitMap[Number.parseInt(x, 10)]
+  return input.split('').map((char) => {
+    const lc = char.toLowerCase();
+    const uc = char.toUpperCase();
+    const sign = (lc === ' ') ? empty : (
+      letterMap[char]
+      || letterMap[lc]
+      || letterMap[uc]
+      || digitMap[Number.parseInt(char, 10)]
     );
 
     if (sign === undefined) {
-      throw new Error(`character "${x}" cannot be displayed`);
+      throw new Error(`character "${lc}" cannot be displayed`);
     }
 
     return sign;
