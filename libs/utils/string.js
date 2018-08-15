@@ -22,8 +22,13 @@ function scope(...input) {
   return input.join('.');
 }
 
+function words(input) {
+  return input.split(/\s+/);
+}
+
 module.exports = {
   camel,
   pascal,
-  scope
+  scope,
+  words
 };

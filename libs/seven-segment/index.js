@@ -8,6 +8,8 @@ const {
   swapByte
 } = require('../utils/data');
 const { rebind } = require('../utils/oop');
+const { words } = require('../utils/string');
+const { sleep } = require('../utils/time');
 const { Logger } = require('../log');
 
 const libName = 'seven-segment';
@@ -17,6 +19,7 @@ const signLength = 1;
 const negativeDisplayLength = displayLength - signLength;
 
 const empty = 0b00000000;
+const fallback = 0b00010000;
 
 const digitMap = [
   0b11111100,
@@ -102,11 +105,11 @@ function stringToBytemap(input) {
     throw new Error('input is not a string');
   }
 
-  if (input.length !== displayLength) {
-    throw new Error('wrong number of characters');
+  if (input.length > displayLength) {
+    throw new Error('too much characters');
   }
 
-  return input.split('').map((char) => {
+  return input.padStart(displayLength, ' ').split('').map((char) => {
     const lc = char.toLowerCase();
     const uc = char.toUpperCase();
     const sign = (lc === ' ') ? empty : (
@@ -114,11 +117,8 @@ function stringToBytemap(input) {
       || letterMap[lc]
       || letterMap[uc]
       || digitMap[Number.parseInt(char, 10)]
+      || fallback
     );
-
-    if (sign === undefined) {
-      throw new Error(`character "${lc}" cannot be displayed`);
-    }
 
     return sign;
   });
@@ -136,6 +136,32 @@ function segmentGuard(segments = emptyDisplay) {
   });
 
   return segments;
+}
+
+function stringSlideshow(input) {
+  if (input.length <= displayLength) {
+    return [input];
+  }
+
+  return [].concat(...words(input).map((word) => {
+    let string = word;
+    const result = [];
+
+    while (string.length) {
+      result.push(
+        string.substring(0, displayLength)
+      );
+      string = string.substring(displayLength);
+    }
+
+    return result.map((tile, index) => {
+      if (!index) {
+        return tile.padStart(displayLength, ' ');
+      }
+
+      return tile.padEnd(displayLength, ' ');
+    });
+  }));
 }
 
 class SevenSegment extends MessageClient {
@@ -167,7 +193,8 @@ class SevenSegment extends MessageClient {
 
     this._sevenSegment = {
       display: emptyDisplay,
-      onConnectTimeout: null
+      onConnectTimeout: null,
+      slideshowRunning: false
     };
 
     rebind(this, '_handleSevenSegmentConnection', '_handleSevenSegmentDisconnection');
@@ -214,18 +241,62 @@ class SevenSegment extends MessageClient {
   }
 
   clear() {
+    const { slideshowRunning } = this._sevenSegment;
+
+    if (slideshowRunning) {
+      return Promise.reject(new Error('slideshow is running'));
+    }
+
     this._sevenSegment.display = emptyDisplay;
     return this._commit();
   }
 
   setNumber(number) {
+    const { slideshowRunning } = this._sevenSegment;
+
+    if (slideshowRunning) {
+      return Promise.reject(new Error('slideshow is running'));
+    }
+
     this._sevenSegment.display = numberToBytemap(number);
     return this._commit();
   }
 
   setString(string) {
+    const { slideshowRunning } = this._sevenSegment;
+
+    if (slideshowRunning) {
+      return Promise.reject(new Error('slideshow is running'));
+    }
+
     this._sevenSegment.display = stringToBytemap(string);
     return this._commit();
+  }
+
+  setSlideshow(input, duration = 750) {
+    const { log } = this._sevenSegment;
+
+    const slides = [...((typeof input === 'string')
+      ? stringSlideshow(input)
+      : input
+    ).map(stringToBytemap), emptyDisplay];
+
+    this._sevenSegment.slideshowRunning = true;
+
+    return Promise.all(slides.map((slide, index) => {
+      return sleep(duration * index).then(() => {
+        this._sevenSegment.display = slide;
+        return this._commit();
+      });
+    })).then((value) => {
+      this._sevenSegment.slideshowRunning = false;
+      return value;
+    }).catch((reason) => {
+      log.notice({
+        head: 'slideshow error',
+        attachment: reason
+      });
+    });
   }
 
   setSegments(...segments) {
@@ -240,6 +311,7 @@ class SevenSegment extends MessageClient {
   // setNumber
   // setString
   // setSegments
+  // setSlideshow
   //
   // Public properties:
   // display

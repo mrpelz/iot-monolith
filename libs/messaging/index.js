@@ -142,10 +142,16 @@ class MessageClient extends PersistentSocket {
       state: { calls }
     } = this._messaging;
 
+    const callIds = Object.keys(calls);
+
+    if (!callIds.length) {
+      return;
+    }
+
     log.notice('disconnect call abortion');
     const errorMsg = 'call aborted due to disconnection';
 
-    Object.keys(calls).forEach((id) => {
+    callIds.forEach((id) => {
       const { [id]: resolver } = calls;
 
       resolver(errorMsg);
