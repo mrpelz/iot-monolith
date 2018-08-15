@@ -45,9 +45,9 @@ display.once('connect', async () => {
     await sleep(3000);
     await display.clear();
     await sleep(3000);
-    await display.setString(' F0 ');
+    await display.setString('----');
     await sleep(3000);
-    await display.setString('P  2');
+    await display.setString('____');
     await sleep(3000);
     await display.clear();
     await sleep(3000);
