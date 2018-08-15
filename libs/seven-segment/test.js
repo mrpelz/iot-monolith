@@ -133,6 +133,8 @@ display.once('connect', async () => {
     );
     await sleep(1000);
     await display.setSlideshow('DIES IST EIN TOLLER TEST');
+    await sleep(1000);
+    await display.setCrawl('SCROLL SCROLL SCROLL');
     await display.clear();
     await sleep(3000);
   } catch (error) {

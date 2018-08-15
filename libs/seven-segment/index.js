@@ -67,6 +67,9 @@ const letterMap = {
 };
 
 const emptyDisplay = Array(displayLength).fill(empty);
+const animationDelay = 750;
+const runningAnimationError = 'slideshow is running';
+const emptyString = ' '.repeat(displayLength);
 
 /* eslint-disable-next-line no-bitwise */
 const minNumber = ~((digitMap.length ** negativeDisplayLength) - 1) + 1;
@@ -164,6 +167,27 @@ function stringSlideshow(input) {
   }));
 }
 
+function stringCrawl(input) {
+  const string = [
+    emptyString,
+    words(input).join(' '),
+    emptyString
+  ].join('');
+
+  const result = [];
+
+  while (result.length <= (string.length - displayLength)) {
+    const start = result.length;
+    const end = start + displayLength;
+
+    result.push(
+      string.substring(start, end)
+    );
+  }
+
+  return result;
+}
+
 class SevenSegment extends MessageClient {
   constructor(options) {
     const {
@@ -194,7 +218,7 @@ class SevenSegment extends MessageClient {
     this._sevenSegment = {
       display: emptyDisplay,
       onConnectTimeout: null,
-      slideshowRunning: false
+      animationRunning: false
     };
 
     rebind(this, '_handleSevenSegmentConnection', '_handleSevenSegmentDisconnection');
@@ -241,10 +265,10 @@ class SevenSegment extends MessageClient {
   }
 
   clear() {
-    const { slideshowRunning } = this._sevenSegment;
+    const { animationRunning } = this._sevenSegment;
 
-    if (slideshowRunning) {
-      return Promise.reject(new Error('slideshow is running'));
+    if (animationRunning) {
+      return Promise.reject(new Error(runningAnimationError));
     }
 
     this._sevenSegment.display = emptyDisplay;
@@ -252,10 +276,10 @@ class SevenSegment extends MessageClient {
   }
 
   setNumber(number) {
-    const { slideshowRunning } = this._sevenSegment;
+    const { animationRunning } = this._sevenSegment;
 
-    if (slideshowRunning) {
-      return Promise.reject(new Error('slideshow is running'));
+    if (animationRunning) {
+      return Promise.reject(new Error(runningAnimationError));
     }
 
     this._sevenSegment.display = numberToBytemap(number);
@@ -263,33 +287,37 @@ class SevenSegment extends MessageClient {
   }
 
   setString(string) {
-    const { slideshowRunning } = this._sevenSegment;
+    const { animationRunning } = this._sevenSegment;
 
-    if (slideshowRunning) {
-      return Promise.reject(new Error('slideshow is running'));
+    if (animationRunning) {
+      return Promise.reject(runningAnimationError);
     }
 
     this._sevenSegment.display = stringToBytemap(string);
     return this._commit();
   }
 
-  setSlideshow(input, duration = 750) {
-    const { log } = this._sevenSegment;
+  setSlideshow(input, delay = animationDelay) {
+    const { log, animationRunning } = this._sevenSegment;
+
+    if (animationRunning) {
+      return Promise.reject(new Error(runningAnimationError));
+    }
 
     const slides = [...((typeof input === 'string')
       ? stringSlideshow(input)
       : input
     ).map(stringToBytemap), emptyDisplay];
 
-    this._sevenSegment.slideshowRunning = true;
+    this._sevenSegment.animationRunning = true;
 
     return Promise.all(slides.map((slide, index) => {
-      return sleep(duration * index).then(() => {
+      return sleep(delay * index).then(() => {
         this._sevenSegment.display = slide;
         return this._commit();
       });
     })).then((value) => {
-      this._sevenSegment.slideshowRunning = false;
+      this._sevenSegment.animationRunning = false;
       return value;
     }).catch((reason) => {
       log.notice({
@@ -299,7 +327,40 @@ class SevenSegment extends MessageClient {
     });
   }
 
+  setCrawl(string, delay = animationDelay) {
+    const { log, animationRunning } = this._sevenSegment;
+
+    if (animationRunning) {
+      return Promise.reject(new Error(runningAnimationError));
+    }
+
+    const slides = stringCrawl(string).map(stringToBytemap);
+
+    this._sevenSegment.animationRunning = true;
+
+    return Promise.all(slides.map((slide, index) => {
+      return sleep(delay * index).then(() => {
+        this._sevenSegment.display = slide;
+        return this._commit();
+      });
+    })).then((value) => {
+      this._sevenSegment.animationRunning = false;
+      return value;
+    }).catch((reason) => {
+      log.notice({
+        head: 'crawl error',
+        attachment: reason
+      });
+    });
+  }
+
   setSegments(...segments) {
+    const { animationRunning } = this._sevenSegment;
+
+    if (animationRunning) {
+      return Promise.reject(new Error(runningAnimationError));
+    }
+
     this._sevenSegment.display = segmentGuard(segments);
     return this._commit();
   }
@@ -310,8 +371,9 @@ class SevenSegment extends MessageClient {
   // clear
   // setNumber
   // setString
-  // setSegments
   // setSlideshow
+  // setCrawl
+  // setSegments
   //
   // Public properties:
   // display

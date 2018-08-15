@@ -23,7 +23,7 @@ function scope(...input) {
 }
 
 function words(input) {
-  return input.split(/\s+/);
+  return input.trim().split(/\s+/);
 }
 
 module.exports = {
