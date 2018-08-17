@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { PersistentSocket } = require('./index');
+const { PersistentSocket } = require('../index');
 
 // SOCKET TEST
 const socket = new PersistentSocket({

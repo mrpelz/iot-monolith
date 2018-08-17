@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { StateFile } = require('./index');
+const { StateFile } = require('../index');
 
 (async function test() {
   const stateA = new StateFile('test-file');

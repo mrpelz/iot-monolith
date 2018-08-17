@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { Logger } = require('./index');
+const { Logger } = require('../index');
 
 const log = new Logger('log-test', 'test-instance');
 

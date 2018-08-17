@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { ObiJack } = require('./index');
+const { ObiJack } = require('../index');
 
 // OBI-JACK TEST
 const jack = new ObiJack({

@@ -1,8 +1,5 @@
 /* eslint-disable no-console */
-const {
-  findFlattenedDiff,
-  flattenData
-} = require('./structures');
+const { findFlattenedDiff, flattenData } = require('../structures');
 
 const test1 = [
   {

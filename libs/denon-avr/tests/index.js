@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { DenonAvr } = require('./index');
+const { DenonAvr } = require('../index');
 
 // SOCKET TEST
 const avr = new DenonAvr({

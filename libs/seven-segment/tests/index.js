@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const { SevenSegment } = require('./index');
-const { sleep } = require('../utils/time');
+const { SevenSegment } = require('../index');
+const { sleep } = require('../../utils/time');
 
 const display = new SevenSegment({
   host: '127.0.0.1',

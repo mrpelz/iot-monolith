@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { RoomSensor } = require('./index');
+const { RoomSensor } = require('../index');
 
 const roomSensor = new RoomSensor({
   host: 'panucci.net.wurstsalat.cloud',

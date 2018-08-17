@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { HttpServer } = require('./index');
+const { HttpServer } = require('../index');
 
 function globalHandler(request) {
   return {

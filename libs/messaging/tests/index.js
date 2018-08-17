@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-const { MessageClient } = require('./index');
-const { emptyBuffer } = require('../utils/data');
+const { MessageClient } = require('../index');
+const { emptyBuffer } = require('../../utils/data');
 
 // MESSAGE TEST
 const client = new MessageClient({
