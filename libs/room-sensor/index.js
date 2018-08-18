@@ -1,10 +1,12 @@
 const { MessageClient } = require('../messaging');
+const { cacheAll } = require('../cache');
 const { readNumber, sanity } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
 const { Logger } = require('../log');
 
 const libName = 'room-sensor';
+const refreshAtMost = 1000;
 
 const metricOptions = {
   temperature: {
@@ -99,7 +101,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor.log = new Logger(libName, `${host}:${port}`);
   }
 
-  getMetric(metric) {
+  _getMetric(metric) {
     const {
       state: {
         isConnected
@@ -135,6 +137,7 @@ class RoomSensor extends MessageClient {
     } = this._persistentSocket;
 
     const {
+      log,
       metrics
     } = this._roomSensor;
 
@@ -146,16 +149,58 @@ class RoomSensor extends MessageClient {
       return resolveAlways(this.request(metric));
     })).then((values) => {
       return arraysToObject(metrics, values);
+    }).catch((reason) => {
+      log.notice({
+        head: 'getAll error',
+        attachment: reason
+      });
     });
+  }
+
+  getTemperature() {
+    return this._getMetric('temperature');
+  }
+
+  getPressure() {
+    return this._getMetric('pressure');
+  }
+
+  getHumidity() {
+    return this._getMetric('humidity');
+  }
+
+  getBrightness() {
+    return this._getMetric('brightness');
+  }
+
+  getEco2() {
+    return this._getMetric('eco2');
+  }
+
+  getTvoc() {
+    return this._getMetric('tvoc');
   }
 
   // Public methods:
   // connect
   // disconnect
-  // getMetric
   // getAll
+  // getTemperature
+  // getPressure
+  // getHumidity
+  // getBrightness
+  // getEco2
+  // getTvoc
+}
+
+class CachedRoomSensor extends RoomSensor {
+  constructor(...options) {
+    super(...options);
+    return cacheAll(this, refreshAtMost, RoomSensor);
+  }
 }
 
 module.exports = {
-  RoomSensor
+  RoomSensor,
+  CachedRoomSensor
 };

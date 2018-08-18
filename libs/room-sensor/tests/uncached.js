@@ -16,10 +16,10 @@ roomSensor.on('connect', async () => {
   try {
     console.log(`getAll result: ${JSON.stringify(await roomSensor.getAll())}`);
 
-    console.log(`temperature: ${await roomSensor.getMetric('temperature')} °C`);
-    console.log(`pressure: ${await roomSensor.getMetric('pressure')} Pa`);
-    console.log(`humidity: ${await roomSensor.getMetric('humidity')} RH`);
-    console.log(`brightness: ${await roomSensor.getMetric('brightness')} lux`);
+    console.log(`temperature: ${await roomSensor.getTemperature()} °C`);
+    console.log(`pressure: ${await roomSensor.getPressure()} Pa`);
+    console.log(`humidity: ${await roomSensor.getHumidity()} RH`);
+    console.log(`brightness: ${await roomSensor.getBrightness()} lux`);
   } catch (error) {
     console.error('error', error);
   }
