@@ -45,28 +45,27 @@ function flattenData(input, parentKey = null) {
   return result;
 }
 
-function findFlattenedDiff(a, b) {
-  if (
-    !a
-    || typeof a !== 'object'
-    || Array.isArray(a)
-  ) {
+function isObject(input) {
+  return (
+    typeof input === 'object'
+    && !Array.isArray(input)
+  );
+}
+
+function findFlattenedDiff(old, current) {
+  if (!isObject(old)) {
     throw new Error('input "a" is not an object');
   }
 
-  if (
-    !b
-    || typeof b !== 'object'
-    || Array.isArray(b)
-  ) {
+  if (!isObject(current)) {
     throw new Error('input "b" is not an object');
   }
 
   const keys = [
     ...new Set(
       [
-        ...Object.keys(a),
-        ...Object.keys(b)
+        ...Object.keys(old),
+        ...Object.keys(current)
       ]
     )
   ];
@@ -74,18 +73,41 @@ function findFlattenedDiff(a, b) {
   const result = {};
 
   keys.filter((key) => {
-    const { [key]: valueA } = a;
-    const { [key]: valueB } = b;
+    const { [key]: valueA } = old;
+    const { [key]: valueB } = current;
 
     return valueA !== valueB;
   }).forEach((key) => {
-    const { [key]: valueA } = a;
-    const { [key]: valueB } = b;
+    const { [key]: valueA } = old;
+    const { [key]: valueB } = current;
 
     result[key] = {
-      a: valueA,
-      b: valueB
+      old: valueA,
+      current: valueB,
+      created: valueA === undefined,
+      deleted: valueB === undefined
     };
+  });
+
+  return result;
+}
+
+function compareObjects(a, b) {
+  return findFlattenedDiff(
+    flattenData(a),
+    flattenData(b)
+  );
+}
+
+function isPrimitive(input) {
+  return Object(input) !== input;
+}
+
+function objectFrom(value, ...keys) {
+  const result = {};
+
+  keys.forEach((key) => {
+    result[key] = value;
   });
 
   return result;
@@ -93,6 +115,10 @@ function findFlattenedDiff(a, b) {
 
 module.exports = {
   arraysToObject,
+  compareObjects,
   findFlattenedDiff,
-  flattenData
+  flattenData,
+  isPrimitive,
+  isObject,
+  objectFrom
 };
