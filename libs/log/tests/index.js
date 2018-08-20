@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { Logger } = require('../index');
 
-const log = new Logger('log-test', 'test-instance');
+const log = new Logger(Logger.NAME('log-test', 'test-instance'));
 
 log.debug({
   head: 'testing debug',

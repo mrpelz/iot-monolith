@@ -64,7 +64,7 @@ class PersistentSocket extends EventEmitter {
 
     this._persistentSocket.socket = new Socket();
 
-    this._persistentSocket.log = new Logger(libName, `${host}:${port}`);
+    this._persistentSocket.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _read(input) {

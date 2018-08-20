@@ -98,7 +98,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor = {};
     this._roomSensor.metrics = metrics;
 
-    this._roomSensor.log = new Logger(libName, `${host}:${port}`);
+    this._roomSensor.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _getMetric(metric) {

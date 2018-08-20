@@ -39,7 +39,7 @@ class HttpServer extends EventEmitter {
     this._httpServer.server.on('listening', this._onListening);
     this._httpServer.server.on('close', this._onClose);
 
-    this._httpServer.log = new Logger(libName, `${host}:${port}`);
+    this._httpServer.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _handleRequest(request, response) {

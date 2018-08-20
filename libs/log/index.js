@@ -38,14 +38,16 @@ function indent(input) {
 }
 
 class Logger {
-  constructor(libName, instanceName) {
-    this._libName = libName;
-    this._instanceName = instanceName;
+  static NAME(libName, instanceName) {
+    return `${libName} → ${instanceName}`;
+  }
+
+  constructor(name) {
+    this._name = name;
 
     this._defaultFields = {
       syslog_identifier: globalPrefix,
-      LIB_NAME: libName,
-      INSTANCE_NAME: instanceName
+      NAME: name
     };
 
     this._journal = (
@@ -61,8 +63,7 @@ class Logger {
 
   _log(opts) {
     const {
-      _libName,
-      _instanceName,
+      _name,
       _defaultFields,
       _journal,
       _telegramChat
@@ -76,9 +77,6 @@ class Logger {
       telegram = null
     } = opts;
 
-    const messageHead = (
-      `${_libName} → ${_instanceName}`
-    );
     const messageBody = (
       `${head}${value === null ? '' : ` = ${value}`}`
     );
@@ -86,7 +84,7 @@ class Logger {
       `${attachment === null ? '' : `:\n${indent(attachment)}`}`
     );
     const message = (
-      `${messageHead}:\n${messageBody}${messageAttachment}`
+      `${_name}:\n${messageBody}${messageAttachment}`
     );
 
     const levelName = levelNames[level];
@@ -133,7 +131,7 @@ class Logger {
       || (telegram !== false && level <= 3)
     ) {
       _telegramChat.send(
-        `*${levelName}*  \n_${messageHead}_  \n${messageBody}\`${messageAttachment}\``
+        `*${levelName}*  \n_${_name}_  \n${messageBody}\`${messageAttachment}\``
       );
     }
   }

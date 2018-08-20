@@ -37,7 +37,7 @@ class DenonAvr extends PersistentSocket {
     rebind(this, '_handleResponse');
     this.on('data', this._handleResponse);
 
-    this._denonAvr.log = new Logger(libName, `${host}:${port}`);
+    this._denonAvr.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _handleResponse(input) {

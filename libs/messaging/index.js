@@ -121,7 +121,7 @@ class MessageClient extends PersistentSocket {
     this.on('data', this._handleResponse);
     this.on('disconnect', this._handleDisconnection);
 
-    this._messaging.log = new Logger(libName, `${host}:${port}`);
+    this._messaging.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _emitEvent(payload) {

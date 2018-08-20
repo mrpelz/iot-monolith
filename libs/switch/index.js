@@ -102,7 +102,7 @@ class Switch extends MessageClient {
     rebind(this, '_addListener', '_handleEvent');
     setUpListeners(capabilities, this._addListener);
 
-    this._switch.log = new Logger(libName, `${host}:${port}`);
+    this._switch.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _addListener(name) {

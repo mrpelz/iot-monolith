@@ -52,7 +52,7 @@ class ObiJack extends Switch {
     rebind(this, '_handleObiJackConnection');
     this.on('connect', this._handleObiJackConnection);
 
-    this._obiJack.log = new Logger(libName, `${host}:${port}`);
+    this._obiJack.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _handleObiJackConnection() {

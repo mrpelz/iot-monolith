@@ -225,7 +225,7 @@ class SevenSegment extends MessageClient {
     this.on('connect', this._handleSevenSegmentConnection);
     this.on('disconnect', this._handleSevenSegmentDisconnection);
 
-    this._sevenSegment.log = new Logger(libName, `${host}:${port}`);
+    this._sevenSegment.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
 
   _handleSevenSegmentConnection() {
