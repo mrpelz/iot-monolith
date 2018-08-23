@@ -10,7 +10,17 @@ function median(...numbers) {
   return (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2;
 }
 
+function remainder(dividend, divisor) {
+  return dividend % divisor;
+}
+
+function quotient(dividend, divisor) {
+  return Math.floor(dividend, divisor);
+}
+
 module.exports = {
   average,
-  median
+  median,
+  remainder,
+  quotient
 };
