@@ -1,4 +1,5 @@
 const { Server } = require('http');
+const { URL } = require('url');
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
@@ -43,11 +44,28 @@ class HttpServer extends EventEmitter {
   }
 
   _handleRequest(request, response) {
-    const { log, globalHandler, options: { headers: globalHeaders, routes } } = this._httpServer;
-    log.info('request received');
+    const {
+      log,
+      globalHandler,
+      options: {
+        host,
+        port,
+        headers: globalHeaders,
+        routes
+      }
+    } = this._httpServer;
+
+    Object.assign(request, {
+      url: new URL(request.url, `http://${host}:${port}/`)
+    });
+
+    log.info({
+      head: 'request received',
+      attachment: `URL: ${request.url.href}`
+    });
 
     let match = {};
-    const routeHandler = routes[request.url];
+    const routeHandler = routes[request.url.pathname];
 
     if (routeHandler) {
       const route = routeHandler(request);

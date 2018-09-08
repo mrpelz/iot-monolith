@@ -47,6 +47,7 @@ class ObiJack extends Switch {
       capabilities: obiCapabilities
     });
 
+    this._obiJack = {};
     this.relayState = false;
 
     rebind(this, '_handleObiJackConnection');

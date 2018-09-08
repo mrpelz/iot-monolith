@@ -1,25 +1,28 @@
-// const { createServer } = require('http');
-// const { rebind } = require('../utils/oop');
-// const { Logger } = require('../log');
+const { HttpServer } = require('../http');
+const { rebind } = require('../utils/oop');
+const { Logger } = require('../log');
 
-// const logPrefix = 'obi-jack';
-// const { log } = new Logger(logPrefix);
+const libName = 'prometheus';
 
-// class Prometheus {
-//   constructor(options) {
-//     const {
-//       port
-//     } = options;
+class Prometheus {
+  constructor(options) {
+    const {
+      port
+    } = options;
 
-//     if (!port) {
-//       throw new Error('insufficient options provided');
-//     }
+    if (!port) {
+      throw new Error('insufficient options provided');
+    }
 
-//     rebind(this, '_handleRequest');
-//     this.on('connect', this._handlePrometheusConnection);
-//   }
-// }
+    this._prometheus = {};
 
-// module.exports = {
-//   Prometheus
-// };
+    rebind(this, '_handleRequest');
+    this.on('connect', this._handlePrometheusConnection);
+
+    this._prometheus.log = new Logger(Logger.NAME(libName, port));
+  }
+}
+
+module.exports = {
+  Prometheus
+};
