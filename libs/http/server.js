@@ -8,6 +8,18 @@ const { Logger } = require('../log');
 const libName = 'http-server';
 
 class HttpServer extends EventEmitter {
+  static do404() {
+    return {
+      handler: Promise.reject(new Error('Not found.')),
+      rejectCode: 404
+    };
+  }
+
+  static dropOff(instance) {
+    instance.route('/robots.txt', HttpServer.do404);
+    instance.route('/favicon.ico', HttpServer.do404);
+  }
+
   constructor(options) {
     super();
 
@@ -97,10 +109,10 @@ class HttpServer extends EventEmitter {
     if (handler) {
       handler.then((body) => {
         response.writeHead(resolveCode, headers);
-        response.end(body);
+        response.end(body || '');
       }).catch((reason) => {
         response.writeHead(rejectCode, headers);
-        response.end(`[${rejectCode}]\n${reason.message}`);
+        response.end(`[${rejectCode}]\n${reason.message || ''}`);
       });
     } else {
       response.writeHead(404, headers);

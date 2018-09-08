@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const { cache, cacheAll } = require('../index');
 
 class SyncTest {

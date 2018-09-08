@@ -14,6 +14,11 @@ function remainder(dividend, divisor) {
   return dividend % divisor;
 }
 
+function trimDecimals(input, decimals = 2) {
+  const trimmer = 10 ** decimals;
+  return Math.round(input * trimmer) / trimmer;
+}
+
 function quotient(dividend, divisor) {
   return Math.floor(dividend, divisor);
 }
@@ -22,5 +27,6 @@ module.exports = {
   average,
   median,
   remainder,
+  trimDecimals,
   quotient
 };
