@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 const { Prometheus } = require('../index');
 const { CachedRoomSensor } = require('../../room-sensor');
-const { camel } = require('../../utils/string');
 
 const prometheus = new Prometheus({
   port: 5555
@@ -24,7 +23,15 @@ metrics.forEach((metric) => {
   prometheus.metric(
     metric,
     { location: 'duschbad' },
-    roomSensor[camel('get', metric)]
+    roomSensor.access('get', metric)
+  );
+});
+
+metrics.forEach((metric) => {
+  prometheus.metric(
+    metric,
+    { location: 'duschbad-mirrored' },
+    roomSensor.access('get', metric)
   );
 });
 

@@ -95,6 +95,18 @@ class RoomSensor extends MessageClient {
       messageTypes: getMessageTypesForMetrics(metrics)
     });
 
+    this._base.access = {
+      get: {
+        all: 'getAll',
+        temperature: 'getTemperature',
+        pressure: 'getPressure',
+        humidity: 'getHumidity',
+        brightness: 'getBrightness',
+        eco2: 'getEco2',
+        tvoc: 'getTvoc',
+      }
+    };
+
     this._roomSensor = {};
     this._roomSensor.metrics = metrics;
 
@@ -182,8 +194,9 @@ class RoomSensor extends MessageClient {
   }
 
   // Public methods:
-  // connect
-  // disconnect
+  // connect (inherited from PersistenSocket)
+  // disconnect (inherited from PersistenSocket)
+  // access (inherited from Base)
   // getAll
   // getTemperature
   // getPressure

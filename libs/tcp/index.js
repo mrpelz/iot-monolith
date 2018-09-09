@@ -1,13 +1,13 @@
 const { Socket } = require('net');
-const EventEmitter = require('events');
 
+const { Base } = require('../base');
 const { rebind } = require('../utils/oop');
 const { humanPayload, writeNumber } = require('../utils/data');
 const { Logger } = require('../log');
 
 const libName = 'tcp';
 
-class PersistentSocket extends EventEmitter {
+class PersistentSocket extends Base {
   constructor(options) {
     super();
 

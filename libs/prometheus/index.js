@@ -54,7 +54,7 @@ class Prometheus {
   _handleRequest() {
     const { log, metrics } = this._prometheus;
 
-    log.info('getting metrics');
+    log.debug('getting metrics');
 
     const calls = metrics.map((metric) => {
       return metric();
@@ -105,7 +105,7 @@ class Prometheus {
     const labelString = makeLabelString(labels);
     metrics.push(() => {
       return resolveAlways(handler()).then((value) => {
-        log.info({
+        log.debug({
           head: `got metric "${name}"`,
           value
         });

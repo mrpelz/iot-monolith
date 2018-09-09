@@ -97,7 +97,9 @@ function cacheAll(instance, time, RootClass = null) {
         RootClass
           ? classMethods(RootClass)
           : instanceMethods(instance)
-      )
+      ).filter((name) => {
+        return name !== 'access';
+      })
     )
   );
 }
