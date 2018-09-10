@@ -24,6 +24,10 @@ function rebind(context, ...names) {
 }
 
 function resolveAlways(promise) {
+  if (!isPromise(promise)) {
+    return Promise.resolve(null);
+  }
+
   return promise.catch(() => {
     return null;
   });

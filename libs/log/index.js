@@ -14,7 +14,8 @@ const Journald = (
 const { chatIds, TelegramChat } = require('../telegram');
 const { levelNames, globalPrefix } = require('./config.json');
 
-const { PROD_ENV: isProd } = process.env;
+const { PROD_ENV: isProd, LOG_LEVEL } = process.env;
+const logLevel = Number(LOG_LEVEL);
 
 function options(level, input) {
   return Object.assign(
@@ -76,6 +77,8 @@ class Logger {
       attachment = null,
       telegram = null
     } = opts;
+
+    if (level > logLevel) return;
 
     const messageBody = (
       `${head}${value === null ? '' : ` = ${value}`}`

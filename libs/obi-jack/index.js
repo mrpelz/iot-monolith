@@ -57,7 +57,7 @@ class ObiJack extends Switch {
   }
 
   _handleObiJackConnection() {
-    this.set('relay', this.relayState);
+    this.relay(this.relayState);
   }
 
   relay(on) {

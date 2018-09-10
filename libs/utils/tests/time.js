@@ -5,6 +5,8 @@ const {
   Scheduler,
   TimeRange,
   RecurringTimeRange,
+  calc,
+  every,
   sleep
 } = require('../time');
 
@@ -20,17 +22,6 @@ const scheduler = new Scheduler();
 scheduler.on('destroy', () => {
   console.log('destroyed scheduler');
 });
-
-const nowMinus10Secs = new Date(Date.now() - 10000);
-const nowPlus10Secs = new Date(Date.now() + 10000);
-const nowPlus15Secs = new Date(Date.now() + 15000);
-const nowPlus20Secs = new Date(Date.now() + 20000);
-
-const every10Secs = {
-  second: (input) => {
-    return !remainder(input, 10);
-  }
-};
 
 const every10SecsInEvenWeek = {
   second: (sec) => {
@@ -58,7 +49,7 @@ const everySecond40 = {
   second: 40
 };
 
-const moment1 = new Moment(scheduler, nowPlus10Secs);
+const moment1 = new Moment(scheduler, calc('second', 10));
 moment1.on('hit', () => {
   console.log('"nowPlus10Secs": hit');
 });
@@ -66,7 +57,7 @@ moment1.on('destroy', () => {
   console.log('"nowPlus10Secs": destroyed');
 });
 
-const moment2 = new Moment(scheduler, nowPlus10Secs, nowPlus15Secs);
+const moment2 = new Moment(scheduler, calc('second', 10), calc('second', 15));
 moment2.on('hit', () => {
   console.log('"nowPlus10Secs" or "nowPlus15Secs": hit');
 });
@@ -74,7 +65,23 @@ moment2.on('destroy', () => {
   console.log('"nowPlus10Secs" or "nowPlus15Secs": destroyed');
 });
 
-const rec1Moment = new RecurringMoment(scheduler, every10Secs);
+const recSecond = new RecurringMoment(scheduler, every.second());
+recSecond.on('hit', () => {
+  console.log('"everySecond": hit');
+});
+recSecond.on('destroy', () => {
+  console.log('"everySecond": destroyed');
+});
+
+const recMinute = new RecurringMoment(scheduler, every.minute());
+recMinute.on('hit', () => {
+  console.log('"everyMinute": hit');
+});
+recMinute.on('destroy', () => {
+  console.log('"everyMinute": destroyed');
+});
+
+const rec1Moment = new RecurringMoment(scheduler, every.second(10));
 rec1Moment.on('hit', () => {
   console.log('"every10Secs": hit');
 });
@@ -99,8 +106,8 @@ rec3Moment.on('destroy', () => {
 });
 
 const range1 = new TimeRange(scheduler, {
-  from: nowMinus10Secs,
-  to: nowPlus10Secs
+  from: calc('second', -10),
+  to: calc('second', 10)
 });
 range1.on('start', () => {
   console.log('"nowMinus10Secs" to "nowPlus10Secs": started');
@@ -113,8 +120,8 @@ range1.on('destroy', () => {
 });
 
 const range2 = new TimeRange(scheduler, {
-  from: nowPlus15Secs,
-  to: nowPlus20Secs
+  from: calc('second', 15),
+  to: calc('second', 20)
 });
 range2.on('start', () => {
   console.log('"nowPlus15Secs" to "nowPlus20Secs": started');
@@ -127,11 +134,11 @@ range2.on('destroy', () => {
 });
 
 const range3 = new TimeRange(scheduler, {
-  from: nowMinus10Secs,
-  to: nowPlus10Secs
+  from: calc('second', -10),
+  to: calc('second', 10)
 }, {
-  from: nowPlus15Secs,
-  to: nowPlus20Secs
+  from: calc('second', 15),
+  to: calc('second', 20)
 });
 range3.on('start', () => {
   console.log('"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": started');

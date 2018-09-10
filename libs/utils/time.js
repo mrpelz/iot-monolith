@@ -1,6 +1,98 @@
 const EventEmitter = require('events');
 const { rebind } = require('./oop');
+const { remainder } = require('./math');
 const { isObject } = require('./structures');
+
+function daysInMonth(month, year) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function isLeapYear(year) {
+  /* eslint-disable-next-line no-bitwise */
+  return !((year & 3 || !(year % 25)) && year & 15);
+}
+
+function everyTime(type, count) {
+  if (count === undefined) {
+    return {
+      [type]: 'change'
+    };
+  }
+
+  return {
+    [type]: (input) => {
+      return !remainder(input, count);
+    }
+  };
+}
+
+const every = {
+  second: (input) => {
+    return everyTime('second', input);
+  },
+  minute: (input) => {
+    return everyTime('minute', input);
+  },
+  hour: (input) => {
+    return everyTime('hour', input);
+  },
+  date: (input) => {
+    return everyTime('date', input);
+  },
+  day: (input) => {
+    return everyTime('day', input);
+  },
+  week: (input) => {
+    return everyTime('week', input);
+  },
+  month: (input) => {
+    return everyTime('month', input);
+  },
+  year: (input) => {
+    return everyTime('year', input);
+  },
+};
+
+const epochs = {
+  second: 1000,
+  minute: 60 * this.second,
+  hour: 60 * this.minute,
+  date: 24 * this.hour,
+  day: this.date,
+  week: 7 * this.date,
+  accountingMonth: 30 * this.date,
+  get thisMonth() {
+    const date = new Date();
+    return daysInMonth(date.getMonth(), date.getFullYear()) * this.date;
+  },
+  specificMonth: (month, year) => {
+    return daysInMonth(month, year) * this.date;
+  },
+  year: 365 * this.date,
+  leapYear: 366 * this.date,
+  get thisYear() {
+    const date = new Date();
+    const leap = isLeapYear(date.getFullYear());
+    return leap ? this.leapYear : this.year;
+  },
+  specificYear: (year) => {
+    const leap = isLeapYear(year);
+    return leap ? this.leapYear : this.year;
+  }
+};
+
+function calc(type, count = 1, ref) {
+  const date = ref || new Date();
+  const { [type]: epoch } = epochs;
+
+  if (typeof epoch !== 'number') {
+    throw new Error('illegal type');
+  }
+
+  return new Date(
+    date.getTime() + (epoch * count)
+  );
+}
 
 function getWeekNumber(input) {
   const date = new Date(input.getTime());
@@ -17,6 +109,8 @@ function recurring(options) {
   const matchers = Object.keys(options).map((key) => {
     const { [key]: match } = options;
     const simple = typeof match === 'number';
+
+    let lastMatch = 0;
 
     return (date) => {
       let now = null;
@@ -48,6 +142,13 @@ function recurring(options) {
           break;
         default:
           break;
+      }
+
+      if (match === 'change') {
+        const change = lastMatch !== now;
+        lastMatch = now;
+
+        return change;
       }
 
       return simple
@@ -234,6 +335,8 @@ class Scheduler extends EventEmitter {
   constructor(precision = 125) {
     super();
 
+    this.setMaxListeners(0);
+
     this._interval = setInterval(() => {
       this.emit('tick');
     }, precision);
@@ -386,7 +489,12 @@ module.exports = {
   TimeRange,
   RecurringTimeRange,
   TimeFloor,
+  calc,
+  daysInMonth,
+  every,
+  epochs,
   getWeekNumber,
+  isLeapYear,
   recurring,
   recurringToDate,
   sleep
