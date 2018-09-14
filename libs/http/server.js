@@ -3,6 +3,7 @@ const { URL } = require('url');
 const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
+const { emptyBuffer } = require('../utils/data');
 const { Logger } = require('../log');
 
 const libName = 'http-server';
@@ -80,13 +81,13 @@ class HttpServer extends EventEmitter {
     const routeHandler = routes[request.url.pathname];
 
     if (routeHandler) {
-      const route = routeHandler(request);
+      const route = routeHandler(request, response);
 
       if (route.handler) {
         match = route;
       }
     } else if (globalHandler) {
-      const global = globalHandler(request);
+      const global = globalHandler(request, response);
 
       if (global.handler) {
         match = global;
@@ -97,7 +98,8 @@ class HttpServer extends EventEmitter {
       handler = null,
       resolveCode = 200,
       rejectCode = 500,
-      headers: localHeaders = {}
+      headers: localHeaders = {},
+      openEnd = false
     } = match;
 
     const headers = Object.assign(
@@ -109,7 +111,10 @@ class HttpServer extends EventEmitter {
     if (handler) {
       handler.then((body) => {
         response.writeHead(resolveCode, headers);
-        response.end(body || '');
+        response.write(body || emptyBuffer);
+        if (!openEnd) {
+          response.end();
+        }
       }).catch((reason) => {
         response.writeHead(rejectCode, headers);
         response.end(`[${rejectCode}]\n${reason.message || ''}`);
