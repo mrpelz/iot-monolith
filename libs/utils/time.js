@@ -7,7 +7,8 @@ function daysInMonth(month, year) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-function isLeapYear(year) {
+function isLeapYear(date) {
+  const year = date.getFullYear();
   /* eslint-disable-next-line no-bitwise */
   return !((year & 3 || !(year % 25)) && year & 15);
 }
@@ -71,8 +72,7 @@ const epochs = {
   year: 365 * this.date,
   leapYear: 366 * this.date,
   get thisYear() {
-    const date = new Date();
-    const leap = isLeapYear(date.getFullYear());
+    const leap = isLeapYear(new Date());
     return leap ? this.leapYear : this.year;
   },
   specificYear: (year) => {
@@ -82,16 +82,36 @@ const epochs = {
 };
 
 function calc(type, count = 1, ref) {
-  const date = ref || new Date();
-  const { [type]: epoch } = epochs;
+  const date = ref
+    ? new Date(ref.getTime())
+    : new Date();
 
-  if (typeof epoch !== 'number') {
-    throw new Error('illegal type');
+  switch (type) {
+    case 'second':
+      date.setSeconds(date.getSeconds() + count);
+      break;
+    case 'minute':
+      date.setMinutes(date.getMinutes() + count);
+      break;
+    case 'hour':
+      date.setHours(date.getHours() + count);
+      break;
+    case 'date':
+      date.setDate(date.getDate() + count);
+      break;
+    case 'week':
+      date.setDate(date.getDate() + (count * 7));
+      break;
+    case 'month':
+      date.setMonth(date.getMonth() + count);
+      break;
+    case 'year':
+      date.setFullYear(date.getFullYear() + count);
+      break;
+    default:
   }
 
-  return new Date(
-    date.getTime() + (epoch * count)
-  );
+  return date;
 }
 
 function getWeekNumber(input) {
