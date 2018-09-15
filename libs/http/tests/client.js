@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { get, post } = require('../index');
+const { get, post } = require('../client');
 
 (async function clientTest() {
   try {

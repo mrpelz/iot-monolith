@@ -51,6 +51,7 @@ class PersistentSocket extends Base {
 
     this._persistentSocket.state = {
       isConnected: false,
+      shouldBeConnected: false,
       keepAliveInterval: null,
       watcherInterval: null,
       tcpTimeout: null,
@@ -189,7 +190,7 @@ class PersistentSocket extends Base {
     }
   }
 
-  _onDisconnection() {
+  _onDisconnection(error) {
     const {
       log,
       state,
@@ -200,6 +201,13 @@ class PersistentSocket extends Base {
     } = this._persistentSocket;
 
     if (state.isConnected) {
+      if (state.shouldBeConnected) {
+        log.error({
+          head: 'unexpected disconnect',
+          attachment: null || (error && error.message)
+        });
+      }
+
       log.info({
         head: 'is connected',
         value: false
@@ -234,8 +242,8 @@ class PersistentSocket extends Base {
       socket
     } = this._persistentSocket;
 
-    if (!state.isConnected) {
-      log.info('connection try');
+    if (!state.isConnected && state.shouldBeConnected) {
+      log.debug('connection try');
 
       socket.connect({
         host,
@@ -313,6 +321,8 @@ class PersistentSocket extends Base {
     socket.on('end', this._onDisconnection);
     socket.on('error', this._onDisconnection);
 
+    state.shouldBeConnected = true;
+
     this._doConnect();
 
     if (keepAlive && keepAlive.time) {
@@ -341,6 +351,8 @@ class PersistentSocket extends Base {
     socket.removeListener('connect', this._onConnection);
     socket.removeListener('end', this._onDisconnection);
     socket.removeListener('error', this._onDisconnection);
+
+    state.shouldBeConnected = false;
 
     this._onDisconnection();
   }

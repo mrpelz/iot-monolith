@@ -1,4 +1,4 @@
-const { HttpServer } = require('../http');
+const { HttpServer } = require('../http/server');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { trimDecimals } = require('../utils/math');
 const { Logger } = require('../log');
