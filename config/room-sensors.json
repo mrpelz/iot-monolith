@@ -1,0 +1,156 @@
+[
+  {
+    "name": "wohnzimmer",
+    "host": "10.97.4.10",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "esszimmer",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "kueche",
+    "host": "10.97.4.20",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "schlafzimmer",
+    "host": "10.97.4.30",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "arbeitszimmer",
+    "host": "hermes.net.wurstsalat.cloud",
+    "port": 9000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness",
+      "eco2",
+      "tvoc"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "flur",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "abstellraum",
+    "host": "10.97.4.40",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "duschbad",
+    "addnTimeout": 5000,
+    "host": "panucci.net.wurstsalat.cloud",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "wannenbad",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isRoom": true
+  },
+  {
+    "name": "terrasse",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness",
+      "precipitation",
+      "eco2",
+      "tvoc"
+    ],
+    "isOutside": true,
+    "isRoom": true
+  },
+  {
+    "name": "balkon",
+    "host": "10.97.4.70",
+    "port": 3000,
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "isOutside": true,
+    "isRoom": true
+  },
+  {
+    "name": "ahu_in",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "flow_rate",
+      "eco2",
+      "tvoc"
+    ]
+  },
+  {
+    "name": "ahu_out",
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "ow_rate",
+      "eco2",
+      "tvoc"
+    ]
+  }
+]

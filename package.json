@@ -11,5 +11,8 @@
     "url": "usp.wurstsalat.cloud:git/iot-monolith.git"
   },
   "author": "Lennart Pelz <mail@mrpelz.de>",
-  "license": "ISC"
+  "license": "ISC",
+  "optionalDependencies": {
+    "systemd-journald": "1.4.0"
+  }
 }

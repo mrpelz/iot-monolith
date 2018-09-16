@@ -82,7 +82,8 @@ class RoomSensor extends MessageClient {
     const {
       host = null,
       port = null,
-      metrics = []
+      metrics = [],
+      name = null
     } = options;
 
     if (!host || !port || !metrics.length) {
@@ -110,7 +111,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor = {};
     this._roomSensor.metrics = metrics;
 
-    this._roomSensor.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this._roomSensor.log = new Logger(Logger.NAME(libName, name || `${host}:${port}`));
   }
 
   _getMetric(metric) {

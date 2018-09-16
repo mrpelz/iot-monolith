@@ -1,7 +1,5 @@
 const { post } = require('../http/client');
 
-console.log(require('../http/client'));
-
 const {
   telegramApiHost,
   telegramBotToken,

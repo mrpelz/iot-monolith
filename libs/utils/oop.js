@@ -28,7 +28,9 @@ function resolveAlways(promise) {
     return Promise.resolve(null);
   }
 
-  return promise.catch(() => {
+  return promise.then((value) => {
+    return value === undefined ? null : value;
+  }).catch(() => {
     return null;
   });
 }
