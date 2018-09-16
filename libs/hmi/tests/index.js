@@ -17,6 +17,7 @@ const hmi = new Hmi({
 });
 
 const every2Minutes = new RecurringMoment(scheduler, every.minute(2));
+const every30Seconds = new RecurringMoment(scheduler, every.second(30));
 
 const roomSensor = new CachedRoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
@@ -41,9 +42,15 @@ metrics.forEach((metric) => {
     every.second()
   );
 
-  every2Minutes.on('hit', () => {
-    update(true); // simulate event every minute and force update
-  });
+  if (metric === 'brightness') {
+    every30Seconds.on('hit', () => {
+      update(true); // simulate event every 30 seconds and force update brightness
+    });
+  }
+});
+
+every2Minutes.on('hit', () => {
+  hmi.updateAll(); // simulate event every 2 minutes and force update all
 });
 
 hmi.on('change', (x) => {

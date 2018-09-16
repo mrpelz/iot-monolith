@@ -19,8 +19,8 @@ class Hmi extends EventEmitter {
     this._hmi = {
       isActive: false,
       hasListeners: false,
-      updaters: [],
-      scheduler
+      scheduler,
+      updaters: []
     };
 
     rebind(this, '_onListenerChange', '_handleRefresh');
@@ -87,7 +87,7 @@ class Hmi extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    const { log, scheduler } = this._hmi;
+    const { log, scheduler, updaters } = this._hmi;
 
     let oldValue;
 
@@ -129,6 +129,12 @@ class Hmi extends EventEmitter {
     }
 
     const update = (force, input) => {
+      if (force) {
+        log.debug({
+          head: `force updating metric "${id}"`
+        });
+      }
+
       if (input === undefined) {
         return getter(force);
       }
@@ -136,9 +142,23 @@ class Hmi extends EventEmitter {
       return Promise.resolve(publish(input, force));
     };
 
+    updaters.push(getter);
+
     return {
       update
     };
+  }
+
+  updateAll() {
+    const { log, updaters } = this._hmi;
+
+    log.debug({
+      head: 'force updating all'
+    });
+
+    updaters.forEach((update) => {
+      update(true);
+    });
   }
 }
 

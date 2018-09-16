@@ -47,7 +47,8 @@ function flattenData(input, parentKey = null) {
 
 function isObject(input) {
   return (
-    typeof input === 'object'
+    input !== null
+    && typeof input === 'object'
     && !Array.isArray(input)
   );
 }
