@@ -16,7 +16,7 @@ const hmi = new Hmi({
   scheduler
 });
 
-const everyMinuteChange = new RecurringMoment(scheduler, every.minute());
+const every2Minutes = new RecurringMoment(scheduler, every.minute(2));
 
 const roomSensor = new CachedRoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
@@ -30,15 +30,19 @@ metrics.forEach((metric) => {
     `duschbadRoomSensor_${metric}`,
     () => {
       return handler().then((value) => {
+        if (metric === 'pressure') {
+          return Math.round(value / 1000);
+        }
+
         return Math.round(value);
       });
     },
     {},
-    every.second(5)
+    every.second()
   );
 
-  everyMinuteChange.on('hit', () => {
-    update(-9000); // simulate event every minute
+  every2Minutes.on('hit', () => {
+    update(true); // simulate event every minute and force update
   });
 });
 

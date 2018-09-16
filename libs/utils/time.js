@@ -13,8 +13,8 @@ function isLeapYear(date) {
   return !((year & 3 || !(year % 25)) && year & 15);
 }
 
-function everyTime(type, count) {
-  if (count === undefined) {
+function everyTime(type, count = 1) {
+  if (count === 1) {
     return {
       [type]: 'change'
     };

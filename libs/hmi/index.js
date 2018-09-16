@@ -19,6 +19,7 @@ class Hmi extends EventEmitter {
     this._hmi = {
       isActive: false,
       hasListeners: false,
+      updaters: [],
       scheduler
     };
 
@@ -92,37 +93,33 @@ class Hmi extends EventEmitter {
 
     log.info(`add element "${id}"`);
 
-    const update = (result) => {
-      if (result === null) return null;
+    const publish = (input, force) => {
+      if (input === null) return null;
+      if (!force && oldValue === input) return undefined;
 
-      const hasUpdated = oldValue !== result;
-      if (!hasUpdated) return undefined;
-
-      oldValue = result;
+      oldValue = input;
 
       this._publish(
         id,
         attributes,
-        result
+        input
       );
 
-      return result;
+      return input;
+    };
+
+    const getter = (force) => {
+      resolveAlways(handler()).then((value) => {
+        log.debug({
+          head: `got metric "${id}"`,
+          value
+        });
+
+        return publish(value, force);
+      });
     };
 
     if (refresh) {
-      const getter = () => {
-        resolveAlways(handler()).then((value) => {
-          log.debug({
-            head: `got metric "${id}"`,
-            value
-          });
-
-          update(value);
-
-          return value;
-        });
-      };
-
       const recurring = new RecurringMoment(scheduler, refresh);
 
       recurring.on('hit', () => {
@@ -130,6 +127,14 @@ class Hmi extends EventEmitter {
         getter();
       });
     }
+
+    const update = (force, input) => {
+      if (input === undefined) {
+        return getter(force);
+      }
+
+      return Promise.resolve(publish(input, force));
+    };
 
     return {
       update
