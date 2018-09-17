@@ -3,6 +3,21 @@ const { rebind } = require('./oop');
 const { remainder } = require('./math');
 const { isObject } = require('./structures');
 
+// https://jsfiddle.net/jonathansampson/m7G64/
+function throttle(callback, limit = 500) {
+  let wait = false;
+  return () => {
+    if (!wait) {
+      wait = true;
+      setTimeout(() => {
+        wait = false;
+      }, limit);
+
+      callback();
+    }
+  };
+}
+
 function daysInMonth(month, year) {
   return new Date(year, month + 1, 0).getDate();
 }
@@ -517,5 +532,6 @@ module.exports = {
   isLeapYear,
   recurring,
   recurringToDate,
-  sleep
+  sleep,
+  throttle
 };

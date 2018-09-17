@@ -31,8 +31,9 @@ class DenonAvr extends PersistentSocket {
       delimiter: apiDelimiter
     });
 
-    this._denonAvr = {};
-    this._denonAvr.calls = {};
+    this._denonAvr = {
+      calls: {}
+    };
 
     rebind(this, '_handleResponse');
     this.on('data', this._handleResponse);

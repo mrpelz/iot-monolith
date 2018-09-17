@@ -1,5 +1,7 @@
 function camel(...input) {
-  return input.map((tile, index) => {
+  return input.map((word, index) => {
+    const tile = word.toString();
+
     if (!index) {
       return tile;
     }
@@ -11,7 +13,9 @@ function camel(...input) {
 }
 
 function pascal(...input) {
-  return input.map((tile) => {
+  return input.map((word) => {
+    const tile = word.toString();
+
     const first = tile.charAt(0).toUpperCase();
     const rest = tile.slice(1);
     return `${first}${rest}`;
