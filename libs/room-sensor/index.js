@@ -135,7 +135,7 @@ class RoomSensor extends MessageClient {
     }
 
     return this.request(metric).catch((reason) => {
-      log.notice({
+      log.error({
         head: `metric (${metric}) error`,
         attachment: reason
       });
@@ -163,7 +163,7 @@ class RoomSensor extends MessageClient {
     })).then((values) => {
       return arraysToObject(metrics, values);
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'getAll error',
         attachment: reason
       });

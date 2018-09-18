@@ -257,7 +257,7 @@ class SevenSegment extends MessageClient {
     //   return x.toString(2);
     // }));
     return this.request('display', display).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'display error',
         attachment: reason
       });
@@ -320,7 +320,7 @@ class SevenSegment extends MessageClient {
       this._sevenSegment.animationRunning = false;
       return value;
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'slideshow error',
         attachment: reason
       });
@@ -347,7 +347,7 @@ class SevenSegment extends MessageClient {
       this._sevenSegment.animationRunning = false;
       return value;
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'crawl error',
         attachment: reason
       });

@@ -71,7 +71,7 @@ class ObiJack extends Switch {
       this.relayState = value;
       return value;
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'relay error',
         attachment: reason
       });
@@ -88,7 +88,7 @@ class ObiJack extends Switch {
 
       return value;
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'led error',
         attachment: reason
       });
@@ -105,7 +105,7 @@ class ObiJack extends Switch {
 
       return result;
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'led-blink error',
         attachment: reason
       });

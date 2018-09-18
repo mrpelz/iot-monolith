@@ -83,7 +83,7 @@ class DenonAvr extends PersistentSocket {
 
       this.write(Buffer.from(`${cmd}${parameter}`, apiEncoding));
     }).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'request error',
         attachment: reason
       });

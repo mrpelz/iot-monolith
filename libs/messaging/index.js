@@ -241,7 +241,7 @@ class MessageClient extends PersistentSocket {
         tail
       ]));
     }).catch((reason) => {
-      log.notice({
+      log.warning({
         head: 'request error',
         attachment: reason
       });

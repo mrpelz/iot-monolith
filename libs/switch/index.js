@@ -135,7 +135,7 @@ class Switch extends MessageClient {
     }
 
     return this.request(name, on).catch((reason) => {
-      log.notice({
+      log.error({
         head: 'set error',
         attachment: reason
       });
