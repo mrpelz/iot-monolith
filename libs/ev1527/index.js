@@ -1,6 +1,6 @@
+const EventEmitter = require('events');
 const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
-const { camel } = require('../utils/string');
 const { Logger } = require('../log');
 
 const libName = 'ev1527';
@@ -8,19 +8,19 @@ const libName = 'ev1527';
 const apiDelimiter = 0x0a;
 const apiEncoding = 'utf8';
 
-class Ev1527 extends PersistentSocket {
-  static DOOR_SENSOR(name, id) {
+class Ev1527Device extends EventEmitter {
+  static DOOR_SENSOR(id) {
     const match = (cmd) => {
       let lastMatch = 0;
 
-      return (input) => {
+      return (message) => {
         const now = new Date().getTime();
 
         const isMatch = (
-          input.model === 'Generic Remote'
-          && input.id === id
-          && input.cmd === cmd
-          && now - lastMatch > 1100
+          message.model === 'Generic Remote'
+          && message.id === id
+          && message.cmd === cmd
+          && now - lastMatch > 1500
         );
 
         if (isMatch) {
@@ -33,32 +33,32 @@ class Ev1527 extends PersistentSocket {
 
     return [
       {
-        name: camel(name, 'closed'),
+        state: 'close',
         match: match(14)
       },
       {
-        name: camel(name, 'open'),
+        state: 'open',
         match: match(10)
       },
       {
-        name: camel(name, 'tampered'),
+        state: 'tamper',
         match: match(7)
       }
     ];
   }
 
-  static TX118SA4(name, id) {
+  static TX118SA4(id) {
     const match = (channel) => {
       let lastMatch = 0;
 
-      return (input) => {
+      return (message) => {
         const now = new Date().getTime();
 
         const isMatch = (
-          input.model === 'TX118SA-4'
-          && input.id === id
-          && input.channels.includes(channel)
-          && now - lastMatch > 1100
+          message.model === 'TX118SA-4'
+          && message.id === id
+          && message.channels.includes(channel)
+          && now - lastMatch > 1000
         );
 
         if (isMatch) {
@@ -71,24 +71,74 @@ class Ev1527 extends PersistentSocket {
 
     return [
       {
-        name: camel(name, 'One'),
+        state: 'one',
         match: match(1)
       },
       {
-        name: camel(name, 'Two'),
+        state: 'two',
         match: match(2)
       },
       {
-        name: camel(name, 'Three'),
+        state: 'three',
         match: match(3)
       },
       {
-        name: camel(name, 'Four'),
+        state: 'four',
         match: match(4)
       }
     ];
   }
 
+  static prepareMatcher(matchFn, id) {
+    const matchers = matchFn(id);
+
+    return (message) => {
+      return matchers.map((matchSet) => {
+        const { state, match } = matchSet;
+
+        const isMatch = match(message);
+
+        return isMatch ? state : null;
+      }).filter(Boolean);
+    };
+  }
+
+  constructor(options, server, matchFn) {
+    const {
+      name = null,
+      id = null
+    } = options;
+
+    if (!name || !id || !server || typeof matchFn !== 'function') {
+      throw new Error('insufficient options provided');
+    }
+
+    super();
+
+    this._ev1527Device = {
+      name
+    };
+
+    rebind(this, '_handleMessage');
+    server.on('message', this._handleMessage);
+
+    this._ev1527Device.matcher = Ev1527Device.prepareMatcher(matchFn, id);
+
+    this._ev1527Device.log = new Logger(Logger.NAME(`${libName} (device)`, `${name}/${id}`));
+  }
+
+  _handleMessage(message) {
+    const { matcher, name } = this._ev1527Device;
+
+    const matches = matcher(message);
+
+    matches.forEach((state) => {
+      this.emit(state, name);
+    });
+  }
+}
+
+class Ev1527 extends PersistentSocket {
   constructor(options) {
     const {
       host = null,
@@ -105,18 +155,16 @@ class Ev1527 extends PersistentSocket {
       delimiter: apiDelimiter
     });
 
-    this._ev1527 = {
-      triggers: []
-    };
+    this._ev1527 = {};
 
-    rebind(this, '_handleMessage');
-    this.on('data', this._handleMessage);
+    rebind(this, '_handlePayload');
+    this.on('data', this._handlePayload);
 
-    this._ev1527.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this._ev1527.log = new Logger(Logger.NAME(`${libName} (server)`, `${host}:${port}`));
   }
 
-  _handleMessage(input) {
-    const { log, triggers } = this._ev1527;
+  _handlePayload(input) {
+    const { log } = this._ev1527;
     const payload = input.toString(apiEncoding).trim();
 
     log.info({
@@ -136,42 +184,16 @@ class Ev1527 extends PersistentSocket {
     }
 
     if (data) {
-      const matched = triggers.filter((trigger) => {
-        return trigger.match(data);
-      });
-
-      matched.forEach((trigger) => {
-        this.emit('hit', trigger.name, data);
-        this.emit(trigger.name);
-      });
+      this.emit('message', data);
     }
-  }
-
-  trigger(...matches) {
-    if (!matches.length) {
-      throw new Error('insufficient options provided');
-    }
-
-    const { log, triggers } = this._ev1527;
-
-    triggers.push(...matches.map((trigger) => {
-      const { name, match } = trigger;
-
-      log.info(`add trigger "${name}"`);
-
-      return {
-        name,
-        match
-      };
-    }));
   }
 
   // Public methods:
   // connect
   // disconnect
-  // trigger
 }
 
 module.exports = {
-  Ev1527
+  Ev1527,
+  Ev1527Device
 };

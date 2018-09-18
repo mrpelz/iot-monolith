@@ -1,18 +1,82 @@
 /* eslint-disable no-console */
-const { Ev1527 } = require('../index');
+const { Ev1527, Ev1527Device } = require('../index');
 
-// SOCKET TEST
 const ev1527 = new Ev1527({
   host: 'flexo.net.wurstsalat.cloud',
   port: 9000
 });
 
-ev1527.trigger(...Ev1527.DOOR_SENSOR('wannenbad', 15442));
-ev1527.trigger(...Ev1527.DOOR_SENSOR('schlafzimmer', 47642));
-ev1527.trigger(...Ev1527.DOOR_SENSOR('abstellraum', 51866));
-ev1527.trigger(...Ev1527.DOOR_SENSOR('wohnungstür', 52455));
-ev1527.trigger(...Ev1527.DOOR_SENSOR('duschbad', 52595));
-ev1527.trigger(...Ev1527.TX118SA4('thePushbutton', 570816));
+const devices = [
+  {
+    name: 'wannenbad',
+    id: 15442,
+    type: 'DOOR_SENSOR'
+  },
+  {
+    name: 'schlafzimmer',
+    id: 47642,
+    type: 'DOOR_SENSOR'
+  },
+  {
+    name: 'abstellraum',
+    id: 51866,
+    type: 'DOOR_SENSOR'
+  },
+  {
+    name: 'wohnungstür',
+    id: 52455,
+    type: 'DOOR_SENSOR'
+  },
+  {
+    name: 'duschbad',
+    id: 52595,
+    type: 'DOOR_SENSOR'
+  },
+  {
+    name: 'thePushbutton',
+    id: 570816,
+    type: 'TX118SA4'
+  }
+];
+
+devices.forEach((device) => {
+  const { name, id, type } = device;
+  const { [type]: matcher } = Ev1527Device;
+
+  const instance = new Ev1527Device({
+    name,
+    id
+  }, ev1527, matcher);
+
+  switch (type) {
+    case 'DOOR_SENSOR':
+      instance.on('close', () => {
+        console.log(`"${name}" was closed`);
+      });
+      instance.on('open', () => {
+        console.log(`"${name}" was opened`);
+      });
+      instance.on('tamper', () => {
+        console.log(`"${name}" was tampered with`);
+      });
+      break;
+    case 'TX118SA4':
+      instance.on('one', () => {
+        console.log(`button one of "${name}" was pressed`);
+      });
+      instance.on('two', () => {
+        console.log(`button two of "${name}" was pressed`);
+      });
+      instance.on('three', () => {
+        console.log(`button three of "${name}" was pressed`);
+      });
+      instance.on('four', () => {
+        console.log(`button four of "${name}" was pressed`);
+      });
+      break;
+    default:
+  }
+});
 
 ev1527.on('connect', async () => {
   console.log('connected');
@@ -20,10 +84,6 @@ ev1527.on('connect', async () => {
 
 ev1527.on('disconnect', () => {
   console.log('disconnected');
-});
-
-ev1527.on('hit', (event) => {
-  console.log(event);
 });
 
 ev1527.connect();

@@ -1,4 +1,8 @@
 {
   "schedulerPrecision": 125,
-  "prometheusPort": 5555
+  "prometheusPort": 5555,
+  "ev1527": {
+    "host": "flexo.net.wurstsalat.cloud",
+    "port": 9000
+  }
 }

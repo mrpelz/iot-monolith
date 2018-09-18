@@ -4,6 +4,7 @@ function createInstances() {
   require('./instances/scheduler');
   require('./instances/prometheus');
   require('./instances/room-sensors');
+  require('./instances/ev1527');
 }
 
 function runLogic() {

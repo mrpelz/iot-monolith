@@ -41,7 +41,5 @@ function createSensor(sensor) {
       metrics,
       instance
     };
-  }).filter((instance) => {
-    return instance;
-  });
+  }).filter(Boolean);
 }());
