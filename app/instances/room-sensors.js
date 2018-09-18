@@ -28,12 +28,13 @@ function createSensor(sensor) {
   } = global;
 
   global.roomSensors = roomSensors.map((sensor) => {
+    const { name, isRoom = false, metrics = [] } = sensor;
+    if (!name || isRoom === undefined || !metrics.length) return null;
+
     const instance = createSensor(sensor);
     if (!instance) return null;
 
     instance.connect();
-
-    const { name = null, isRoom = false, metrics = [] } = sensor;
 
     return {
       name,

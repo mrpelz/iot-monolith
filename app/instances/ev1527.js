@@ -45,10 +45,11 @@ function createDevice(device, server) {
   global.ev1527 = startEv1527(host, port);
 
   global.ev1527Devices = ev1527Devices.map((device) => {
+    const { name } = device;
+    if (!name) return null;
+
     const instance = createDevice(device, global.ev1527);
     if (!instance) return null;
-
-    const { name = null } = device;
 
     return {
       name,

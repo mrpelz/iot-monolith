@@ -1,0 +1,20 @@
+[
+  {
+    "name": "wohnzimmerStehlampe",
+    "host": "10.97.4.11",
+    "port": 5045,
+    "type": "OBI_JACK"
+  },
+  {
+    "name": "schlafzimmerSteinlampe",
+    "host": "10.97.4.32",
+    "port": 5045,
+    "type": "OBI_JACK"
+  },
+  {
+    "name": "esszimmerStehlampe",
+    "host": "10.97.4.12",
+    "port": 5045,
+    "type": "OBI_JACK"
+  }
+]
