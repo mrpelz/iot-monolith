@@ -98,7 +98,8 @@ function sanity(input, options) {
     max = Number.POSITIVE_INFINITY,
     min = Number.NEGATIVE_INFINITY,
     multiply = 1,
-    offset = 0
+    offset = 0,
+    round = false
   } = options;
 
   if (input > max) return null;
@@ -109,6 +110,10 @@ function sanity(input, options) {
   value += offset;
   value /= divide;
   value *= multiply;
+
+  if (round) {
+    value = Math.round(value);
+  }
 
   return value;
 }

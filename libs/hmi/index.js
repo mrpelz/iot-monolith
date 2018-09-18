@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const { sanity } = require('../utils/data');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { RecurringMoment } = require('../utils/time');
 const { Logger } = require('../log');
@@ -82,7 +83,7 @@ class Hmi extends EventEmitter {
     this._hmi.isActive = false;
   }
 
-  element(id, handler, attributes = {}, refresh) {
+  element(id, handler, valueSanity = false, attributes = {}, refresh) {
     if (!id || !handler || !attributes) {
       throw new Error('insufficient options provided');
     }
@@ -97,15 +98,19 @@ class Hmi extends EventEmitter {
       if (input === null) return null;
       if (!force && oldValue === input) return undefined;
 
-      oldValue = input;
+      const newValue = valueSanity
+        ? sanity(input, valueSanity)
+        : input;
+
+      oldValue = newValue;
 
       this._publish(
         id,
         attributes,
-        input
+        newValue
       );
 
-      return input;
+      return newValue;
     };
 
     const getter = (force) => {

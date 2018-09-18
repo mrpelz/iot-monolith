@@ -27,17 +27,21 @@ const roomSensor = new CachedRoomSensor({
 
 metrics.forEach((metric) => {
   const handler = roomSensor.access('get', metric);
+  const valueSanity = (
+    metric === 'pressure'
+      ? {
+        divide: 1000,
+        round: true
+      }
+      : {
+        round: true
+      }
+  );
+
   const { update } = hmi.element(
     `duschbadRoomSensor_${metric}`,
-    () => {
-      return handler().then((value) => {
-        if (metric === 'pressure') {
-          return Math.round(value / 1000);
-        }
-
-        return Math.round(value);
-      });
-    },
+    handler,
+    valueSanity,
     {},
     every.second()
   );

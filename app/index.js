@@ -2,6 +2,7 @@
 
 function createInstances() {
   require('./instances/scheduler');
+  require('./instances/hmi');
   require('./instances/prometheus');
   require('./instances/room-sensors');
   require('./instances/lights');
@@ -9,6 +10,7 @@ function createInstances() {
 }
 
 function runLogic() {
+  require('./logic/metrics-to-hmi');
   require('./logic/metrics-to-prometheus');
   require('./logic/lights');
 }

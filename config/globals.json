@@ -4,5 +4,14 @@
   "ev1527": {
     "host": "flexo.net.wurstsalat.cloud",
     "port": 9000
+  },
+  "valueSanity": {
+    "default": {
+      "round": true
+    },
+    "pressure": {
+      "divide": 1000,
+      "round": true
+    }
   }
 }
