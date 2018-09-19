@@ -21,7 +21,7 @@ class HttpServer extends EventEmitter {
     instance.route('/favicon.ico', HttpServer.do404);
   }
 
-  constructor(options) {
+  constructor(options = {}) {
     super();
 
     this._httpServer = {};

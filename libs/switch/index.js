@@ -79,7 +79,7 @@ function setUpListeners(capabilities, addListener) {
 }
 
 class Switch extends MessageClient {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host = null,
       port = null,

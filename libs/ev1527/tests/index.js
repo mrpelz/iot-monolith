@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { Ev1527, Ev1527Device } = require('../index');
 
-const ev1527 = new Ev1527({
+const server = new Ev1527({
   host: 'flexo.net.wurstsalat.cloud',
   port: 9000
 });
@@ -41,12 +41,14 @@ const devices = [
 
 devices.forEach((device) => {
   const { name, id, type } = device;
-  const { [type]: matcher } = Ev1527Device;
+  const { [type]: matchFn } = Ev1527Device;
 
   const instance = new Ev1527Device({
     name,
-    id
-  }, ev1527, matcher);
+    id,
+    server,
+    matchFn
+  });
 
   switch (type) {
     case 'DOOR_SENSOR':
@@ -78,12 +80,12 @@ devices.forEach((device) => {
   }
 });
 
-ev1527.on('connect', async () => {
+server.on('connect', async () => {
   console.log('connected');
 });
 
-ev1527.on('disconnect', () => {
+server.on('disconnect', () => {
   console.log('disconnected');
 });
 
-ev1527.connect();
+server.connect();

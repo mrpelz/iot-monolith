@@ -78,7 +78,7 @@ function getMessageTypesForMetrics(metrics) {
 }
 
 class RoomSensor extends MessageClient {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host = null,
       port = null,

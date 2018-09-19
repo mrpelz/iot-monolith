@@ -8,7 +8,7 @@ const { Logger } = require('../log');
 const libName = 'tcp';
 
 class PersistentSocket extends Base {
-  constructor(options) {
+  constructor(options = {}) {
     super();
 
     this._persistentSocket = {};

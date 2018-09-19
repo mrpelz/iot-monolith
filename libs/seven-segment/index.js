@@ -189,7 +189,7 @@ function stringCrawl(input) {
 }
 
 class SevenSegment extends MessageClient {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host = null,
       port = null

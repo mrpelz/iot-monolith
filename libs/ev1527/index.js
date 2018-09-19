@@ -8,6 +8,61 @@ const libName = 'ev1527';
 const apiDelimiter = 0x0a;
 const apiEncoding = 'utf8';
 
+class Ev1527 extends PersistentSocket {
+  constructor(options = {}) {
+    const {
+      host = null,
+      port = 9000
+    } = options;
+
+    if (!host || !port) {
+      throw new Error('insufficient options provided');
+    }
+
+    super({
+      host,
+      port,
+      delimiter: apiDelimiter
+    });
+
+    this._ev1527 = {};
+
+    rebind(this, '_handlePayload');
+    this.on('data', this._handlePayload);
+
+    this._ev1527.log = new Logger(Logger.NAME(`${libName} (server)`, `${host}:${port}`));
+  }
+
+  _handlePayload(input) {
+    const { log } = this._ev1527;
+    const payload = input.toString(apiEncoding).trim();
+
+    log.info({
+      head: 'received payload',
+      attachment: payload
+    });
+
+    let data;
+
+    try {
+      data = JSON.parse(payload);
+    } catch (error) {
+      log.warning({
+        head: 'illegal string received',
+        attachment: payload
+      });
+    }
+
+    if (data) {
+      this.emit('message', data);
+    }
+  }
+
+  // Public methods:
+  // connect
+  // disconnect
+}
+
 class Ev1527Device extends EventEmitter {
   static DOOR_SENSOR(id) {
     const match = (cmd) => {
@@ -103,10 +158,12 @@ class Ev1527Device extends EventEmitter {
     };
   }
 
-  constructor(options, server, matchFn) {
+  constructor(options = {}) {
     const {
       name = null,
-      id = null
+      id = null,
+      server = null,
+      matchFn = null
     } = options;
 
     if (!name || !id || !server || typeof matchFn !== 'function') {
@@ -136,61 +193,6 @@ class Ev1527Device extends EventEmitter {
       this.emit(state, name);
     });
   }
-}
-
-class Ev1527 extends PersistentSocket {
-  constructor(options) {
-    const {
-      host = null,
-      port = 9000
-    } = options;
-
-    if (!host || !port) {
-      throw new Error('insufficient options provided');
-    }
-
-    super({
-      host,
-      port,
-      delimiter: apiDelimiter
-    });
-
-    this._ev1527 = {};
-
-    rebind(this, '_handlePayload');
-    this.on('data', this._handlePayload);
-
-    this._ev1527.log = new Logger(Logger.NAME(`${libName} (server)`, `${host}:${port}`));
-  }
-
-  _handlePayload(input) {
-    const { log } = this._ev1527;
-    const payload = input.toString(apiEncoding).trim();
-
-    log.info({
-      head: 'received payload',
-      attachment: payload
-    });
-
-    let data;
-
-    try {
-      data = JSON.parse(payload);
-    } catch (error) {
-      log.warning({
-        head: 'illegal string received',
-        attachment: payload
-      });
-    }
-
-    if (data) {
-      this.emit('message', data);
-    }
-  }
-
-  // Public methods:
-  // connect
-  // disconnect
 }
 
 module.exports = {

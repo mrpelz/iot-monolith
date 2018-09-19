@@ -82,7 +82,7 @@ function callId(state) {
 }
 
 class MessageClient extends PersistentSocket {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host = null,
       port = null,

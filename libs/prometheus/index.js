@@ -21,7 +21,7 @@ function drawMetric(prefix, name, labelString, value) {
 }
 
 class Prometheus {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       port,
       prefix = 'iot_'

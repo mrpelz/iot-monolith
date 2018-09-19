@@ -22,8 +22,10 @@ function createDevice(device, server) {
   try {
     return new Ev1527Device({
       name,
-      id
-    }, server, matchFn);
+      id,
+      server,
+      matchFn
+    });
   } catch (e) {
     return null;
   }

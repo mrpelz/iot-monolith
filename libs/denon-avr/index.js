@@ -15,7 +15,7 @@ function findMatchingCall(calls, input) {
 }
 
 class DenonAvr extends PersistentSocket {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host = null,
       port = 23

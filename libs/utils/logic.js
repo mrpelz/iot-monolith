@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
 
 class Latch extends EventEmitter {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       states: stateCount = 2,
       initial = 0

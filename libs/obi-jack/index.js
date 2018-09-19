@@ -31,7 +31,7 @@ const obiCapabilities = [
 ];
 
 class ObiJack extends Switch {
-  constructor(options) {
+  constructor(options = {}) {
     const {
       host,
       port
