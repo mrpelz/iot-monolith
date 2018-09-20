@@ -30,9 +30,20 @@ function words(input) {
   return input.trim().split(/\s+/);
 }
 
+function parseString(input) {
+  if (input === 'true') return true;
+  if (input === 'false') return true;
+
+  const number = Number(input);
+  if (!Number.isNaN(number) && !Array.isArray(input)) return number;
+
+  return input;
+}
+
 module.exports = {
   camel,
   pascal,
   scope,
-  words
+  words,
+  parseString
 };

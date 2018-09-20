@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
 const { emptyBuffer } = require('../utils/data');
+const { arraysToObject } = require('../utils/structures');
 const { Logger } = require('../log');
 
 const libName = 'http-server';
@@ -57,6 +58,11 @@ class HttpServer extends EventEmitter {
   }
 
   _handleRequest(request, response) {
+    if (request.method !== 'GET') {
+      response.writeHead(405);
+      response.end();
+    }
+
     const {
       log,
       globalHandler,
@@ -68,14 +74,30 @@ class HttpServer extends EventEmitter {
       }
     } = this._httpServer;
 
+    const httpHost = request.headers.host;
+    const baseUrl = httpHost || `${host}:${port}`;
+
     Object.assign(request, {
-      url: new URL(request.url, `http://${host}:${port}/`)
+      url: new URL(request.url, `http://${baseUrl}/`)
+    });
+
+    Object.assign(request, {
+      urlQuery: arraysToObject(
+        [...request.url.searchParams.keys()],
+        [...request.url.searchParams.values()]
+      )
     });
 
     log.info({
       head: 'request received',
-      attachment: `URL: ${request.url.href}`
+      attachment: [
+        `URL: ${request.url.href}`,
+        `RemoteAddress: ${request.connection.remoteAddress}`,
+        `RemotePort: ${request.connection.remotePort}`
+      ].join('\n')
     });
+
+    rebind(response, 'write');
 
     let match = {};
     const routeHandler = routes[request.url.pathname];
@@ -120,7 +142,7 @@ class HttpServer extends EventEmitter {
         response.end(`[${rejectCode}]\n${reason.message || ''}`);
       });
     } else {
-      response.writeHead(404, headers);
+      response.writeHead(500, headers);
       response.end();
     }
   }

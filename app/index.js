@@ -5,7 +5,8 @@ function createInstances() {
   require('./instances/room-sensors');
   require('./instances/lights');
   require('./instances/ev1527');
-  require('./instances/hmiServer');
+  require('./instances/hmi-server');
+  require('./instances/web-api');
   require('./instances/prometheus');
 }
 

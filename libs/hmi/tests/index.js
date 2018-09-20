@@ -2,6 +2,7 @@
 const { HmiServer, HmiElement } = require('../index');
 const { every, Scheduler, RecurringMoment } = require('../../utils/time');
 const { CachedRoomSensor } = require('../../room-sensor');
+const { WebApi } = require('../../web-api');
 
 const metrics = [
   'temperature',
@@ -12,7 +13,6 @@ const metrics = [
 
 const scheduler = new Scheduler();
 const every30Seconds = new RecurringMoment(scheduler, every.second(30));
-const every5Seconds = new RecurringMoment(scheduler, every.second(5));
 
 const hmiServer = new HmiServer();
 
@@ -55,14 +55,15 @@ metrics.forEach((metric) => {
   }
 });
 
-const { getAll } = hmiServer.addService(({ name, value }) => {
+hmiServer.addService(({ name, value }) => {
   console.log('ingestor', name, value);
 });
 
-every5Seconds.on('hit', async () => {
-  console.log('get all');
-  await getAll();
-  console.log();
+const webApi = new WebApi({
+  port: 8080,
+  hmiServer,
+  scheduler
 });
 
+webApi.start();
 roomSensor.connect();

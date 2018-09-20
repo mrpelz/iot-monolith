@@ -3,7 +3,10 @@ const { HttpServer } = require('../server');
 
 function globalHandler(request) {
   return {
-    handler: Promise.resolve(`[Mirroring the URL]\n${request.url.pathname}`)
+    handler: Promise.resolve([
+      '[Mirroring the URL]',
+      request.url.pathname
+    ].join('\n'))
   };
 }
 

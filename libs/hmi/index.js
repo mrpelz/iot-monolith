@@ -224,7 +224,7 @@ class HmiElement {
     } = this._hmiElement;
 
     if (typeof set !== 'function') {
-      throw new Error('element not settable');
+      return Promise.reject(new Error('element not settable'));
     }
 
     log.info({
