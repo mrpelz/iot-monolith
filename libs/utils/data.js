@@ -93,6 +93,8 @@ function bufferToBoolean(input) {
 }
 
 function sanity(input, options) {
+  if (input === null) return null;
+
   const {
     divide = 1,
     max = Number.POSITIVE_INFINITY,

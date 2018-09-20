@@ -32,7 +32,7 @@ function words(input) {
 
 function parseString(input) {
   if (input === 'true') return true;
-  if (input === 'false') return true;
+  if (input === 'false') return false;
 
   const number = Number(input);
   if (!Number.isNaN(number) && !Array.isArray(input)) return number;

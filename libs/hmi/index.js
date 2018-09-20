@@ -140,12 +140,12 @@ class HmiElement {
     const {
       name = null,
       handlers = null,
-      sanity: valueSanity = {},
+      sanity: valueSanity = null,
       attributes = {},
       server = null
     } = options;
 
-    if (!name || !handlers || !valueSanity || !attributes || !server) {
+    if (!name || !handlers || !attributes || !server) {
       throw new Error('insufficient options provided');
     }
 
