@@ -1,5 +1,6 @@
+const { HmiElement } = require('../../libs/hmi');
 const { camel } = require('../../libs/utils/string');
-const { every } = require('../../libs/utils/time');
+const { flattenArrays } = require('../../libs/utils/structures');
 
 const {
   config: {
@@ -7,22 +8,31 @@ const {
       valueSanity
     }
   },
-  hmi,
+  hmiServer,
   roomSensors
 } = global;
 
-roomSensors.forEach((sensor) => {
+global.hmiElements = flattenArrays(roomSensors.map((sensor) => {
   const { name, instance, metrics } = sensor;
 
-  metrics.forEach((metric) => {
-    const handler = instance.access('get', metric);
+  return metrics.map((metric) => {
+    const hmiName = camel(name, metric);
+    const get = instance.access('get', metric);
 
-    hmi.element(
-      camel(name, metric),
-      handler,
-      valueSanity[metric] || valueSanity.default,
-      {},
-      every.second()
-    );
+    const hmiElement = new HmiElement({
+      name: hmiName,
+      attributes: {
+        these: 'are',
+        test: 'attributes'
+      },
+      sanity: valueSanity[metric] || valueSanity.default,
+      server: hmiServer,
+      handlers: { get }
+    });
+
+    return {
+      name: hmiName,
+      instance: hmiElement
+    };
   });
-});
+}));

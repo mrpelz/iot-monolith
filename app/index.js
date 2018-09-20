@@ -2,17 +2,17 @@
 
 function createInstances() {
   require('./instances/scheduler');
-  require('./instances/hmi');
-  require('./instances/prometheus');
   require('./instances/room-sensors');
   require('./instances/lights');
   require('./instances/ev1527');
+  require('./instances/hmiServer');
+  require('./instances/prometheus');
 }
 
 function runLogic() {
+  require('./logic/lights');
   require('./logic/metrics-to-hmi');
   require('./logic/metrics-to-prometheus');
-  require('./logic/lights');
 }
 
 module.exports = {

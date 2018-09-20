@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { Hmi } = require('../index');
+const { HmiServer, HmiElement } = require('../index');
 const { every, Scheduler, RecurringMoment } = require('../../utils/time');
 const { CachedRoomSensor } = require('../../room-sensor');
 
@@ -11,13 +11,10 @@ const metrics = [
 ];
 
 const scheduler = new Scheduler();
-
-const hmi = new Hmi({
-  scheduler
-});
-
-const every2Minutes = new RecurringMoment(scheduler, every.minute(2));
 const every30Seconds = new RecurringMoment(scheduler, every.second(30));
+const every5Seconds = new RecurringMoment(scheduler, every.second(5));
+
+const hmiServer = new HmiServer();
 
 const roomSensor = new CachedRoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
@@ -26,8 +23,8 @@ const roomSensor = new CachedRoomSensor({
 });
 
 metrics.forEach((metric) => {
-  const handler = roomSensor.access('get', metric);
-  const valueSanity = (
+  const get = roomSensor.access('get', metric);
+  const sanity = (
     metric === 'pressure'
       ? {
         divide: 1000,
@@ -38,28 +35,34 @@ metrics.forEach((metric) => {
       }
   );
 
-  const { update } = hmi.element(
-    `duschbadRoomSensor_${metric}`,
-    handler,
-    valueSanity,
-    {},
-    every.second()
-  );
+  const hmiElement = new HmiElement({
+    name: `testRoomSensor_${metric}`,
+    attributes: {
+      these: 'are',
+      test: 'attributes'
+    },
+    sanity,
+    server: hmiServer,
+    handlers: { get }
+  });
 
   if (metric === 'brightness') {
-    every30Seconds.on('hit', () => {
-      update(true); // simulate event every 30 seconds and force update brightness
+    every30Seconds.on('hit', async () => {
+      console.log('force brightness');
+      await hmiElement.update();
+      console.log();
     });
   }
 });
 
-every2Minutes.on('hit', () => {
-  hmi.updateAll(); // simulate event every 2 minutes and force update all
+const { getAll } = hmiServer.addService(({ name, value }) => {
+  console.log('ingestor', name, value);
 });
 
-hmi.on('change', (x) => {
-  console.log(`${x.id}: ${x.value}`);
+every5Seconds.on('hit', async () => {
+  console.log('get all');
+  await getAll();
+  console.log();
 });
 
 roomSensor.connect();
-hmi.start();

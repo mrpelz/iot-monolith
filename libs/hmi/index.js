@@ -1,172 +1,257 @@
 const EventEmitter = require('events');
 const { sanity } = require('../utils/data');
 const { rebind, resolveAlways } = require('../utils/oop');
-const { RecurringMoment } = require('../utils/time');
 const { Logger } = require('../log');
 
 const libName = 'hmi';
-class Hmi extends EventEmitter {
-  constructor(options) {
-    const {
-      scheduler,
-    } = options;
 
-    if (!scheduler) {
-      throw new Error('insufficient options provided');
-    }
-
+class HmiServer extends EventEmitter {
+  constructor() {
     super();
 
     this._hmi = {
-      isActive: false,
-      hasListeners: false,
-      scheduler,
-      updaters: []
+      getters: [],
+      setters: {},
+      ingests: []
     };
 
-    rebind(this, '_onListenerChange', '_handleRefresh');
+    rebind(this, '_getAllElementStates', '_setElementState');
 
-    this.on('newListener', this._onListenerChange);
-    this.on('removeListener', this._onListenerChange);
-
-    this._hmi.log = new Logger(libName);
+    this._hmi.log = new Logger(`${libName} (server)`);
   }
 
-  _onListenerChange() {
-    this._hmi.hasListeners = Boolean(this.listenerCount('change'));
-  }
+  _pushElementStateToServices(name, attributes, value) {
+    const {
+      ingests,
+      log
+    } = this._hmi;
 
-  _publish(id, attributes, value) {
-    this.emit('change', {
-      id,
-      attributes,
-      value
+    Promise.all(
+      ingests.map((ingest) => {
+        return resolveAlways(ingest({
+          name,
+          attributes,
+          value
+        }));
+      })
+    ).then(() => {
+      log.info('pushed state to all ingests');
     });
   }
 
-  _handleRefresh() {
-    const { elements, log } = this._hmi;
+  _getAllElementStates(force) {
+    const {
+      log,
+      getters
+    } = this._hmi;
 
-    log.debug('getting element values');
-    Object.values(elements).forEach((getter) => {
-      getter();
+    return Promise.all(
+      getters.map((getter) => {
+        return getter(force);
+      })
+    ).then((values) => {
+      log.info('updated all elements');
+      return values;
     });
   }
 
-  start() {
-    const { isActive, log } = this._hmi;
+  _setElementState(name, value) {
+    const {
+      log,
+      setters
+    } = this._hmi;
 
-    if (isActive === true) {
-      return;
-    }
-
-    log.info({
-      head: 'set active',
-      value: true
-    });
-
-    this._hmi.isActive = true;
-  }
-
-  stop() {
-    const { isActive, log } = this._hmi;
-
-    if (isActive === false) {
-      return;
-    }
-
-    log.info({
-      head: 'set active',
-      value: false
-    });
-
-    this._hmi.isActive = false;
-  }
-
-  element(id, handler, valueSanity = false, attributes = {}, refresh) {
-    if (!id || !handler || !attributes) {
+    if (!name || value === undefined) {
       throw new Error('insufficient options provided');
     }
 
-    const { log, scheduler, updaters } = this._hmi;
+    log.info(`setting "${name}" to "${value}"`);
 
-    let oldValue;
+    const { [name]: set } = setters;
+    return set(value);
+  }
 
-    log.info(`add element "${id}"`);
+  addElement(options) {
+    const {
+      getters,
+      setters
+    } = this._hmi;
 
-    const publish = (input, force) => {
-      if (input === null) return null;
-      if (!force && oldValue === input) return undefined;
+    const {
+      name,
+      attributes,
+      get,
+      set
+    } = options;
 
-      const newValue = valueSanity
-        ? sanity(input, valueSanity)
-        : input;
-
-      oldValue = newValue;
-
-      this._publish(
-        id,
-        attributes,
-        newValue
-      );
-
-      return newValue;
-    };
-
-    const getter = (force) => {
-      resolveAlways(handler()).then((value) => {
-        log.debug({
-          head: `got metric "${id}"`,
-          value
-        });
-
-        return publish(value, force);
-      });
-    };
-
-    if (refresh) {
-      const recurring = new RecurringMoment(scheduler, refresh);
-
-      recurring.on('hit', () => {
-        if (!this._hmi.isActive || this._hmi.hasListeners) return;
-        getter();
-      });
+    if (!name || !attributes || !get) {
+      throw new Error('insufficient options provided');
     }
 
-    const update = (force, input) => {
-      if (force) {
-        log.debug({
-          head: `force updating metric "${id}"`
-        });
-      }
+    const getter = async (force) => {
+      const result = await get(force);
+      if (result === null) return null;
 
-      if (input === undefined) {
-        return getter(force);
-      }
+      this._pushElementStateToServices(name, attributes, result);
 
-      return Promise.resolve(publish(input, force));
+      return result;
     };
 
-    updaters.push(getter);
+    const setter = async (input) => {
+      const result = await set(input);
+      getter();
+
+      return result;
+    };
+
+    getters.push(getter);
+
+    if (set) {
+      setters[name] = setter;
+    }
+
+    return getter;
+  }
+
+  addService(ingest) {
+    const {
+      ingests
+    } = this._hmi;
+
+    if (!ingest) {
+      throw new Error('insufficient options provided');
+    }
+
+    ingests.push(ingest);
 
     return {
-      update
+      getAll: this._getAllElementStates,
+      set: this._setElementState
     };
   }
 
-  updateAll() {
-    const { log, updaters } = this._hmi;
+  // Public methods:
+  // addElement
+  // addService
+}
 
-    log.debug({
-      head: 'force updating all'
-    });
+class HmiElement {
+  constructor(options = {}) {
+    const {
+      name = null,
+      handlers = null,
+      sanity: valueSanity = {},
+      attributes = {},
+      server = null
+    } = options;
 
-    updaters.forEach((update) => {
-      update(true);
-    });
+    if (!name || !handlers || !valueSanity || !attributes || !server) {
+      throw new Error('insufficient options provided');
+    }
+
+    const {
+      get = null,
+      set = null
+    } = handlers;
+
+    if (!get) {
+      throw new Error('no getHandler provided');
+    }
+
+    this._hmiElement = {
+      name,
+      attributes,
+      valueSanity,
+      get,
+      set,
+      server,
+      oldValue: null
+    };
+
+    rebind(this, '_get', '_set');
+    this._setUpServer();
+
+    this._hmiElement.log = new Logger(`${libName} (element)`);
   }
+
+  _setUpServer() {
+    const {
+      name,
+      attributes,
+      set,
+      server
+    } = this._hmiElement;
+
+    const update = server.addElement({
+      name,
+      attributes,
+      get: this._get,
+      set: typeof set !== 'function' ? null : this._set
+    });
+
+    this._hmiElement.update = update;
+  }
+
+  async _get(force = false) {
+    const {
+      get,
+      log,
+      name,
+      valueSanity,
+      oldValue
+    } = this._hmiElement;
+
+    const result = await resolveAlways(get());
+    const value = valueSanity ? sanity(result, valueSanity) : result;
+
+    if (!force && value === oldValue) return null;
+
+    log.info({
+      head: `got new value for "${name}"`,
+      value
+    });
+
+    this._hmiElement.oldValue = value;
+
+    return value;
+  }
+
+  _set(input) {
+    const {
+      log,
+      name,
+      set
+    } = this._hmiElement;
+
+    if (typeof set !== 'function') {
+      throw new Error('element not settable');
+    }
+
+    log.info({
+      head: `setting "${name}"`,
+      value: input
+    });
+
+    return set(input);
+  }
+
+  update() {
+    const {
+      log,
+      name,
+      update
+    } = this._hmiElement;
+
+    log.info(`force-updating "${name}"`);
+
+    return update(true);
+  }
+
+  // Public methods:
+  // update
 }
 
 module.exports = {
-  Hmi
+  HmiServer,
+  HmiElement
 };

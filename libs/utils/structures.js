@@ -15,6 +15,18 @@ function arraysToObject(keyArray, valueArray) {
   return result;
 }
 
+function flattenArrays(input, result = []) {
+  for (let i = 0; i < input.length; i += 1) {
+    const value = input[i];
+    if (Array.isArray(value)) {
+      flattenArrays(value, result);
+    } else {
+      result.push(value);
+    }
+  }
+  return result;
+}
+
 function flattenData(input, parentKey = null) {
   if (
     !input
@@ -118,6 +130,7 @@ module.exports = {
   arraysToObject,
   compareObjects,
   findFlattenedDiff,
+  flattenArrays,
   flattenData,
   isPrimitive,
   isObject,

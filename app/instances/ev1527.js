@@ -1,13 +1,13 @@
-const { Ev1527, Ev1527Device } = require('../../libs/ev1527');
+const { Ev1527Server, Ev1527Device } = require('../../libs/ev1527');
 
-function startEv1527(host, port) {
-  const ev1527 = new Ev1527({
+function startEv1527Server(host, port) {
+  const ev1527Server = new Ev1527Server({
     host,
     port
   });
-  ev1527.connect();
+  ev1527Server.connect();
 
-  return ev1527;
+  return ev1527Server;
 }
 
 function createDevice(device, server) {
@@ -44,13 +44,13 @@ function createDevice(device, server) {
     }
   } = global;
 
-  global.ev1527 = startEv1527(host, port);
+  global.ev1527Server = startEv1527Server(host, port);
 
   global.ev1527Devices = ev1527Devices.map((device) => {
     const { name } = device;
     if (!name) return null;
 
-    const instance = createDevice(device, global.ev1527);
+    const instance = createDevice(device, global.ev1527Server);
     if (!instance) return null;
 
     return {

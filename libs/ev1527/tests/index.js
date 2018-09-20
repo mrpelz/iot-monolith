@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const { Ev1527, Ev1527Device } = require('../index');
+const { Ev1527Server, Ev1527Device } = require('../index');
 
-const server = new Ev1527({
+const server = new Ev1527Server({
   host: 'flexo.net.wurstsalat.cloud',
   port: 9000
 });

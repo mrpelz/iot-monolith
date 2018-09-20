@@ -8,7 +8,7 @@ const libName = 'ev1527';
 const apiDelimiter = 0x0a;
 const apiEncoding = 'utf8';
 
-class Ev1527 extends PersistentSocket {
+class Ev1527Server extends PersistentSocket {
   constructor(options = {}) {
     const {
       host = null,
@@ -196,6 +196,6 @@ class Ev1527Device extends EventEmitter {
 }
 
 module.exports = {
-  Ev1527,
+  Ev1527Server,
   Ev1527Device
 };
