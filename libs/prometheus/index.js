@@ -16,6 +16,14 @@ function makeLabelString(labels) {
   }).join(',');
 }
 
+function drawValue(input) {
+  if (input === null) return 'nan';
+  if (input === false) return '0';
+  if (input === true) return '1';
+
+  return trimDecimals(input).toString();
+}
+
 function drawMetric(prefix, name, labelString, value) {
   return `${prefix}${name}{${labelString}} ${value}`;
 }
@@ -41,7 +49,7 @@ class Prometheus {
     this._prometheus.server = new HttpServer({
       port,
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'text/plain; charset=utf-8',
         Server: 'iot-monolith prometheus'
       },
       handler: HttpServer.do404
@@ -110,7 +118,7 @@ class Prometheus {
           value
         });
 
-        return drawMetric(prefix, name, labelString, value === null ? 'nan' : trimDecimals(value));
+        return drawMetric(prefix, name, labelString, drawValue(value));
       });
     });
   }

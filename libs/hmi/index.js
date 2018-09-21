@@ -97,11 +97,8 @@ class HmiServer extends EventEmitter {
       return result;
     };
 
-    const setter = async (input) => {
-      const result = await set(input);
-      getter();
-
-      return result;
+    const setter = (input) => {
+      return set(input);
     };
 
     getters.push(getter);

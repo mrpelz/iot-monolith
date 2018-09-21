@@ -62,7 +62,8 @@ hmiServer.addService(({ name, value }) => {
 const webApi = new WebApi({
   port: 8080,
   hmiServer,
-  scheduler
+  scheduler,
+  update: 10
 });
 
 webApi.start();

@@ -30,9 +30,8 @@ function createWallSwitch(wallSwitch, server) {
     const instance = createWallSwitch(wallSwitch, ev1527Server);
     if (!instance) return null;
 
-    return {
-      name,
+    return Object.assign(wallSwitch, {
       instance
-    };
+    });
   }).filter(Boolean);
 }());

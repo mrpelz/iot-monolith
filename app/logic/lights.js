@@ -1,53 +1,37 @@
-const { HmiElement } = require('../../libs/hmi');
-
-function manageObiJackLight(light, hmiServer) {
-  const { name, instance, type } = light;
-
-  const hmi = new HmiElement({
-    name,
-    attributes: {
-      type
-    },
-    server: hmiServer,
-    handlers: {
-      get: () => {
-        return Promise.resolve(instance.relayState);
-      },
-      set: (input) => {
-        return instance.relay(Boolean(input));
-      }
-    }
-  });
+function manageObiJackLight(light) {
+  const { instance } = light;
 
   instance.on('connect', () => {
     instance.ledBlink(5);
   });
 
-  instance.on('buttonShortpress', async () => {
-    await instance.relay(!instance.relayState);
+  instance.on('buttonShortpress', () => {
+    instance.relay(!instance.relayState);
+  });
+
+  instance.on('change', () => {
     instance.ledBlink(instance.relayState ? 2 : 1);
-    hmi.update();
   });
 }
 
-function lightWithDoorSensor(lights, doorSensors) {
-  const lightMatch = lights.find((light) => {
-    return light.name === 'testLicht';
-  });
+// function lightWithDoorSensor(lights, doorSensors) {
+//   const lightMatch = lights.find((light) => {
+//     return light.name === 'testLicht';
+//   });
 
-  const doorSensorMatch = doorSensors.find((sensor) => {
-    return sensor.name === 'wannenbad';
-  });
+//   const doorSensorMatch = doorSensors.find((sensor) => {
+//     return sensor.name === 'wannenbad';
+//   });
 
-  if (!lightMatch || !doorSensorMatch) return;
+//   if (!lightMatch || !doorSensorMatch) return;
 
-  const { instance: lightInstance } = lightMatch;
-  const { instance: doorSensorInstance } = doorSensorMatch;
+//   const { instance: lightInstance } = lightMatch;
+//   const { instance: doorSensorInstance } = doorSensorMatch;
 
-  doorSensorInstance.on('change', () => {
-    lightInstance.relay(doorSensorInstance.isOpen);
-  });
-}
+//   doorSensorInstance.on('change', () => {
+//     lightInstance.relay(doorSensorInstance.isOpen);
+//   });
+// }
 
 function lightWithWallSwitch(lights, wallSwitches) {
   const lightMatch = lights.find((light) => {
@@ -70,8 +54,7 @@ function lightWithWallSwitch(lights, wallSwitches) {
 
 (function main() {
   const {
-    doorSensors,
-    hmiServer,
+    // doorSensors,
     lights,
     wallSwitches
   } = global;
@@ -81,12 +64,12 @@ function lightWithWallSwitch(lights, wallSwitches) {
 
     switch (type) {
       case 'OBI_JACK':
-        manageObiJackLight(light, hmiServer);
+        manageObiJackLight(light);
         break;
       default:
     }
   });
 
-  lightWithDoorSensor(lights, doorSensors);
+  // lightWithDoorSensor(lights, doorSensors);
   lightWithWallSwitch(lights, wallSwitches);
 }());

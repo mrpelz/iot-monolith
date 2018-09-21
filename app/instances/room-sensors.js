@@ -34,11 +34,8 @@ function createSensor(sensor) {
 
     instance.connect();
 
-    return {
-      name,
-      isRoom,
-      metrics,
+    return Object.assign(sensor, {
       instance
-    };
+    });
   }).filter(Boolean);
 }());

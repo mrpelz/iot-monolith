@@ -68,7 +68,10 @@ class ObiJack extends Switch {
         throw new Error('could not set relay');
       }
 
-      this.relayState = value;
+      if (value !== this.relayState) {
+        this.relayState = value;
+        this.emit('change');
+      }
       return value;
     }).catch((reason) => {
       log.error({

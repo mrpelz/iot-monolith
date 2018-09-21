@@ -3,7 +3,8 @@ const { WebApi } = require('../../libs/web-api');
 const {
   config: {
     globals: {
-      webApiPort
+      webApiPort,
+      webApiUpdateSeconds: update
     }
   },
   hmiServer,
@@ -13,7 +14,8 @@ const {
 const webApi = new WebApi({
   port: webApiPort,
   hmiServer,
-  scheduler
+  scheduler,
+  update
 });
 webApi.start();
 

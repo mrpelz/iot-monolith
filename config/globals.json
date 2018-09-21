@@ -2,6 +2,7 @@
   "schedulerPrecision": 125,
   "prometheusPort": 5555,
   "webApiPort": 5556,
+  "webApiUpdateSeconds": 10,
   "ev1527": {
     "host": "flexo.net.wurstsalat.cloud",
     "port": 9000

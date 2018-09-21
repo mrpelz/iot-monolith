@@ -6,18 +6,17 @@ const { Logger } = require('../log');
 
 const libName = 'web-api';
 
-const refreshEverySeconds = 5;
-
 class WebApi {
   constructor(options = {}) {
     const {
       host = undefined,
       port = null,
       hmiServer = null,
-      scheduler = null
+      scheduler = null,
+      update = null
     } = options;
 
-    if (!port || !hmiServer || !scheduler) {
+    if (!port || !hmiServer || !scheduler || !update) {
       throw new Error('insufficient options provided');
     }
 
@@ -29,7 +28,7 @@ class WebApi {
     rebind(this, '_handleIngest', '_handleStream', '_handleSet');
 
     this._setUpHttpServer(host, port);
-    this._setUpHmiService(hmiServer, scheduler);
+    this._setUpHmiService(hmiServer, scheduler, update);
 
     this._webApi.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
   }
@@ -48,11 +47,11 @@ class WebApi {
     this._webApi.httpServer = httpServer;
   }
 
-  _setUpHmiService(hmiServer, scheduler) {
+  _setUpHmiService(hmiServer, scheduler, update) {
     const hmiService = hmiServer.addService(this._handleIngest);
     new RecurringMoment(
       scheduler,
-      every.second(refreshEverySeconds)
+      every.second(update)
     ).on('hit', () => {
       if (this._webApi.isActive) {
         hmiService.getAll();
@@ -136,9 +135,7 @@ class WebApi {
     });
 
     return {
-      handler: Promise.all(setters).then(() => {
-        hmiService.getAll();
-      }),
+      handler: Promise.all(setters),
       resolveCode: 204
     };
   }

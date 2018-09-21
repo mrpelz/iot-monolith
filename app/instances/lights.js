@@ -40,10 +40,8 @@ function createObiJackLight(light) {
 
     instance.connect();
 
-    return {
-      name,
-      type,
+    return Object.assign(light, {
       instance
-    };
+    });
   }).filter(Boolean);
 }());

@@ -14,8 +14,8 @@ function createInstances() {
 
 function runLogic() {
   require('./logic/lights');
-  require('./logic/metrics-to-hmi');
-  require('./logic/metrics-to-prometheus');
+  require('./logic/hmi');
+  require('./logic/prometheus');
 }
 
 module.exports = {
