@@ -4,16 +4,14 @@ function createSensor(sensor) {
   const {
     host,
     port,
-    metrics,
-    name
+    metrics
   } = sensor;
 
   try {
     return new CachedRoomSensor({
       host,
       port,
-      metrics,
-      name
+      metrics
     });
   } catch (e) {
     return null;
