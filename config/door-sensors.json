@@ -1,32 +1,22 @@
 [
   {
     "name": "wannenbad",
-    "type": "DOOR_SENSOR",
     "id": 15442
   },
   {
     "name": "schlafzimmer",
-    "type": "DOOR_SENSOR",
     "id": 47642
   },
   {
     "name": "abstellraum",
-    "type": "DOOR_SENSOR",
     "id": 51866
   },
   {
     "name": "wohnungstür",
-    "type": "DOOR_SENSOR",
     "id": 52455
   },
   {
     "name": "duschbad",
-    "type": "DOOR_SENSOR",
     "id": 52595
-  },
-  {
-    "name": "thePushbutton",
-    "type": "TX118SA4",
-    "id": 570816
   }
 ]

@@ -4,17 +4,19 @@ const { remainder } = require('./math');
 const { isObject } = require('./structures');
 
 // https://jsfiddle.net/jonathansampson/m7G64/
-function throttle(callback, limit = 500) {
-  let wait = false;
+function throttle(limit = 500) {
+  let run = true;
   return () => {
-    if (!wait) {
-      wait = true;
+    if (run) {
+      run = false;
       setTimeout(() => {
-        wait = false;
+        run = true;
       }, limit);
 
-      callback();
+      return true;
     }
+
+    return false;
   };
 }
 

@@ -1,6 +1,7 @@
-const EventEmitter = require('events');
+const { Base } = require('../base');
 const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
+const { throttle } = require('../utils/time');
 const { Logger } = require('../log');
 
 const libName = 'ev1527';
@@ -63,134 +64,82 @@ class Ev1527Server extends PersistentSocket {
   // disconnect
 }
 
-class Ev1527Device extends EventEmitter {
-  static DOOR_SENSOR(id) {
-    const match = (cmd) => {
-      let lastMatch = 0;
+class Ev1527Device extends Base {
+  static prepareMatchers(matchSet) {
+    const { device, states } = matchSet;
 
-      return (message) => {
-        const now = new Date().getTime();
+    if (!device || !states) {
+      throw new Error('insufficient options provided');
+    }
 
-        const isMatch = (
-          message.model === 'Generic Remote'
-          && message.id === id
-          && message.cmd === cmd
-          && now - lastMatch > 1500
-        );
+    const { match: globalMatch = {}, debounce: globalDebounce = 0 } = device;
 
-        if (isMatch) {
-          lastMatch = now;
-        }
+    return Object.keys(states).map((state) => {
+      const { [state]: stateOptions } = states;
+      const { match = {}, debounce = globalDebounce } = stateOptions;
 
-        return isMatch;
+      const throttler = throttle(debounce);
+      const combined = Object.assign({}, globalMatch, match);
+
+      const matchFn = (input) => {
+        return Object.keys(combined).reduce((prev, key) => {
+          if (!prev) return false;
+          const { [key]: matchValue } = combined;
+          const { [key]: inputValue } = input;
+
+          if (typeof matchValue === 'function') return matchValue(inputValue);
+
+          return matchValue === inputValue;
+        }, true);
       };
-    };
 
-    return [
-      {
-        state: 'close',
-        match: match(14)
-      },
-      {
-        state: 'open',
-        match: match(10)
-      },
-      {
-        state: 'tamper',
-        match: match(7)
-      }
-    ];
-  }
-
-  static TX118SA4(id) {
-    const match = (channel) => {
-      let lastMatch = 0;
-
-      return (message) => {
-        const now = new Date().getTime();
-
-        const isMatch = (
-          message.model === 'TX118SA-4'
-          && message.id === id
-          && message.channels.includes(channel)
-          && now - lastMatch > 1000
-        );
-
-        if (isMatch) {
-          lastMatch = now;
+      const matcher = debounce
+        ? (input) => {
+          return throttler() && matchFn(input);
         }
+        : matchFn;
 
-        return isMatch;
+      return {
+        matcher,
+        state
       };
-    };
-
-    return [
-      {
-        state: 'one',
-        match: match(1)
-      },
-      {
-        state: 'two',
-        match: match(2)
-      },
-      {
-        state: 'three',
-        match: match(3)
-      },
-      {
-        state: 'four',
-        match: match(4)
-      }
-    ];
-  }
-
-  static prepareMatcher(matchFn, id) {
-    const matchers = matchFn(id);
-
-    return (message) => {
-      return matchers.map((matchSet) => {
-        const { state, match } = matchSet;
-
-        const isMatch = match(message);
-
-        return isMatch ? state : null;
-      }).filter(Boolean);
-    };
+    });
   }
 
   constructor(options = {}) {
     const {
-      name = null,
       id = null,
       server = null,
-      matchFn = null
+      match = null
     } = options;
 
-    if (!name || !id || !server || typeof matchFn !== 'function') {
+    if (!id || !server || !match) {
       throw new Error('insufficient options provided');
     }
 
     super();
 
     this._ev1527Device = {
-      name
+      id
     };
 
     rebind(this, '_handleMessage');
     server.on('message', this._handleMessage);
 
-    this._ev1527Device.matcher = Ev1527Device.prepareMatcher(matchFn, id);
+    this._ev1527Device.matchers = Ev1527Device.prepareMatchers(match);
 
-    this._ev1527Device.log = new Logger(Logger.NAME(`${libName} (device)`, `${name}/${id}`));
+    this._ev1527Device.log = new Logger(Logger.NAME(`${libName} (device)`, id));
   }
 
   _handleMessage(message) {
-    const { matcher, name } = this._ev1527Device;
+    const { matchers } = this._ev1527Device;
 
-    const matches = matcher(message);
+    matchers.forEach((matchSet) => {
+      const { matcher, state } = matchSet;
 
-    matches.forEach((state) => {
-      this.emit(state, name);
+      if (matcher(message)) {
+        this.emit(state);
+      }
     });
   }
 }

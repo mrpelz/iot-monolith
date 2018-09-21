@@ -1,83 +1,64 @@
 /* eslint-disable no-console */
-const { Ev1527Server, Ev1527Device } = require('../index');
+const { Ev1527Server } = require('../index');
+const { DoorSensor } = require('../../door-sensor');
+const { Tx118sa4 } = require('../../tx118sa4');
 
 const server = new Ev1527Server({
   host: 'flexo.net.wurstsalat.cloud',
   port: 9000
 });
 
-const devices = [
+const doorSensors = [
   {
     name: 'wannenbad',
-    id: 15442,
-    type: 'DOOR_SENSOR'
+    id: 15442
   },
   {
     name: 'schlafzimmer',
-    id: 47642,
-    type: 'DOOR_SENSOR'
+    id: 47642
   },
   {
     name: 'abstellraum',
-    id: 51866,
-    type: 'DOOR_SENSOR'
+    id: 51866
   },
   {
     name: 'wohnungstür',
-    id: 52455,
-    type: 'DOOR_SENSOR'
+    id: 52455
   },
   {
     name: 'duschbad',
-    id: 52595,
-    type: 'DOOR_SENSOR'
-  },
-  {
-    name: 'thePushbutton',
-    id: 570816,
-    type: 'TX118SA4'
+    id: 52595
   }
 ];
 
-devices.forEach((device) => {
-  const { name, id, type } = device;
-  const { [type]: matchFn } = Ev1527Device;
+doorSensors.forEach((sensor) => {
+  const { name, id } = sensor;
 
-  const instance = new Ev1527Device({
-    name,
+  const doorSensor = new DoorSensor({
     id,
-    server,
-    matchFn
+    server
   });
 
-  switch (type) {
-    case 'DOOR_SENSOR':
-      instance.on('close', () => {
-        console.log(`"${name}" was closed`);
-      });
-      instance.on('open', () => {
-        console.log(`"${name}" was opened`);
-      });
-      instance.on('tamper', () => {
-        console.log(`"${name}" was tampered with`);
-      });
-      break;
-    case 'TX118SA4':
-      instance.on('one', () => {
-        console.log(`button one of "${name}" was pressed`);
-      });
-      instance.on('two', () => {
-        console.log(`button two of "${name}" was pressed`);
-      });
-      instance.on('three', () => {
-        console.log(`button three of "${name}" was pressed`);
-      });
-      instance.on('four', () => {
-        console.log(`button four of "${name}" was pressed`);
-      });
-      break;
-    default:
-  }
+  doorSensor.on('change', () => {
+    console.log(`"${name}" was ${doorSensor.isOpen ? 'opened' : 'closed'}`);
+  });
+});
+
+const thePushbutton = new Tx118sa4({
+  id: 570816,
+  server
+});
+thePushbutton.on('one', () => {
+  console.log('thePushbutton one was pressed');
+});
+thePushbutton.on('two', () => {
+  console.log('thePushbutton two was pressed');
+});
+thePushbutton.on('three', () => {
+  console.log('thePushbutton three was pressed');
+});
+thePushbutton.on('four', () => {
+  console.log('thePushbutton four was pressed');
 });
 
 server.on('connect', async () => {

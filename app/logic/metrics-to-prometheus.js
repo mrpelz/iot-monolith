@@ -6,7 +6,7 @@ roomSensors.forEach((sensor) => {
   metrics.forEach((metric) => {
     prometheus.metric(
       metric,
-      { name },
+      { location: name },
       instance.access('get', metric)
     );
   });

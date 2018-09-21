@@ -30,8 +30,51 @@ function manageObiJackLight(light, hmiServer) {
   });
 }
 
+function lightWithDoorSensor(lights, doorSensors) {
+  const lightMatch = lights.find((light) => {
+    return light.name === 'testLicht';
+  });
+
+  const doorSensorMatch = doorSensors.find((sensor) => {
+    return sensor.name === 'wannenbad';
+  });
+
+  if (!lightMatch || !doorSensorMatch) return;
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: doorSensorInstance } = doorSensorMatch;
+
+  doorSensorInstance.on('change', () => {
+    lightInstance.relay(doorSensorInstance.isOpen);
+  });
+}
+
+function lightWithWallSwitch(lights, wallSwitches) {
+  const lightMatch = lights.find((light) => {
+    return light.name === 'testLicht';
+  });
+
+  const wallSwitchMatch = wallSwitches.find((wallSwitch) => {
+    return wallSwitch.name === 'thePushbutton';
+  });
+
+  if (!lightMatch || !wallSwitchMatch) return;
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: wallSwitchInstance } = wallSwitchMatch;
+
+  wallSwitchInstance.on('one', () => {
+    lightInstance.relay(!lightInstance.relayState);
+  });
+}
+
 (function main() {
-  const { hmiServer, lights } = global;
+  const {
+    doorSensors,
+    hmiServer,
+    lights,
+    wallSwitches
+  } = global;
 
   lights.forEach((light) => {
     const { type } = light;
@@ -43,4 +86,7 @@ function manageObiJackLight(light, hmiServer) {
       default:
     }
   });
+
+  lightWithDoorSensor(lights, doorSensors);
+  lightWithWallSwitch(lights, wallSwitches);
 }());
