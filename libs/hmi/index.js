@@ -68,7 +68,7 @@ class HmiServer extends EventEmitter {
     log.info(`setting "${name}" to "${value}"`);
 
     const { [name]: set } = setters;
-    return set(value);
+    return set ? set(value) : Promise.resolve(null);
   }
 
   addElement(options) {
