@@ -3,14 +3,17 @@ const { camel } = require('../../libs/utils/string');
 
 function doorSensorsHmi(doorSensors, hmiServer) {
   doorSensors.forEach((doorSensor) => {
-    const { name, instance } = doorSensor;
+    const {
+      name,
+      instance,
+      attributes: {
+        hmi: hmiAttributes = {}
+      } = {}
+    } = doorSensor;
 
     const hmi = new HmiElement({
       name,
-      attributes: {
-        location: name,
-        type: 'door'
-      },
+      attributes: Object.assign({ type: 'door' }, hmiAttributes),
       server: hmiServer,
       handlers: {
         get: () => {
@@ -25,9 +28,16 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
-function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
+function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
   roomSensors.forEach((sensor) => {
-    const { name, instance, metrics } = sensor;
+    const {
+      name,
+      instance,
+      metrics,
+      attributes: {
+        hmi: hmiAttributes = {}
+      } = {}
+    } = sensor;
 
     return metrics.forEach((metric) => {
       const hmiName = camel(name, metric);
@@ -36,11 +46,10 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
       /* eslint-disable-next-line no-new */
       new HmiElement({
         name: hmiName,
-        attributes: {
-          location: name,
-          type: 'room-sensor',
-          metric
-        },
+        attributes: Object.assign({
+          displayName: strings[metric] || hmiName,
+          type: 'room-sensor'
+        }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
         handlers: { get }
@@ -50,14 +59,21 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
 }
 
 function obiLightHmi(light, hmiServer) {
-  const { name, instance, type } = light;
+  const {
+    name,
+    instance,
+    type,
+    attributes: {
+      hmi: hmiAttributes = {}
+    } = {}
+  } = light;
 
   const hmi = new HmiElement({
     name,
-    attributes: {
+    attributes: Object.assign({
       type: 'light',
       subtype: type
-    },
+    }, hmiAttributes),
     server: hmiServer,
     handlers: {
       get: () => {
@@ -91,8 +107,9 @@ function lightsHmi(lights, hmiServer) {
 (function main() {
   const {
     config: {
-      globals: {
-        valueSanity
+      hmi: {
+        valueSanity,
+        strings
       }
     },
     hmiServer,
@@ -102,6 +119,6 @@ function lightsHmi(lights, hmiServer) {
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
-  roomSensorsHmi(roomSensors, hmiServer, valueSanity);
+  roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings);
   lightsHmi(lights, hmiServer);
 }());

@@ -1,22 +1,52 @@
 [
   {
     "name": "wannenbad",
-    "id": 15442
+    "id": 15442,
+    "attributes": {
+      "hmi": {
+        "displayName": "Tür",
+        "location": "wannenbad"
+      }
+    }
   },
   {
     "name": "schlafzimmer",
-    "id": 47642
+    "id": 47642,
+    "attributes": {
+      "hmi": {
+        "displayName": "Tür",
+        "location": "schlafzimmer"
+      }
+    }
   },
   {
     "name": "abstellraum",
-    "id": 51866
+    "id": 51866,
+    "attributes": {
+      "hmi": {
+        "displayName": "Tür",
+        "location": "abstellraum"
+      }
+    }
   },
   {
     "name": "wohnungstür",
-    "id": 52455
+    "id": 52455,
+    "attributes": {
+      "hmi": {
+        "displayName": "Wohnungstür",
+        "location": "flur"
+      }
+    }
   },
   {
     "name": "duschbad",
-    "id": 52595
+    "id": 52595,
+    "attributes": {
+      "hmi": {
+        "displayName": "Tür",
+        "location": "duschbad"
+      }
+    }
   }
 ]

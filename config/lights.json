@@ -3,24 +3,48 @@
     "name": "wohnzimmerStehlampe",
     "host": "10.97.4.11",
     "port": 5045,
-    "type": "OBI_JACK"
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Stehlampe",
+        "location": "wohnzimmer"
+      }
+    }
   },
   {
     "name": "schlafzimmerSteinlampe",
     "host": "10.97.4.32",
     "port": 5045,
-    "type": "OBI_JACK"
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Steinlampe",
+        "location": "schlafzimmer"
+      }
+    }
   },
   {
     "name": "esszimmerStehlampe",
     "host": "10.97.4.12",
     "port": 5045,
-    "type": "OBI_JACK"
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Stehlampe",
+        "location": "esszimmer"
+      }
+    }
   },
   {
     "name": "testLicht",
     "host": "127.0.0.1",
     "port": 3000,
-    "type": "OBI_JACK"
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Test-Licht",
+        "location": "testraum"
+      }
+    }
   }
 ]

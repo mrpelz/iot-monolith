@@ -1,0 +1,22 @@
+{
+  "strings": {
+    "temperature": "Temperatur",
+    "pressure": "Luftdruck",
+    "humidity": "Luftfeuchtigkeit",
+    "brightness": "Helligkeit",
+    "eco2": "Eq. CO₂",
+    "tvoc": "Flüchtige Organische Verbindungen",
+    "precipitation": "Niederschlag",
+    "pm10": "Feinstaub (PM10)",
+    "pm025": "Feinstaub (PM2.5)"
+  },
+  "valueSanity": {
+    "default": {
+      "round": true
+    },
+    "pressure": {
+      "divide": 1000,
+      "round": true
+    }
+  }
+}

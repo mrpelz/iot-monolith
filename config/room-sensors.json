@@ -9,7 +9,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "wohnzimmer"
+      }
+    }
   },
   {
     "name": "esszimmer",
@@ -19,7 +24,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "esszimmer"
+      }
+    }
   },
   {
     "name": "kueche",
@@ -31,7 +41,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "kueche"
+      }
+    }
   },
   {
     "name": "schlafzimmer",
@@ -43,7 +58,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "schlafzimmer"
+      }
+    }
   },
   {
     "name": "arbeitszimmer",
@@ -57,7 +77,12 @@
       "eco2",
       "tvoc"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "arbeitszimmer"
+      }
+    }
   },
   {
     "name": "flur",
@@ -67,7 +92,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "flur"
+      }
+    }
   },
   {
     "name": "abstellraum",
@@ -79,7 +109,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "abstellraum"
+      }
+    }
   },
   {
     "name": "duschbad",
@@ -92,7 +127,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "duschbad"
+      }
+    }
   },
   {
     "name": "wannenbad",
@@ -102,7 +142,12 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "wannenbad"
+      }
+    }
   },
   {
     "name": "terrasse",
@@ -116,7 +161,12 @@
       "tvoc"
     ],
     "isOutside": true,
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "terrasse"
+      }
+    }
   },
   {
     "name": "balkon",
@@ -129,7 +179,12 @@
       "brightness"
     ],
     "isOutside": true,
-    "isRoom": true
+    "isRoom": true,
+    "attributes": {
+      "hmi": {
+        "location": "balkon"
+      }
+    }
   },
   {
     "name": "ahu_in",
@@ -140,7 +195,12 @@
       "flow_rate",
       "eco2",
       "tvoc"
-    ]
+    ],
+    "attributes": {
+      "hmi": {
+        "location": "global"
+      }
+    }
   },
   {
     "name": "ahu_out",
@@ -151,6 +211,11 @@
       "ow_rate",
       "eco2",
       "tvoc"
-    ]
+    ],
+    "attributes": {
+      "hmi": {
+        "location": "global"
+      }
+    }
   }
 ]
