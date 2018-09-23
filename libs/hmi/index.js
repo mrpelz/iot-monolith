@@ -41,7 +41,7 @@ class HmiServer extends EventEmitter {
     });
   }
 
-  _getAllElementStates(force) {
+  _getAllElementStates(force, forceEmpty) {
     const {
       log,
       getters
@@ -49,7 +49,7 @@ class HmiServer extends EventEmitter {
 
     return Promise.all(
       getters.map((getter) => {
-        return getter(force);
+        return getter(force, forceEmpty);
       })
     ).then((values) => {
       log.info('updated all elements');
@@ -90,9 +90,9 @@ class HmiServer extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    const getter = async (force) => {
+    const getter = async (force, forceEmpty = false) => {
       const result = await get(force);
-      if (result === null) return null;
+      if (!forceEmpty && result === null) return null;
 
       this._pushElementStateToServices(name, attributes, result);
 

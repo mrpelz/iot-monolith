@@ -91,7 +91,7 @@ class WebApi {
 
   _handleStream(request, response) {
     const { log, clients, hmiService } = this._webApi;
-    const { connection: { remoteAddress, remotePort } } = request;
+    const { connection: { remoteAddress, remotePort }, urlQuery } = request;
     const { write } = response;
 
     log.info(`add stream from client "${remoteAddress}:${remotePort}"`);
@@ -104,7 +104,8 @@ class WebApi {
       delete clients[name];
     });
 
-    hmiService.getAll(true);
+    const { empty = '' } = urlQuery;
+    hmiService.getAll(true, Boolean(parseString(empty)));
 
     return {
       headers: {
