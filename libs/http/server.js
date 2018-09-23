@@ -123,7 +123,7 @@ class HttpServer extends EventEmitter {
       resolveCode = 200,
       rejectCode = 500,
       headers: localHeaders = {},
-      openEnd = false
+      onEnd = false
     } = match;
 
     const headers = Object.assign(
@@ -136,7 +136,9 @@ class HttpServer extends EventEmitter {
       handler.then((body) => {
         response.writeHead(resolveCode, headers);
         response.write(body || emptyBuffer);
-        if (!openEnd) {
+        if (onEnd) {
+          onEnd();
+        } else {
           response.end();
         }
       }).catch((reason) => {

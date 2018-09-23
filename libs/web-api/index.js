@@ -62,17 +62,21 @@ class WebApi {
     this._webApi.hmiService = hmiService;
   }
 
-  _publishMessage(input) {
+  _sendToStream(input) {
     const {
       clients
     } = this._webApi;
 
+    Object.values(clients).forEach((write) => {
+      write(input);
+    });
+  }
+
+  _publishMessage(input) {
     const data = JSON.stringify(input, null, null);
     const payload = `data: ${data}\n\n`;
 
-    Object.values(clients).forEach((write) => {
-      write(payload);
-    });
+    this._sendToStream(payload);
   }
 
   _handleIngest(options) {
@@ -98,20 +102,50 @@ class WebApi {
 
     const name = `webApi/${remoteAddress}:${remotePort}`;
 
+    const { empty = '', client = null } = urlQuery;
+    const forceEmpty = Boolean(parseString(empty));
+
+    this._publishMessage({
+      isSystem: true,
+      event: 'newClient',
+      client,
+      id: name
+    });
+
     clients[name] = write;
     request.on('close', () => {
       log.info(`delete stream from client "${remoteAddress}:${remotePort}"`);
       delete clients[name];
+
+      this._publishMessage({
+        isSystem: true,
+        event: 'delClient',
+        client,
+        id: name
+      });
     });
 
-    const { empty = '' } = urlQuery;
-    hmiService.getAll(true, Boolean(parseString(empty)));
+    const init = async () => {
+      this._publishMessage({
+        isSystem: true,
+        event: 'initStart',
+        client
+      });
+
+      await hmiService.getAll(true, forceEmpty);
+
+      this._publishMessage({
+        isSystem: true,
+        event: 'initComplete',
+        client
+      });
+    };
 
     return {
       headers: {
         'Content-Type': 'text/event-stream'
       },
-      openEnd: true,
+      onEnd: init,
       handler: Promise.resolve(
         `: welcome to the event stream\n: client "${name}"\n\n`
       )
