@@ -3,7 +3,6 @@ const { Socket } = require('net');
 const { Base } = require('../base');
 const { rebind } = require('../utils/oop');
 const { humanPayload, writeNumber } = require('../utils/data');
-const { Logger } = require('../log');
 
 const libName = 'tcp';
 
@@ -65,7 +64,8 @@ class PersistentSocket extends Base {
 
     this._persistentSocket.socket = new Socket();
 
-    this._persistentSocket.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._persistentSocket.log = this.log.withPrefix(libName);
   }
 
   _read(input) {

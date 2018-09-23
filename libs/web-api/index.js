@@ -30,7 +30,9 @@ class WebApi {
     this._setUpHttpServer(host, port);
     this._setUpHmiService(hmiServer, scheduler, update);
 
-    this._webApi.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    const log = new Logger();
+    log.friendlyName(`WebApi (${host}:${port})`);
+    this._webApi.log = log.withPrefix(libName);
   }
 
   _setUpHttpServer(host, port) {

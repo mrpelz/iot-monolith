@@ -39,16 +39,12 @@ function indent(input) {
 }
 
 class Logger {
-  static NAME(libName, instanceName) {
-    return `${libName} → ${instanceName}`;
-  }
-
-  constructor(name) {
+  constructor(name = null) {
     this._name = name;
+    this._prefixes = [];
 
     this._defaultFields = {
-      syslog_identifier: globalPrefix,
-      NAME: name
+      syslog_identifier: globalPrefix
     };
 
     this._journal = (
@@ -58,13 +54,12 @@ class Logger {
     );
 
     this._telegramChat = new TelegramChat(chatIds.log);
-
-    this.info('instance created');
   }
 
-  _log(opts) {
+  _log(opts, usedPrefix) {
     const {
       _name,
+      _prefixes,
       _defaultFields,
       _journal,
       _telegramChat
@@ -78,17 +73,25 @@ class Logger {
       telegram = null
     } = opts;
 
-    if (level > logLevel) return;
+    if (level !== null && level > logLevel) return;
 
+    const name = _name || _prefixes[0] || '[unknown logger]';
+    const prefixChain = _prefixes.map((prefix) => {
+      if (prefix === usedPrefix) return `[${prefix}]`;
+      return prefix;
+    }).join(' → ');
     const messageBody = (
       `${head}${value === null ? '' : ` = ${value}`}`
     );
     const messageAttachment = (
-      `${attachment === null ? '' : `:\n${indent(attachment)}`}`
+      `${attachment === null ? '' : indent(attachment)}`
     );
-    const message = (
-      `${_name}:\n${messageBody}${messageAttachment}`
-    );
+    const message = [
+      name,
+      prefixChain.length ? prefixChain : null,
+      messageBody,
+      messageAttachment
+    ].filter(Boolean).join('\n');
 
     const levelName = levelNames[level];
 
@@ -102,7 +105,6 @@ class Logger {
         case 7:
           _journal.debug(message, fields);
           break;
-        default:
         case 6:
           _journal.info(message, fields);
           break;
@@ -124,6 +126,7 @@ class Logger {
         case 0:
           _journal.emerg(message, fields);
           break;
+        default:
       }
     } else {
       console.log(`\n[${levelName}]\n${message}\n`);
@@ -134,41 +137,78 @@ class Logger {
       || (telegram !== false && level <= 3)
     ) {
       _telegramChat.send(
-        `*${levelName}*  \n_${_name}_  \n${messageBody}\`${messageAttachment}\``
-      );
+        `*${levelName || ''}*  \n_${name}_  \n\`${prefixChain}\`_  \n${messageBody}\`${messageAttachment}\``
+      ).catch((error) => {
+        console.error(`error logging to telegram: "${error}"`);
+      });
     }
   }
 
-  debug(opts) {
-    this._log(options(7, opts));
+  friendlyName(name) {
+    if (name) {
+      this._name = name;
+    }
   }
 
-  info(opts) {
-    this._log(options(6, opts));
+  withPrefix(prefix) {
+    this._prefixes.unshift(prefix);
+    const self = this;
+
+    class LocalLogger extends Logger {
+      constructor() {
+        return {
+          telegram: (opts) => { self.telegram(opts, prefix); },
+          debug: (opts) => { self.debug(opts, prefix); },
+          info: (opts) => { self.info(opts, prefix); },
+          notice: (opts) => { self.notice(opts, prefix); },
+          warning: (opts) => { self.warning(opts, prefix); },
+          error: (opts) => { self.error(opts, prefix); },
+          critical: (opts) => { self.critical(opts, prefix); },
+          alert: (opts) => { self.alert(opts, prefix); },
+          emergency: (opts) => { self.emergency(opts, prefix); }
+        };
+      }
+    }
+
+    return new LocalLogger();
   }
 
-  notice(opts) {
-    this._log(options(5, opts));
+  telegram(opts, prefix = null) {
+    this._log(Object.assign({}, options(null, opts), {
+      telegram: true
+    }), prefix);
   }
 
-  warning(opts) {
-    this._log(options(4, opts));
+  debug(opts, prefix = null) {
+    this._log(options(7, opts), prefix);
   }
 
-  error(opts) {
-    this._log(options(3, opts));
+  info(opts, prefix = null) {
+    this._log(options(6, opts), prefix);
   }
 
-  critical(opts) {
-    this._log(options(2, opts));
+  notice(opts, prefix = null) {
+    this._log(options(5, opts), prefix);
   }
 
-  alert(opts) {
-    this._log(options(1, opts));
+  warning(opts, prefix = null) {
+    this._log(options(4, opts), prefix);
   }
 
-  emerg(opts) {
-    this._log(options(0, opts));
+  error(opts, prefix = null) {
+    this._log(options(3, opts), prefix);
+  }
+
+  critical(opts, prefix = null) {
+    this._log(options(2, opts), prefix);
+  }
+
+  alert(opts, prefix = null) {
+    this._log(options(1, opts), prefix);
+  }
+
+  emergency(opts, prefix = null) {
+    this._log(options(0, opts), prefix);
   }
 }
 

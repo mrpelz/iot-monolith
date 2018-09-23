@@ -3,7 +3,6 @@ const { cacheAll } = require('../cache');
 const { readNumber, sanity } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
-const { Logger } = require('../log');
 
 const libName = 'room-sensor';
 const refreshAtMost = 1000;
@@ -111,7 +110,8 @@ class RoomSensor extends MessageClient {
       metrics
     };
 
-    this._roomSensor.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._roomSensor.log = this.log.withPrefix(libName);
   }
 
   _getMetric(metric) {

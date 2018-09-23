@@ -1,6 +1,5 @@
 const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
-const { Logger } = require('../log');
 
 const libName = 'denon-avr';
 
@@ -38,7 +37,8 @@ class DenonAvr extends PersistentSocket {
     rebind(this, '_handleResponse');
     this.on('data', this._handleResponse);
 
-    this._denonAvr.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._denonAvr.log = this.log.withPrefix(libName);
   }
 
   _handleResponse(input) {

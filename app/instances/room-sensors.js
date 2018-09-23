@@ -32,6 +32,7 @@ function createSensor(sensor) {
     const instance = createSensor(sensor);
     if (!instance) return null;
 
+    instance.log.friendlyName(name);
     instance.connect();
 
     return Object.assign(sensor, {

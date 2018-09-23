@@ -1,7 +1,6 @@
 const { Base } = require('../base');
 const { Ev1527Device } = require('../ev1527');
 const { rebind } = require('../utils/oop');
-const { Logger } = require('../log');
 
 const libName = 'door-sensor';
 
@@ -63,7 +62,8 @@ class DoorSensor extends Base {
     ev1527device.on('open', this._handleOpen);
     ev1527device.on('tamper', this._handleTamper);
 
-    this._doorSensor.log = new Logger(Logger.NAME(libName, id));
+    this.log.friendlyName(id);
+    this._doorSensor.log = this.log.withPrefix(libName);
   }
 
   _handleClose() {

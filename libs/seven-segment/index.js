@@ -10,7 +10,6 @@ const {
 const { rebind } = require('../utils/oop');
 const { words } = require('../utils/string');
 const { sleep } = require('../utils/time');
-const { Logger } = require('../log');
 
 const libName = 'seven-segment';
 
@@ -225,7 +224,8 @@ class SevenSegment extends MessageClient {
     this.on('connect', this._handleSevenSegmentConnection);
     this.on('disconnect', this._handleSevenSegmentDisconnection);
 
-    this._sevenSegment.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._sevenSegment.log = this.log.withPrefix(libName);
   }
 
   _handleSevenSegmentConnection() {

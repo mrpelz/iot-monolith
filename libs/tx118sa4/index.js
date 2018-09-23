@@ -1,5 +1,4 @@
 const { Ev1527Device } = require('../ev1527');
-const { Logger } = require('../log');
 
 const libName = 'tx118sa4';
 
@@ -63,7 +62,9 @@ class Tx118sa4 extends Ev1527Device {
     });
 
     this._tx118sa4 = {};
-    this._tx118sa4.log = new Logger(Logger.NAME(libName, id));
+
+    this.log.friendlyName(id);
+    this._tx118sa4.log = this.log.withPrefix(libName);
   }
 }
 

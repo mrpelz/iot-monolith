@@ -1,6 +1,5 @@
 const { Switch } = require('../switch');
 const { rebind } = require('../utils/oop');
-const { Logger } = require('../log');
 
 const libName = 'obi-jack';
 
@@ -53,7 +52,8 @@ class ObiJack extends Switch {
     rebind(this, '_handleObiJackConnection');
     this.on('connect', this._handleObiJackConnection);
 
-    this._obiJack.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._obiJack.log = this.log.withPrefix(libName);
   }
 
   _handleObiJackConnection() {

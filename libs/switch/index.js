@@ -7,7 +7,6 @@ const {
 } = require('../utils/data');
 const { rebind } = require('../utils/oop');
 const { camel } = require('../utils/string');
-const { Logger } = require('../log');
 
 const libName = 'switch';
 
@@ -102,7 +101,8 @@ class Switch extends MessageClient {
     rebind(this, '_addListener', '_handleEvent');
     setUpListeners(capabilities, this._addListener);
 
-    this._switch.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._switch.log = this.log.withPrefix(libName);
   }
 
   _addListener(name) {

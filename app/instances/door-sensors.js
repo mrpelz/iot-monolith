@@ -30,6 +30,8 @@ function createSensor(sensor, server) {
     const instance = createSensor(sensor, ev1527Server);
     if (!instance) return null;
 
+    instance.log.friendlyName(name);
+
     return Object.assign(sensor, {
       instance
     });

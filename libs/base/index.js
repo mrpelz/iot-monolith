@@ -1,4 +1,5 @@
 const EventEmitter = require('events');
+const { Logger } = require('../log');
 
 class Base extends EventEmitter {
   constructor() {
@@ -6,6 +7,8 @@ class Base extends EventEmitter {
     this._base = {
       access: null
     };
+
+    this.log = new Logger();
   }
 
   access(...path) {

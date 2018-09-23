@@ -1,7 +1,10 @@
 /* eslint-disable no-console */
 const { Logger } = require('../index');
 
-const log = new Logger(Logger.NAME('log-test', 'test-instance'));
+const globalLog = new Logger();
+globalLog.friendlyName('log-test');
+
+const log = globalLog.withPrefix('test');
 
 log.debug({
   head: 'testing debug',
@@ -26,7 +29,7 @@ log.error({
 });
 log.critical('testing critical');
 log.alert('testing alert');
-log.emerg('testing emerg');
+log.emergency('testing emerg');
 
 log.debug({
   head: 'testing debug with forced telegram',

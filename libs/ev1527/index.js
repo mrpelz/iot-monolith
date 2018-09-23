@@ -2,7 +2,6 @@ const { Base } = require('../base');
 const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
 const { throttle } = require('../utils/time');
-const { Logger } = require('../log');
 
 const libName = 'ev1527';
 
@@ -31,7 +30,8 @@ class Ev1527Server extends PersistentSocket {
     rebind(this, '_handlePayload');
     this.on('data', this._handlePayload);
 
-    this._ev1527.log = new Logger(Logger.NAME(`${libName} (server)`, `${host}:${port}`));
+    this.log.friendlyName('Ev1527Server');
+    this._ev1527.log = this.log.withPrefix(libName);
   }
 
   _handlePayload(input) {
@@ -128,7 +128,8 @@ class Ev1527Device extends Base {
 
     this._ev1527Device.matchers = Ev1527Device.prepareMatchers(match);
 
-    this._ev1527Device.log = new Logger(Logger.NAME(`${libName} (device)`, id));
+    this.log.friendlyName(id);
+    this._ev1527Device.log = this.log.withPrefix(libName);
   }
 
   _handleMessage(message) {

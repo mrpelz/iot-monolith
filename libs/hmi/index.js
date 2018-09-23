@@ -17,7 +17,9 @@ class HmiServer extends EventEmitter {
 
     rebind(this, '_getAllElementStates', '_setElementState');
 
-    this._hmi.log = new Logger(`${libName} (server)`);
+    const log = new Logger();
+    log.friendlyName('HmiServer');
+    this._hmi.log = log.withPrefix(libName);
   }
 
   _pushElementStateToServices(name, attributes, value) {
@@ -168,7 +170,9 @@ class HmiElement {
     rebind(this, '_get', '_set');
     this._setUpServer();
 
-    this._hmiElement.log = new Logger(`${libName} (element)`);
+    const log = new Logger();
+    log.friendlyName('HmiElement');
+    this._hmiElement.log = log.withPrefix(libName);
   }
 
   _setUpServer() {

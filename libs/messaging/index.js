@@ -1,7 +1,6 @@
 const { PersistentSocket } = require('../tcp');
 const { emptyBuffer, readNumber } = require('../utils/data');
 const { rebind } = require('../utils/oop');
-const { Logger } = require('../log');
 
 const libName = 'messaging';
 
@@ -121,7 +120,8 @@ class MessageClient extends PersistentSocket {
     this.on('data', this._handleResponse);
     this.on('disconnect', this._handleDisconnection);
 
-    this._messaging.log = new Logger(Logger.NAME(libName, `${host}:${port}`));
+    this.log.friendlyName(`${host}:${port}`);
+    this._messaging.log = this.log.withPrefix(libName);
   }
 
   _emitEvent(payload) {

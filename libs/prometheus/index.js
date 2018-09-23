@@ -56,7 +56,9 @@ class Prometheus {
     });
     this._prometheus.server.route('/metrics', this._handleRequest);
 
-    this._prometheus.log = new Logger(Logger.NAME(libName, port));
+    const log = new Logger();
+    log.friendlyName(`Prometheus (${port})`);
+    this._prometheus.log = log.withPrefix(libName);
   }
 
   _handleRequest() {

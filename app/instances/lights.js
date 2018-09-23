@@ -38,6 +38,7 @@ function createObiJackLight(light) {
 
     if (!instance) return null;
 
+    instance.log.friendlyName(name);
     instance.connect();
 
     return Object.assign(light, {
