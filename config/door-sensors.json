@@ -1,6 +1,6 @@
 [
   {
-    "name": "wannenbad",
+    "name": "wannenbadDoor",
     "id": 15442,
     "attributes": {
       "hmi": {
@@ -10,7 +10,7 @@
     }
   },
   {
-    "name": "schlafzimmer",
+    "name": "schlafzimmerDoor",
     "id": 47642,
     "attributes": {
       "hmi": {
@@ -20,7 +20,7 @@
     }
   },
   {
-    "name": "abstellraum",
+    "name": "abstellraumDoor",
     "id": 51866,
     "attributes": {
       "hmi": {
@@ -30,7 +30,7 @@
     }
   },
   {
-    "name": "wohnungstür",
+    "name": "entryDoor",
     "id": 52455,
     "attributes": {
       "hmi": {
@@ -40,7 +40,7 @@
     }
   },
   {
-    "name": "duschbad",
+    "name": "duschbadDoor",
     "id": 52595,
     "attributes": {
       "hmi": {

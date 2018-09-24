@@ -65,14 +65,14 @@ class HmiServer extends EventEmitter {
 
     log.info('getting element list');
 
-    return Object.keys(elements).map((name) => {
-      const { [name]: { attributes } } = elements;
+    const result = {};
 
-      return {
-        name,
-        attributes
-      };
+    Object.keys(elements).forEach((name) => {
+      const { [name]: { attributes } } = elements;
+      result[name] = attributes;
     });
+
+    return result;
   }
 
   _setElementState(name, value) {
