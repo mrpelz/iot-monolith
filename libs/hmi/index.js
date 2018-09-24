@@ -10,19 +10,18 @@ class HmiServer extends EventEmitter {
     super();
 
     this._hmi = {
-      getters: [],
-      setters: {},
-      ingests: []
+      elements: {},
+      ingests: [],
     };
 
-    rebind(this, '_getAllElementStates', '_setElementState');
+    rebind(this, '_getAllElementStates', '_listElements', '_setElementState');
 
     const log = new Logger();
     log.friendlyName('HmiServer');
     this._hmi.log = log.withPrefix(libName);
   }
 
-  _pushElementStateToServices(name, attributes, value) {
+  _pushElementStateToServices(name, value) {
     const {
       ingests,
       log
@@ -32,7 +31,6 @@ class HmiServer extends EventEmitter {
       ingests.map((ingest) => {
         return resolveAlways(ingest({
           name,
-          attributes,
           value
         }));
       })
@@ -41,15 +39,17 @@ class HmiServer extends EventEmitter {
     });
   }
 
-  _getAllElementStates(force, forceEmpty) {
+  _getAllElementStates() {
     const {
-      log,
-      getters
+      elements,
+      log
     } = this._hmi;
 
     return Promise.all(
-      getters.map((getter) => {
-        return getter(force, forceEmpty);
+      Object.values(elements).map((element) => {
+        const { getter } = element;
+
+        return getter();
       })
     ).then((values) => {
       log.info('updated all elements');
@@ -57,10 +57,28 @@ class HmiServer extends EventEmitter {
     });
   }
 
+  _listElements() {
+    const {
+      log,
+      elements
+    } = this._hmi;
+
+    log.info('getting element list');
+
+    return Object.keys(elements).map((name) => {
+      const { [name]: { attributes } } = elements;
+
+      return {
+        name,
+        attributes
+      };
+    });
+  }
+
   _setElementState(name, value) {
     const {
       log,
-      setters
+      elements
     } = this._hmi;
 
     if (!name || value === undefined) {
@@ -69,14 +87,13 @@ class HmiServer extends EventEmitter {
 
     log.info(`setting "${name}" to "${value}"`);
 
-    const { [name]: set } = setters;
-    return set ? set(value) : Promise.resolve(null);
+    const { [name]: { setter } } = elements;
+    return setter ? setter(value) : Promise.resolve(null);
   }
 
   addElement(options) {
     const {
-      getters,
-      setters
+      elements
     } = this._hmi;
 
     const {
@@ -90,11 +107,11 @@ class HmiServer extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    const getter = async (force, forceEmpty = false) => {
-      const result = await get(force);
-      if (!forceEmpty && result === null) return null;
+    const getter = async () => {
+      const result = await get();
+      if (result === null) return null;
 
-      this._pushElementStateToServices(name, attributes, result);
+      this._pushElementStateToServices(name, result);
 
       return result;
     };
@@ -103,11 +120,11 @@ class HmiServer extends EventEmitter {
       return set(input);
     };
 
-    getters.push(getter);
-
-    if (set) {
-      setters[name] = setter;
-    }
+    elements[name] = {
+      attributes,
+      getter,
+      setter: set ? setter : null
+    };
 
     return getter;
   }
@@ -125,7 +142,8 @@ class HmiServer extends EventEmitter {
 
     return {
       getAll: this._getAllElementStates,
-      set: this._setElementState
+      set: this._setElementState,
+      list: this._listElements
     };
   }
 
@@ -193,7 +211,7 @@ class HmiElement {
     this._hmiElement.update = update;
   }
 
-  async _get(force = false) {
+  async _get() {
     const {
       get,
       log,
@@ -205,7 +223,7 @@ class HmiElement {
     const result = await resolveAlways(get());
     const value = valueSanity ? sanity(result, valueSanity) : result;
 
-    if (!force && value === oldValue) return null;
+    if (value === oldValue) return null;
 
     log.info({
       head: `got new value for "${name}"`,
@@ -245,7 +263,7 @@ class HmiElement {
 
     log.info(`force-updating "${name}"`);
 
-    return update(true);
+    return update();
   }
 
   // Public methods:

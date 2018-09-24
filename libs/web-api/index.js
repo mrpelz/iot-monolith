@@ -25,7 +25,7 @@ class WebApi {
       clients: {}
     };
 
-    rebind(this, '_handleIngest', '_handleStream', '_handleSet');
+    rebind(this, '_handleIngest', '_handleStream', '_handleList', '_handleSet');
 
     this._setUpHttpServer(host, port);
     this._setUpHmiService(hmiServer, scheduler, update);
@@ -45,6 +45,7 @@ class WebApi {
       }
     });
     httpServer.route('/stream', this._handleStream);
+    httpServer.route('/list', this._handleList);
     httpServer.route('/set', this._handleSet);
     this._webApi.httpServer = httpServer;
   }
@@ -95,20 +96,16 @@ class WebApi {
 
   _handleStream(request, response) {
     const { log, clients, hmiService } = this._webApi;
-    const { connection: { remoteAddress, remotePort }, urlQuery } = request;
+    const { connection: { remoteAddress, remotePort } } = request;
     const { write } = response;
 
     log.info(`add stream from client "${remoteAddress}:${remotePort}"`);
 
     const name = `webApi/${remoteAddress}:${remotePort}`;
 
-    const { empty = '', client = null } = urlQuery;
-    const forceEmpty = Boolean(parseString(empty));
-
     this._publishMessage({
       isSystem: true,
       event: 'newClient',
-      client,
       id: name
     });
 
@@ -120,25 +117,12 @@ class WebApi {
       this._publishMessage({
         isSystem: true,
         event: 'delClient',
-        client,
         id: name
       });
     });
 
-    const init = async () => {
-      this._publishMessage({
-        isSystem: true,
-        event: 'initStart',
-        client
-      });
-
-      await hmiService.getAll(true, forceEmpty);
-
-      this._publishMessage({
-        isSystem: true,
-        event: 'initComplete',
-        client
-      });
+    const init = () => {
+      return hmiService.getAll();
     };
 
     return {
@@ -148,6 +132,16 @@ class WebApi {
       onEnd: init,
       handler: Promise.resolve(
         `: welcome to the event stream\n: client "${name}"\n\n`
+      )
+    };
+  }
+
+  _handleList() {
+    const { hmiService } = this._webApi;
+
+    return {
+      handler: Promise.resolve(
+        JSON.stringify(hmiService.list(), null, null)
       )
     };
   }
