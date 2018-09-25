@@ -1,0 +1,57 @@
+[
+  {
+    "name": "global",
+    "sensors": [
+      "wohnzimmer",
+      "esszimmer",
+      "kueche",
+      "schlafzimmer",
+      "arbeitszimmer",
+      "flur",
+      "abstellraum",
+      "duschbad",
+      "wannenbad",
+      "terrasse",
+      "balkon"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ]
+  },
+  {
+    "name": "innen",
+    "sensors": [
+      "wohnzimmer",
+      "esszimmer",
+      "kueche",
+      "schlafzimmer",
+      "arbeitszimmer",
+      "flur",
+      "abstellraum",
+      "duschbad",
+      "wannenbad"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ]
+  },
+  {
+    "name": "außen",
+    "sensors": [
+      "terrasse",
+      "balkon"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ]
+  }
+]

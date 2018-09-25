@@ -9,7 +9,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "wohnzimmer"
@@ -24,7 +23,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "esszimmer"
@@ -41,7 +39,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "kueche"
@@ -58,7 +55,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "schlafzimmer"
@@ -77,7 +73,6 @@
       "eco2",
       "tvoc"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "arbeitszimmer"
@@ -92,7 +87,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "flur"
@@ -109,7 +103,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "abstellraum"
@@ -127,7 +120,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "duschbad"
@@ -142,7 +134,6 @@
       "humidity",
       "brightness"
     ],
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "wannenbad"
@@ -160,8 +151,6 @@
       "eco2",
       "tvoc"
     ],
-    "isOutside": true,
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "terrasse"
@@ -178,8 +167,6 @@
       "humidity",
       "brightness"
     ],
-    "isOutside": true,
-    "isRoom": true,
     "attributes": {
       "hmi": {
         "location": "balkon"

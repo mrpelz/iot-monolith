@@ -60,16 +60,33 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
   });
 }
 
+function metricAggregatesToPrometheus(metricAggregates, prometheus) {
+  metricAggregates.forEach((aggregate) => {
+    const { group, metric, instance } = aggregate;
+
+    prometheus.metric(
+      metric,
+      {
+        location: group,
+        type: 'metric-aggregate'
+      },
+      instance.get
+    );
+  });
+}
+
 
 (function main() {
   const {
     doorSensors,
     lights,
     prometheus,
-    roomSensors
+    roomSensors,
+    metricAggregates
   } = global;
 
   lightsToPrometheus(lights, prometheus);
   doorSensorsToPrometheus(doorSensors, prometheus);
   roomSensorsToPrometheus(roomSensors, prometheus);
+  metricAggregatesToPrometheus(metricAggregates, prometheus);
 }());

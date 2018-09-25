@@ -3,6 +3,7 @@
 function createInstances() {
   require('./instances/scheduler');
   require('./instances/room-sensors');
+  require('./instances/metric-aggregates');
   require('./instances/lights');
   require('./instances/ev1527-server');
   require('./instances/wall-switches');
