@@ -122,7 +122,7 @@ class WebApi {
     });
 
     const init = () => {
-      return hmiService.getAll();
+      return hmiService.getAll(true);
     };
 
     return {

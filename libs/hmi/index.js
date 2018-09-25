@@ -39,7 +39,7 @@ class HmiServer extends EventEmitter {
     });
   }
 
-  _getAllElementStates() {
+  _getAllElementStates(force) {
     const {
       elements,
       log
@@ -49,7 +49,7 @@ class HmiServer extends EventEmitter {
       Object.values(elements).map((element) => {
         const { getter } = element;
 
-        return getter();
+        return getter(force);
       })
     ).then((values) => {
       log.info('updated all elements');
@@ -107,8 +107,8 @@ class HmiServer extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    const getter = async () => {
-      const result = await get();
+    const getter = async (force) => {
+      const result = await get(force);
       if (result === null) return null;
 
       this._pushElementStateToServices(name, result);
@@ -211,7 +211,7 @@ class HmiElement {
     this._hmiElement.update = update;
   }
 
-  async _get() {
+  async _get(force = false) {
     const {
       get,
       log,
@@ -223,7 +223,7 @@ class HmiElement {
     const result = await resolveAlways(get());
     const value = valueSanity ? sanity(result, valueSanity) : result;
 
-    if (value === oldValue) return null;
+    if (!force && value === oldValue) return null;
 
     log.info({
       head: `got new value for "${name}"`,
