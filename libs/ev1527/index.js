@@ -29,6 +29,7 @@ class Ev1527Server extends PersistentSocket {
 
     rebind(this, '_handlePayload');
     this.on('data', this._handlePayload);
+    this.setMaxListeners(0);
 
     this.log.friendlyName('Ev1527Server');
     this._ev1527.log = this.log.withPrefix(libName);

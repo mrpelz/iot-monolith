@@ -1,7 +1,7 @@
 [
   {
     "name": "wannenbadDoor",
-    "id": 15442,
+    "id": 45076,
     "attributes": {
       "hmi": {
         "displayName": "Tür",
@@ -11,7 +11,7 @@
   },
   {
     "name": "schlafzimmerDoor",
-    "id": 47642,
+    "id": 45295,
     "attributes": {
       "hmi": {
         "displayName": "Tür",
@@ -21,7 +21,7 @@
   },
   {
     "name": "abstellraumDoor",
-    "id": 51866,
+    "id": 3477,
     "attributes": {
       "hmi": {
         "displayName": "Tür",
@@ -31,7 +31,7 @@
   },
   {
     "name": "entryDoor",
-    "id": 52455,
+    "id": 3439,
     "attributes": {
       "hmi": {
         "displayName": "Wohnungstür",
@@ -41,11 +41,81 @@
   },
   {
     "name": "duschbadDoor",
-    "id": 52595,
+    "id": 45016,
     "attributes": {
       "hmi": {
         "displayName": "Tür",
         "location": "duschbad"
+      }
+    }
+  },
+  {
+    "name": "arbeitszimmerDoor",
+    "id": 3481,
+    "attributes": {
+      "hmi": {
+        "displayName": "Tür",
+        "location": "arbeitszimmer"
+      }
+    }
+  },
+  {
+    "name": "arbeitszimmerWindowLeft",
+    "id": 51866,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenster links",
+        "location": "arbeitszimmer"
+      }
+    }
+  },
+  {
+    "name": "arbeitszimmerWindowRight",
+    "id": 52455,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenster rechts",
+        "location": "arbeitszimmer"
+      }
+    }
+  },
+  {
+    "name": "schlafzimmerWindowLeft",
+    "id": 47642,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenster links",
+        "location": "schlafzimmer"
+      }
+    }
+  },
+  {
+    "name": "schlafzimmerWindowDoorRight",
+    "id": 15442,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenstertür rechts",
+        "location": "schlafzimmer"
+      }
+    }
+  },
+  {
+    "name": "kuecheWindowDoor",
+    "id": 52595,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenstertür",
+        "location": "kueche"
+      }
+    }
+  },
+  {
+    "name": "wohnzimmerWindowDoor",
+    "id": 41906,
+    "attributes": {
+      "hmi": {
+        "displayName": "Fenstertür",
+        "location": "wohnzimmer"
       }
     }
   }

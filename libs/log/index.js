@@ -12,10 +12,12 @@ const Journald = (
 );
 
 const { chatIds, TelegramChat } = require('../telegram');
+const { parseString } = require('../utils/string');
 const { levelNames, globalPrefix } = require('./config.json');
 
-const { PROD_ENV: isProd, LOG_LEVEL } = process.env;
-const logLevel = Number(LOG_LEVEL);
+const { PROD_ENV: isProd, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+const logLevel = parseString(LOG_LEVEL);
+const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
 
 function options(level, input) {
   return Object.assign(
@@ -131,6 +133,8 @@ class Logger {
     } else {
       console.log(`\n[${levelName}]\n${message}\n`);
     }
+
+    if (!logTelegram) return;
 
     if (
       telegram === true
