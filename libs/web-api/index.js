@@ -132,15 +132,18 @@ class WebApi {
     };
   }
 
-  _handleList() {
+  _handleList(request) {
     const { hmiService } = this._webApi;
+    const { urlQuery: { values = false } } = request;
 
     return {
       headers: {
         'Content-Type': 'application/json; charset=utf-8'
       },
-      handler: hmiService.list().then((values) => {
-        return JSON.stringify(values, null, null);
+      handler: hmiService.list(
+        Boolean(parseString(values))
+      ).then((results) => {
+        return JSON.stringify(results, null, null);
       })
     };
   }

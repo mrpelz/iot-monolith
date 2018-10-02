@@ -56,7 +56,7 @@ class HmiServer extends EventEmitter {
     });
   }
 
-  _listElements() {
+  _listElements(includeValues = false) {
     const {
       log,
       elements
@@ -66,7 +66,7 @@ class HmiServer extends EventEmitter {
       Object.values(elements).map((element) => {
         const { lister } = element;
 
-        return lister();
+        return lister(includeValues);
       })
     ).then((values) => {
       log.info('got all elements list');
@@ -114,8 +114,10 @@ class HmiServer extends EventEmitter {
       this._pushElementStateToServices(name, result);
     };
 
-    const lister = async () => {
-      const value = await get(true);
+    const lister = async (includeValues) => {
+      const value = includeValues
+        ? await get(true)
+        : null;
 
       return {
         name,
