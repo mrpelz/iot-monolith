@@ -19,7 +19,12 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {
+        "location": "Global"
+      }
+    }
   },
   {
     "name": "innen",
@@ -39,7 +44,13 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {
+        "sortLocation": "Global",
+        "location": "innen"
+      }
+    }
   },
   {
     "name": "außen",
@@ -52,6 +63,12 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {
+        "sortLocation": "Global",
+        "location": "außen"
+      }
+    }
   }
 ]

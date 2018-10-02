@@ -80,9 +80,9 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   const {
     doorSensors,
     lights,
+    metricAggregates,
     prometheus,
-    roomSensors,
-    metricAggregates
+    roomSensors
   } = global;
 
   lightsToPrometheus(lights, prometheus);

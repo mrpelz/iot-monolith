@@ -58,6 +58,33 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
   });
 }
 
+function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings) {
+  metricAggregates.forEach((aggregate) => {
+    const {
+      name,
+      instance,
+      metric,
+      attributes: {
+        hmi: hmiAttributes = {}
+      }
+    } = aggregate;
+
+    const { get } = instance;
+
+    /* eslint-disable-next-line no-new */
+    new HmiElement({
+      name,
+      attributes: Object.assign({
+        displayName: strings[metric] || name,
+        type: 'metric-aggregate'
+      }, hmiAttributes),
+      sanity: valueSanity[metric] || valueSanity.default,
+      server: hmiServer,
+      handlers: { get }
+    });
+  });
+}
+
 function obiLightHmi(light, hmiServer) {
   const {
     name,
@@ -112,13 +139,15 @@ function lightsHmi(lights, hmiServer) {
         strings
       }
     },
-    hmiServer,
     doorSensors,
-    roomSensors,
-    lights
+    hmiServer,
+    lights,
+    metricAggregates,
+    roomSensors
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
   roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings);
+  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings);
   lightsHmi(lights, hmiServer);
 }());

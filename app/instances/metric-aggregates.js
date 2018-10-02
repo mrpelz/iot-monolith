@@ -11,7 +11,12 @@ const { camel } = require('../../libs/utils/string');
   } = global;
 
   global.metricAggregates = flattenArrays(metricAggregates.map((group) => {
-    const { name, sensors = [], metrics = [] } = group;
+    const {
+      attributes,
+      metrics = [],
+      name,
+      sensors = []
+    } = group;
     const instances = roomSensors.filter((options) => {
       const { name: sensorName, metrics: sensorMetrics } = options;
 
@@ -31,10 +36,11 @@ const { camel } = require('../../libs/utils/string');
       const instance = new Aggregate(metric, instances);
 
       return {
-        name: camel(name, metric),
+        attributes,
         group: name,
+        instance,
         metric,
-        instance
+        name: camel(name, metric)
       };
     });
   })).filter(Boolean);
