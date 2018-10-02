@@ -7,7 +7,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Stehlampe",
-        "location": "wohnzimmer"
+        "location": "Wohnzimmer"
       }
     }
   },
@@ -19,7 +19,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Steinlampe",
-        "location": "schlafzimmer"
+        "location": "Schlafzimmer"
       }
     }
   },
@@ -31,7 +31,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Stehlampe",
-        "location": "esszimmer"
+        "location": "Esszimmer"
       }
     }
   },
@@ -43,7 +43,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Test-Licht",
-        "location": "testraum"
+        "location": "Testraum"
       }
     }
   }

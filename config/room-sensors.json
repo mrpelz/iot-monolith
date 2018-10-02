@@ -11,7 +11,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "wohnzimmer"
+        "location": "Wohnzimmer"
       }
     }
   },
@@ -25,7 +25,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "esszimmer"
+        "location": "Esszimmer"
       }
     }
   },
@@ -41,7 +41,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "kueche"
+        "location": "Küche"
       }
     }
   },
@@ -57,7 +57,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "schlafzimmer"
+        "location": "Schlafzimmer"
       }
     }
   },
@@ -75,7 +75,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "arbeitszimmer"
+        "location": "Arbeitszimmer"
       }
     }
   },
@@ -89,7 +89,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "flur"
+        "location": "Flur"
       }
     }
   },
@@ -105,7 +105,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "abstellraum"
+        "location": "Abstellraum"
       }
     }
   },
@@ -122,7 +122,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "duschbad"
+        "location": "Duschbad"
       }
     }
   },
@@ -136,7 +136,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "wannenbad"
+        "location": "Wannenbad"
       }
     }
   },
@@ -153,7 +153,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "terrasse"
+        "location": "Terrasse"
       }
     }
   },
@@ -169,7 +169,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "balkon"
+        "location": "Balkon"
       }
     }
   },
@@ -185,7 +185,8 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "global"
+        "sortLocation": "Global",
+        "location": "Lufteinlass"
       }
     }
   },
@@ -201,7 +202,8 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "global"
+        "sortLocation": "Global",
+        "location": "Luftauslass"
       }
     }
   }

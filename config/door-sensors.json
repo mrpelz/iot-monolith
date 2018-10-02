@@ -5,7 +5,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Tür",
-        "location": "wannenbad"
+        "location": "Wannenbad"
       }
     }
   },
@@ -15,7 +15,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Tür",
-        "location": "schlafzimmer"
+        "location": "Schlafzimmer"
       }
     }
   },
@@ -25,7 +25,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Tür",
-        "location": "abstellraum"
+        "location": "Abstellraum"
       }
     }
   },
@@ -35,7 +35,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Wohnungstür",
-        "location": "flur"
+        "location": "Flur"
       }
     }
   },
@@ -45,7 +45,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Tür",
-        "location": "duschbad"
+        "location": "Duschbad"
       }
     }
   },
@@ -55,7 +55,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Tür",
-        "location": "arbeitszimmer"
+        "location": "Arbeitszimmer"
       }
     }
   },
@@ -65,7 +65,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenster links",
-        "location": "arbeitszimmer"
+        "location": "Arbeitszimmer"
       }
     }
   },
@@ -75,7 +75,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenster rechts",
-        "location": "arbeitszimmer"
+        "location": "Arbeitszimmer"
       }
     }
   },
@@ -85,7 +85,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenster links",
-        "location": "schlafzimmer"
+        "location": "Schlafzimmer"
       }
     }
   },
@@ -95,7 +95,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenstertür rechts",
-        "location": "schlafzimmer"
+        "location": "Schlafzimmer"
       }
     }
   },
@@ -105,7 +105,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenstertür",
-        "location": "kueche"
+        "location": "Küche"
       }
     }
   },
@@ -115,7 +115,7 @@
     "attributes": {
       "hmi": {
         "displayName": "Fenstertür",
-        "location": "wohnzimmer"
+        "location": "Wohnzimmer"
       }
     }
   }

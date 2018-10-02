@@ -39,7 +39,7 @@ class HmiServer extends EventEmitter {
     });
   }
 
-  _getAllElementStates(force) {
+  _getAllElementStates() {
     const {
       elements,
       log
@@ -49,11 +49,10 @@ class HmiServer extends EventEmitter {
       Object.values(elements).map((element) => {
         const { getter } = element;
 
-        return getter(force);
+        return getter();
       })
-    ).then((values) => {
+    ).then(() => {
       log.info('updated all elements');
-      return values;
     });
   }
 
@@ -63,16 +62,17 @@ class HmiServer extends EventEmitter {
       elements
     } = this._hmi;
 
-    log.info('getting element list');
+    return Promise.all(
+      Object.values(elements).map((element) => {
+        const { lister } = element;
 
-    const result = {};
+        return lister();
+      })
+    ).then((values) => {
+      log.info('got all elements list');
 
-    Object.keys(elements).forEach((name) => {
-      const { [name]: { attributes } } = elements;
-      result[name] = attributes;
+      return values;
     });
-
-    return result;
   }
 
   _setElementState(name, value) {
@@ -107,13 +107,21 @@ class HmiServer extends EventEmitter {
       throw new Error('insufficient options provided');
     }
 
-    const getter = async (force) => {
-      const result = await get(force);
-      if (result === null) return null;
+    const getter = async () => {
+      const result = await get();
+      if (result === null) return;
 
       this._pushElementStateToServices(name, result);
+    };
 
-      return result;
+    const lister = async () => {
+      const value = await get(true);
+
+      return {
+        name,
+        attributes,
+        value
+      };
     };
 
     const setter = (input) => {
@@ -121,8 +129,8 @@ class HmiServer extends EventEmitter {
     };
 
     elements[name] = {
-      attributes,
       getter,
+      lister,
       setter: set ? setter : null
     };
 

@@ -95,7 +95,7 @@ class WebApi {
   }
 
   _handleStream(request, response) {
-    const { log, clients, hmiService } = this._webApi;
+    const { log, clients } = this._webApi;
     const { connection: { remoteAddress, remotePort } } = request;
     const { write } = response;
 
@@ -121,15 +121,11 @@ class WebApi {
       });
     });
 
-    const init = () => {
-      return hmiService.getAll(true);
-    };
-
     return {
       headers: {
-        'Content-Type': 'text/event-stream'
+        'Content-Type': 'text/event-stream; charset=utf-8'
       },
-      onEnd: init,
+      openEnd: true,
       handler: Promise.resolve(
         `: welcome to the event stream\n: client "${name}"\n\n`
       )
@@ -140,9 +136,12 @@ class WebApi {
     const { hmiService } = this._webApi;
 
     return {
-      handler: Promise.resolve(
-        JSON.stringify(hmiService.list(), null, null)
-      )
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      handler: hmiService.list().then((values) => {
+        return JSON.stringify(values, null, null);
+      })
     };
   }
 
