@@ -22,6 +22,9 @@ class Ev1527Server extends PersistentSocket {
     super({
       host,
       port,
+      keepAlive: {
+        time: 5000
+      },
       delimiter: apiDelimiter
     });
 
