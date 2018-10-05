@@ -89,7 +89,12 @@ class Logger {
     const messageAttachment = (
       `${attachment === null ? '' : indent(attachment)}`
     );
-    const message = [
+    const syslogMessage = [
+      name,
+      messageBody
+    ].filter(Boolean).join('\n');
+
+    const consoleMessage = [
       name,
       prefixChain.length ? prefixChain : null,
       messageBody,
@@ -101,38 +106,40 @@ class Logger {
     if (isProd && _journal) {
       const fields = Object.assign({
         STATE: head,
-        VALUE: value
+        VALUE: value,
+        ATTACHMENT: attachment,
+        PREFIC_CHAIN: prefixChain
       }, _defaultFields);
 
       switch (level) {
         case 7:
-          _journal.debug(message, fields);
+          _journal.debug(syslogMessage, fields);
           break;
         case 6:
-          _journal.info(message, fields);
+          _journal.info(syslogMessage, fields);
           break;
         case 5:
-          _journal.notice(message, fields);
+          _journal.notice(syslogMessage, fields);
           break;
         case 4:
-          _journal.warning(message, fields);
+          _journal.warning(syslogMessage, fields);
           break;
         case 3:
-          _journal.err(message, fields);
+          _journal.err(syslogMessage, fields);
           break;
         case 2:
-          _journal.crit(message, fields);
+          _journal.crit(syslogMessage, fields);
           break;
         case 1:
-          _journal.alert(message, fields);
+          _journal.alert(syslogMessage, fields);
           break;
         case 0:
-          _journal.emerg(message, fields);
+          _journal.emerg(syslogMessage, fields);
           break;
         default:
       }
     } else {
-      console.log(`\n[${levelName}]\n${message}\n`);
+      console.log(`\n[${levelName}]\n${consoleMessage}\n`);
     }
 
     if (!logTelegram) return;
