@@ -158,6 +158,7 @@
     }
   },
   {
+    "disable": true,
     "name": "balkon",
     "host": "10.97.4.70",
     "port": 3000,

@@ -9,7 +9,7 @@ const maxCallId = 254;
 const eventId = 0;
 const keepAliveId = 255;
 
-const defaultTimeout = 5000;
+const defaultTimeout = 10000;
 
 function prepareMessageTypes(types) {
   return types.map((msg) => {
