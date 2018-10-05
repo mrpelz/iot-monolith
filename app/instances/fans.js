@@ -24,8 +24,8 @@ function createObiJackFan(fan) {
   } = global;
 
   global.fans = fans.map((fan) => {
-    const { name, type } = fan;
-    if (!name || !type) return null;
+    const { disable = false, name, type } = fan;
+    if (disable || !name || !type) return null;
 
     let instance;
 

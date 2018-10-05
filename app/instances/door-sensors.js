@@ -24,8 +24,8 @@ function createSensor(sensor, server) {
   } = global;
 
   global.doorSensors = doorSensors.map((sensor) => {
-    const { name, id } = sensor;
-    if (!name || !id) return null;
+    const { disable = false, name, id } = sensor;
+    if (disable || !name || !id) return null;
 
     const instance = createSensor(sensor, ev1527Server);
     if (!instance) return null;

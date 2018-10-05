@@ -24,8 +24,8 @@ function createObiJackLight(light) {
   } = global;
 
   global.lights = lights.map((light) => {
-    const { name, type } = light;
-    if (!name || !type) return null;
+    const { disable = false, name, type } = light;
+    if (disable || !name || !type) return null;
 
     let instance;
 

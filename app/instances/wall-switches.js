@@ -24,8 +24,8 @@ function createWallSwitch(wallSwitch, server) {
   } = global;
 
   global.wallSwitches = wallSwitches.map((wallSwitch) => {
-    const { name, id } = wallSwitch;
-    if (!name || !id) return null;
+    const { disable = false, name, id } = wallSwitch;
+    if (disable || !name || !id) return null;
 
     const instance = createWallSwitch(wallSwitch, ev1527Server);
     if (!instance) return null;

@@ -18,7 +18,9 @@ const { camel } = require('../../libs/utils/string');
       sensors = []
     } = group;
     const instances = roomSensors.filter((options) => {
-      const { name: sensorName, metrics: sensorMetrics } = options;
+      const { disable = false, name: sensorName, metrics: sensorMetrics } = options;
+
+      if (disable) return null;
 
       return (
         sensors.includes(sensorName)
