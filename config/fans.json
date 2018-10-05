@@ -1,0 +1,26 @@
+[
+  {
+    "name": "wohnzimmerFan",
+    "host": "10.97.4.13",
+    "port": 5045,
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Ventilator",
+        "location": "Wohnzimmer"
+      }
+    }
+  },
+  {
+    "name": "schlafzimmerFan",
+    "host": "10.97.4.33",
+    "port": 5045,
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "displayName": "Ventilator",
+        "location": "Schlafzimmer"
+      }
+    }
+  }
+]

@@ -130,6 +130,51 @@ function lightsHmi(lights, hmiServer) {
   });
 }
 
+function obiFanHmi(fan, hmiServer) {
+  const {
+    name,
+    instance,
+    type,
+    attributes: {
+      hmi: hmiAttributes = {}
+    } = {}
+  } = fan;
+
+  const hmi = new HmiElement({
+    name,
+    attributes: Object.assign({
+      type: 'fan',
+      subtype: type
+    }, hmiAttributes),
+    server: hmiServer,
+    handlers: {
+      get: () => {
+        return Promise.resolve(instance.relayState);
+      },
+      set: (input) => {
+        return instance.relay(Boolean(input));
+      }
+    }
+  });
+
+  instance.on('change', () => {
+    hmi.update();
+  });
+}
+
+function fansHmi(fans, hmiServer) {
+  fans.forEach((fan) => {
+    const { type } = fan;
+
+    switch (type) {
+      case 'OBI_JACK':
+        obiFanHmi(fan, hmiServer);
+        break;
+      default:
+    }
+  });
+}
+
 
 (function main() {
   const {
@@ -142,6 +187,7 @@ function lightsHmi(lights, hmiServer) {
     doorSensors,
     hmiServer,
     lights,
+    fans,
     metricAggregates,
     roomSensors
   } = global;
@@ -150,4 +196,5 @@ function lightsHmi(lights, hmiServer) {
   roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings);
   metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings);
   lightsHmi(lights, hmiServer);
+  fansHmi(fans, hmiServer);
 }());

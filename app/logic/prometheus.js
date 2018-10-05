@@ -27,6 +27,35 @@ function lightsToPrometheus(lights, prometheus) {
   });
 }
 
+function obiFanToPrometheus(fan, prometheus) {
+  const { name, instance, type } = fan;
+
+  prometheus.metric(
+    'power',
+    {
+      name,
+      type: 'fan',
+      subtype: type
+    },
+    () => {
+      return Promise.resolve(instance.relayState);
+    }
+  );
+}
+
+function fansToPrometheus(fans, prometheus) {
+  fans.forEach((fan) => {
+    const { type } = fan;
+
+    switch (type) {
+      case 'OBI_JACK':
+        obiFanToPrometheus(fan, prometheus);
+        break;
+      default:
+    }
+  });
+}
+
 function doorSensorsToPrometheus(doorSensors, prometheus) {
   doorSensors.forEach((sensor) => {
     const { name, instance } = sensor;
@@ -80,12 +109,14 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   const {
     doorSensors,
     lights,
+    fans,
     metricAggregates,
     prometheus,
     roomSensors
   } = global;
 
   lightsToPrometheus(lights, prometheus);
+  fansToPrometheus(fans, prometheus);
   doorSensorsToPrometheus(doorSensors, prometheus);
   roomSensorsToPrometheus(roomSensors, prometheus);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
