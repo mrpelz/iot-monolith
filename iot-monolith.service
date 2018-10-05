@@ -4,8 +4,8 @@ Description=iot-monolith
 [Service]
 Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
-WorkingDirectory=/usr/local/scripts/iot/iot-monolith/
-ExecStart=/usr/local/scripts/iot/iot-monolith/run.sh
+WorkingDirectory=/usr/local/scripts/iot-monolith/
+ExecStart=/usr/local/scripts/iot-monolith/run.sh
 Restart=always
 RestartSec=5
 
