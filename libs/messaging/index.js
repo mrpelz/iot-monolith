@@ -227,7 +227,11 @@ class MessageClient extends PersistentSocket {
         if (error) {
           reject(new Error(error));
         } else {
-          resolve(parser(input));
+          try {
+            resolve(parser(input));
+          } catch (parseError) {
+            reject(new Error(`parse error: ${parseError}`));
+          }
         }
 
         clearTimeout(timeoutId);
