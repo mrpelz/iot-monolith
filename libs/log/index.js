@@ -15,7 +15,8 @@ const { chatIds, TelegramChat } = require('../telegram');
 const { parseString } = require('../utils/string');
 const { levelNames, globalPrefix } = require('./config.json');
 
-const { PROD_ENV: isProd, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
 const logLevel = parseString(LOG_LEVEL);
 const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
 
