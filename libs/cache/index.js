@@ -27,7 +27,8 @@ function cache(instance, cacheTimes) {
       const {
         time = 0,
         value,
-        promise
+        promise,
+        promiseReject
       } = buffer;
 
       if (deferred.length) {
@@ -44,7 +45,8 @@ function cache(instance, cacheTimes) {
             buffer = {
               time: now,
               value: promiseResult,
-              promise: true
+              promise: true,
+              promiseReject: false
             };
 
             deferred.forEach((response) => {
@@ -57,6 +59,13 @@ function cache(instance, cacheTimes) {
               response.reject(reason);
             });
 
+            buffer = {
+              time: now,
+              value: reason,
+              promise: true,
+              promiseReject: true
+            };
+
             deferred.length = 0;
           });
 
@@ -66,12 +75,17 @@ function cache(instance, cacheTimes) {
         buffer = {
           time: now,
           value: result,
-          promise: false
+          promise: false,
+          promiseReject: false
         };
         return result;
       }
 
       if (promise) {
+        if (promiseReject) {
+          return Promise.reject(value);
+        }
+
         return Promise.resolve(value);
       }
 
