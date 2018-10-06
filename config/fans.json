@@ -1,5 +1,6 @@
 [
   {
+    "disable": true,
     "name": "wohnzimmerFan",
     "host": "10.97.4.13",
     "port": 5045,
@@ -12,6 +13,7 @@
     }
   },
   {
+    "disable": true,
     "name": "schlafzimmerFan",
     "host": "10.97.4.33",
     "port": 5045,
