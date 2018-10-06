@@ -8,6 +8,9 @@ WorkingDirectory=/usr/local/scripts/iot-monolith/
 ExecStart=/usr/local/scripts/iot-monolith/run.sh
 Restart=always
 RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=iot-monolith
 
 [Install]
 WantedBy=multi-user.target

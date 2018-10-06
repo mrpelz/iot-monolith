@@ -1,19 +1,7 @@
 /* eslint-disable no-console */
-/* eslint import/no-extraneous-dependencies: ["error", {"optionalDependencies": true}] */
-const { platform } = require('os');
-
-const isLinux = (platform() === 'linux');
-
-const Journald = (
-  isLinux
-    /* eslint-disable-next-line import/no-unresolved */
-    ? require('systemd-journald')
-    : null
-);
-
 const { chatIds, TelegramChat } = require('../telegram');
 const { parseString } = require('../utils/string');
-const { levelNames, globalPrefix } = require('./config.json');
+const { levelNames } = require('./config.json');
 
 const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
 const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
@@ -46,16 +34,6 @@ class Logger {
     this._name = name;
     this._prefixes = [];
 
-    this._defaultFields = {
-      syslog_identifier: globalPrefix
-    };
-
-    this._journal = (
-      isLinux
-        ? new Journald(this._defaultFields)
-        : null
-    );
-
     this._telegramChat = new TelegramChat(chatIds.log);
   }
 
@@ -63,8 +41,6 @@ class Logger {
     const {
       _name,
       _prefixes,
-      _defaultFields,
-      _journal,
       _telegramChat
     } = this;
 
@@ -79,67 +55,35 @@ class Logger {
     if (level !== null && level > logLevel) return;
 
     const name = _name || _prefixes[0] || '[unknown logger]';
+
     const prefixChain = _prefixes.map((prefix) => {
       if (prefix === usedPrefix) return `[${prefix}]`;
       return prefix;
     }).join(' → ');
+
     const messageBody = (
       `${head}${value === null ? '' : ` = ${value}`}`
     );
+
     const messageAttachment = (
       `${attachment === null ? '' : indent(attachment)}`
     );
-    const syslogMessage = [
-      name,
-      messageBody
-    ].filter(Boolean).join('\n');
-
-    const consoleMessage = [
-      name,
-      prefixChain.length ? prefixChain : null,
-      messageBody,
-      messageAttachment
-    ].filter(Boolean).join('\n');
 
     const levelName = levelNames[level];
 
-    if (isProd && _journal) {
-      const fields = Object.assign({
-        STATE: head,
-        VALUE: value,
-        ATTACHMENT: attachment,
-        PREFIC_CHAIN: prefixChain
-      }, _defaultFields);
-
-      switch (level) {
-        case 7:
-          _journal.debug(syslogMessage, fields);
-          break;
-        case 6:
-          _journal.info(syslogMessage, fields);
-          break;
-        case 5:
-          _journal.notice(syslogMessage, fields);
-          break;
-        case 4:
-          _journal.warning(syslogMessage, fields);
-          break;
-        case 3:
-          _journal.err(syslogMessage, fields);
-          break;
-        case 2:
-          _journal.crit(syslogMessage, fields);
-          break;
-        case 1:
-          _journal.alert(syslogMessage, fields);
-          break;
-        case 0:
-          _journal.emerg(syslogMessage, fields);
-          break;
-        default:
-      }
+    if (isProd) {
+      console.log(`[${levelName}] ${[
+        _prefixes[0] || null,
+        name,
+        messageBody
+      ].filter(Boolean).join(' | ')}`);
     } else {
-      console.log(`\n[${levelName}]\n${consoleMessage}\n`);
+      console.log(`\n[${levelName}]\n${[
+        name,
+        prefixChain.length ? prefixChain : null,
+        messageBody,
+        messageAttachment
+      ].filter(Boolean).join('\n')}\n`);
     }
 
     if (!logTelegram) return;
