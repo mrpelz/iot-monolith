@@ -81,8 +81,12 @@ class HmiServer extends EventEmitter {
       elements
     } = this._hmi;
 
-    if (!name || value === undefined) {
+    if (value === undefined) {
       throw new Error('insufficient options provided');
+    }
+
+    if (!Object.keys(elements).includes(name)) {
+      return Promise.reject(new Error('service not known'));
     }
 
     log.info(`setting "${name}" to "${value}"`);

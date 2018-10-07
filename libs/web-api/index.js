@@ -162,7 +162,7 @@ class WebApi {
 
     const setters = Object.keys(urlQuery).map((key) => {
       const { [key]: input } = urlQuery;
-      const value = parseString(input);
+      const value = parseString(input) || false;
 
       return resolveAlways(hmiService.set(key, value));
     });
