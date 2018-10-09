@@ -13,7 +13,10 @@ function doorSensorsHmi(doorSensors, hmiServer) {
 
     const hmi = new HmiElement({
       name,
-      attributes: Object.assign({ type: 'door' }, hmiAttributes),
+      attributes: Object.assign({
+        type: 'door',
+        category: 'Türen und Fenster'
+      }, hmiAttributes),
       server: hmiServer,
       handlers: {
         get: () => {
@@ -48,7 +51,8 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
         name: hmiName,
         attributes: Object.assign({
           displayName: strings[metric] || hmiName,
-          type: 'room-sensor'
+          type: 'room-sensor',
+          category: 'Luft'
         }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
@@ -76,7 +80,8 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings) {
       name,
       attributes: Object.assign({
         displayName: strings[metric] || name,
-        type: 'metric-aggregate'
+        type: 'metric-aggregate',
+        category: 'Luft'
       }, hmiAttributes),
       sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
@@ -99,7 +104,8 @@ function obiLightHmi(light, hmiServer) {
     name,
     attributes: Object.assign({
       type: 'light',
-      subtype: type
+      subtype: type,
+      category: 'Lampen'
     }, hmiAttributes),
     server: hmiServer,
     handlers: {
