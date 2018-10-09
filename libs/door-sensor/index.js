@@ -38,7 +38,9 @@ class DoorSensor extends Base {
   constructor(options = {}) {
     const {
       id = null,
-      server = null
+      server = null,
+      isOpen = null,
+      isTampered = false
     } = options;
 
     if (!id || !server) {
@@ -48,8 +50,8 @@ class DoorSensor extends Base {
     super();
 
     this._doorSensor = {};
-    this.isOpen = null;
-    this.isTampered = false;
+    this.isOpen = isOpen;
+    this.isTampered = isTampered;
 
     rebind(this, '_handleClose', '_handleOpen', '_handleTamper');
 

@@ -1,4 +1,6 @@
 const { DoorSensor } = require('../../libs/door-sensor');
+const { StateFile } = require('../../libs/state-files');
+const { resolveAlways } = require('../../libs/utils/oop');
 
 function createSensor(sensor, server) {
   const {
@@ -13,6 +15,32 @@ function createSensor(sensor, server) {
   } catch (e) {
     return null;
   }
+}
+
+function addPersistenceHandler(name, instance) {
+  const persist = new StateFile(`doorSensor_${name}`);
+
+  const handleChange = () => {
+    persist.set({
+      isOpen: instance.isOpen,
+      isTampered: instance.isTampered
+    });
+  };
+
+  const handleInit = async () => {
+    const {
+      isOpen = null,
+      isTampered = false
+    } = await resolveAlways(persist.get()) || {};
+
+    instance.isOpen = isOpen;
+    instance.isTampered = isTampered;
+
+    instance.on('change', handleChange);
+    handleChange();
+  };
+
+  handleInit();
 }
 
 (function main() {
@@ -31,6 +59,8 @@ function createSensor(sensor, server) {
     if (!instance) return null;
 
     instance.log.friendlyName(name);
+
+    addPersistenceHandler(name, instance);
 
     return Object.assign(sensor, {
       instance

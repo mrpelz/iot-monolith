@@ -8,17 +8,19 @@ const {
 const { join } = require('path');
 const { tmpdir } = require('os');
 
-// const { Logger } = require('../log');
+const { Logger } = require('../log');
 const { rebind } = require('../utils/oop');
+
+const libName = 'state-files';
 
 const tmp = tmpdir();
 
 function makePath(name) {
-  return join(tmp, name);
+  return join(tmp, `iot-state-[${name}].json`);
 }
 
 class StateFile extends EventEmitter {
-  constructor(name) {
+  constructor(name, doWatch = false) {
     if (!name) {
       throw new Error('name not defined!');
     }
@@ -30,11 +32,18 @@ class StateFile extends EventEmitter {
     this._doWatch = true;
     this._name = name;
 
-    this._descriptor = open(path, 'w+');
+    this._readDescriptor = open(path, 'r');
+    this._writeDescriptor = open(path, 'w');
 
     rebind(this, '_handleChange');
 
-    this._watcher = watch(path, { persistent: false }, this._handleChange);
+    if (doWatch) {
+      this._watcher = watch(path, { persistent: false }, this._handleChange);
+    }
+
+    const log = new Logger();
+    log.friendlyName(path);
+    this.log = log.withPrefix(libName);
   }
 
   _handleChange(type) {
@@ -43,6 +52,7 @@ class StateFile extends EventEmitter {
     }
 
     if (type === 'change') {
+      this.log.info('state-file changed');
       this.emit('change');
     }
   }
@@ -55,7 +65,7 @@ class StateFile extends EventEmitter {
     let json;
 
     try {
-      json = JSON.stringify(data, undefined, 2);
+      json = JSON.stringify(data, null, 2);
     } catch (error) {
       throw new Error('could not JSON-stringify data!');
     }
@@ -64,15 +74,17 @@ class StateFile extends EventEmitter {
       this._doWatch = false;
 
       write(
-        this._descriptor,
+        this._writeDescriptor,
         Buffer.from(json),
         (error) => {
           this._doWatch = true;
 
           if (error) {
+            this.log.error('error writing state-file');
             reject(error);
           }
 
+          this.log.info('written state-file');
           resolve();
         }
       );
@@ -82,15 +94,21 @@ class StateFile extends EventEmitter {
   get() {
     return new Promise((resolve, reject) => {
       read(
-        this._descriptor,
+        this._readDescriptor,
         (error, data) => {
           if (error) {
+            this.log.error('error reading state-file');
             reject(error);
           }
 
           try {
-            resolve(JSON.parse(data.toString()));
+            const json = data.toString();
+            const payload = json.length ? JSON.parse(json) : null;
+            this.log.info('read state-file');
+
+            resolve(payload);
           } catch (parseError) {
+            this.log.error('error parsing content of state-file');
             reject(parseError);
           }
         }

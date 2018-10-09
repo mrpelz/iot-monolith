@@ -1,17 +1,21 @@
 /* eslint-disable no-console */
 const { StateFile } = require('../index');
 
+const testFileName = 'penis';
+
 (async function test() {
-  const stateA = new StateFile('test-file');
-  const stateB = new StateFile('test-file');
+  const stateA = new StateFile(testFileName);
+  const stateB = new StateFile(testFileName);
 
   try {
     await stateA.set({
-      test: 'data'
+      testKey: false
     });
 
-    const data = await stateB.get();
-    console.log(data);
+    const { testKey = null } = await stateB.get();
+    console.log({
+      testKey
+    });
   } catch (error) {
     console.error(error);
   }
