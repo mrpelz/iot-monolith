@@ -1,6 +1,5 @@
 const EventEmitter = require('events');
 const {
-  openSync: open,
   readFile: read,
   watch,
   writeFile: write
@@ -27,22 +26,19 @@ class StateFile extends EventEmitter {
 
     super();
 
-    const path = makePath(name);
+    this._path = makePath(name);
 
     this._doWatch = true;
     this._name = name;
 
-    this._readDescriptor = open(path, 'r');
-    this._writeDescriptor = open(path, 'w');
-
     rebind(this, '_handleChange');
 
     if (doWatch) {
-      this._watcher = watch(path, { persistent: false }, this._handleChange);
+      this._watcher = watch(this._path, { persistent: false }, this._handleChange);
     }
 
     const log = new Logger();
-    log.friendlyName(path);
+    log.friendlyName(this._path);
     this.log = log.withPrefix(libName);
   }
 
@@ -74,7 +70,7 @@ class StateFile extends EventEmitter {
       this._doWatch = false;
 
       write(
-        this._writeDescriptor,
+        this._path,
         Buffer.from(json),
         (error) => {
           this._doWatch = true;
@@ -94,11 +90,12 @@ class StateFile extends EventEmitter {
   get() {
     return new Promise((resolve, reject) => {
       read(
-        this._readDescriptor,
+        this._path,
         (error, data) => {
           if (error) {
             this.log.error('error reading state-file');
             reject(error);
+            return;
           }
 
           try {
