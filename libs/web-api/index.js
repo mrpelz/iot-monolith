@@ -65,11 +65,16 @@ class WebApi {
 
   _sendToStream(input) {
     const {
+      log,
       clients
     } = this._webApi;
 
     Object.values(clients).forEach((write) => {
-      write(input);
+      try {
+        write(input);
+      } catch (error) {
+        log.notice('failed writing stream to client');
+      }
     });
   }
 
