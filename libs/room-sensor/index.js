@@ -1,8 +1,9 @@
 const { MessageClient } = require('../messaging');
 const { cacheAll } = require('../cache');
-const { readNumber, sanity } = require('../utils/data');
+const { readNumber } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
+const { sanity } = require('../utils/math');
 
 const libName = 'room-sensor';
 const refreshAtMost = 1000;

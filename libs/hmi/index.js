@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const { sanity } = require('../utils/data');
+const { sanity } = require('../utils/math');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { Logger } = require('../log');
 

@@ -4,12 +4,12 @@ const {
   concatBytes,
   bufferToBoolean,
   numberToDigits,
-  sanity,
   swapByte
 } = require('../utils/data');
 const { rebind } = require('../utils/oop');
 const { words } = require('../utils/string');
 const { sleep } = require('../utils/time');
+const { sanity } = require('../utils/math');
 
 const libName = 'seven-segment';
 

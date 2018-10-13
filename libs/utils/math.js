@@ -19,6 +19,39 @@ function trimDecimals(input, decimals = 2) {
   return Math.round(input * trimmer) / trimmer;
 }
 
+function sanity(input, options) {
+  if (input === null) return null;
+
+  const {
+    divide = 1,
+    max = Number.POSITIVE_INFINITY,
+    min = Number.NEGATIVE_INFINITY,
+    multiply = 1,
+    offset = 0,
+    round = false
+  } = options;
+
+  if (input > max) return null;
+  if (input < min) return null;
+
+  let value = input;
+
+  value += offset;
+  value /= divide;
+  value *= multiply;
+
+  if (round !== false) {
+    value = trimDecimals(
+      value,
+      Number.isInteger(round)
+        ? round
+        : 0
+    );
+  }
+
+  return value;
+}
+
 function quotient(dividend, divisor) {
   return Math.floor(dividend, divisor);
 }
@@ -27,6 +60,7 @@ module.exports = {
   average,
   median,
   remainder,
+  sanity,
   trimDecimals,
   quotient
 };

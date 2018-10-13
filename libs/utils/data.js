@@ -92,34 +92,6 @@ function bufferToBoolean(input) {
   return Boolean(readNumber(input, 1));
 }
 
-function sanity(input, options) {
-  if (input === null) return null;
-
-  const {
-    divide = 1,
-    max = Number.POSITIVE_INFINITY,
-    min = Number.NEGATIVE_INFINITY,
-    multiply = 1,
-    offset = 0,
-    round = false
-  } = options;
-
-  if (input > max) return null;
-  if (input < min) return null;
-
-  let value = input;
-
-  value += offset;
-  value /= divide;
-  value *= multiply;
-
-  if (round) {
-    value = Math.round(value);
-  }
-
-  return value;
-}
-
 function swapByte(input) {
   let byte = input;
   /* eslint-disable no-bitwise */
@@ -164,7 +136,6 @@ module.exports = {
   humanPayload,
   numberToDigits,
   readNumber,
-  sanity,
   swapByte,
   trueBuffer,
   writeNumber

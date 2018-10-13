@@ -31,7 +31,7 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
-function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
+function roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units) {
   roomSensors.forEach((sensor) => {
     const {
       name,
@@ -50,7 +50,8 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
       new HmiElement({
         name: hmiName,
         attributes: Object.assign({
-          displayName: strings[metric] || hmiName,
+          displayName: labels[metric] || hmiName,
+          displayUnit: units[metric] || null,
           type: 'room-sensor',
           category: 'Luft'
         }, hmiAttributes),
@@ -62,7 +63,7 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings) {
   });
 }
 
-function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings) {
+function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, labels, units) {
   metricAggregates.forEach((aggregate) => {
     const {
       name,
@@ -79,7 +80,8 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings) {
     new HmiElement({
       name,
       attributes: Object.assign({
-        displayName: strings[metric] || name,
+        displayName: labels[metric] || name,
+        displayUnit: units[metric] || null,
         type: 'metric-aggregate',
         category: 'Luft'
       }, hmiAttributes),
@@ -187,7 +189,8 @@ function fansHmi(fans, hmiServer) {
     config: {
       hmi: {
         valueSanity,
-        strings
+        labels,
+        units
       }
     },
     doorSensors,
@@ -199,8 +202,8 @@ function fansHmi(fans, hmiServer) {
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
-  roomSensorsHmi(roomSensors, hmiServer, valueSanity, strings);
-  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, strings);
+  roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units);
+  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, labels, units);
   lightsHmi(lights, hmiServer);
   fansHmi(fans, hmiServer);
 }());

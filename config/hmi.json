@@ -1,5 +1,5 @@
 {
-  "strings": {
+  "labels": {
     "temperature": "Temperatur",
     "pressure": "Luftdruck",
     "humidity": "Luftfeuchtigkeit",
@@ -10,9 +10,20 @@
     "pm10": "Feinstaub (PM10)",
     "pm025": "Feinstaub (PM2.5)"
   },
+  "units": {
+    "temperature": "°C",
+    "pressure": "hPa",
+    "humidity": "%RH",
+    "brightness": "lux",
+    "eco2": "ppm",
+    "tvoc": "ppb",
+    "precipitation": "mm/h",
+    "pm10": "µg/m³",
+    "pm025": "µg/m³"
+  },
   "valueSanity": {
     "default": {
-      "round": true
+      "round": 1
     },
     "pressure": {
       "divide": 1000,

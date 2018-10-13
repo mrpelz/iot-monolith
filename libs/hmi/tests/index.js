@@ -31,7 +31,7 @@ metrics.forEach((metric) => {
         round: true
       }
       : {
-        round: true
+        round: 1
       }
   );
 
