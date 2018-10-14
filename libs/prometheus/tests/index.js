@@ -25,6 +25,9 @@ metrics.forEach((metric) => {
     { location: 'duschbad' },
     () => {
       return roomSensor.getMetric(metric);
+    },
+    () => {
+      return roomSensor.getMetricTime(metric);
     }
   );
 });
@@ -35,6 +38,9 @@ metrics.forEach((metric) => {
     { location: 'duschbad-mirrored' },
     () => {
       return roomSensor.getMetric(metric);
+    },
+    () => {
+      return roomSensor.getMetricTime(metric);
     }
   );
 });

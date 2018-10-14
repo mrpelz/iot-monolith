@@ -85,6 +85,9 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
         },
         () => {
           return instance.getMetric(metric);
+        },
+        () => {
+          return instance.getMetricTime(metric);
         }
       );
     });

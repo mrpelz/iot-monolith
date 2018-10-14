@@ -14,20 +14,20 @@ const roomSensor = new RoomSensor({
 
 roomSensor.on('connect', () => {
   roomSensor.getTemperature().then((value) => {
-    console.log(value);
+    console.log(value, roomSensor.getMetricTime('temperature'));
   }).catch((reason) => {
     console.error(reason);
   });
 
   roomSensor.getTemperature().then((value) => {
-    console.log(value);
+    console.log(value, roomSensor.getMetricTime('temperature'));
   }).catch((reason) => {
     console.error(reason);
   });
 
   setTimeout(() => {
     roomSensor.getTemperature().then((value) => {
-      console.log(value);
+      console.log(value, roomSensor.getMetricTime('temperature'));
     }).catch((reason) => {
       console.error(reason);
     });
@@ -35,7 +35,7 @@ roomSensor.on('connect', () => {
 
   setTimeout(() => {
     roomSensor.getTemperature().then((value) => {
-      console.log(value);
+      console.log(value, roomSensor.getMetricTime('temperature'));
     }).catch((reason) => {
       console.error(reason);
     });

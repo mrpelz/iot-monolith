@@ -24,8 +24,8 @@ function drawValue(input) {
   return trimDecimals(input).toString();
 }
 
-function drawMetric(prefix, name, labelString, value) {
-  return `${prefix}${name}{${labelString}} ${value}`;
+function drawMetric(prefix, name, labelString, value, time) {
+  return `${prefix}${name}{${labelString}} ${value} ${time}`;
 }
 
 class Prometheus {
@@ -99,7 +99,7 @@ class Prometheus {
     server.close();
   }
 
-  metric(name, labels, handler) {
+  metric(name, labels, handler, timeHandler = null) {
     if (!name || !handler) {
       throw new Error('insufficient options provided');
     }
@@ -115,12 +115,22 @@ class Prometheus {
     const labelString = makeLabelString(labels);
     metrics.push(() => {
       return resolveAlways(handler()).then((value) => {
+        const time = (timeHandler && value !== null)
+          ? timeHandler()
+          : new Date();
+
         log.debug({
           head: `got metric "${name}"`,
           value
         });
 
-        return drawMetric(prefix, name, labelString, drawValue(value));
+        return drawMetric(
+          prefix,
+          name,
+          labelString,
+          drawValue(value),
+          time.getTime()
+        );
       });
     });
   }
