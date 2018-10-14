@@ -4,18 +4,14 @@ const { StateFile } = require('../index');
 const testFileName = 'penis';
 
 (async function test() {
-  const stateA = new StateFile(testFileName);
-  const stateB = new StateFile(testFileName);
-
   try {
-    await stateA.set({
+    console.log(await new StateFile(testFileName).get());
+
+    await new StateFile(testFileName).set({
       testKey: false
     });
 
-    const { testKey = null } = await stateB.get();
-    console.log({
-      testKey
-    });
+    console.log(await new StateFile(testFileName).get());
   } catch (error) {
     console.error(error);
   }

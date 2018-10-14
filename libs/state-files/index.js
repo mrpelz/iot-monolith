@@ -1,6 +1,7 @@
 const EventEmitter = require('events');
 const {
   existsSync: exists,
+  ftruncate: truncate,
   openSync: open,
   readFile: read,
   watch,
@@ -43,7 +44,7 @@ class StateFile extends EventEmitter {
     }
 
     const log = new Logger();
-    log.friendlyName(this._path);
+    log.friendlyName(path);
     this.log = log.withPrefix(libName);
 
     this.log.info(`state-file is ${fileExists ? 'old' : 'new'}`);
@@ -76,21 +77,30 @@ class StateFile extends EventEmitter {
     return new Promise((resolve, reject) => {
       this._doWatch = false;
 
-      write(
-        this._descriptor,
-        Buffer.from(json),
-        (error) => {
-          this._doWatch = true;
-
-          if (error) {
-            this.log.error('error writing state-file');
-            reject(error);
-          }
-
-          this.log.info('written state-file');
-          resolve();
+      truncate(this._descriptor, (truncateError) => {
+        if (truncateError) {
+          this.log.error('error emptying state-file');
+          reject(truncateError);
+          return;
         }
-      );
+
+        write(
+          this._descriptor,
+          Buffer.from(json),
+          (writeError) => {
+            this._doWatch = true;
+
+            if (writeError) {
+              this.log.error('error writing state-file');
+              reject(writeError);
+              return;
+            }
+
+            this.log.info('written state-file');
+            resolve();
+          }
+        );
+      });
     });
   }
 
