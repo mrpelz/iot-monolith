@@ -161,10 +161,15 @@ class Prometheus {
     };
 
     metrics.push(() => {
+      const now = new Date();
+
+      const valueSet = values[0] || {};
       const {
-        time = new Date(),
+        time,
         value = null
-      } = values[0] || {};
+      } = valueSet;
+
+      valueSet.time = null;
 
       if (values.length > 1) {
         values.shift();
@@ -176,7 +181,7 @@ class Prometheus {
           name,
           labelString,
           drawValue(value),
-          time ? time.getTime() : ''
+          (time || now).getTime()
         )
       );
     });
