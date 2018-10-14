@@ -83,7 +83,9 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
           location: name,
           type: 'room-sensor'
         },
-        instance.access('get', metric)
+        () => {
+          return instance.getMetric(metric);
+        }
       );
     });
   });

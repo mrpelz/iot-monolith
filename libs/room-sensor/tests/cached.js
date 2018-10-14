@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const { CachedRoomSensor } = require('../index');
+const { RoomSensor } = require('../index');
 
-const roomSensor = new CachedRoomSensor({
+const roomSensor = new RoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
   port: 3000,
   metrics: [

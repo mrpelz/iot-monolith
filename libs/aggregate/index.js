@@ -4,7 +4,9 @@ const { median } = require('../../libs/utils/math');
 class Aggregate {
   constructor(metric, instances) {
     this.getters = instances.map((instance) => {
-      return instance.access('get', metric);
+      return () => {
+        return instance.getMetric(metric);
+      };
     });
 
     rebind(this, 'get');

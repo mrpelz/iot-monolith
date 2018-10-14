@@ -1,12 +1,12 @@
 const { MessageClient } = require('../messaging');
-const { cacheAll } = require('../cache');
+// const { cacheAll } = require('../cache');
 const { readNumber } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
 const { sanity } = require('../utils/math');
 
 const libName = 'room-sensor';
-const refreshAtMost = 1000;
+// const refreshAtMost = 1000;
 
 const metricOptions = {
   temperature: {
@@ -95,18 +95,6 @@ class RoomSensor extends MessageClient {
       messageTypes: getMessageTypesForMetrics(metrics)
     });
 
-    this._base.access = {
-      get: {
-        all: 'getAll',
-        temperature: 'getTemperature',
-        pressure: 'getPressure',
-        humidity: 'getHumidity',
-        brightness: 'getBrightness',
-        eco2: 'getEco2',
-        tvoc: 'getTvoc',
-      }
-    };
-
     this._roomSensor = {
       metrics
     };
@@ -115,7 +103,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor.log = this.log.withPrefix(libName);
   }
 
-  _getMetric(metric) {
+  getMetric(metric) {
     const {
       state: {
         isConnected
@@ -160,7 +148,7 @@ class RoomSensor extends MessageClient {
     }
 
     return Promise.all(metrics.map((metric) => {
-      return resolveAlways(this.request(metric));
+      return resolveAlways(this.getMetric(metric));
     })).then((values) => {
       return arraysToObject(metrics, values);
     }).catch((reason) => {
@@ -172,33 +160,34 @@ class RoomSensor extends MessageClient {
   }
 
   getTemperature() {
-    return this._getMetric('temperature');
+    return this.getMetric('temperature');
   }
 
   getPressure() {
-    return this._getMetric('pressure');
+    return this.getMetric('pressure');
   }
 
   getHumidity() {
-    return this._getMetric('humidity');
+    return this.getMetric('humidity');
   }
 
   getBrightness() {
-    return this._getMetric('brightness');
+    return this.getMetric('brightness');
   }
 
   getEco2() {
-    return this._getMetric('eco2');
+    return this.getMetric('eco2');
   }
 
   getTvoc() {
-    return this._getMetric('tvoc');
+    return this.getMetric('tvoc');
   }
 
   // Public methods:
   // connect (inherited from PersistenSocket)
   // disconnect (inherited from PersistenSocket)
   // access (inherited from Base)
+  // getMetric
   // getAll
   // getTemperature
   // getPressure
@@ -208,14 +197,6 @@ class RoomSensor extends MessageClient {
   // getTvoc
 }
 
-class CachedRoomSensor extends RoomSensor {
-  constructor(...options) {
-    super(...options);
-    return cacheAll(this, refreshAtMost, RoomSensor);
-  }
-}
-
 module.exports = {
-  RoomSensor,
-  CachedRoomSensor
+  RoomSensor
 };

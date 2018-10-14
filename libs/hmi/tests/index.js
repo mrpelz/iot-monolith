@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { HmiServer, HmiElement } = require('../index');
 const { every, Scheduler, RecurringMoment } = require('../../utils/time');
-const { CachedRoomSensor } = require('../../room-sensor');
+const { RoomSensor } = require('../../room-sensor');
 const { WebApi } = require('../../web-api');
 
 const metrics = [
@@ -16,14 +16,16 @@ const every30Seconds = new RecurringMoment(scheduler, every.second(30));
 
 const hmiServer = new HmiServer();
 
-const roomSensor = new CachedRoomSensor({
+const roomSensor = new RoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
   port: 3000,
   metrics
 });
 
 metrics.forEach((metric) => {
-  const get = roomSensor.access('get', metric);
+  const get = () => {
+    return roomSensor.getMetric(metric);
+  };
   const sanity = (
     metric === 'pressure'
       ? {

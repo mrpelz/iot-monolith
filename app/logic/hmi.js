@@ -44,7 +44,9 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units) {
 
     return metrics.forEach((metric) => {
       const hmiName = camel(name, metric);
-      const get = instance.access('get', metric);
+      const get = () => {
+        return instance.getMetric(metric);
+      };
 
       /* eslint-disable-next-line no-new */
       new HmiElement({

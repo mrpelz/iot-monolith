@@ -1,4 +1,4 @@
-const { CachedRoomSensor } = require('../../libs/room-sensor');
+const { RoomSensor } = require('../../libs/room-sensor');
 
 function createSensor(sensor) {
   const {
@@ -8,7 +8,7 @@ function createSensor(sensor) {
   } = sensor;
 
   try {
-    return new CachedRoomSensor({
+    return new RoomSensor({
       host,
       port,
       metrics
