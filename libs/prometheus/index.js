@@ -113,6 +113,7 @@ class Prometheus {
     log.info(`add metric "${name}"`);
 
     const labelString = makeLabelString(labels);
+
     metrics.push(() => {
       return resolveAlways(handler()).then((value) => {
         const time = (timeHandler && value !== null)
@@ -133,6 +134,56 @@ class Prometheus {
         );
       });
     });
+  }
+
+  pushMetric(name, labels) {
+    if (!name) {
+      throw new Error('insufficient options provided');
+    }
+
+    if (name.includes(' ') || name.includes('-')) {
+      throw new Error('illegal metric name');
+    }
+
+    const { log, metrics, prefix } = this._prometheus;
+
+    log.info(`add metric "${name}"`);
+
+    const labelString = makeLabelString(labels);
+
+    const values = [];
+
+    const push = (value) => {
+      values.push({
+        time: new Date(),
+        value
+      });
+    };
+
+    metrics.push(() => {
+      const {
+        time = new Date(),
+        value = null
+      } = values[0] || {};
+
+      if (values.length > 1) {
+        values.shift();
+      }
+
+      return Promise.resolve(
+        drawMetric(
+          prefix,
+          name,
+          labelString,
+          drawValue(value),
+          time ? time.getTime() : ''
+        )
+      );
+    });
+
+    return {
+      push
+    };
   }
 }
 

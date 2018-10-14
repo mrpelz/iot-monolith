@@ -1,17 +1,20 @@
 function obiLightToPrometheus(light, prometheus) {
   const { name, instance, type } = light;
 
-  prometheus.metric(
+  const { push } = prometheus.pushMetric(
     'power',
     {
       name,
       type: 'light',
       subtype: type
-    },
-    () => {
-      return Promise.resolve(instance.relayState);
     }
   );
+
+  push(instance.relayState);
+
+  instance.on('change', () => {
+    push(instance.relayState);
+  });
 }
 
 function lightsToPrometheus(lights, prometheus) {
@@ -30,17 +33,20 @@ function lightsToPrometheus(lights, prometheus) {
 function obiFanToPrometheus(fan, prometheus) {
   const { name, instance, type } = fan;
 
-  prometheus.metric(
+  const { push } = prometheus.pushMetric(
     'power',
     {
       name,
       type: 'fan',
       subtype: type
-    },
-    () => {
-      return Promise.resolve(instance.relayState);
     }
   );
+
+  push(instance.relayState);
+
+  instance.on('change', () => {
+    push(instance.relayState);
+  });
 }
 
 function fansToPrometheus(fans, prometheus) {
@@ -60,15 +66,18 @@ function doorSensorsToPrometheus(doorSensors, prometheus) {
   doorSensors.forEach((sensor) => {
     const { name, instance } = sensor;
 
-    prometheus.metric(
+    const { push } = prometheus.pushMetric(
       'door',
       {
         location: name
-      },
-      () => {
-        return Promise.resolve(instance.isOpen);
       }
     );
+
+    push(instance.isOpen);
+
+    instance.on('change', () => {
+      push(instance.isOpen);
+    });
   });
 }
 

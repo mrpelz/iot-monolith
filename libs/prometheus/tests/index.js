@@ -45,5 +45,16 @@ metrics.forEach((metric) => {
   );
 });
 
+const metric = prometheus.pushMetric(
+  'pushtest',
+  { push: 'push' }
+);
+
+let count = 0;
+setInterval(() => {
+  count += 1;
+  metric.push(count);
+}, 5000);
+
 roomSensor.connect();
 prometheus.start();
