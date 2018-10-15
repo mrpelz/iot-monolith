@@ -1,6 +1,5 @@
 const { DoorSensor } = require('../../libs/door-sensor');
 const { StateFile } = require('../../libs/state-files');
-const { resolveAlways } = require('../../libs/utils/oop');
 
 function createSensor(sensor, server) {
   const {
@@ -28,10 +27,16 @@ function addPersistenceHandler(name, instance) {
   };
 
   const handleInit = async () => {
+    let payload;
+    try {
+      payload = persist.getSync();
+      /* eslint-disable-next-line no-empty */
+    } catch (e) {}
+
     const {
       isOpen = null,
       isTampered = false
-    } = await resolveAlways(persist.get()) || {};
+    } = payload || {};
 
     instance.isOpen = isOpen;
     instance.isTampered = isTampered;
