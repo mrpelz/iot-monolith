@@ -165,8 +165,9 @@ class Prometheus {
     };
 
     metrics.push((test) => {
+      const now = new Date();
       const {
-        time = new Date(),
+        time = null,
         value = null
       } = values[0] || {};
 
@@ -184,7 +185,7 @@ class Prometheus {
           name,
           labelString,
           drawValue(value),
-          time.getTime()
+          (time || now).getTime()
         )
       );
     });
