@@ -29,7 +29,7 @@ metrics.forEach((metric) => {
   const sanity = (
     metric === 'pressure'
       ? {
-        divide: 1000,
+        divide: 100,
         round: true
       }
       : {

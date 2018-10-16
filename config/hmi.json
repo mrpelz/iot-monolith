@@ -60,7 +60,7 @@
       "round": 1
     },
     "pressure": {
-      "divide": 1000,
+      "divide": 100,
       "round": true
     }
   }
