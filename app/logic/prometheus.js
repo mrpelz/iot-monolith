@@ -105,7 +105,12 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
 
 function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   metricAggregates.forEach((aggregate) => {
-    const { group, metric, instance } = aggregate;
+    const {
+      getTime,
+      group,
+      instance,
+      metric
+    } = aggregate;
 
     prometheus.metric(
       metric,
@@ -113,7 +118,8 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
         location: group,
         type: 'metric-aggregate'
       },
-      instance.get
+      instance.get,
+      getTime
     );
   });
 }

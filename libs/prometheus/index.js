@@ -61,13 +61,16 @@ class Prometheus {
     this._prometheus.log = log.withPrefix(libName);
   }
 
-  _handleRequest() {
+  _handleRequest(request) {
     const { log, metrics } = this._prometheus;
+    const { urlQuery: { test = false } } = request;
+
+    const testOnly = Boolean(test);
 
     log.debug('getting metrics');
 
     const calls = metrics.map((metric) => {
-      return metric();
+      return metric(testOnly);
     });
 
     return {
@@ -116,9 +119,10 @@ class Prometheus {
 
     metrics.push(() => {
       return resolveAlways(handler()).then((value) => {
+        const now = new Date();
         const time = (timeHandler && value !== null)
-          ? timeHandler()
-          : new Date();
+          ? timeHandler() || now
+          : now;
 
         log.debug({
           head: `got metric "${name}"`,
@@ -160,17 +164,17 @@ class Prometheus {
       });
     };
 
-    metrics.push(() => {
-      const now = new Date();
-
+    metrics.push((test) => {
       const {
-        time = null,
+        time = new Date(),
         value = null
       } = values[0] || {};
 
-      if (values.length > 1) {
+      if (!test && values.length > 1) {
         values.shift();
-      } else if (values.length === 1) {
+      }
+
+      if (values.length === 1) {
         values[0].time = null;
       }
 
@@ -180,7 +184,7 @@ class Prometheus {
           name,
           labelString,
           drawValue(value),
-          (time || now).getTime()
+          time.getTime()
         )
       );
     });

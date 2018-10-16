@@ -2,12 +2,8 @@ const { resolveAlways, rebind } = require('../../libs/utils/oop');
 const { median } = require('../../libs/utils/math');
 
 class Aggregate {
-  constructor(metric, instances) {
-    this.getters = instances.map((instance) => {
-      return () => {
-        return instance.getMetric(metric);
-      };
-    });
+  constructor(getters) {
+    this.getters = getters;
 
     rebind(this, 'get');
   }
