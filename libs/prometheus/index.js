@@ -163,16 +163,15 @@ class Prometheus {
     metrics.push(() => {
       const now = new Date();
 
-      const valueSet = values[0] || {};
       const {
-        time,
+        time = null,
         value = null
-      } = valueSet;
-
-      valueSet.time = null;
+      } = values[0] || {};
 
       if (values.length > 1) {
         values.shift();
+      } else if (values.length === 1) {
+        values[0].time = null;
       }
 
       return Promise.resolve(
