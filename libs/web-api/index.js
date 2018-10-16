@@ -13,7 +13,8 @@ class WebApi {
       port = null,
       hmiServer = null,
       scheduler = null,
-      update = null
+      update = null,
+      meta = null
     } = options;
 
     if (!port || !hmiServer || !scheduler || !update) {
@@ -22,7 +23,8 @@ class WebApi {
 
     this._webApi = {
       isActive: false,
-      clients: {}
+      clients: {},
+      meta
     };
 
     rebind(this, '_handleIngest', '_handleStream', '_handleList', '_handleSet');
@@ -138,7 +140,7 @@ class WebApi {
   }
 
   _handleList(request) {
-    const { hmiService } = this._webApi;
+    const { hmiService, meta } = this._webApi;
     const { urlQuery: { values = false } } = request;
 
     return {
@@ -147,8 +149,11 @@ class WebApi {
       },
       handler: hmiService.list(
         Boolean(parseString(values))
-      ).then((results) => {
-        return JSON.stringify(results, null, null);
+      ).then((elements) => {
+        return JSON.stringify({
+          meta,
+          elements
+        }, null, null);
       })
     };
   }

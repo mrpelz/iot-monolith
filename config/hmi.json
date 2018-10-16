@@ -21,6 +21,40 @@
     "pm10": "µg/m³",
     "pm025": "µg/m³"
   },
+  "webApi": {
+    "sort": {
+      "rooms": [
+        "Wohnzimmer",
+        "Küche",
+        "Esszimmer",
+        "Schlafzimmer",
+        "Arbeitszimmer",
+        "Duschbad",
+        "Wannenbad",
+        "Terrasse",
+        "Balkon",
+        "Flur",
+        "Abstellraum",
+        "Global"
+      ],
+      "categories": [
+        "Luft",
+        "Lampen",
+        "Türen und Fenster"
+      ],
+      "controls": [
+        "Temperatur",
+        "Luftfeuchtigkeit",
+        "Helligkeit",
+        "Luftdruck",
+        "Feinstaub (PM10)",
+        "Feinstaub (PM2.5)",
+        "Eq. CO₂",
+        "Flüchtige Organische Verbindungen",
+        "Niederschlag"
+      ]
+    }
+  },
   "valueSanity": {
     "default": {
       "round": 1

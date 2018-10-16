@@ -5,6 +5,9 @@ const {
     globals: {
       webApiPort,
       webApiUpdateSeconds: update
+    },
+    hmi: {
+      webApi: meta
     }
   },
   hmiServer,
@@ -15,7 +18,8 @@ const webApi = new WebApi({
   port: webApiPort,
   hmiServer,
   scheduler,
-  update
+  update,
+  meta
 });
 webApi.start();
 
