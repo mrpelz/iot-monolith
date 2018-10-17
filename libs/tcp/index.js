@@ -173,6 +173,11 @@ class PersistentSocket extends Base {
 
       state.isConnected = true;
 
+      if (keepAlive && keepAlive.time) {
+        socket.setKeepAlive(true);
+        socket.setTimeout(keepAlive.time);
+      }
+
       socket.setNoDelay(true);
       if (keepAlive && keepAlive.receive) {
         this._timeoutTick();
@@ -225,6 +230,7 @@ class PersistentSocket extends Base {
 
       socket.removeListener('data', this._handleData);
 
+      socket.end();
       socket.destroy();
 
       this.emit('disconnect');
@@ -319,6 +325,7 @@ class PersistentSocket extends Base {
 
     socket.on('connect', this._onConnection);
     socket.on('end', this._onDisconnection);
+    socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
 
     state.shouldBeConnected = true;
@@ -350,6 +357,7 @@ class PersistentSocket extends Base {
 
     socket.removeListener('connect', this._onConnection);
     socket.removeListener('end', this._onDisconnection);
+    socket.removeListener('timeout', this._onDisconnection);
     socket.removeListener('error', this._onDisconnection);
 
     state.shouldBeConnected = false;
