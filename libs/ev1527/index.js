@@ -23,7 +23,8 @@ class Ev1527Server extends PersistentSocket {
       host,
       port,
       keepAlive: {
-        time: 5000
+        // disable until keepAlive messages are sorted out
+        // time: 5000
       },
       delimiter: apiDelimiter
     });
