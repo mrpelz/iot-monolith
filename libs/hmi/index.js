@@ -191,7 +191,12 @@ class HmiElement {
 
     this._hmiElement = {
       name,
-      attributes,
+      attributes: Object.assign(
+        {
+          set: Boolean(set)
+        },
+        attributes
+      ),
       valueSanity,
       get,
       set,
