@@ -6,8 +6,8 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Stehlampe",
-        "location": "Wohnzimmer"
+        "control": "standing-lamp",
+        "location": "wohnzimmer"
       }
     }
   },
@@ -18,8 +18,8 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Steinlampe",
-        "location": "Schlafzimmer"
+        "control": "stone-lamp",
+        "location": "schlafzimmer"
       }
     }
   },
@@ -30,8 +30,8 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Stehlampe",
-        "location": "Esszimmer"
+        "control": "standing-lamp",
+        "location": "esszimmer"
       }
     }
   },
@@ -42,8 +42,8 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Test-Licht",
-        "location": "Testraum"
+        "control": "led",
+        "location": "kueche"
       }
     }
   }

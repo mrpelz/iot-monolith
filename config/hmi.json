@@ -1,58 +1,96 @@
 {
-  "labels": {
-    "temperature": "Temperatur",
-    "pressure": "Luftdruck",
-    "humidity": "Luftfeuchtigkeit",
-    "brightness": "Helligkeit",
-    "eco2": "Eq. CO₂",
-    "tvoc": "Flüchtige Organische Verbindungen",
-    "precipitation": "Niederschlag",
-    "pm10": "Feinstaub (PM10)",
-    "pm025": "Feinstaub (PM2.5)"
-  },
-  "units": {
-    "temperature": "°C",
-    "pressure": "hPa",
-    "humidity": "%RH",
-    "brightness": "lux",
-    "eco2": "ppm",
-    "tvoc": "ppb",
-    "precipitation": "mm/h",
-    "pm10": "µg/m³",
-    "pm025": "µg/m³"
-  },
   "webApi": {
     "sort": {
-      "rooms": [
-        "Wohnzimmer",
-        "Küche",
-        "Esszimmer",
-        "Schlafzimmer",
-        "Arbeitszimmer",
-        "Duschbad",
-        "Wannenbad",
-        "Terrasse",
-        "Balkon",
-        "Flur",
-        "Abstellraum",
-        "Global"
-      ],
       "categories": [
-        "Luft",
-        "Lampen",
-        "Türen und Fenster"
+        "air",
+        "lamps",
+        "doors",
+        "other"
       ],
       "controls": [
-        "Temperatur",
-        "Luftfeuchtigkeit",
-        "Helligkeit",
-        "Luftdruck",
-        "Feinstaub (PM10)",
-        "Feinstaub (PM2.5)",
-        "Eq. CO₂",
-        "Flüchtige Organische Verbindungen",
-        "Niederschlag"
+        "temperature",
+        "humidity",
+        "brightness",
+        "pressure",
+        "pm10",
+        "pm025",
+        "eco2",
+        "tvoc",
+        "precipitation"
+      ],
+      "locations": [
+        "wohnzimmer",
+        "kueche",
+        "esszimmer",
+        "schlafzimmer",
+        "arbeitszimmer",
+        "duschbad",
+        "wannenbad",
+        "terrasse",
+        "balkon",
+        "flur",
+        "abstellraum",
+        "global"
       ]
+    },
+    "strings": {
+      "categories": {
+        "air": "Luft",
+        "doors": "Türen und Fenster",
+        "lamps": "Lampen",
+        "other": "Sonstiges"
+      },
+      "controls": {
+        "brightness": "Helligkeit",
+        "ceiling-lamp": "Deckenlampe",
+        "door": "Tür",
+        "eco2": "Eq. CO₂",
+        "entry-door": "Wohnungstür",
+        "fan": "Ventilator",
+        "humidity": "Luftfeuchtigkeit",
+        "led": "LED",
+        "pm025": "Feinstaub (PM2.5)",
+        "pm10": "Feinstaub (PM10)",
+        "precipitation": "Niederschlag",
+        "pressure": "Luftdruck",
+        "standing-lamp": "Stehlampe",
+        "stone-lamp": "Steinlampe",
+        "temperature": "Temperatur",
+        "tvoc": "Flüchtige Organische Verbindungen",
+        "window-door": "Fenstertür",
+        "window": "Fenster"
+      },
+      "locations": {
+        "abstellraum": "Abstellraum",
+        "ahu-in": "Lufteinlass",
+        "ahu-out": "Luftauslass",
+        "arbeitszimmer": "Arbeitszimmer",
+        "balkon": "Balkon",
+        "duschbad": "Duschbad",
+        "esszimmer": "Esszimmer",
+        "flur": "Flur",
+        "global": "Global",
+        "kueche": "Küche",
+        "left": "links",
+        "right": "rechts",
+        "schlafzimmer": "Schlafzimmer",
+        "terrasse": "Terrasse",
+        "wannenbad": "Wannenbad",
+        "wohnzimmer": "Wohnzimmer",
+        "innen": "innen",
+        "aussen": "außen"
+      },
+      "units": {
+        "brightness": "lux",
+        "eco2": "ppm",
+        "humidity": "%RH",
+        "pm025": "µg/m³",
+        "pm10": "µg/m³",
+        "precipitation": "mm/h",
+        "pressure": "hPa",
+        "temperature": "°C",
+        "tvoc": "ppb"
+      }
     }
   },
   "valueSanity": {

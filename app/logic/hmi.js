@@ -14,8 +14,10 @@ function doorSensorsHmi(doorSensors, hmiServer) {
     const hmi = new HmiElement({
       name,
       attributes: Object.assign({
-        type: 'door',
-        category: 'Türen und Fenster'
+        category: 'doors',
+        control: 'door',
+        type: 'door-sensor',
+        subtype: 'door'
       }, hmiAttributes),
       server: hmiServer,
       handlers: {
@@ -31,7 +33,7 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
-function roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units) {
+function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
   roomSensors.forEach((sensor) => {
     const {
       name,
@@ -52,10 +54,10 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units) {
       new HmiElement({
         name: hmiName,
         attributes: Object.assign({
-          displayName: labels[metric] || hmiName,
-          displayUnit: units[metric] || null,
-          type: 'room-sensor',
-          category: 'Luft'
+          category: 'air',
+          control: metric,
+          type: 'environmental-sensor',
+          subtype: 'single-sensor'
         }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
@@ -65,7 +67,7 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units) {
   });
 }
 
-function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, labels, units) {
+function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity) {
   metricAggregates.forEach((aggregate) => {
     const {
       name,
@@ -82,10 +84,10 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, labels, un
     new HmiElement({
       name,
       attributes: Object.assign({
-        displayName: labels[metric] || name,
-        displayUnit: units[metric] || null,
-        type: 'metric-aggregate',
-        category: 'Luft'
+        category: 'air',
+        control: metric,
+        type: 'environmental-sensor',
+        subtype: 'aggregate-value'
       }, hmiAttributes),
       sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
@@ -98,7 +100,6 @@ function obiLightHmi(light, hmiServer) {
   const {
     name,
     instance,
-    type,
     attributes: {
       hmi: hmiAttributes = {}
     } = {}
@@ -107,17 +108,19 @@ function obiLightHmi(light, hmiServer) {
   const hmi = new HmiElement({
     name,
     attributes: Object.assign({
-      type: 'light',
-      subtype: type,
-      category: 'Lampen'
+      category: 'lamps',
+      control: 'lamp',
+      type: 'lighting',
+      setType: 'trigger',
+      subtype: 'binary-light'
     }, hmiAttributes),
     server: hmiServer,
     handlers: {
       get: () => {
         return Promise.resolve(instance.relayState);
       },
-      set: (input) => {
-        return instance.relay(Boolean(input));
+      set: () => {
+        return instance.relay(!instance.relayState);
       }
     }
   });
@@ -144,7 +147,6 @@ function obiFanHmi(fan, hmiServer) {
   const {
     name,
     instance,
-    type,
     attributes: {
       hmi: hmiAttributes = {}
     } = {}
@@ -153,16 +155,18 @@ function obiFanHmi(fan, hmiServer) {
   const hmi = new HmiElement({
     name,
     attributes: Object.assign({
+      category: 'other',
+      control: 'fan',
       type: 'fan',
-      subtype: type
+      setType: 'trigger',
     }, hmiAttributes),
     server: hmiServer,
     handlers: {
       get: () => {
         return Promise.resolve(instance.relayState);
       },
-      set: (input) => {
-        return instance.relay(Boolean(input));
+      set: () => {
+        return instance.relay(!instance.relayState);
       }
     }
   });
@@ -190,9 +194,7 @@ function fansHmi(fans, hmiServer) {
   const {
     config: {
       hmi: {
-        valueSanity,
-        labels,
-        units
+        valueSanity
       }
     },
     doorSensors,
@@ -204,8 +206,8 @@ function fansHmi(fans, hmiServer) {
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
-  roomSensorsHmi(roomSensors, hmiServer, valueSanity, labels, units);
-  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity, labels, units);
+  roomSensorsHmi(roomSensors, hmiServer, valueSanity);
+  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity);
   lightsHmi(lights, hmiServer);
   fansHmi(fans, hmiServer);
 }());

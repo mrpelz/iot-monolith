@@ -22,7 +22,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Global"
+        "location": "global"
       }
     }
   },
@@ -47,13 +47,13 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "Global",
+        "sortLocation": "global",
         "location": "innen"
       }
     }
   },
   {
-    "name": "außen",
+    "name": "aussen",
     "sensors": [
       "terrasse",
       "balkon"
@@ -66,8 +66,8 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "Global",
-        "location": "außen"
+        "sortLocation": "global",
+        "location": "aussen"
       }
     }
   }

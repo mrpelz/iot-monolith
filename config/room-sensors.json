@@ -11,7 +11,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Wohnzimmer"
+        "location": "wohnzimmer"
       }
     }
   },
@@ -25,7 +25,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Esszimmer"
+        "location": "esszimmer"
       }
     }
   },
@@ -41,7 +41,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Küche"
+        "location": "kueche"
       }
     }
   },
@@ -57,7 +57,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Schlafzimmer"
+        "location": "schlafzimmer"
       }
     }
   },
@@ -75,7 +75,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Arbeitszimmer"
+        "location": "arbeitszimmer"
       }
     }
   },
@@ -89,7 +89,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Flur"
+        "location": "flur"
       }
     }
   },
@@ -105,7 +105,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Abstellraum"
+        "location": "abstellraum"
       }
     }
   },
@@ -122,7 +122,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Duschbad"
+        "location": "duschbad"
       }
     }
   },
@@ -136,7 +136,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Wannenbad"
+        "location": "wannenbad"
       }
     }
   },
@@ -153,7 +153,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Terrasse"
+        "location": "terrasse"
       }
     }
   },
@@ -170,7 +170,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "Balkon"
+        "location": "balkon"
       }
     }
   },
@@ -186,8 +186,8 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "Global",
-        "location": "Lufteinlass"
+        "sortLocation": "global",
+        "location": "ahu-in"
       }
     }
   },
@@ -203,8 +203,8 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "Global",
-        "location": "Luftauslass"
+        "sortLocation": "global",
+        "location": "ahu-out"
       }
     }
   }

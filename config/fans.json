@@ -7,8 +7,7 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Ventilator",
-        "location": "Wohnzimmer"
+        "location": "wohnzimmer"
       }
     }
   },
@@ -20,8 +19,7 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "displayName": "Ventilator",
-        "location": "Schlafzimmer"
+        "location": "schlafzimmer"
       }
     }
   }
