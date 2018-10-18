@@ -27,7 +27,14 @@ class WebApi {
       meta
     };
 
-    rebind(this, '_handleIngest', '_handleStream', '_handleList', '_handleSet');
+    rebind(
+      this,
+      '_handleIngest',
+      '_handleStream',
+      '_handleList',
+      '_handleValues',
+      '_handleSet'
+    );
 
     this._setUpHttpServer(host, port);
     this._setUpHmiService(hmiServer, scheduler, update);
@@ -48,6 +55,7 @@ class WebApi {
     });
     httpServer.route('/stream', this._handleStream);
     httpServer.route('/list', this._handleList);
+    httpServer.route('/values', this._handleValues);
     httpServer.route('/set', this._handleSet);
     this._webApi.httpServer = httpServer;
   }
@@ -154,6 +162,24 @@ class WebApi {
           meta,
           elements
         }, null, null);
+      })
+    };
+  }
+
+  _handleValues() {
+    const { hmiService } = this._webApi;
+
+    return {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8'
+      },
+      handler: hmiService.list(true).then((response = []) => {
+        const elements = response.map(
+          ({ name, value }) => {
+            return { name, value };
+          }
+        );
+        return JSON.stringify(elements, null, null);
       })
     };
   }
