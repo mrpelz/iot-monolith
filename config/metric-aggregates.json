@@ -22,7 +22,7 @@
     ],
     "attributes": {
       "hmi": {
-        "location": "global"
+        "section": "global"
       }
     }
   },
@@ -47,8 +47,7 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "global",
-        "location": "innen"
+        "section": "global"
       }
     }
   },
@@ -66,8 +65,7 @@
     ],
     "attributes": {
       "hmi": {
-        "sortLocation": "global",
-        "location": "aussen"
+        "section": "global"
       }
     }
   }

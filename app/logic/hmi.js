@@ -15,9 +15,9 @@ function doorSensorsHmi(doorSensors, hmiServer) {
       name,
       attributes: Object.assign({
         category: 'doors',
-        control: 'door',
-        type: 'door-sensor',
-        subtype: 'door'
+        label: 'door',
+        subType: 'door',
+        type: 'door-sensor'
       }, hmiAttributes),
       server: hmiServer,
       handlers: {
@@ -55,9 +55,9 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
         name: hmiName,
         attributes: Object.assign({
           category: 'air',
-          control: metric,
-          type: 'environmental-sensor',
-          subtype: 'single-sensor'
+          label: metric,
+          subType: 'single-sensor',
+          type: 'environmental-sensor'
         }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
@@ -85,9 +85,9 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity) {
       name,
       attributes: Object.assign({
         category: 'air',
-        control: metric,
-        type: 'environmental-sensor',
-        subtype: 'aggregate-value'
+        label: metric,
+        subType: 'aggregate-value',
+        type: 'environmental-sensor'
       }, hmiAttributes),
       sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
@@ -109,10 +109,10 @@ function obiLightHmi(light, hmiServer) {
     name,
     attributes: Object.assign({
       category: 'lamps',
-      control: 'lamp',
-      type: 'lighting',
+      label: 'lamp',
       setType: 'trigger',
-      subtype: 'binary-light'
+      subType: 'binary-light',
+      type: 'lighting'
     }, hmiAttributes),
     server: hmiServer,
     handlers: {
@@ -156,9 +156,9 @@ function obiFanHmi(fan, hmiServer) {
     name,
     attributes: Object.assign({
       category: 'other',
-      control: 'fan',
-      type: 'fan',
+      label: 'fan',
       setType: 'trigger',
+      type: 'fan'
     }, hmiAttributes),
     server: hmiServer,
     handlers: {

@@ -7,7 +7,7 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "location": "wohnzimmer"
+        "section": "wohnzimmer"
       }
     }
   },
@@ -19,7 +19,7 @@
     "type": "OBI_JACK",
     "attributes": {
       "hmi": {
-        "location": "schlafzimmer"
+        "section": "schlafzimmer"
       }
     }
   }

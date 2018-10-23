@@ -7,7 +7,7 @@
         "doors",
         "other"
       ],
-      "controls": [
+      "labels": [
         "temperature",
         "humidity",
         "brightness",
@@ -18,7 +18,7 @@
         "tvoc",
         "precipitation"
       ],
-      "locations": [
+      "sections": [
         "wohnzimmer",
         "kueche",
         "esszimmer",
@@ -40,7 +40,7 @@
         "lamps": "Lampen",
         "other": "Sonstiges"
       },
-      "controls": {
+      "labels": {
         "brightness": "Helligkeit",
         "ceiling-lamp": "Deckenlampe",
         "door": "Tür",
@@ -60,7 +60,7 @@
         "window-door": "Fenstertür",
         "window": "Fenster"
       },
-      "locations": {
+      "sections": {
         "abstellraum": "Abstellraum",
         "ahu-in": "Lufteinlass",
         "ahu-out": "Luftauslass",

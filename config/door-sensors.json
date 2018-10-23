@@ -4,7 +4,7 @@
     "id": 45076,
     "attributes": {
       "hmi": {
-        "location": "wannenbad"
+        "section": "wannenbad"
       }
     }
   },
@@ -13,7 +13,7 @@
     "id": 45295,
     "attributes": {
       "hmi": {
-        "location": "schlafzimmer"
+        "section": "schlafzimmer"
       }
     }
   },
@@ -22,7 +22,7 @@
     "id": 3477,
     "attributes": {
       "hmi": {
-        "location": "abstellraum"
+        "section": "abstellraum"
       }
     }
   },
@@ -32,7 +32,7 @@
     "attributes": {
       "hmi": {
         "control": "entry-door",
-        "location": "flur"
+        "section": "flur"
       }
     }
   },
@@ -41,7 +41,7 @@
     "id": 45016,
     "attributes": {
       "hmi": {
-        "location": "duschbad"
+        "section": "duschbad"
       }
     }
   },
@@ -50,7 +50,7 @@
     "id": 3481,
     "attributes": {
       "hmi": {
-        "location": "arbeitszimmer"
+        "section": "arbeitszimmer"
       }
     }
   },
@@ -60,9 +60,9 @@
     "attributes": {
       "hmi": {
         "control": "window",
-        "location": "arbeitszimmer",
-        "sublocation": "left",
-        "subtype": "window"
+        "section": "arbeitszimmer",
+        "subLabel": "left",
+        "subType": "window"
       }
     }
   },
@@ -72,9 +72,9 @@
     "attributes": {
       "hmi": {
         "control": "window",
-        "location": "arbeitszimmer",
-        "sublocation": "right",
-        "subtype": "window"
+        "section": "arbeitszimmer",
+        "subLabel": "right",
+        "subType": "window"
       }
     }
   },
@@ -84,9 +84,9 @@
     "attributes": {
       "hmi": {
         "control": "window",
-        "location": "schlafzimmer",
-        "sublocation": "left",
-        "subtype": "window"
+        "section": "schlafzimmer",
+        "subLabel": "left",
+        "subType": "window"
       }
     }
   },
@@ -96,9 +96,9 @@
     "attributes": {
       "hmi": {
         "control": "window-door",
-        "location": "schlafzimmer",
-        "sublocation": "right",
-        "subtype": "window"
+        "section": "schlafzimmer",
+        "subLabel": "right",
+        "subType": "window"
       }
     }
   },
@@ -108,8 +108,8 @@
     "attributes": {
       "hmi": {
         "control": "window-door",
-        "location": "kueche",
-        "subtype": "window"
+        "section": "kueche",
+        "subType": "window"
       }
     }
   },
@@ -119,8 +119,8 @@
     "attributes": {
       "hmi": {
         "control": "window-door",
-        "location": "wohnzimmer",
-        "subtype": "window"
+        "section": "wohnzimmer",
+        "subType": "window"
       }
     }
   }
