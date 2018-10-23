@@ -6,6 +6,149 @@ const { Logger } = require('../log');
 
 const libName = 'web-api';
 
+function sortElements(rawInput = [], list = [], key = 'name') {
+  const input = rawInput.filter(Boolean);
+
+  const unsorted = input.filter(({ [key]: name }) => {
+    return !list.includes(name);
+  });
+
+  const sorted = list.map((sortKey) => {
+    return input.filter(({ [key]: name }) => {
+      return name === sortKey;
+    });
+  }).filter(Boolean);
+
+  return [].concat(...sorted, unsorted);
+}
+
+function elementsInHierarchy(elements, value, key = 'name') {
+  return elements.filter(({
+    attributes: { [key]: is = null } = {}
+  }) => {
+    return is === value;
+  });
+}
+
+function combineAttributes(elements) {
+  return Object.assign(
+    {},
+    ...elements.map((element) => {
+      const { attributes = {} } = element;
+      return attributes;
+    })
+  );
+}
+
+function showSubLabel(elements) {
+  const labels = new Set();
+  const doubled = new Set();
+
+  elements.forEach((element) => {
+    const {
+      attributes: {
+        label = null
+      } = {}
+    } = element;
+
+    if (!label) return;
+
+    if (labels.has(label)) {
+      doubled.add(label);
+    }
+
+    labels.add(label);
+  });
+
+  return elements.map((element) => {
+    const {
+      attributes,
+      attributes: {
+        label
+      } = {}
+    } = element;
+
+    if (doubled.has(label)) {
+      attributes.showSubLabel = true;
+    }
+
+    return element;
+  });
+}
+
+function getHierarchy(
+  elements = [],
+  {
+    sections,
+    categories,
+    labels: rawLabels
+  } = {}
+) {
+  const labels = [null, ...rawLabels];
+
+  const sectionMap = sections.map((sectionGroup) => {
+    return sortElements(sectionGroup.map((sectionName) => {
+      const sectionElements = elementsInHierarchy(elements, sectionName, 'section');
+
+      if (!sectionElements.length) return null;
+
+      const categoryMap = sortElements(categories.map((categoryName) => {
+        const categoryElements = showSubLabel(
+          elementsInHierarchy(sectionElements, categoryName, 'category')
+        );
+
+        if (!categoryElements.length) return null;
+
+        const groupMap = sortElements([].concat(...labels.map((groupName) => {
+          const groupElements = elementsInHierarchy(categoryElements, groupName, 'group');
+
+          if (!groupElements.length) return null;
+
+          if (groupName === null) {
+            return groupElements.map((groupElement) => {
+              const {
+                attributes: {
+                  label = null
+                }
+              } = groupElement;
+
+              return {
+                group: label,
+                single: true,
+                attributes: null,
+                elements: [groupElement]
+              };
+            });
+          }
+
+          const isSingle = groupElements.length <= 1;
+
+          return [{
+            group: groupName,
+            single: isSingle,
+            attributes: isSingle ? null : combineAttributes(groupElements),
+            elements: groupElements
+          }];
+        })), labels, 'group');
+
+        return {
+          category: categoryName,
+          groups: groupMap
+        };
+      }), categories, 'category');
+
+      return {
+        section: sectionName,
+        categories: categoryMap
+      };
+    }), sectionGroup, 'section');
+  });
+
+  return {
+    sections: sectionMap
+  };
+}
+
 class WebApi {
   constructor(options = {}) {
     const {
@@ -148,7 +291,13 @@ class WebApi {
   }
 
   _handleList(request) {
-    const { hmiService, meta } = this._webApi;
+    const {
+      hmiService,
+      meta: {
+        sort = {},
+        strings = {}
+      } = {}
+    } = this._webApi;
     const { urlQuery: { values = false } } = request;
 
     return {
@@ -159,8 +308,8 @@ class WebApi {
         Boolean(parseString(values))
       ).then((elements) => {
         return JSON.stringify({
-          meta,
-          elements
+          strings,
+          hierarchy: getHierarchy(elements, sort)
         }, null, null);
       })
     };

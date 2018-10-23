@@ -33,7 +33,7 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
-function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
+function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
   roomSensors.forEach((sensor) => {
     const {
       name,
@@ -57,7 +57,8 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
           category: 'air',
           label: metric,
           subType: 'single-sensor',
-          type: 'environmental-sensor'
+          type: 'environmental-sensor',
+          unit: unitMap[metric] || null
         }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
@@ -67,7 +68,7 @@ function roomSensorsHmi(roomSensors, hmiServer, valueSanity) {
   });
 }
 
-function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity) {
+function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
   metricAggregates.forEach((aggregate) => {
     const {
       name,
@@ -87,7 +88,8 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity) {
         category: 'air',
         label: metric,
         subType: 'aggregate-value',
-        type: 'environmental-sensor'
+        type: 'environmental-sensor',
+        unit: unitMap[metric] || null
       }, hmiAttributes),
       sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
@@ -194,6 +196,7 @@ function fansHmi(fans, hmiServer) {
   const {
     config: {
       hmi: {
+        unitMap,
         valueSanity
       }
     },
@@ -206,8 +209,8 @@ function fansHmi(fans, hmiServer) {
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
-  roomSensorsHmi(roomSensors, hmiServer, valueSanity);
-  metricAggrgatesHmi(metricAggregates, hmiServer, valueSanity);
+  roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity);
+  metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity);
   lightsHmi(lights, hmiServer);
   fansHmi(fans, hmiServer);
 }());
