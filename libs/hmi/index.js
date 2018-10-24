@@ -5,10 +5,8 @@ const { Logger } = require('../log');
 
 const libName = 'hmi';
 
-class HmiServer extends EventEmitter {
+class HmiServer {
   constructor() {
-    super();
-
     this._hmi = {
       elements: {},
       ingests: [],
@@ -48,6 +46,10 @@ class HmiServer extends EventEmitter {
     return Promise.all(
       Object.values(elements).map((element) => {
         const { getter } = element;
+
+        if (!getter) {
+          return Promise.resolve(null);
+        }
 
         return getter();
       })
@@ -107,7 +109,7 @@ class HmiServer extends EventEmitter {
       set
     } = options;
 
-    if (!name || !attributes || !get) {
+    if (!name || !attributes || !(get || set)) {
       throw new Error('insufficient options provided');
     }
 
@@ -135,7 +137,7 @@ class HmiServer extends EventEmitter {
     };
 
     elements[name] = {
-      getter,
+      getter: get ? getter : null,
       lister,
       setter: set ? setter : null
     };
@@ -166,40 +168,34 @@ class HmiServer extends EventEmitter {
   // addService
 }
 
-class HmiElement {
+class HmiElement extends EventEmitter {
   constructor(options = {}) {
     const {
-      name = null,
-      handlers = null,
-      sanity: valueSanity = null,
       attributes = {},
-      server = null
+      getter = null,
+      name = null,
+      sanity: valueSanity = null,
+      server = null,
+      settable = false
     } = options;
 
-    if (!name || !handlers || !attributes || !server) {
+    if (!name || !attributes || !server || !(getter || settable)) {
       throw new Error('insufficient options provided');
     }
 
-    const {
-      get = null,
-      set = null
-    } = handlers;
-
-    if (!get) {
-      throw new Error('no getHandler provided');
-    }
+    super();
 
     this._hmiElement = {
       name,
       attributes: Object.assign(
         {
-          set: Boolean(set)
+          set: settable
         },
         attributes
       ),
       valueSanity,
-      get,
-      set,
+      getter,
+      settable,
       server,
       oldValue: null
     };
@@ -208,7 +204,7 @@ class HmiElement {
     this._setUpServer();
 
     const log = new Logger();
-    log.friendlyName('HmiElement');
+    log.friendlyName(name);
     this._hmiElement.log = log.withPrefix(libName);
   }
 
@@ -216,15 +212,16 @@ class HmiElement {
     const {
       name,
       attributes,
-      set,
+      getter,
+      settable,
       server
     } = this._hmiElement;
 
     const update = server.addElement({
       name,
       attributes,
-      get: this._get,
-      set: typeof set !== 'function' ? null : this._set
+      get: typeof getter === 'function' ? this._get : null,
+      set: settable ? this._set : null
     });
 
     this._hmiElement.update = update;
@@ -232,20 +229,19 @@ class HmiElement {
 
   async _get(force = false) {
     const {
-      get,
+      getter,
       log,
-      name,
       valueSanity,
       oldValue
     } = this._hmiElement;
 
-    const result = await resolveAlways(get());
+    const result = await resolveAlways(getter());
     const value = valueSanity ? sanity(result, valueSanity) : result;
 
     if (!force && value === oldValue) return null;
 
     log.info({
-      head: `got new value for "${name}"`,
+      head: 'got new value',
       value
     });
 
@@ -257,30 +253,28 @@ class HmiElement {
   _set(input) {
     const {
       log,
-      name,
-      set
+      settable
     } = this._hmiElement;
 
-    if (typeof set !== 'function') {
-      return Promise.reject(new Error('element not settable'));
+    if (!settable) {
+      throw new Error('element not settable');
     }
 
     log.info({
-      head: `setting "${name}"`,
+      head: 'setting',
       value: input
     });
 
-    return set(input);
+    this.emit('set', input);
   }
 
   update() {
     const {
       log,
-      name,
       update
     } = this._hmiElement;
 
-    log.info(`force-updating "${name}"`);
+    log.info('force-updating');
 
     return update();
   }

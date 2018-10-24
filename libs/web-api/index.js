@@ -157,7 +157,7 @@ class WebApi {
       hmiServer = null,
       scheduler = null,
       update = null,
-      meta = null
+      meta = {}
     } = options;
 
     if (!port || !hmiServer || !scheduler || !update) {
@@ -296,7 +296,7 @@ class WebApi {
       meta: {
         sort = {},
         strings = {}
-      } = {}
+      }
     } = this._webApi;
     const { urlQuery: { values = false } } = request;
 

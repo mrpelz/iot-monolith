@@ -20,10 +20,8 @@ function doorSensorsHmi(doorSensors, hmiServer) {
         type: 'door-sensor'
       }, hmiAttributes),
       server: hmiServer,
-      handlers: {
-        get: () => {
-          return Promise.resolve(instance.isOpen);
-        }
+      getter: () => {
+        return Promise.resolve(instance.isOpen);
       }
     });
 
@@ -46,7 +44,7 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
 
     return metrics.forEach((metric) => {
       const hmiName = camel(name, metric);
-      const get = () => {
+      const getter = () => {
         return instance.getMetric(metric);
       };
 
@@ -62,7 +60,7 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
         }, hmiAttributes),
         sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
-        handlers: { get }
+        getter
       });
     });
   });
@@ -93,7 +91,7 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
       }, hmiAttributes),
       sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
-      handlers: { get }
+      getter: get
     });
   });
 }
@@ -117,18 +115,18 @@ function obiLightHmi(light, hmiServer) {
       type: 'lighting'
     }, hmiAttributes),
     server: hmiServer,
-    handlers: {
-      get: () => {
-        return Promise.resolve(instance.relayState);
-      },
-      set: () => {
-        return instance.relay(!instance.relayState);
-      }
-    }
+    getter: () => {
+      return Promise.resolve(instance.relayState);
+    },
+    settable: true
   });
 
   instance.on('change', () => {
     hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.relay(!instance.relayState);
   });
 }
 
@@ -163,18 +161,18 @@ function obiFanHmi(fan, hmiServer) {
       type: 'fan'
     }, hmiAttributes),
     server: hmiServer,
-    handlers: {
-      get: () => {
-        return Promise.resolve(instance.relayState);
-      },
-      set: () => {
-        return instance.relay(!instance.relayState);
-      }
-    }
+    getter: () => {
+      return Promise.resolve(instance.relayState);
+    },
+    settable: true
   });
 
   instance.on('change', () => {
     hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.relay(!instance.relayState);
   });
 }
 
