@@ -189,6 +189,7 @@ class HmiElement extends EventEmitter {
       name,
       attributes: Object.assign(
         {
+          get: typeof getter === 'function',
           set: settable
         },
         attributes
