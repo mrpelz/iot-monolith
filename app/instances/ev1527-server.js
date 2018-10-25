@@ -1,20 +1,41 @@
-const { Ev1527Server } = require('../../libs/ev1527');
+const { Ev1527Server, Ev1527ServerAggregator } = require('../../libs/ev1527');
 
-const {
-  config: {
-    globals: {
-      ev1527: {
-        host,
-        port
+function createEv1527Server(server) {
+  const {
+    host,
+    port
+  } = server;
+
+  try {
+    return new Ev1527Server({
+      host,
+      port
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+(function main() {
+  const {
+    config: {
+      globals: {
+        ev1527
       }
     }
-  }
-} = global;
+  } = global;
 
-const ev1527Server = new Ev1527Server({
-  host,
-  port
-});
-ev1527Server.connect();
+  const servers = ev1527.map((server) => {
+    const { disable = false } = server;
+    if (disable) return null;
 
-global.ev1527Server = ev1527Server;
+    const instance = createEv1527Server(server);
+    if (!instance) return null;
+
+    instance.connect();
+
+    return instance;
+  }).filter(Boolean);
+
+  global.ev1527Server = new Ev1527ServerAggregator(...servers);
+}());

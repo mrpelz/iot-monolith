@@ -1,3 +1,5 @@
+const EventEmitter = require('events');
+
 const { Base } = require('../base');
 const { PersistentSocket } = require('../tcp');
 const { rebind } = require('../utils/oop');
@@ -36,7 +38,7 @@ class Ev1527Server extends PersistentSocket {
     this.on('data', this._handlePayload);
     this.setMaxListeners(0);
 
-    this.log.friendlyName('Ev1527Server');
+    this.log.friendlyName(`Server ${host}:${port}`);
     this._ev1527.log = this.log.withPrefix(libName);
   }
 
@@ -68,6 +70,22 @@ class Ev1527Server extends PersistentSocket {
   // Public methods:
   // connect
   // disconnect
+}
+
+class Ev1527ServerAggregator extends EventEmitter {
+  constructor(...servers) {
+    super();
+
+    this.setMaxListeners(0);
+
+    servers.forEach((server) => {
+      if (!(server instanceof Ev1527Server)) throw new Error('not a ev1527-server');
+
+      server.on('message', (data) => {
+        this.emit('message', data);
+      });
+    });
+  }
 }
 
 class Ev1527Device extends Base {
@@ -153,5 +171,6 @@ class Ev1527Device extends Base {
 
 module.exports = {
   Ev1527Server,
+  Ev1527ServerAggregator,
   Ev1527Device
 };
