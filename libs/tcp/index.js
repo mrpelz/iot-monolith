@@ -28,10 +28,11 @@ class PersistentSocket extends Base {
       send = false,
       receive = false,
       time = null,
-      data = null
+      data = null,
+      useNative = true
     } = keepAlive;
 
-    if ((send || receive) && (!time || !data)) {
+    if (send && (!time || !data)) {
       throw new Error('insufficient keepAlive-options provided');
     }
 
@@ -42,7 +43,8 @@ class PersistentSocket extends Base {
         send,
         receive,
         time,
-        data
+        data,
+        useNative
       },
       lengthPreamble,
       delimiter
@@ -173,7 +175,7 @@ class PersistentSocket extends Base {
 
       state.isConnected = true;
 
-      if (keepAlive && keepAlive.time) {
+      if (keepAlive && keepAlive.time && keepAlive.useNative) {
         socket.setKeepAlive(true);
         socket.setTimeout(keepAlive.time);
       }
