@@ -56,7 +56,7 @@ class Ev1527Server extends PersistentSocket {
     try {
       data = JSON.parse(payload);
     } catch (error) {
-      log.warning({
+      log.error({
         head: 'illegal string received',
         attachment: payload
       });
