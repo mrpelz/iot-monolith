@@ -161,6 +161,25 @@ class RoomSensor extends MessageClient {
     });
   }
 
+  getCache(metric) {
+    const {
+      metrics,
+      caches
+    } = this._roomSensor;
+
+    if (!metrics.includes(metric)) {
+      throw new Error('metric not configured');
+    }
+
+    const { [metric]: cache } = caches;
+
+    if (cache) {
+      return Promise.resolve(cache.value);
+    }
+
+    return Promise.resolve(null);
+  }
+
   getAll() {
     const {
       state: {
@@ -233,6 +252,7 @@ class RoomSensor extends MessageClient {
   // disconnect (inherited from PersistenSocket)
   // access (inherited from Base)
   // getMetric
+  // getCache
   // getAll
   // getTemperature
   // getPressure

@@ -37,32 +37,22 @@ const { camel } = require('../../libs/utils/string');
     return metrics.map((metric) => {
       const getters = instances.map((instance) => {
         return () => {
-          return instance.getMetric(metric);
+          return instance.getCache(metric);
         };
       });
 
-      const getTime = () => {
-        return instances.map((instance) => {
+      const timeGetters = instances.map((instance) => {
+        return () => {
           return instance.getMetricTime(metric);
-        }).reduce((prev, curr) => {
-          if (
-            !prev
-            || (curr && prev.getTime() < curr.getTime())
-          ) {
-            return curr;
-          }
+        };
+      });
 
-          return prev;
-        }, null);
-      };
-
-      const instance = new Aggregate(getters);
+      const instance = new Aggregate(getters, timeGetters);
 
       return {
         attributes,
         group: name,
         instance,
-        getTime,
         metric,
         name: camel(name, metric)
       };

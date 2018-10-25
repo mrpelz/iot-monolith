@@ -3,6 +3,12 @@ const { rebind } = require('./oop');
 const { remainder } = require('./math');
 const { isObject } = require('./structures');
 
+function sortTimes(...input) {
+  return input.sort((a, b) => {
+    return a.getTime() - b.getTime();
+  });
+}
+
 // https://jsfiddle.net/jonathansampson/m7G64/
 function throttle(limit = 500) {
   let run = true;
@@ -535,5 +541,6 @@ module.exports = {
   recurring,
   recurringToDate,
   sleep,
+  sortTimes,
   throttle
 };
