@@ -5,11 +5,15 @@
   "webApiUpdateSeconds": 10,
   "ev1527": [
     {
-      "host": "flexo.net.wurstsalat.cloud",
-      "port": 9000
+      "host": "hermes.net.wurstsalat.cloud",
+      "port": 9009
     },
     {
       "host": "tim.net.wurstsalat.cloud",
+      "port": 9000
+    },
+    {
+      "host": "flexo.net.wurstsalat.cloud",
       "port": 9000
     }
   ]
