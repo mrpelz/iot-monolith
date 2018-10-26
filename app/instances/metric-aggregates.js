@@ -37,7 +37,7 @@ const { camel } = require('../../libs/utils/string');
     return metrics.map((metric) => {
       const getters = instances.map((instance) => {
         return () => {
-          return instance.getCache(metric);
+          return instance.getMetric(metric);
         };
       });
 

@@ -34,7 +34,7 @@ class Aggregate {
     });
 
     // get most recent time
-    return sortTimes(...times).reverse()[0];
+    return sortTimes(...times).slice(-1)[0];
   }
 }
 

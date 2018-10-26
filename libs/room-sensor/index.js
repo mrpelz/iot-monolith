@@ -1,5 +1,5 @@
 const { MessageClient } = require('../messaging');
-const { Cache } = require('../cache');
+const { CachePromise } = require('../cache');
 const { readNumber } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
@@ -88,7 +88,7 @@ function getCaches(metrics) {
     metrics.map((name) => {
       const { [name]: { cache = 0 } = {} } = metricOptions;
       if (!cache) return null;
-      return new Cache(cache);
+      return new CachePromise(cache);
     })
   );
 }
@@ -144,16 +144,10 @@ class RoomSensor extends MessageClient {
     const { [metric]: cache } = caches;
 
     if (cache && cache.hit()) {
-      return Promise.resolve(cache.value);
+      return cache.defer();
     }
 
-    return this.request(metric).then((result) => {
-      if (cache) {
-        cache.store(result);
-      }
-
-      return result;
-    }).catch((reason) => {
+    return cache.promise(this.request(metric)).catch((reason) => {
       log.error({
         head: `metric (${metric}) error`,
         attachment: reason
@@ -244,7 +238,7 @@ class RoomSensor extends MessageClient {
 
     const { [metric]: cache } = caches;
 
-    return cache ? cache.time : null;
+    return cache ? cache.resultTime : null;
   }
 
   // Public methods:
