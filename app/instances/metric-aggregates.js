@@ -1,6 +1,5 @@
 const { Aggregate } = require('../../libs/aggregate');
 const { flattenArrays } = require('../../libs/utils/structures');
-const { camel } = require('../../libs/utils/string');
 
 (function main() {
   const {
@@ -15,7 +14,8 @@ const { camel } = require('../../libs/utils/string');
       attributes,
       metrics = [],
       name,
-      sensors = []
+      sensors = [],
+      type
     } = group;
     const instances = roomSensors.filter((options) => {
       const { disable = false, name: sensorName, metrics: sensorMetrics } = options;
@@ -47,14 +47,14 @@ const { camel } = require('../../libs/utils/string');
         };
       });
 
-      const instance = new Aggregate(getters, timeGetters);
+      const instance = new Aggregate(getters, timeGetters, type);
 
       return {
         attributes,
         group: name,
         instance,
         metric,
-        name: camel(name, metric)
+        type
       };
     });
   })).filter(Boolean);

@@ -1,11 +1,26 @@
 const { resolveAlways, rebind } = require('../../libs/utils/oop');
-const { median } = require('../../libs/utils/math');
+const { mean, median } = require('../../libs/utils/math');
 const { sortTimes } = require('../../libs/utils/time');
 
 class Aggregate {
-  constructor(getters, timeGetters) {
+  constructor(getters = [], timeGetters = [], type = 'mean') {
+    if (!type || !['mean', 'median'].includes(type)) {
+      throw new Error('illegal type');
+    }
+
     this.getters = getters;
     this.timeGetters = timeGetters;
+
+    this.aggregator = (() => {
+      switch (type) {
+        case 'mean':
+          return (results) => { return mean(...results); };
+        case 'median':
+          return (results) => { return median(...results); };
+        default:
+          return () => { return null; };
+      }
+    })();
 
     rebind(this, 'get', 'getTime');
   }
@@ -22,7 +37,7 @@ class Aggregate {
 
       if (!results.length) return null;
 
-      return median(...results);
+      return this.aggregator(results);
     });
   }
 

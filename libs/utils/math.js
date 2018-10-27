@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 
 // http://www.jstips.co/en/javascript/array-average-and-median/
-function average(...numbers) {
+function mean(...numbers) {
   return numbers.reduce((a, b) => { return a + b; }, 0) / numbers.length;
 }
 
@@ -57,7 +57,7 @@ function quotient(dividend, divisor) {
 }
 
 module.exports = {
-  average,
+  mean,
   median,
   remainder,
   sanity,

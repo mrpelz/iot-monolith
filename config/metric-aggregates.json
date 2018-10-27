@@ -1,6 +1,7 @@
 [
   {
     "name": "global",
+    "type": "mean",
     "sensors": [
       "wohnzimmer",
       "esszimmer",
@@ -29,6 +30,7 @@
   },
   {
     "name": "innen",
+    "type": "mean",
     "sensors": [
       "wohnzimmer",
       "esszimmer",
@@ -55,6 +57,83 @@
   },
   {
     "name": "aussen",
+    "type": "mean",
+    "sensors": [
+      "terrasse",
+      "balkon"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "attributes": {
+      "hmi": {
+        "section": "global",
+        "subLabel": "aussen"
+      }
+    }
+  },
+  {
+    "name": "global",
+    "type": "median",
+    "sensors": [
+      "wohnzimmer",
+      "esszimmer",
+      "kueche",
+      "schlafzimmer",
+      "arbeitszimmer",
+      "flur",
+      "abstellraum",
+      "duschbad",
+      "wannenbad",
+      "terrasse",
+      "balkon"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "attributes": {
+      "hmi": {
+        "section": "global",
+        "subLabel": "global"
+      }
+    }
+  },
+  {
+    "name": "innen",
+    "type": "median",
+    "sensors": [
+      "wohnzimmer",
+      "esszimmer",
+      "kueche",
+      "schlafzimmer",
+      "arbeitszimmer",
+      "flur",
+      "abstellraum",
+      "duschbad",
+      "wannenbad"
+    ],
+    "metrics": [
+      "temperature",
+      "pressure",
+      "humidity",
+      "brightness"
+    ],
+    "attributes": {
+      "hmi": {
+        "section": "global",
+        "subLabel": "innen"
+      }
+    }
+  },
+  {
+    "name": "aussen",
+    "type": "median",
     "sensors": [
       "terrasse",
       "balkon"

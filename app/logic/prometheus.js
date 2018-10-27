@@ -108,14 +108,16 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
     const {
       group,
       instance,
-      metric
+      metric,
+      type
     } = aggregate;
 
     prometheus.metric(
       metric,
       {
         location: group,
-        type: 'metric-aggregate'
+        type: 'metric-aggregate',
+        subType: type
       },
       instance.get,
       instance.getTime

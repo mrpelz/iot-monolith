@@ -74,14 +74,16 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
 function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
   metricAggregates.forEach((aggregate) => {
     const {
-      name,
+      group,
       instance,
       metric,
+      type,
       attributes: {
         hmi: hmiAttributes = {}
       }
     } = aggregate;
 
+    const hmiName = camel(group, metric, type);
     const getter = () => {
       return instance.get().then((value) => {
         return value === null ? null : sanity(
@@ -93,7 +95,7 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
 
     /* eslint-disable-next-line no-new */
     new HmiElement({
-      name,
+      name: hmiName,
       attributes: Object.assign({
         category: 'air',
         label: metric,
