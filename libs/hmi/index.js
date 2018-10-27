@@ -1,5 +1,4 @@
 const EventEmitter = require('events');
-const { sanity } = require('../utils/math');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { Logger } = require('../log');
 
@@ -174,7 +173,6 @@ class HmiElement extends EventEmitter {
       attributes = {},
       getter = null,
       name = null,
-      sanity: valueSanity = null,
       server = null,
       settable = false
     } = options;
@@ -194,7 +192,6 @@ class HmiElement extends EventEmitter {
         },
         attributes
       ),
-      valueSanity,
       getter,
       settable,
       server,
@@ -232,12 +229,10 @@ class HmiElement extends EventEmitter {
     const {
       getter,
       log,
-      valueSanity,
       oldValue
     } = this._hmiElement;
 
-    const result = await resolveAlways(getter());
-    const value = valueSanity ? sanity(result, valueSanity) : result;
+    const value = await resolveAlways(getter());
 
     if (!force && value === oldValue) return null;
 

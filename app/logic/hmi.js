@@ -1,4 +1,5 @@
 const { HmiElement } = require('../../libs/hmi');
+const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
 
 function doorSensorsHmi(doorSensors, hmiServer) {
@@ -45,7 +46,12 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
     return metrics.forEach((metric) => {
       const hmiName = camel(name, metric);
       const getter = () => {
-        return instance.getMetric(metric);
+        return instance.getMetric(metric).then((value) => {
+          return value === null ? null : sanity(
+            value,
+            valueSanity[metric] || valueSanity.default
+          );
+        });
       };
 
       /* eslint-disable-next-line no-new */
@@ -58,7 +64,6 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
           type: 'environmental-sensor',
           unit: unitMap[metric] || null
         }, hmiAttributes),
-        sanity: valueSanity[metric] || valueSanity.default,
         server: hmiServer,
         getter
       });
@@ -77,7 +82,14 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
       }
     } = aggregate;
 
-    const { get } = instance;
+    const getter = () => {
+      return instance.get().then((value) => {
+        return value === null ? null : sanity(
+          value,
+          valueSanity[metric] || valueSanity.default
+        );
+      });
+    };
 
     /* eslint-disable-next-line no-new */
     new HmiElement({
@@ -89,9 +101,8 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
         type: 'environmental-sensor',
         unit: unitMap[metric] || null
       }, hmiAttributes),
-      sanity: valueSanity[metric] || valueSanity.default,
       server: hmiServer,
-      getter: get
+      getter
     });
   });
 }

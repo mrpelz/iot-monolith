@@ -101,11 +101,11 @@
   },
   "valueSanity": {
     "default": {
-      "round": 1
+      "round": 2
     },
     "pressure": {
       "divide": 100,
-      "round": true
+      "round": 0
     }
   }
 }
