@@ -223,7 +223,10 @@ class WebApi {
       scheduler,
       every.second(update)
     ).on('hit', () => {
-      if (this._webApi.isActive) {
+      if (
+        this._webApi.isActive
+        && Object.keys(this._webApi.clients).length
+      ) {
         hmiService.getAll();
       }
     });
@@ -240,7 +243,7 @@ class WebApi {
       try {
         write(input);
       } catch (error) {
-        log.notice('failed writing stream to client');
+        log.error('failed writing stream to client');
       }
     });
   }
@@ -278,7 +281,8 @@ class WebApi {
     this._publishMessage({
       isSystem: true,
       event: 'newClient',
-      id: name
+      id: name,
+      count: Object.keys(clients).length + 1
     });
 
     clients[name] = write;
@@ -289,7 +293,8 @@ class WebApi {
       this._publishMessage({
         isSystem: true,
         event: 'delClient',
-        id: name
+        id: name,
+        count: Object.keys(clients).length
       });
     });
 
