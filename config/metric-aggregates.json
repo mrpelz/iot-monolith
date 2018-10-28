@@ -20,13 +20,7 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "global"
-      }
-    }
+    ]
   },
   {
     "name": "innen",
@@ -47,13 +41,7 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "innen"
-      }
-    }
+    ]
   },
   {
     "name": "aussen",
@@ -67,13 +55,7 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "aussen"
-      }
-    }
+    ]
   },
   {
     "name": "global",
@@ -96,13 +78,7 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "global"
-      }
-    }
+    ]
   },
   {
     "name": "innen",
@@ -123,13 +99,7 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "innen"
-      }
-    }
+    ]
   },
   {
     "name": "aussen",
@@ -143,12 +113,6 @@
       "pressure",
       "humidity",
       "brightness"
-    ],
-    "attributes": {
-      "hmi": {
-        "section": "global",
-        "subLabel": "aussen"
-      }
-    }
+    ]
   }
 ]

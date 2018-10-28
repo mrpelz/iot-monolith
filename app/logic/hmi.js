@@ -80,7 +80,7 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
       type,
       attributes: {
         hmi: hmiAttributes = {}
-      }
+      } = {}
     } = aggregate;
 
     const hmiName = camel(group, metric, type);
@@ -97,8 +97,11 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
     new HmiElement({
       name: hmiName,
       attributes: Object.assign({
-        category: 'air',
+        category: `§{air} (§{${type}})`,
         label: metric,
+        section: 'global',
+        sortCategory: 'air',
+        subLabel: group,
         subType: 'aggregate-value',
         type: 'environmental-sensor',
         unit: unitMap[metric] || null

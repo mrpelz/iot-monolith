@@ -1,25 +1,39 @@
 const { HttpServer } = require('../http/server');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { every, RecurringMoment } = require('../utils/time');
-const { parseString } = require('../utils/string');
+const { camel, parseString } = require('../utils/string');
 const { Logger } = require('../log');
 
 const libName = 'web-api';
 
 function sortElements(rawInput = [], list = [], key = 'name') {
+  const altKey = camel('sort', key);
+
   const input = rawInput.filter(Boolean);
 
-  const unsorted = input.filter(({ [key]: name }) => {
-    return !list.includes(name);
+  const unsorted = input.filter(({ [key]: name, [altKey]: altName }) => {
+    return !(list.includes(name) || list.includes(altName));
   });
 
   const sorted = list.map((sortKey) => {
-    return input.filter(({ [key]: name }) => {
-      return name === sortKey;
+    return input.filter(({ [key]: name, [altKey]: altName }) => {
+      return name === sortKey || altName === sortKey;
     });
   }).filter(Boolean);
 
   return [].concat(...sorted, unsorted);
+}
+
+function elementNames(elements, key = 'name') {
+  const result = new Set();
+
+  elements.forEach(({
+    attributes: { [key]: value = null } = {}
+  }) => {
+    result.add(value);
+  });
+
+  return [...result].sort();
 }
 
 function elementsInHierarchy(elements, value, key = 'name') {
@@ -92,14 +106,14 @@ function getHierarchy(
 
       if (!sectionElements.length) return null;
 
-      const categoryMap = sortElements(categories.map((categoryName) => {
+      const categoryMap = sortElements(elementNames(sectionElements, 'category').map((categoryName) => {
         const categoryElements = showSubLabel(
           elementsInHierarchy(sectionElements, categoryName, 'category')
         );
 
         if (!categoryElements.length) return null;
 
-        const groupMap = sortElements([].concat(...labels.map((groupName) => {
+        const groupMap = sortElements([].concat(...elementNames(categoryElements, 'group').map((groupName) => {
           const groupElements = elementsInHierarchy(categoryElements, groupName, 'group');
 
           if (!groupElements.length) return null;
