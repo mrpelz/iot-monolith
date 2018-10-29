@@ -38,7 +38,7 @@ class TelegramChat {
       Buffer.from(JSON.stringify(Object.assign(telegramMessageOptions, {
         chat_id: _chatId,
         text: message
-      }))),
+      })), 'utf8'),
       telegramHttpOptions
     );
   }

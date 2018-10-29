@@ -1,12 +1,24 @@
 /* eslint-disable no-console */
 const { chatIds, TelegramChat } = require('../telegram');
 const { parseString } = require('../utils/string');
-const { levelNames } = require('./config.json');
 
 const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
 const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
 const logLevel = parseString(LOG_LEVEL);
 const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
+
+const telegramLogLevel = 3;
+const levelNames = [
+  'EMERG',
+  'ALERT',
+  'CRITICAL',
+  'ERROR',
+  'WARNING',
+  'NOTICE',
+  'INFO',
+  'DEBUG'
+];
+
 
 function options(level, input) {
   return Object.assign(
@@ -69,7 +81,7 @@ class Logger {
       `${attachment === null ? '' : indent(attachment)}`
     );
 
-    const levelName = levelNames[level];
+    const levelName = level === null ? '_' : levelNames[level];
 
     if (isProd) {
       console.log(`[${levelName}] ${[
@@ -90,10 +102,16 @@ class Logger {
 
     if (
       telegram === true
-      || (telegram !== false && level <= 3)
+      || (telegram !== false && level <= telegramLogLevel)
     ) {
       _telegramChat.send(
-        `*${levelName || ''}*  \n_${name}_  \n\`${prefixChain}\`_  \n${messageBody}\`${messageAttachment}\``
+        [
+          `*${levelName}*`,
+          `_${name}_`,
+          `\`${prefixChain}\``,
+          messageBody || null,
+          messageAttachment ? `\`${messageAttachment}\`` : null
+        ].filter(Boolean).join('  \n')
       ).catch((error) => {
         console.error(`error logging to telegram: "${error}"`);
       });

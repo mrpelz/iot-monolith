@@ -1,12 +1,3 @@
-const { readConfig } = require('./config');
-const { createInstances, runLogic } = require('./app');
-
-(function run() {
-  readConfig();
-  createInstances();
-  runLogic();
-}());
-
 process.on('uncaughtException', (error) => {
   /* eslint-disable-next-line no-console */
   console.error(`unhandled exception: ${error}`);
@@ -18,3 +9,12 @@ process.on('unhandledRejection', (error) => {
   console.error(`unhandled rejection: ${error}`);
   process.exit(1);
 });
+
+const { readConfig } = require('./config');
+const { createInstances, runLogic } = require('./app');
+
+(function run() {
+  readConfig();
+  createInstances();
+  runLogic();
+}());
