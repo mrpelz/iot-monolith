@@ -51,9 +51,6 @@ const metricOptions = {
   tvoc: {
     head: 6,
     bytes: 2,
-    sanity: {
-      divide: 1000
-    },
     cache: 1000
   }
 };

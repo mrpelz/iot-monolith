@@ -73,7 +73,6 @@
       "percent-rh": "%RH",
       "pm025": "Feinstaub (PM2.5)",
       "pm10": "Feinstaub (PM10)",
-      "ppb": "ppb",
       "ppm": "ppm",
       "precipitation": "Niederschlag",
       "pressure": "Luftdruck",
@@ -99,11 +98,20 @@
     "precipitation": "mm/h",
     "pressure": "hpa",
     "temperature": "deg-c",
-    "tvoc": "ppb"
+    "tvoc": "ppm"
   },
   "valueSanity": {
     "default": {
+      "round": 1
+    },
+    "brightness": {
       "round": 2
+    },
+    "eco2": {
+      "round": 0
+    },
+    "tvoc": {
+      "round": 0
     },
     "pressure": {
       "divide": 100,
