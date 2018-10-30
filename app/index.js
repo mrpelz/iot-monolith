@@ -9,6 +9,7 @@ function createInstances() {
   require('./instances/ev1527-server');
   require('./instances/wall-switches');
   require('./instances/door-sensors');
+  require('./instances/history');
   require('./instances/hmi-server');
   require('./instances/web-api');
   require('./instances/prometheus');

@@ -26,7 +26,7 @@ function addPersistenceHandler(name, instance) {
     });
   };
 
-  const handleInit = async () => {
+  const handleInit = () => {
     let payload;
     try {
       payload = persist.getSync();

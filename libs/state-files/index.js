@@ -72,7 +72,7 @@ class StateFile extends EventEmitter {
     let json;
 
     try {
-      json = JSON.stringify(data, null, 2);
+      json = JSON.stringify(data, null, null);
     } catch (error) {
       throw new Error('could not JSON-stringify data!');
     }
@@ -115,7 +115,7 @@ class StateFile extends EventEmitter {
     let json;
 
     try {
-      json = JSON.stringify(data, null, 2);
+      json = JSON.stringify(data, null, null);
     } catch (error) {
       throw new Error('could not JSON-stringify data!');
     }
