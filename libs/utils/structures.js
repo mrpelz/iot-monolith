@@ -57,6 +57,14 @@ function flattenData(input, parentKey = null) {
   return result;
 }
 
+function getKey(object, key) {
+  if (!object[key]) {
+    object[key] = {};
+  }
+
+  return object[key];
+}
+
 function isObject(input) {
   return (
     input !== null
@@ -133,6 +141,7 @@ module.exports = {
   flattenArrays,
   flattenData,
   isPrimitive,
+  getKey,
   isObject,
   objectFrom
 };

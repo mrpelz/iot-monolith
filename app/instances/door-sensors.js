@@ -1,5 +1,5 @@
 const { DoorSensor } = require('../../libs/door-sensor');
-const { StateFile } = require('../../libs/state-files');
+const { getKey } = require('../../libs/utils/structures');
 
 function createSensor(sensor, server) {
   const {
@@ -16,27 +16,19 @@ function createSensor(sensor, server) {
   }
 }
 
-function addPersistenceHandler(name, instance) {
-  const persist = new StateFile(`doorSensor_${name}`);
-
+function addPersistenceHandler(name, instance, doors) {
   const handleChange = () => {
-    persist.set({
+    doors[name] = {
       isOpen: instance.isOpen,
       isTampered: instance.isTampered
-    });
+    };
   };
 
   const handleInit = () => {
-    let payload;
-    try {
-      payload = persist.getSync();
-      /* eslint-disable-next-line no-empty */
-    } catch (e) {}
-
     const {
       isOpen = null,
       isTampered = false
-    } = payload || {};
+    } = doors[name] || {};
 
     instance.isOpen = isOpen;
     instance.isTampered = isTampered;
@@ -53,8 +45,11 @@ function addPersistenceHandler(name, instance) {
     config: {
       'door-sensors': doorSensors
     },
+    db,
     ev1527Server
   } = global;
+
+  const doors = getKey(db, 'doors');
 
   global.doorSensors = doorSensors.map((sensor) => {
     const { disable = false, name, id } = sensor;
@@ -65,7 +60,7 @@ function addPersistenceHandler(name, instance) {
 
     instance.log.friendlyName(name);
 
-    addPersistenceHandler(name, instance);
+    addPersistenceHandler(name, instance, doors);
 
     return Object.assign(sensor, {
       instance

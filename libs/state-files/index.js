@@ -25,7 +25,7 @@ function makePath(name) {
 }
 
 class StateFile extends EventEmitter {
-  constructor(name, doWatch = false) {
+  constructor(name) {
     if (!name) {
       throw new Error('name not defined!');
     }
@@ -42,15 +42,13 @@ class StateFile extends EventEmitter {
 
     rebind(this, '_handleChange');
 
-    if (doWatch) {
-      this._watcher = watch(path, { persistent: false }, this._handleChange);
-    }
-
     const log = new Logger();
     log.friendlyName(path);
     this.log = log.withPrefix(libName);
 
     this.log.info(`state-file is ${fileExists ? 'old' : 'new'}`);
+
+    this._watcher = watch(path, { persistent: false }, this._handleChange);
   }
 
   _handleChange(type) {
