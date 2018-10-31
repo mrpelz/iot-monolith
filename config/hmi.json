@@ -117,5 +117,6 @@
       "divide": 100,
       "round": 0
     }
-  }
+  },
+  "trendFactorThreshold": 0.25
 }

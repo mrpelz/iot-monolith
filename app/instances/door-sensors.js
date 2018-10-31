@@ -16,9 +16,9 @@ function createSensor(sensor, server) {
   }
 }
 
-function addPersistenceHandler(name, instance, doors) {
+function addPersistenceHandler(name, instance, doorDb) {
   const handleChange = () => {
-    doors[name] = {
+    doorDb[name] = {
       isOpen: instance.isOpen,
       isTampered: instance.isTampered
     };
@@ -28,7 +28,7 @@ function addPersistenceHandler(name, instance, doors) {
     const {
       isOpen = null,
       isTampered = false
-    } = doors[name] || {};
+    } = doorDb[name] || {};
 
     instance.isOpen = isOpen;
     instance.isTampered = isTampered;
@@ -49,7 +49,7 @@ function addPersistenceHandler(name, instance, doors) {
     ev1527Server
   } = global;
 
-  const doors = getKey(db, 'doors');
+  const doorDb = getKey(db, 'doors');
 
   global.doorSensors = doorSensors.map((sensor) => {
     const { disable = false, name, id } = sensor;
@@ -60,7 +60,7 @@ function addPersistenceHandler(name, instance, doors) {
 
     instance.log.friendlyName(name);
 
-    addPersistenceHandler(name, instance, doors);
+    addPersistenceHandler(name, instance, doorDb);
 
     return Object.assign(sensor, {
       instance

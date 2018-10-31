@@ -1,13 +1,36 @@
 /* eslint-disable no-bitwise */
 
+function maxNumber(numbers) {
+  if (!numbers.length) return null;
+
+  return numbers.reduce((aggregator, current) => {
+    if (aggregator < current) return current;
+    return aggregator;
+  }, Number.NEGATIVE_INFINITY);
+}
+
 // http://www.jstips.co/en/javascript/array-average-and-median/
-function mean(...numbers) {
+function mean(numbers) {
   return numbers.reduce((a, b) => { return a + b; }, 0) / numbers.length;
 }
 
-function median(...numbers) {
+function median(input) {
+  const numbers = input.slice(0);
   numbers.sort((a, b) => { return a - b; });
   return (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2;
+}
+
+function minNumber(numbers) {
+  if (!numbers.length) return null;
+
+  return numbers.reduce((aggregator, current) => {
+    if (aggregator > current) return current;
+    return aggregator;
+  }, Number.POSITIVE_INFINITY);
+}
+
+function quotient(dividend, divisor) {
+  return Math.floor(dividend, divisor);
 }
 
 function remainder(dividend, divisor) {
@@ -52,15 +75,13 @@ function sanity(input, options) {
   return value;
 }
 
-function quotient(dividend, divisor) {
-  return Math.floor(dividend, divisor);
-}
-
 module.exports = {
+  maxNumber,
   mean,
   median,
+  minNumber,
+  quotient,
   remainder,
   sanity,
-  trimDecimals,
-  quotient
+  trimDecimals
 };

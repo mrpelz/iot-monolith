@@ -77,32 +77,44 @@ const every = {
   },
 };
 
-const epochs = {
-  second: 1000,
-  minute: 60 * this.second,
-  hour: 60 * this.minute,
-  date: 24 * this.hour,
-  day: this.date,
-  week: 7 * this.date,
-  accountingMonth: 30 * this.date,
-  get thisMonth() {
-    const date = new Date();
-    return daysInMonth(date.getMonth(), date.getFullYear()) * this.date;
-  },
-  specificMonth: (month, year) => {
-    return daysInMonth(month, year) * this.date;
-  },
-  year: 365 * this.date,
-  leapYear: 366 * this.date,
-  get thisYear() {
-    const leap = isLeapYear(new Date());
-    return leap ? this.leapYear : this.year;
-  },
-  specificYear: (year) => {
-    const leap = isLeapYear(year);
-    return leap ? this.leapYear : this.year;
-  }
-};
+const epochs = (() => {
+  const second = 1000;
+  const minute = 60 * second;
+  const hour = 60 * minute;
+  const date = 24 * hour;
+  const week = 7 * date;
+  const accountingMonth = 30 * date;
+  const year = 365 * date;
+  const leapYear = 366 * date;
+
+
+  return {
+    second,
+    minute,
+    hour,
+    date,
+    day: date,
+    week,
+    accountingMonth,
+    get thisMonth() {
+      const d = new Date();
+      return daysInMonth(d.getMonth(), d.getFullYear()) * date;
+    },
+    specificMonth: (m, y) => {
+      return daysInMonth(m, y) * date;
+    },
+    year,
+    leapYear,
+    get thisYear() {
+      const leap = isLeapYear(new Date());
+      return leap ? leapYear : year;
+    },
+    specificYear: (y) => {
+      const leap = isLeapYear(y);
+      return leap ? leapYear : year;
+    }
+  };
+})();
 
 function calc(type, count = 1, ref) {
   const date = ref

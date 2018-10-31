@@ -4,11 +4,11 @@ const { flattenArrays, getKey } = require('../../libs/utils/structures');
 const { RecurringMoment, every } = require('../../libs/utils/time');
 const { camel } = require('../../libs/utils/string');
 
-function createHistory(name, retainHours, histories) {
+function createHistory(name, retainHours, historyDb) {
   const history = new History({ retainHours });
 
   const handleChange = () => {
-    histories[name] = history.get().map(({ value, time }) => {
+    historyDb[name] = history.get().map(({ value, time }) => {
       return {
         value,
         time: time.getTime()
@@ -17,7 +17,7 @@ function createHistory(name, retainHours, histories) {
   };
 
   const handleInit = () => {
-    history.values = (histories[name] || []).map(({ value, time }) => {
+    history.values = (historyDb[name] || []).map(({ value, time }) => {
       return {
         value,
         time: new Date(time)
@@ -32,7 +32,7 @@ function createHistory(name, retainHours, histories) {
   return history;
 }
 
-function roomSensorsHistory(roomSensors, retainHours, update, cleanup, histories) {
+function roomSensorsHistory(roomSensors, retainHours, update, cleanup, historyDb) {
   return roomSensors.map((sensor) => {
     const {
       name,
@@ -42,7 +42,7 @@ function roomSensorsHistory(roomSensors, retainHours, update, cleanup, histories
 
     return metrics.map((metric) => {
       const historyName = camel(name, metric);
-      const instance = createHistory(historyName, retainHours, histories);
+      const instance = createHistory(historyName, retainHours, historyDb);
 
       update.on('hit', async () => {
         const value = await resolveAlways(roomSensor.getMetric(metric));
@@ -65,7 +65,7 @@ function roomSensorsHistory(roomSensors, retainHours, update, cleanup, histories
   });
 }
 
-function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, histories) {
+function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, historyDb) {
   return metricAggregates.map((aggregate) => {
     const {
       group,
@@ -75,7 +75,7 @@ function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup,
     } = aggregate;
 
     const historyName = camel(group, metric, type);
-    const instance = createHistory(historyName, retainHours, histories);
+    const instance = createHistory(historyName, retainHours, historyDb);
 
     update.on('hit', async () => {
       const value = await resolveAlways(metricAggregate.get());
@@ -111,7 +111,7 @@ function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup,
     scheduler
   } = global;
 
-  const histories = getKey(db, 'histories');
+  const historyDb = getKey(db, 'histories');
 
   const update = new RecurringMoment(scheduler, every.second(historyUpdateSeconds));
   update.setMaxListeners(0);
@@ -120,7 +120,7 @@ function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup,
   cleanup.setMaxListeners(0);
 
   global.histories = flattenArrays([
-    roomSensorsHistory(roomSensors, retainHours, update, cleanup, histories),
-    metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, histories)
+    roomSensorsHistory(roomSensors, retainHours, update, cleanup, historyDb),
+    metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, historyDb)
   ]).filter(Boolean);
 }());

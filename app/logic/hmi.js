@@ -1,6 +1,33 @@
 const { HmiElement } = require('../../libs/hmi');
+const { History } = require('../../libs/history');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
+
+function setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold) {
+  const history = histories.find(({ name: n }) => {
+    return n === hmiName;
+  });
+
+  if (!history) return;
+
+  const trend = async () => {
+    const { factor } = History.trend(history.instance.get());
+
+    if (factor > trendFactorThreshold) return 1;
+    if (factor < trendFactorThreshold) return -1;
+    return 0;
+  };
+
+  /* eslint-disable-next-line no-new */
+  new HmiElement({
+    name: camel(hmiName, 'trend'),
+    attributes: Object.assign({}, attributes, {
+      subType: 'trend'
+    }),
+    server: hmiServer,
+    getter: trend
+  });
+}
 
 function doorSensorsHmi(doorSensors, hmiServer) {
   doorSensors.forEach((doorSensor) => {
@@ -32,7 +59,14 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
-function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
+function roomSensorsHmi(
+  roomSensors,
+  histories,
+  hmiServer,
+  unitMap,
+  valueSanity,
+  trendFactorThreshold
+) {
   roomSensors.forEach((sensor) => {
     const {
       name,
@@ -54,24 +88,36 @@ function roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity) {
         });
       };
 
+      const attributes = Object.assign({
+        category: 'air',
+        group: metric,
+        label: metric,
+        subType: 'single-sensor',
+        type: 'environmental-sensor',
+        unit: unitMap[metric] || null
+      }, hmiAttributes);
+
       /* eslint-disable-next-line no-new */
       new HmiElement({
         name: hmiName,
-        attributes: Object.assign({
-          category: 'air',
-          label: metric,
-          subType: 'single-sensor',
-          type: 'environmental-sensor',
-          unit: unitMap[metric] || null
-        }, hmiAttributes),
+        attributes,
         server: hmiServer,
         getter
       });
+
+      setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
     });
   });
 }
 
-function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
+function metricAggrgatesHmi(
+  metricAggregates,
+  histories,
+  hmiServer,
+  unitMap,
+  valueSanity,
+  trendFactorThreshold
+) {
   metricAggregates.forEach((aggregate) => {
     const {
       group,
@@ -93,22 +139,28 @@ function metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity) {
       });
     };
 
+    const attributes = Object.assign({
+      category: `§{air} (§{${type}})`,
+      group: camel(group, metric),
+      label: metric,
+      section: 'global',
+      sortCategory: 'air',
+      sortGroup: metric,
+      subLabel: group,
+      subType: 'aggregate-value',
+      type: 'environmental-sensor',
+      unit: unitMap[metric] || null
+    }, hmiAttributes);
+
     /* eslint-disable-next-line no-new */
     new HmiElement({
       name: hmiName,
-      attributes: Object.assign({
-        category: `§{air} (§{${type}})`,
-        label: metric,
-        section: 'global',
-        sortCategory: 'air',
-        subLabel: group,
-        subType: 'aggregate-value',
-        type: 'environmental-sensor',
-        unit: unitMap[metric] || null
-      }, hmiAttributes),
+      attributes,
       server: hmiServer,
       getter
     });
+
+    setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
   });
 }
 
@@ -211,20 +263,36 @@ function fansHmi(fans, hmiServer) {
     config: {
       hmi: {
         unitMap,
-        valueSanity
+        valueSanity,
+        trendFactorThreshold
       }
     },
     doorSensors,
+    fans,
+    histories,
     hmiServer,
     lights,
-    fans,
     metricAggregates,
     roomSensors
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
-  roomSensorsHmi(roomSensors, hmiServer, unitMap, valueSanity);
-  metricAggrgatesHmi(metricAggregates, hmiServer, unitMap, valueSanity);
+  roomSensorsHmi(
+    roomSensors,
+    histories,
+    hmiServer,
+    unitMap,
+    valueSanity,
+    trendFactorThreshold
+  );
+  metricAggrgatesHmi(
+    metricAggregates,
+    histories,
+    hmiServer,
+    unitMap,
+    valueSanity,
+    trendFactorThreshold
+  );
   lightsHmi(lights, hmiServer);
   fansHmi(fans, hmiServer);
 }());

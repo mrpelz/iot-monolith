@@ -122,31 +122,36 @@ function getHierarchy(
             return groupElements.map((groupElement) => {
               const {
                 attributes: {
-                  label = null
+                  label = null,
+                  sortLabel = null
                 }
               } = groupElement;
 
               return {
                 group: label,
+                sortGroup: sortLabel,
                 single: true,
-                attributes: null,
                 elements: [groupElement]
               };
             });
           }
 
           const isSingle = groupElements.length <= 1;
+          const { sortGroup } = combineAttributes(groupElements);
 
           return [{
             group: groupName,
+            sortGroup,
             single: isSingle,
-            attributes: isSingle ? null : combineAttributes(groupElements),
             elements: groupElements
           }];
         })), labels, 'group');
 
+        const { sortCategory } = combineAttributes(categoryElements);
+
         return {
           category: categoryName,
+          sortCategory,
           groups: groupMap
         };
       }), categories, 'category');

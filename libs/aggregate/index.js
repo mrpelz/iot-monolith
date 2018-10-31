@@ -14,9 +14,9 @@ class Aggregate {
     this.aggregator = (() => {
       switch (type) {
         case 'mean':
-          return (results) => { return mean(...results); };
+          return (results) => { return mean(results); };
         case 'median':
-          return (results) => { return median(...results); };
+          return (results) => { return median(results); };
         default:
           return () => { return null; };
       }
