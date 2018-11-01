@@ -1,9 +1,14 @@
 const { HmiElement } = require('../../libs/hmi');
-const { History } = require('../../libs/history');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
 
-function setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold) {
+function setUpHistoryTrendHmi(
+  histories,
+  hmiName,
+  attributes,
+  hmiServer,
+  trendFactorThreshold
+) {
   const history = histories.find(({ name: n }) => {
     return n === hmiName;
   });
@@ -11,10 +16,10 @@ function setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFa
   if (!history) return;
 
   const trend = async () => {
-    const { factor } = History.trend(history.instance.get());
+    const { factor } = history.trend.get();
 
     if (factor > trendFactorThreshold) return 1;
-    if (factor < trendFactorThreshold) return -1;
+    if (factor < (trendFactorThreshold * -1)) return -1;
     return 0;
   };
 

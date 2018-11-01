@@ -2,7 +2,7 @@ const EventEmitter = require('events');
 
 const { rebind } = require('../utils/oop');
 const { calc, epochs } = require('../utils/time');
-const { maxNumber, minNumber, mean } = require('../utils/math');
+const { mean } = require('../utils/math');
 
 class History extends EventEmitter {
   static lastItems(values, n = 1) {
@@ -15,43 +15,9 @@ class History extends EventEmitter {
     });
   }
 
-  static trend(values, smoothing = (epochs.minute * 5)) {
-    if (!values.length) {
-      return {
-        diff: null,
-        factor: null
-      };
-    }
-
-    const startCut = values[0].time.getTime() + smoothing;
-    const endCut = values[values.length - 1].time.getTime() - smoothing;
-
-    const startValue = mean(values.filter(({ time }) => {
-      return time.getTime() < startCut;
-    }).map(({ value }) => { return value; }));
-
-    const endValue = mean(values.filter(({ time }) => {
-      return time.getTime() > endCut;
-    }).map(({ value }) => { return value; }));
-
-    const diff = endValue - startValue;
-
-    return {
-      diff,
-      get factor() {
-        const numbers = values.map(({ value }) => { return value; });
-        const max = maxNumber(numbers);
-        const min = minNumber(numbers);
-        const range = Math.abs(max - min);
-
-        return diff / range;
-      }
-    };
-  }
-
   constructor(options = {}) {
     const {
-      retainHours = 1
+      retainHours = 24
     } = options;
 
     if (!retainHours || typeof retainHours !== 'number') {
@@ -92,6 +58,80 @@ class History extends EventEmitter {
   }
 }
 
+class Trend {
+  constructor(options = {}) {
+    const {
+      history,
+      nowLength = (epochs.minute * 2),
+      meanLength = (epochs.minute * 15),
+      max,
+      min
+    } = options;
+
+    if (
+      !history
+      || !nowLength
+      || !meanLength
+      || max === undefined
+      || min === undefined
+    ) {
+      throw new Error('insufficient options provided');
+    }
+
+    if (!(history instanceof History)) throw new Error('not a history');
+
+    this._history = history;
+    this._nowLength = nowLength;
+    this._meanLength = meanLength;
+    this._range = Math.abs(max - min);
+  }
+
+  get() {
+    const {
+      _history,
+      _nowLength,
+      _meanLength,
+      _range
+    } = this;
+
+    const values = _history.get();
+
+    if (!values.length) {
+      return {
+        diff: null,
+        factor: null
+      };
+    }
+
+    const now = Date.now();
+    const meanCut = now - _meanLength;
+    const nowCut = now - _nowLength;
+
+    const meanValues = values.filter(({ time }) => {
+      return time.getTime() > meanCut;
+    }).map(({ value }) => { return value; });
+    const nowValues = values.filter(({ time }) => {
+      return time.getTime() > nowCut;
+    }).map(({ value }) => { return value; });
+
+    if (!nowValues.length || !meanValues.length) {
+      return {
+        diff: null,
+        factor: null
+      };
+    }
+
+    const diff = mean(nowValues) - mean(meanValues);
+    const factor = diff / _range;
+
+    return {
+      diff,
+      factor
+    };
+  }
+}
+
 module.exports = {
-  History
+  History,
+  Trend
 };

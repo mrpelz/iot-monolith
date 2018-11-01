@@ -3,7 +3,7 @@
   "prometheusPort": 5555,
   "webApiPort": 5556,
   "webApiUpdateSeconds": 5,
-  "historyRetainHours": 1,
+  "historyRetainHours": 24,
   "historyUpdateSeconds": 10,
   "ev1527": [
     {

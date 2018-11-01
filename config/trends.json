@@ -1,0 +1,40 @@
+{
+  "metricRanges": {
+    "brightness": {
+      "max": 30000,
+      "min": 0
+    },
+    "eco2": {
+      "max": 8000,
+      "min": 400
+    },
+    "humidity": {
+      "max": 100,
+      "min": 10
+    },
+    "pm025": {
+      "max": 100,
+      "min": 0
+    },
+    "pm10": {
+      "max": 100,
+      "min": 0
+    },
+    "precipitation": {
+      "max": 50,
+      "min": 0
+    },
+    "pressure": {
+      "max": 115000,
+      "min": 100000
+    },
+    "temperature": {
+      "max": 30,
+      "min": -5
+    },
+    "tvoc": {
+      "max": 1200,
+      "min": 0
+    }
+  }
+}

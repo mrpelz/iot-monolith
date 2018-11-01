@@ -1,11 +1,16 @@
-const { History } = require('../../libs/history');
+const { History, Trend } = require('../../libs/history');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { flattenArrays, getKey } = require('../../libs/utils/structures');
 const { RecurringMoment, every } = require('../../libs/utils/time');
 const { camel } = require('../../libs/utils/string');
 
-function createHistory(name, retainHours, historyDb) {
+function createHistory(name, retainHours, max, min, historyDb) {
   const history = new History({ retainHours });
+  const trend = new Trend({
+    history,
+    max,
+    min
+  });
 
   const handleChange = () => {
     historyDb[name] = history.get().map(({ value, time }) => {
@@ -29,70 +34,117 @@ function createHistory(name, retainHours, historyDb) {
   };
 
   handleInit();
-  return history;
+  return {
+    history,
+    trend
+  };
 }
 
-function roomSensorsHistory(roomSensors, retainHours, update, cleanup, historyDb) {
+function roomSensorsHistory(
+  roomSensors,
+  retainHours,
+  update,
+  cleanup,
+  ranges,
+  historyDb
+) {
   return roomSensors.map((sensor) => {
     const {
       name,
-      instance: roomSensor,
+      instance,
       metrics
     } = sensor;
 
     return metrics.map((metric) => {
       const historyName = camel(name, metric);
-      const instance = createHistory(historyName, retainHours, historyDb);
+      const {
+        max,
+        min
+      } = ranges[metric] || {};
+
+      const {
+        history,
+        trend
+      } = createHistory(
+        historyName,
+        retainHours,
+        max,
+        min,
+        historyDb
+      );
 
       update.on('hit', async () => {
-        const value = await resolveAlways(roomSensor.getMetric(metric));
-        const time = roomSensor.getMetricTime(metric);
+        const value = await resolveAlways(instance.getMetric(metric));
+        const time = instance.getMetricTime(metric);
 
         if (value === null || !time) return;
 
-        instance.add(value, time);
+        history.add(value, time);
       });
 
       cleanup.on('hit', () => {
-        instance.expunge();
+        history.expunge();
       });
 
       return {
         name: historyName,
-        instance
+        history,
+        trend
       };
     });
   });
 }
 
-function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, historyDb) {
+function metricAggregatesHistory(
+  metricAggregates,
+  retainHours,
+  update,
+  cleanup,
+  ranges,
+  historyDb
+) {
   return metricAggregates.map((aggregate) => {
     const {
       group,
-      instance: metricAggregate,
+      instance,
       metric,
       type
     } = aggregate;
 
     const historyName = camel(group, metric, type);
-    const instance = createHistory(historyName, retainHours, historyDb);
+    const {
+      max,
+      min
+    } = ranges[metric] || {};
+
+    const {
+      history,
+      trend
+    } = createHistory(
+      historyName,
+      retainHours,
+      max,
+      min,
+      historyDb
+    );
 
     update.on('hit', async () => {
-      const value = await resolveAlways(metricAggregate.get());
-      const time = metricAggregate.getTime();
+      const value = await resolveAlways(instance.get());
+      const time = instance.getTime();
 
       if (value === null || !time) return;
 
-      instance.add(value, time);
+      history.add(value, time);
     });
 
     cleanup.on('hit', () => {
-      instance.expunge();
+      history.expunge();
     });
 
     return {
       name: historyName,
-      instance
+      history,
+      trend
     };
   });
 }
@@ -103,6 +155,9 @@ function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup,
       globals: {
         historyRetainHours: retainHours,
         historyUpdateSeconds
+      },
+      trends: {
+        metricRanges: ranges
       }
     },
     db,
@@ -120,7 +175,21 @@ function metricAggregatesHistory(metricAggregates, retainHours, update, cleanup,
   cleanup.setMaxListeners(0);
 
   global.histories = flattenArrays([
-    roomSensorsHistory(roomSensors, retainHours, update, cleanup, historyDb),
-    metricAggregatesHistory(metricAggregates, retainHours, update, cleanup, historyDb)
+    roomSensorsHistory(
+      roomSensors,
+      retainHours,
+      update,
+      cleanup,
+      ranges,
+      historyDb
+    ),
+    metricAggregatesHistory(
+      metricAggregates,
+      retainHours,
+      update,
+      cleanup,
+      ranges,
+      historyDb
+    )
   ]).filter(Boolean);
 }());
