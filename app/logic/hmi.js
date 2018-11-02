@@ -83,6 +83,8 @@ function roomSensorsHmi(
     } = sensor;
 
     return metrics.forEach((metric) => {
+      if (metric === 'pressure') return;
+
       const hmiName = camel(name, metric);
       const getter = () => {
         return instance.getMetric(metric).then((value) => {
