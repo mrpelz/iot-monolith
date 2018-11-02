@@ -64,8 +64,6 @@ class Logger {
       telegram = null
     } = opts;
 
-    if (level !== null && level > logLevel) return;
-
     const name = _name || _prefixes[0] || '[unknown logger]';
 
     const prefixChain = _prefixes.map((prefix) => {
@@ -83,19 +81,21 @@ class Logger {
 
     const levelName = level === null ? '_' : levelNames[level];
 
-    if (isProd) {
-      console.log(`[${levelName}] ${[
-        _prefixes[0] || null,
-        name,
-        messageBody
-      ].filter(Boolean).join(' | ')}`);
-    } else {
-      console.log(`\n[${levelName}]\n${[
-        name,
-        prefixChain.length ? prefixChain : null,
-        messageBody,
-        messageAttachment
-      ].filter(Boolean).join('\n')}\n`);
+    if (level <= logLevel) {
+      if (isProd) {
+        console.log(`[${levelName}] ${[
+          _prefixes[0] || null,
+          name,
+          messageBody
+        ].filter(Boolean).join(' | ')}`);
+      } else {
+        console.log(`\n[${levelName}]\n${[
+          name,
+          prefixChain.length ? prefixChain : null,
+          messageBody,
+          messageAttachment
+        ].filter(Boolean).join('\n')}\n`);
+      }
     }
 
     if (!logTelegram) return;

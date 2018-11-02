@@ -170,7 +170,8 @@ class PersistentSocket extends Base {
     if (!state.isConnected) {
       log.info({
         head: 'is connected',
-        value: true
+        value: true,
+        telegram: true
       });
 
       state.isConnected = true;
