@@ -118,5 +118,5 @@
       "round": 0
     }
   },
-  "trendFactorThreshold": 0.01
+  "trendFactorThreshold": 0.005
 }
