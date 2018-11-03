@@ -104,16 +104,18 @@ class Logger {
       telegram === true
       || (telegram !== false && level <= telegramLogLevel)
     ) {
-      _telegramChat.send(
-        [
-          `*${levelName}*`,
-          `_${name}_`,
-          `\`${prefixChain}\``,
-          messageBody || null,
-          messageAttachment ? `\`${messageAttachment}\`` : null
-        ].filter(Boolean).join('  \n')
-      ).catch((error) => {
-        console.error(`error logging to telegram: "${error}"`);
+      setImmediate(() => {
+        _telegramChat.send(
+          [
+            `*${levelName}*`,
+            `_${name}_`,
+            `\`${prefixChain}\``,
+            messageBody || null,
+            messageAttachment ? `\`${messageAttachment}\`` : null
+          ].filter(Boolean).join('  \n')
+        ).catch((error) => {
+          console.error(`error logging to telegram: "${error}"`);
+        });
       });
     }
   }
