@@ -11,13 +11,13 @@ function exit(signal = 0) {
 
 process.on('uncaughtException', (error) => {
   /* eslint-disable-next-line no-console */
-  console.error(`unhandled exception: ${error}`);
+  console.error(`unhandled exception: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
   /* eslint-disable-next-line no-console */
-  console.error(`unhandled rejection: ${error}`);
+  console.error(`unhandled rejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   exit(1);
 });
 

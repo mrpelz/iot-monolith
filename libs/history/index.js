@@ -42,7 +42,9 @@ class History extends EventEmitter {
   }
 
   add(value, time = new Date()) {
-    if (!value) throw new Error('no value provided');
+    if (value === null || typeof value !== 'number') {
+      throw new Error('no or illegal value provided');
+    }
 
     this.values.push({
       value,
