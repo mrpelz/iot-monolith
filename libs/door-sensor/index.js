@@ -94,7 +94,6 @@ class DoorSensor extends Base {
     const { log } = this._doorSensor;
     log.alert('sensor was tampered with!');
 
-    this.isOpen = null;
     this.isTampered = true;
     this.emit('tamper');
     this.emit('change');
