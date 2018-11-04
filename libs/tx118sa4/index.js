@@ -12,28 +12,28 @@ function makeMatchOptions(id) {
       debounce: 1000
     },
     states: {
-      one: {
+      0: {
         match: {
           channels: (c) => {
             return c.includes(1);
           }
         }
       },
-      two: {
+      1: {
         match: {
           channels: (c) => {
             return c.includes(2);
           }
         }
       },
-      three: {
+      2: {
         match: {
           channels: (c) => {
             return c.includes(3);
           }
         }
       },
-      four: {
+      3: {
         match: {
           channels: (c) => {
             return c.includes(4);

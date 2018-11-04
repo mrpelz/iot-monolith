@@ -117,11 +117,9 @@ class Ev1527Device extends Base {
         }, true);
       };
 
-      const matcher = debounce
-        ? (input) => {
-          return throttler() && matchFn(input);
-        }
-        : matchFn;
+      const matcher = (input) => {
+        return matchFn(input) && throttler();
+      };
 
       return {
         matcher,
@@ -159,9 +157,7 @@ class Ev1527Device extends Base {
   _handleMessage(message) {
     const { matchers } = this._ev1527Device;
 
-    matchers.forEach((matchSet) => {
-      const { matcher, state } = matchSet;
-
+    matchers.forEach(({ matcher, state }) => {
       if (matcher(message)) {
         this.emit(state);
       }

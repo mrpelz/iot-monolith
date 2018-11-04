@@ -47,7 +47,7 @@ function lightWithWallSwitch(lights, wallSwitches) {
   const { instance: lightInstance } = lightMatch;
   const { instance: wallSwitchInstance } = wallSwitchMatch;
 
-  wallSwitchInstance.on('one', () => {
+  wallSwitchInstance.on(0, () => {
     lightInstance.relay(!lightInstance.relayState);
   });
 }

@@ -59,9 +59,7 @@ function getMessageTypesForCapabilities(capabilities) {
 }
 
 function getCapabilityNames(capabilities) {
-  return capabilities.map((capability) => {
-    return capability.name;
-  });
+  return capabilities.map(({ name }) => { return name; });
 }
 
 function setUpListeners(capabilities, addListener) {
