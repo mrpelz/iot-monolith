@@ -2,9 +2,22 @@ const { HttpServer } = require('../http/server');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { every, RecurringMoment } = require('../utils/time');
 const { camel, parseString } = require('../utils/string');
+const { includeKeys } = require('../utils/structures');
 const { Logger } = require('../log');
 
 const libName = 'web-api';
+
+const elementAttributes = [
+  'get',
+  'set',
+  'setType',
+  'label',
+  'subLabel',
+  'showSubLabel',
+  'type',
+  'subType',
+  'unit'
+];
 
 function sortElements(rawInput = [], list = [], key = 'name') {
   const altKey = camel('sort', key);
@@ -90,6 +103,16 @@ function showSubLabel(elements) {
   });
 }
 
+function filterElementAttributes(input) {
+  return Object.assign(
+    {},
+    input,
+    {
+      attributes: includeKeys(input.attributes, ...elementAttributes)
+    }
+  );
+}
+
 function getHierarchy(
   elements = [],
   {
@@ -131,7 +154,7 @@ function getHierarchy(
                 group: label,
                 sortGroup: sortLabel,
                 single: true,
-                elements: [groupElement]
+                elements: [filterElementAttributes(groupElement)]
               };
             });
           }
@@ -143,7 +166,7 @@ function getHierarchy(
             group: groupName,
             sortGroup,
             single: isSingle,
-            elements: groupElements
+            elements: groupElements.map(filterElementAttributes)
           }];
         })), labels, 'group');
 

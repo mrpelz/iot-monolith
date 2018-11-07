@@ -1,6 +1,7 @@
 const { HmiElement } = require('../../libs/hmi');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
+const { excludeKeys } = require('../../libs/utils/structures');
 
 function setUpHistoryTrendHmi(
   histories,
@@ -26,9 +27,12 @@ function setUpHistoryTrendHmi(
   /* eslint-disable-next-line no-new */
   new HmiElement({
     name: camel(hmiName, 'trend'),
-    attributes: Object.assign({}, attributes, {
-      subType: 'trend'
-    }),
+    attributes: excludeKeys(
+      Object.assign({}, attributes, {
+        subType: 'trend'
+      }),
+      'unit'
+    ),
     server: hmiServer,
     getter: trend
   });

@@ -73,6 +73,38 @@ function isObject(input) {
   );
 }
 
+function includeKeys(object, ...keys) {
+  if (!isObject(object)) throw new Error('input is not an object');
+
+  const result = {};
+
+  keys.forEach((key) => {
+    const { [key]: value } = object;
+    if (!value === undefined) return;
+
+    result[key] = value;
+  });
+
+  return result;
+}
+
+function excludeKeys(object, ...keys) {
+  if (!isObject(object)) throw new Error('input is not an object');
+
+  const result = {};
+
+  Object.keys(object).forEach((key) => {
+    if (keys.includes(key)) return;
+
+    const { [key]: value } = object;
+    if (!value === undefined) return;
+
+    result[key] = value;
+  });
+
+  return result;
+}
+
 function findFlattenedDiff(old, current) {
   if (!isObject(old)) {
     throw new Error('input "a" is not an object');
@@ -137,11 +169,13 @@ function objectFrom(value, ...keys) {
 module.exports = {
   arraysToObject,
   compareObjects,
+  excludeKeys,
   findFlattenedDiff,
   flattenArrays,
   flattenData,
   isPrimitive,
   getKey,
+  includeKeys,
   isObject,
   objectFrom
 };
