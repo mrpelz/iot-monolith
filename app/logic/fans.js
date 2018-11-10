@@ -6,7 +6,7 @@ function manageObiJackFan(fan) {
   });
 
   instance.on('buttonShortpress', () => {
-    instance.relay(!instance.relayState);
+    instance.relayToggle();
   });
 
   instance.on('change', () => {

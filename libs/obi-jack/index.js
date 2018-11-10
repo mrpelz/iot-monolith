@@ -81,6 +81,10 @@ class ObiJack extends Switch {
     });
   }
 
+  relayToggle() {
+    return this.relay(!this.relayState);
+  }
+
   led(on) {
     const { log } = this._obiJack;
 
@@ -119,6 +123,7 @@ class ObiJack extends Switch {
   // connect
   // disconnect
   // relay
+  // relayToggle
   // led
   // ledBlink
   //

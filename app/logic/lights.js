@@ -6,7 +6,7 @@ function manageObiJackLight(light) {
   });
 
   instance.on('buttonShortpress', () => {
-    instance.relay(!instance.relayState);
+    instance.relayToggle();
   });
 
   instance.on('change', () => {
@@ -48,7 +48,7 @@ function lightWithWallSwitch(lights, wallSwitches) {
   const { instance: wallSwitchInstance } = wallSwitchMatch;
 
   wallSwitchInstance.on(0, () => {
-    lightInstance.relay(!lightInstance.relayState);
+    lightInstance.relayToggle();
   });
 }
 
