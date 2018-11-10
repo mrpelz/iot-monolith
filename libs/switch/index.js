@@ -115,7 +115,7 @@ class Switch extends MessageClient {
     }
   }
 
-  set(name, on) {
+  set(name, input) {
     const {
       state: {
         isConnected
@@ -132,7 +132,7 @@ class Switch extends MessageClient {
       throw new Error('capability is not configured');
     }
 
-    return this.request(name, on).catch((reason) => {
+    return this.request(name, input).catch((reason) => {
       log.error({
         head: 'set error',
         attachment: reason
@@ -143,7 +143,6 @@ class Switch extends MessageClient {
   // Public methods:
   // connect
   // disconnect
-  // get
   // set
 }
 
