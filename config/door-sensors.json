@@ -123,5 +123,15 @@
         "subType": "window"
       }
     }
+  },
+  {
+    "name": "kuecheFridge",
+    "id": 3464,
+    "attributes": {
+      "hmi": {
+        "label": "fridge",
+        "section": "kueche"
+      }
+    }
   }
 ]

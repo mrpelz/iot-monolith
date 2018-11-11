@@ -3,6 +3,7 @@
   "telegramBotToken": "514356430:AAHw7KqD8VyCoajOiR60biInqCBdNWDaKbQ",
   "telegramChatIds": {
     "log": "-274728913",
-    "automation": "-207880637"
+    "automation": "-207880637",
+    "iot": "-288897571"
   }
 }
