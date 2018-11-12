@@ -6,6 +6,7 @@
   "historyRetainHours": 1,
   "historyUpdateSeconds": 10,
   "fridgeTimeout": 10000,
+  "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",
   "ev1527": [
     {
       "host": "hermes.net.wurstsalat.cloud",
