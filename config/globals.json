@@ -3,6 +3,7 @@
   "prometheusPort": 5555,
   "webApiPort": 5556,
   "webApiUpdateSeconds": 5,
+  "dbWriteIntervalSeconds": 30,
   "historyRetainHours": 1,
   "historyUpdateSeconds": 10,
   "fridgeTimeout": 10000,

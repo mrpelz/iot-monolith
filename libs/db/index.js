@@ -10,23 +10,38 @@ const { tmpdir } = require('os');
 
 const { Logger } = require('../log');
 const { rebind } = require('../utils/oop');
+const { every, RecurringMoment } = require('../utils/time');
 
 const libName = 'db';
 
 const path = join(tmpdir(), 'iot-db.json');
 
 class Db {
-  constructor() {
+  constructor(options = {}) {
+    const {
+      saveInterval = null,
+      scheduler = null
+    } = options;
+
+    if (!saveInterval || !scheduler) {
+      throw new Error('insufficient options provided');
+    }
+
     this._descriptor = open(path, exists(path) ? 'r+' : 'w+');
 
-    rebind(this, '_onShutdown');
+    rebind(this, '_onSave');
 
     const log = new Logger();
     log.friendlyName(path);
     this.log = log.withPrefix(libName);
 
     this._data = this._onInit() || {};
-    process.on('exit', this._onShutdown);
+    process.on('exit', this._onSave);
+
+    new RecurringMoment(
+      scheduler,
+      every.second(saveInterval)
+    ).on('hit', this._onSave);
 
     return this._data;
   }
@@ -55,7 +70,7 @@ class Db {
     return payload;
   }
 
-  _onShutdown() {
+  _onSave() {
     const { _data: data } = this;
 
     if (typeof data !== 'object') {

@@ -1,8 +1,8 @@
 /* eslint-disable global-require */
 
 function createInstances() {
-  require('./instances/db');
   require('./instances/scheduler');
+  require('./instances/db');
   require('./instances/room-sensors');
   require('./instances/metric-aggregates');
   require('./instances/lights');
