@@ -39,8 +39,7 @@ class DoorSensor extends Base {
     const {
       id = null,
       server = null,
-      isOpen = null,
-      isTampered = false
+      isOpen = null
     } = options;
 
     if (!id || !server) {
@@ -51,7 +50,6 @@ class DoorSensor extends Base {
 
     this._doorSensor = {};
     this.isOpen = isOpen;
-    this.isTampered = isTampered;
 
     rebind(this, '_handleClose', '_handleOpen', '_handleTamper');
 
@@ -93,10 +91,7 @@ class DoorSensor extends Base {
   _handleTamper() {
     const { log } = this._doorSensor;
     log.alert('sensor was tampered with!');
-
-    this.isTampered = true;
     this.emit('tamper');
-    this.emit('change');
   }
 }
 

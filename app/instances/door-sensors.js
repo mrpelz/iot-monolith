@@ -19,19 +19,16 @@ function createSensor(sensor, server) {
 function addPersistenceHandler(name, instance, doorDb) {
   const handleChange = () => {
     doorDb[name] = {
-      isOpen: instance.isOpen,
-      isTampered: instance.isTampered
+      isOpen: instance.isOpen
     };
   };
 
   const handleInit = () => {
     const {
-      isOpen = null,
-      isTampered = false
+      isOpen = null
     } = doorDb[name] || {};
 
     instance.isOpen = isOpen;
-    instance.isTampered = isTampered;
 
     instance.on('change', handleChange);
     handleChange();
