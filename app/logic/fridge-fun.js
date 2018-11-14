@@ -1,8 +1,9 @@
 const { chatIds, TelegramChat } = require('../../libs/telegram');
+const { arrayRandom } = require('../../libs/utils/structures');
 // const { epochs } = require('../../libs/utils/time');
 // const { post } = require('../../libs/http/client');
 
-function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
+function fridgeTimer(fridge, fridgeTimeout, fridgeMessages) {
   const { instance } = fridge;
   let timer = null;
 
@@ -21,7 +22,7 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
     timer = setTimeout(() => {
       clear();
 
-      telegramChat.send(fridgeMessage).catch((error) => {
+      telegramChat.send(arrayRandom(fridgeMessages)).catch((error) => {
         /* eslint-disable-next-line no-console */
         console.error(`error logging to telegram: "${error}"`);
       });
@@ -58,7 +59,7 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
     config: {
       globals: {
         fridgeTimeout,
-        fridgeMessage
+        fridgeMessages
       }
     },
     doorSensors
@@ -69,6 +70,6 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
   });
   if (!fridge) return;
 
-  fridgeTimer(fridge, fridgeTimeout, fridgeMessage);
+  fridgeTimer(fridge, fridgeTimeout, fridgeMessages);
   // fridgeTwitter(fridge);
 }());

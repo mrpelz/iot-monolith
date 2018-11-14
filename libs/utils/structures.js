@@ -1,3 +1,9 @@
+function arrayRandom(input) {
+  return input[
+    Math.floor(Math.random() * input.length)
+  ];
+}
+
 function arraysToObject(keyArray, valueArray) {
   if (!Array.isArray(keyArray) || !Array.isArray(valueArray)) {
     throw new Error('inputs are not arrays');
@@ -167,6 +173,7 @@ function objectFrom(value, ...keys) {
 }
 
 module.exports = {
+  arrayRandom,
   arraysToObject,
   compareObjects,
   excludeKeys,
