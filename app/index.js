@@ -21,7 +21,7 @@ function runLogic() {
   require('./logic/fans');
   require('./logic/hmi');
   require('./logic/prometheus');
-  require('./logic/fridge-fun');
+  require('./logic/fridge-utils');
 }
 
 module.exports = {
