@@ -1,5 +1,7 @@
-function manageObiJackLight(light) {
-  const { instance } = light;
+const { parseString } = require('../../libs/utils/string');
+
+function manageObiJackLight(light, httpHookServer) {
+  const { instance, name } = light;
 
   instance.on('connect', () => {
     instance.ledBlink(5);
@@ -9,8 +11,41 @@ function manageObiJackLight(light) {
     instance.relayToggle();
   });
 
+  httpHookServer.route(`/${name}`, (request) => {
+    const {
+      urlQuery: { on }
+    } = request;
+
+    const handleResult = (result) => {
+      return result ? 'on' : 'off';
+    };
+
+    if (on === undefined) {
+      return {
+        handler: instance.relayToggle().then(handleResult)
+      };
+    }
+
+    return {
+      handler: instance.relay(Boolean(parseString(on) || false)).then(handleResult)
+    };
+  });
+
   instance.on('change', () => {
     instance.ledBlink(instance.relayState ? 2 : 1);
+  });
+}
+
+function manage(lights, httpHookServer) {
+  lights.forEach((light) => {
+    const { type } = light;
+
+    switch (type) {
+      case 'OBI_JACK':
+        manageObiJackLight(light, httpHookServer);
+        break;
+      default:
+    }
   });
 }
 
@@ -56,20 +91,11 @@ function lightWithWallSwitch(lights, wallSwitches) {
   const {
     // doorSensors,
     lights,
-    wallSwitches
+    wallSwitches,
+    httpHookServer
   } = global;
 
-  lights.forEach((light) => {
-    const { type } = light;
-
-    switch (type) {
-      case 'OBI_JACK':
-        manageObiJackLight(light);
-        break;
-      default:
-    }
-  });
-
+  manage(lights, httpHookServer);
   // lightWithDoorSensor(lights, doorSensors);
   lightWithWallSwitch(lights, wallSwitches);
 }());

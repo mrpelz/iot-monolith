@@ -51,7 +51,7 @@ class PersistentSocket extends Base {
     };
 
     this._persistentSocket.state = {
-      isConnected: false,
+      isConnected: null,
       shouldBeConnected: false,
       keepAliveInterval: null,
       watcherInterval: null,
@@ -171,7 +171,7 @@ class PersistentSocket extends Base {
       log.info({
         head: 'is connected',
         value: true,
-        telegram: true
+        telegram: state.isConnected !== null
       });
 
       state.isConnected = true;

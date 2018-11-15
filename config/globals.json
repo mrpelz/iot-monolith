@@ -2,6 +2,7 @@
   "schedulerPrecision": 125,
   "prometheusPort": 5555,
   "webApiPort": 5556,
+  "httpHooksPort": 5557,
   "webApiUpdateSeconds": 5,
   "dbWriteIntervalSeconds": 30,
   "historyRetainHours": 1,

@@ -14,6 +14,7 @@ function createInstances() {
   require('./instances/hmi-server');
   require('./instances/web-api');
   require('./instances/prometheus');
+  require('./instances/http-hooks');
 }
 
 function runLogic() {
