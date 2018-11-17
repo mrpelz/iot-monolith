@@ -36,7 +36,7 @@
     }
   },
   {
-    "name": "testLicht",
+    "name": "kuecheLedLeft",
     "host": "10.97.4.31",
     "port": 5045,
     "type": "OBI_JACK",
@@ -44,6 +44,18 @@
       "hmi": {
         "label": "led",
         "section": "kueche"
+      }
+    }
+  },
+  {
+    "name": "testLicht",
+    "host": "10.97.4.37",
+    "port": 5045,
+    "type": "OBI_JACK",
+    "attributes": {
+      "hmi": {
+        "label": "lamp",
+        "section": "arbeitszimmer"
       }
     }
   }

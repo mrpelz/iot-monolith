@@ -70,11 +70,11 @@ function manage(lights, httpHookServer) {
 
 function lightWithWallSwitch(lights, wallSwitches) {
   const lightMatch = lights.find((light) => {
-    return light.name === 'testLicht';
+    return light.name === 'kuecheLedLeft';
   });
 
   const wallSwitchMatch = wallSwitches.find((wallSwitch) => {
-    return wallSwitch.name === 'thePushbutton';
+    return wallSwitch.name === 'kuecheButton1';
   });
 
   if (!lightMatch || !wallSwitchMatch) return;
