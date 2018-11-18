@@ -1,4 +1,4 @@
-function obiLightToPrometheus(light, prometheus) {
+function singleRelayLightToPrometheus(light, prometheus) {
   const { name, instance, type } = light;
 
   const { push } = prometheus.pushMetric(
@@ -22,15 +22,15 @@ function lightsToPrometheus(lights, prometheus) {
     const { type } = light;
 
     switch (type) {
-      case 'OBI_JACK':
-        obiLightToPrometheus(light, prometheus);
+      case 'SINGLE_RELAY':
+        singleRelayLightToPrometheus(light, prometheus);
         break;
       default:
     }
   });
 }
 
-function obiFanToPrometheus(fan, prometheus) {
+function singleRelayFanToPrometheus(fan, prometheus) {
   const { name, instance, type } = fan;
 
   const { push } = prometheus.pushMetric(
@@ -54,8 +54,8 @@ function fansToPrometheus(fans, prometheus) {
     const { type } = fan;
 
     switch (type) {
-      case 'OBI_JACK':
-        obiFanToPrometheus(fan, prometheus);
+      case 'SINGLE_RELAY':
+        singleRelayFanToPrometheus(fan, prometheus);
         break;
       default:
     }

@@ -3,7 +3,7 @@
     "name": "wohnzimmerStehlampe",
     "host": "10.97.4.11",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "label": "standing-lamp",
@@ -15,7 +15,7 @@
     "name": "schlafzimmerSteinlampe",
     "host": "10.97.4.32",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "label": "stone-lamp",
@@ -27,7 +27,7 @@
     "name": "esszimmerStehlampe",
     "host": "10.97.4.12",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "label": "standing-lamp",
@@ -39,23 +39,25 @@
     "name": "kuecheLedLeft",
     "host": "10.97.4.31",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "label": "led",
+        "subLabel": "left",
         "section": "kueche"
       }
     }
   },
   {
-    "name": "testLicht",
+    "name": "kuecheLedRight",
     "host": "10.97.4.37",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
-        "label": "lamp",
-        "section": "arbeitszimmer"
+        "label": "led",
+        "subLabel": "right",
+        "section": "kueche"
       }
     }
   }

@@ -175,7 +175,7 @@ function metricAggrgatesHmi(
   });
 }
 
-function obiLightHmi(light, hmiServer) {
+function singleRelayLightHmi(light, hmiServer) {
   const {
     name,
     instance,
@@ -214,15 +214,15 @@ function lightsHmi(lights, hmiServer) {
     const { type } = light;
 
     switch (type) {
-      case 'OBI_JACK':
-        obiLightHmi(light, hmiServer);
+      case 'SINGLE_RELAY':
+        singleRelayLightHmi(light, hmiServer);
         break;
       default:
     }
   });
 }
 
-function obiFanHmi(fan, hmiServer) {
+function singleRelayFanHmi(fan, hmiServer) {
   const {
     name,
     instance,
@@ -260,8 +260,8 @@ function fansHmi(fans, hmiServer) {
     const { type } = fan;
 
     switch (type) {
-      case 'OBI_JACK':
-        obiFanHmi(fan, hmiServer);
+      case 'SINGLE_RELAY':
+        singleRelayFanHmi(fan, hmiServer);
         break;
       default:
     }

@@ -3,7 +3,7 @@
     "name": "wohnzimmerFan",
     "host": "10.97.4.13",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "section": "wohnzimmer"
@@ -14,7 +14,7 @@
     "name": "schlafzimmerFan",
     "host": "10.97.4.33",
     "port": 5045,
-    "type": "OBI_JACK",
+    "type": "SINGLE_RELAY",
     "attributes": {
       "hmi": {
         "section": "schlafzimmer"

@@ -1,6 +1,6 @@
 const { parseString } = require('../../libs/utils/string');
 
-function manageObiJackLight(light, httpHookServer) {
+function manageSingleRelayLight(light, httpHookServer) {
   const { instance, name } = light;
 
   instance.on('connect', () => {
@@ -41,8 +41,8 @@ function manage(lights, httpHookServer) {
     const { type } = light;
 
     switch (type) {
-      case 'OBI_JACK':
-        manageObiJackLight(light, httpHookServer);
+      case 'SINGLE_RELAY':
+        manageSingleRelayLight(light, httpHookServer);
         break;
       default:
     }

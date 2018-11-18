@@ -1,13 +1,13 @@
-const { ObiJack } = require('../../libs/obi-jack');
+const { SingleRelay } = require('../../libs/single-relay');
 
-function createObiJackLight(light) {
+function createSingleRelayLight(light) {
   const {
     host,
     port
   } = light;
 
   try {
-    return new ObiJack({
+    return new SingleRelay({
       host,
       port
     });
@@ -30,8 +30,8 @@ function createObiJackLight(light) {
     let instance;
 
     switch (type) {
-      case 'OBI_JACK':
-        instance = createObiJackLight(light);
+      case 'SINGLE_RELAY':
+        instance = createSingleRelayLight(light);
         break;
       default:
     }

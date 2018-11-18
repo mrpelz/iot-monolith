@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-const { ObiJack } = require('../index');
+const { SingleRelay } = require('../index');
 
-// OBI-JACK TEST
-const jack = new ObiJack({
+// SINGLE-RELAY TEST
+const jack = new SingleRelay({
   host: '127.0.0.1',
   port: 3001
 });

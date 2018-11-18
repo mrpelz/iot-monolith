@@ -1,9 +1,9 @@
 const { Switch } = require('../switch');
 const { rebind } = require('../utils/oop');
 
-const libName = 'obi-jack';
+const libName = 'single-relay';
 
-const obiCapabilities = [
+const singleRelayCapabilities = [
   {
     name: 'relay',
     type: 'output',
@@ -29,7 +29,7 @@ const obiCapabilities = [
   }
 ];
 
-class ObiJack extends Switch {
+class SingleRelay extends Switch {
   constructor(options = {}) {
     const {
       host,
@@ -43,25 +43,25 @@ class ObiJack extends Switch {
     super({
       host,
       port,
-      capabilities: obiCapabilities
+      capabilities: singleRelayCapabilities
     });
 
-    this._obiJack = {};
+    this._singleRelay = {};
     this.relayState = false;
 
-    rebind(this, '_handleObiJackConnection');
-    this.on('connect', this._handleObiJackConnection);
+    rebind(this, '_handleSingleRelayConnection');
+    this.on('connect', this._handleSingleRelayConnection);
 
     this.log.friendlyName(`${host}:${port}`);
-    this._obiJack.log = this.log.withPrefix(libName);
+    this._singleRelay.log = this.log.withPrefix(libName);
   }
 
-  _handleObiJackConnection() {
+  _handleSingleRelayConnection() {
     this.relay(this.relayState);
   }
 
   relay(on) {
-    const { log } = this._obiJack;
+    const { log } = this._singleRelay;
 
     return this.set('relay', on).then((value) => {
       if (value !== on) {
@@ -86,7 +86,7 @@ class ObiJack extends Switch {
   }
 
   led(on) {
-    const { log } = this._obiJack;
+    const { log } = this._singleRelay;
 
     return this.set('led', on).then((value) => {
       if (value !== on) {
@@ -103,7 +103,7 @@ class ObiJack extends Switch {
   }
 
   ledBlink(count) {
-    const { log } = this._obiJack;
+    const { log } = this._singleRelay;
 
     return this.set('ledBlink', count).then((result) => {
       if (result !== count) {
@@ -132,5 +132,5 @@ class ObiJack extends Switch {
 }
 
 module.exports = {
-  ObiJack
+  SingleRelay
 };
