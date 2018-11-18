@@ -1,0 +1,19 @@
+[
+  {
+    "name": "kuecheAmbience",
+    "type": "SINGLE_RELAY",
+    "lights": [
+      "kuecheLedLeft",
+      "kuecheLedRight"
+    ],
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "label": "led",
+        "section": "kueche"
+      }
+    }
+  }
+]

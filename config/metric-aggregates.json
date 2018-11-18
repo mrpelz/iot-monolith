@@ -20,7 +20,10 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   },
   {
     "name": "innen",
@@ -41,7 +44,10 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   },
   {
     "name": "aussen",
@@ -55,7 +61,10 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   },
   {
     "name": "global",
@@ -78,7 +87,10 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   },
   {
     "name": "innen",
@@ -99,7 +111,10 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   },
   {
     "name": "aussen",
@@ -113,6 +128,9 @@
       "pressure",
       "humidity",
       "brightness"
-    ]
+    ],
+    "attributes": {
+      "hmi": {}
+    }
   }
 ]

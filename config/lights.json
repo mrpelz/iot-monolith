@@ -5,6 +5,9 @@
     "port": 5045,
     "type": "SINGLE_RELAY",
     "attributes": {
+      "light": {
+        "enableButton": true
+      },
       "hmi": {
         "label": "standing-lamp",
         "section": "wohnzimmer"
@@ -17,6 +20,9 @@
     "port": 5045,
     "type": "SINGLE_RELAY",
     "attributes": {
+      "light": {
+        "enableButton": true
+      },
       "hmi": {
         "label": "stone-lamp",
         "section": "schlafzimmer"
@@ -29,6 +35,9 @@
     "port": 5045,
     "type": "SINGLE_RELAY",
     "attributes": {
+      "light": {
+        "enableButton": true
+      },
       "hmi": {
         "label": "standing-lamp",
         "section": "esszimmer"
@@ -40,25 +49,13 @@
     "host": "10.97.4.31",
     "port": 5045,
     "type": "SINGLE_RELAY",
-    "attributes": {
-      "hmi": {
-        "label": "led",
-        "subLabel": "left",
-        "section": "kueche"
-      }
-    }
+    "attributes": {}
   },
   {
     "name": "kuecheLedRight",
     "host": "10.97.4.37",
     "port": 5045,
     "type": "SINGLE_RELAY",
-    "attributes": {
-      "hmi": {
-        "label": "led",
-        "subLabel": "right",
-        "section": "kueche"
-      }
-    }
+    "attributes": {}
   }
 ]

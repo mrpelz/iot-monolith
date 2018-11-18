@@ -1,14 +1,31 @@
+const EventEmitter = require('events');
 const { SingleRelay } = require('../single-relay');
 
-class LightGroup {
-  constructor(...instances) {
+class SingleRelayLightGroup extends EventEmitter {
+  constructor(instances, events = []) {
     instances.forEach((instance) => {
       if (instance instanceof SingleRelay) return;
 
       throw new Error('insufficient options provided');
     });
 
+    super();
+
+    events.forEach((event) => {
+      instances.forEach((instance) => {
+        instance.on(event, (...data) => {
+          this.emit(event, ...data);
+        });
+      });
+    });
+
     this._instances = instances;
+  }
+
+  isOn() {
+    return this._instances.some((instance) => {
+      return instance.relayState;
+    });
   }
 
   relay(on) {
@@ -16,19 +33,16 @@ class LightGroup {
       return instance.relay(on);
     });
 
-    return Promise.all(calls);
+    return Promise.all(calls).then((values) => {
+      this.emit('change');
+
+      return values;
+    });
   }
 
   relayToggle() {
-    const on = this._instances.reduce((prev, instance) => {
-      return prev || instance.relayState;
-    }, false);
-
-    const calls = this._instances.map((instance) => {
-      return instance.relay(!on);
-    });
-
-    return Promise.all(calls);
+    const on = this.isOn();
+    return this.relay(!on);
   }
 
   led(on) {
@@ -49,5 +63,5 @@ class LightGroup {
 }
 
 module.exports = {
-  LightGroup
+  SingleRelayLightGroup
 };

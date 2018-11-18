@@ -1,15 +1,25 @@
 const { parseString } = require('../../libs/utils/string');
 
 function manageSingleRelayLight(light, httpHookServer) {
-  const { instance, name } = light;
+  const {
+    instance,
+    name,
+    attributes: {
+      light: {
+        enableButton = false
+      } = {}
+    } = {}
+  } = light;
 
   instance.on('connect', () => {
     instance.ledBlink(5);
   });
 
-  instance.on('buttonShortpress', () => {
-    instance.relayToggle();
-  });
+  if (enableButton) {
+    instance.on('buttonShortpress', () => {
+      instance.relayToggle();
+    });
+  }
 
   httpHookServer.route(`/${name}`, (request) => {
     const {
@@ -68,34 +78,34 @@ function manage(lights, httpHookServer) {
 //   });
 // }
 
-function lightWithWallSwitch(lights, wallSwitches) {
-  const lightMatch = lights.find((light) => {
-    return light.name === 'kuecheLedLeft';
-  });
+// function lightWithWallSwitch(lights, wallSwitches) {
+//   const lightMatch = lights.find((light) => {
+//     return light.name === 'kuecheLedLeft';
+//   });
 
-  const wallSwitchMatch = wallSwitches.find((wallSwitch) => {
-    return wallSwitch.name === 'kuecheButton1';
-  });
+//   const wallSwitchMatch = wallSwitches.find((wallSwitch) => {
+//     return wallSwitch.name === 'kuecheButton1';
+//   });
 
-  if (!lightMatch || !wallSwitchMatch) return;
+//   if (!lightMatch || !wallSwitchMatch) return;
 
-  const { instance: lightInstance } = lightMatch;
-  const { instance: wallSwitchInstance } = wallSwitchMatch;
+//   const { instance: lightInstance } = lightMatch;
+//   const { instance: wallSwitchInstance } = wallSwitchMatch;
 
-  wallSwitchInstance.on(0, () => {
-    lightInstance.relayToggle();
-  });
-}
+//   wallSwitchInstance.on(0, () => {
+//     lightInstance.relayToggle();
+//   });
+// }
 
 (function main() {
   const {
     // doorSensors,
     lights,
-    wallSwitches,
+    // wallSwitches,
     httpHookServer
   } = global;
 
   manage(lights, httpHookServer);
   // lightWithDoorSensor(lights, doorSensors);
-  lightWithWallSwitch(lights, wallSwitches);
+  // lightWithWallSwitch(lights, wallSwitches);
 }());

@@ -44,9 +44,11 @@ function doorSensorsHmi(doorSensors, hmiServer) {
       name,
       instance,
       attributes: {
-        hmi: hmiAttributes = {}
+        hmi: hmiAttributes
       } = {}
     } = doorSensor;
+
+    if (!hmiAttributes) return;
 
     const hmi = new HmiElement({
       name,
@@ -82,11 +84,13 @@ function roomSensorsHmi(
       instance,
       metrics,
       attributes: {
-        hmi: hmiAttributes = {}
+        hmi: hmiAttributes
       } = {}
     } = sensor;
 
-    return metrics.forEach((metric) => {
+    if (!hmiAttributes) return;
+
+    metrics.forEach((metric) => {
       if (metric === 'pressure') return;
 
       const hmiName = camel(name, metric);
@@ -136,9 +140,11 @@ function metricAggrgatesHmi(
       metric,
       type,
       attributes: {
-        hmi: hmiAttributes = {}
+        hmi: hmiAttributes
       } = {}
     } = aggregate;
+
+    if (!hmiAttributes) return;
 
     const hmiName = camel(group, metric, type);
     const getter = () => {
@@ -180,9 +186,11 @@ function singleRelayLightHmi(light, hmiServer) {
     name,
     instance,
     attributes: {
-      hmi: hmiAttributes = {}
+      hmi: hmiAttributes
     } = {}
   } = light;
+
+  if (!hmiAttributes) return;
 
   const hmi = new HmiElement({
     name,
@@ -205,7 +213,7 @@ function singleRelayLightHmi(light, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.relay(!instance.relayState);
+    instance.relayToggle();
   });
 }
 
@@ -222,14 +230,65 @@ function lightsHmi(lights, hmiServer) {
   });
 }
 
+function singleRelayLightGroupHmi(group, hmiServer) {
+  const {
+    name,
+    instance,
+    attributes: {
+      hmi: hmiAttributes
+    } = {}
+  } = group;
+
+  if (!hmiAttributes) return;
+
+  const hmi = new HmiElement({
+    name,
+    attributes: Object.assign({
+      category: 'lamps',
+      label: 'lamp',
+      setType: 'trigger',
+      subType: 'binary-light',
+      type: 'lighting'
+    }, hmiAttributes),
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(instance.isOn());
+    },
+    settable: true
+  });
+
+  instance.on('change', () => {
+    hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.relayToggle();
+  });
+}
+
+function lightGroupsHmi(groups, hmiServer) {
+  groups.forEach((group) => {
+    const { type } = group;
+
+    switch (type) {
+      case 'SINGLE_RELAY':
+        singleRelayLightGroupHmi(group, hmiServer);
+        break;
+      default:
+    }
+  });
+}
+
 function singleRelayFanHmi(fan, hmiServer) {
   const {
     name,
     instance,
     attributes: {
-      hmi: hmiAttributes = {}
+      hmi: hmiAttributes
     } = {}
   } = fan;
+
+  if (!hmiAttributes) return;
 
   const hmi = new HmiElement({
     name,
@@ -251,7 +310,7 @@ function singleRelayFanHmi(fan, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.relay(!instance.relayState);
+    instance.relayToggle();
   });
 }
 
@@ -283,6 +342,7 @@ function fansHmi(fans, hmiServer) {
     histories,
     hmiServer,
     lights,
+    lightGroups,
     metricAggregates,
     roomSensors
   } = global;
@@ -305,5 +365,6 @@ function fansHmi(fans, hmiServer) {
     trendFactorThreshold
   );
   lightsHmi(lights, hmiServer);
+  lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
 }());

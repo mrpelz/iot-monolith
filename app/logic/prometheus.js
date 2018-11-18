@@ -30,6 +30,38 @@ function lightsToPrometheus(lights, prometheus) {
   });
 }
 
+function singleRelayLightGroupToPrometheus(group, prometheus) {
+  const { name, instance, type } = group;
+
+  const { push } = prometheus.pushMetric(
+    'power',
+    {
+      name,
+      type: 'light-group',
+      subtype: type
+    }
+  );
+
+  push(instance.relayState);
+
+  instance.on('change', () => {
+    push(instance.relayState);
+  });
+}
+
+function lightGroupsToPrometheus(lightGroups, prometheus) {
+  lightGroups.forEach((group) => {
+    const { type } = group;
+
+    switch (type) {
+      case 'SINGLE_RELAY':
+        singleRelayLightGroupToPrometheus(group, prometheus);
+        break;
+      default:
+    }
+  });
+}
+
 function singleRelayFanToPrometheus(fan, prometheus) {
   const { name, instance, type } = fan;
 
@@ -130,6 +162,7 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   const {
     doorSensors,
     lights,
+    lightGroups,
     fans,
     metricAggregates,
     prometheus,
@@ -137,6 +170,7 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   } = global;
 
   lightsToPrometheus(lights, prometheus);
+  lightGroupsToPrometheus(lightGroups, prometheus);
   fansToPrometheus(fans, prometheus);
   doorSensorsToPrometheus(doorSensors, prometheus);
   roomSensorsToPrometheus(roomSensors, prometheus);

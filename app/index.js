@@ -6,6 +6,7 @@ function createInstances() {
   require('./instances/room-sensors');
   require('./instances/metric-aggregates');
   require('./instances/lights');
+  require('./instances/light-groups');
   require('./instances/fans');
   require('./instances/ev1527-server');
   require('./instances/wall-switches');
@@ -19,6 +20,7 @@ function createInstances() {
 
 function runLogic() {
   require('./logic/lights');
+  require('./logic/light-groups');
   require('./logic/fans');
   require('./logic/hmi');
   require('./logic/prometheus');

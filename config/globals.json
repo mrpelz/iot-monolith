@@ -7,7 +7,7 @@
   "dbWriteIntervalSeconds": 30,
   "historyRetainHours": 1,
   "historyUpdateSeconds": 10,
-  "fridgeTimeout": 10000,
+  "fridgeTimeout": 20000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",
   "ev1527": [
     {
