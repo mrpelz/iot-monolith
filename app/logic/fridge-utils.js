@@ -5,6 +5,7 @@ const { chatIds, TelegramChat } = require('../../libs/telegram');
 function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
   const { instance } = fridge;
   let timer = null;
+  const closeIds = [];
 
   const telegramChat = new TelegramChat(chatIds.iot);
 
@@ -16,14 +17,20 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
   instance.on('change', () => {
     clear();
 
-    if (!instance.isOpen) return;
+    if (!instance.isOpen) {
+      closeIds.forEach((id) => {
+        telegramChat.delete(id);
+      });
+
+      closeIds.length = 0;
+      return;
+    }
 
     timer = setTimeout(() => {
       clear();
 
-      telegramChat.send(fridgeMessage).catch((error) => {
-        /* eslint-disable-next-line no-console */
-        console.error(`error logging to telegram: "${error}"`);
+      telegramChat.send(fridgeMessage).then(({ message_id: messageId }) => {
+        closeIds.push(messageId);
       });
     }, fridgeTimeout);
   });

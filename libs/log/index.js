@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { chatIds, TelegramChat } = require('../telegram');
+const { chatIds, telegramSend } = require('../telegram/simple');
 const { parseString } = require('../utils/string');
 
 const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
@@ -45,15 +45,12 @@ class Logger {
   constructor(name = null) {
     this._name = name;
     this._prefixes = [];
-
-    this._telegramChat = new TelegramChat(chatIds.log);
   }
 
   _log(opts, usedPrefix) {
     const {
       _name,
-      _prefixes,
-      _telegramChat
+      _prefixes
     } = this;
 
     const {
@@ -105,7 +102,8 @@ class Logger {
       || (telegram !== false && level <= telegramLogLevel)
     ) {
       setImmediate(() => {
-        _telegramChat.send(
+        telegramSend(
+          chatIds.log,
           [
             `*${levelName}*`,
             `_${name}_`,
