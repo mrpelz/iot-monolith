@@ -22,10 +22,18 @@ function manageSingleRelayLightGroup(group, httpHookServer) {
       urlQuery: { on }
     } = request;
 
+    const handleResult = () => {
+      return instance.isOn() ? 'on' : 'off';
+    };
+
+    if (on === undefined) {
+      return {
+        handler: instance.relayToggle().then(handleResult)
+      };
+    }
+
     return {
-      handler: instance.relay(Boolean(parseString(on) || false)).then(() => {
-        return '';
-      })
+      handler: instance.relay(Boolean(parseString(on) || false)).then(handleResult)
     };
   });
 }
