@@ -19,6 +19,7 @@ function createInstances() {
 }
 
 function runLogic() {
+  require('./logic/security');
   require('./logic/lights');
   require('./logic/light-groups');
   require('./logic/fans');
