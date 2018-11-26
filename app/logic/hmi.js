@@ -230,7 +230,7 @@ function lightsHmi(lights, hmiServer) {
   });
 }
 
-function singleRelayLightGroupHmi(group, hmiServer) {
+function lightGroupHmi(group, hmiServer) {
   const {
     name,
     instance,
@@ -268,14 +268,35 @@ function singleRelayLightGroupHmi(group, hmiServer) {
 
 function lightGroupsHmi(groups, hmiServer) {
   groups.forEach((group) => {
-    const { type } = group;
+    lightGroupHmi(group, hmiServer);
+  });
+}
 
-    switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayLightGroupHmi(group, hmiServer);
-        break;
-      default:
-    }
+function allLightsGroupHmi(instance, hmiServer) {
+  const hmi = new HmiElement({
+    name: 'allLights',
+    attributes: {
+      category: 'lamps',
+      label: '§{all} §{lamps}',
+      section: 'global',
+      setType: 'trigger',
+      sortCategory: '_top',
+      subType: 'binary-light',
+      type: 'lighting'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(instance.power);
+    },
+    settable: true
+  });
+
+  instance.on('change', () => {
+    hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.toggle();
   });
 }
 
@@ -337,6 +358,7 @@ function fansHmi(fans, hmiServer) {
         trendFactorThreshold
       }
     },
+    allLightsGroup,
     doorSensors,
     fans,
     histories,
@@ -365,6 +387,7 @@ function fansHmi(fans, hmiServer) {
     trendFactorThreshold
   );
   lightsHmi(lights, hmiServer);
+  allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
 }());

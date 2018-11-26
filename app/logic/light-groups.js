@@ -1,6 +1,6 @@
 const { parseString } = require('../../libs/utils/string');
 
-function manageSingleRelayLightGroup(group, httpHookServer) {
+function manageLightGroup(group, httpHookServer) {
   const {
     name,
     instance,
@@ -40,14 +40,29 @@ function manageSingleRelayLightGroup(group, httpHookServer) {
 
 function manage(lightGroups, httpHookServer) {
   lightGroups.forEach((group) => {
-    const { type } = group;
+    manageLightGroup(group, httpHookServer);
+  });
+}
 
-    switch (type) {
-      case 'SINGLE_RELAY':
-        manageSingleRelayLightGroup(group, httpHookServer);
-        break;
-      default:
+function manageAllLightsGroup(instance, httpHookServer) {
+  httpHookServer.route('/allLights', (request) => {
+    const {
+      urlQuery: { on }
+    } = request;
+
+    const handleResult = () => {
+      return instance.power ? 'on' : 'off';
+    };
+
+    if (on === undefined) {
+      return {
+        handler: instance.toggle().then(handleResult)
+      };
     }
+
+    return {
+      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
+    };
   });
 }
 
@@ -72,11 +87,13 @@ function groupWithWallSwitch(lightGroups, wallSwitches) {
 
 (function main() {
   const {
+    allLightsGroup,
     lightGroups,
     wallSwitches,
     httpHookServer
   } = global;
 
   manage(lightGroups, httpHookServer);
+  manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithWallSwitch(lightGroups, wallSwitches);
 }());

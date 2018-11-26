@@ -2,10 +2,12 @@
   "webApi": {
     "sort": {
       "categories": [
+        "_top",
         "air",
         "lamps",
         "doors",
-        "other"
+        "other",
+        "_bottom"
       ],
       "labels": [
         "temperature",
@@ -42,6 +44,7 @@
       "ahu-in": "Lufteinlass",
       "ahu-out": "Luftauslass",
       "air": "Luft",
+      "all": "alle",
       "arbeitszimmer": "Arbeitszimmer",
       "aussen": "außen",
       "balkon": "Balkon",

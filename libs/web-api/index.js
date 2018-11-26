@@ -25,12 +25,20 @@ function sortElements(rawInput = [], list = [], key = 'name') {
   const input = rawInput.filter(Boolean);
 
   const unsorted = input.filter(({ [key]: name, [altKey]: altName }) => {
-    return !(list.includes(name) || list.includes(altName));
+    if (altName !== undefined) {
+      return !list.includes(altName);
+    }
+
+    return !list.includes(name);
   });
 
   const sorted = list.map((sortKey) => {
     return input.filter(({ [key]: name, [altKey]: altName }) => {
-      return name === sortKey || altName === sortKey;
+      if (altName !== undefined) {
+        return altName === sortKey;
+      }
+
+      return name === sortKey;
     });
   }).filter(Boolean);
 

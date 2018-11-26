@@ -1,6 +1,6 @@
-const { SingleRelayLightGroup } = require('../../libs/group');
+const { LightGroup } = require('../../libs/group');
 
-function createSingleRelayLightGroup(group, allLights) {
+function createLightGroup(group, allLights) {
   const {
     lights: includedLights,
     type: includedType
@@ -15,7 +15,34 @@ function createSingleRelayLightGroup(group, allLights) {
   const events = ['buttonShortpress'];
 
   try {
-    return new SingleRelayLightGroup(lights, events);
+    return new LightGroup(lights, events);
+  } catch (e) {
+    return null;
+  }
+}
+
+function createLightGroups(lightGroups, lights) {
+  return lightGroups.map((group) => {
+    const { disable = false, name, type } = group;
+    if (disable || !name || !type) return null;
+
+    const instance = createLightGroup(group, lights);
+
+    if (!instance) return null;
+
+    return Object.assign(group, {
+      instance
+    });
+  }).filter(Boolean);
+}
+
+function createAllLightsGroup(allLights) {
+  const lights = allLights.map(({ instance }) => {
+    return instance;
+  });
+
+  try {
+    return new LightGroup(lights);
   } catch (e) {
     return null;
   }
@@ -29,23 +56,6 @@ function createSingleRelayLightGroup(group, allLights) {
     }
   } = global;
 
-  global.lightGroups = lightGroups.map((group) => {
-    const { disable = false, name, type } = group;
-    if (disable || !name || !type) return null;
-
-    let instance;
-
-    switch (type) {
-      case 'SINGLE_RELAY':
-        instance = createSingleRelayLightGroup(group, lights);
-        break;
-      default:
-    }
-
-    if (!instance) return null;
-
-    return Object.assign(group, {
-      instance
-    });
-  }).filter(Boolean);
+  global.lightGroups = createLightGroups(lightGroups, lights);
+  global.allLightsGroup = createAllLightsGroup(lights);
 }());

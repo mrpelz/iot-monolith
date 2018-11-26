@@ -2,7 +2,7 @@ const EventEmitter = require('events');
 const { SingleRelay } = require('../single-relay');
 const { LedLight } = require('../led');
 
-class SingleRelayLightGroup extends EventEmitter {
+class LightGroup extends EventEmitter {
   constructor(instances, events = []) {
     instances.forEach((instance) => {
       if (
@@ -15,11 +15,20 @@ class SingleRelayLightGroup extends EventEmitter {
 
     super();
 
+    this._isChanging = false;
+
     events.forEach((event) => {
       instances.forEach((instance) => {
         instance.on(event, (...data) => {
           this.emit(event, ...data);
         });
+      });
+    });
+
+    instances.forEach((instance) => {
+      instance.on('change', () => {
+        if (this._isChanging) return;
+        this.emit('change');
       });
     });
 
@@ -33,12 +42,14 @@ class SingleRelayLightGroup extends EventEmitter {
   }
 
   setPower(on) {
+    this._isChanging = true;
     const calls = this._instances.map((instance) => {
       return instance.setPower(on);
     });
 
     return Promise.all(calls).then((values) => {
       this.emit('change');
+      this._isChanging = false;
 
       return values;
     });
@@ -66,5 +77,5 @@ class SingleRelayLightGroup extends EventEmitter {
 }
 
 module.exports = {
-  SingleRelayLightGroup
+  LightGroup
 };
