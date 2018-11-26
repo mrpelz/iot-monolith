@@ -203,7 +203,7 @@ function singleRelayLightHmi(light, hmiServer) {
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.relayState);
+      return Promise.resolve(instance.power);
     },
     settable: true
   });
@@ -213,7 +213,7 @@ function singleRelayLightHmi(light, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.relayToggle();
+    instance.toggle();
   });
 }
 
@@ -252,7 +252,7 @@ function singleRelayLightGroupHmi(group, hmiServer) {
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.isOn());
+      return Promise.resolve(instance.power);
     },
     settable: true
   });
@@ -262,7 +262,7 @@ function singleRelayLightGroupHmi(group, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.relayToggle();
+    instance.toggle();
   });
 }
 
@@ -300,7 +300,7 @@ function singleRelayFanHmi(fan, hmiServer) {
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.relayState);
+      return Promise.resolve(instance.power);
     },
     settable: true
   });
@@ -310,7 +310,7 @@ function singleRelayFanHmi(fan, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.relayToggle();
+    instance.toggle();
   });
 }
 

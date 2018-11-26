@@ -17,7 +17,7 @@ function manageSingleRelayLight(light, httpHookServer) {
 
   if (enableButton) {
     instance.on('buttonShortpress', () => {
-      instance.relayToggle();
+      instance.toggle();
     });
   }
 
@@ -32,17 +32,17 @@ function manageSingleRelayLight(light, httpHookServer) {
 
     if (on === undefined) {
       return {
-        handler: instance.relayToggle().then(handleResult)
+        handler: instance.toggle().then(handleResult)
       };
     }
 
     return {
-      handler: instance.relay(Boolean(parseString(on) || false)).then(handleResult)
+      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
     };
   });
 
   instance.on('change', () => {
-    instance.ledBlink(instance.relayState ? 2 : 1);
+    instance.ledBlink(instance.power ? 2 : 1);
   });
 }
 
@@ -74,7 +74,7 @@ function manage(lights, httpHookServer) {
 //   const { instance: doorSensorInstance } = doorSensorMatch;
 
 //   doorSensorInstance.on('change', () => {
-//     lightInstance.relay(doorSensorInstance.isOpen);
+//     lightInstance.setPower(doorSensorInstance.isOpen);
 //   });
 // }
 
@@ -93,7 +93,7 @@ function manage(lights, httpHookServer) {
 //   const { instance: wallSwitchInstance } = wallSwitchMatch;
 
 //   wallSwitchInstance.on(0, () => {
-//     lightInstance.relayToggle();
+//     lightInstance.toggle();
 //   });
 // }
 

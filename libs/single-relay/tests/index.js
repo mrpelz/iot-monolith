@@ -21,8 +21,8 @@ jack.on('connect', () => {
 
   jack.on('buttonShortpress', () => {
     console.log('button was short-pressed');
-    jack.relay(!jack.relayState);
-    jack.ledBlink(jack.relayState ? 2 : 1);
+    jack.setPower(!jack.power);
+    jack.ledBlink(jack.power ? 2 : 1);
   });
 
   jack.on('buttonLongpress', () => {

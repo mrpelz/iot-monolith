@@ -1,10 +1,14 @@
 const EventEmitter = require('events');
 const { SingleRelay } = require('../single-relay');
+const { LedLight } = require('../led');
 
 class SingleRelayLightGroup extends EventEmitter {
   constructor(instances, events = []) {
     instances.forEach((instance) => {
-      if (instance instanceof SingleRelay) return;
+      if (
+        instance instanceof SingleRelay
+        || instance instanceof LedLight
+      ) return;
 
       throw new Error('insufficient options provided');
     });
@@ -22,15 +26,15 @@ class SingleRelayLightGroup extends EventEmitter {
     this._instances = instances;
   }
 
-  isOn() {
+  get power() {
     return this._instances.some((instance) => {
-      return instance.relayState;
+      return instance.power;
     });
   }
 
-  relay(on) {
+  setPower(on) {
     const calls = this._instances.map((instance) => {
-      return instance.relay(on);
+      return instance.setPower(on);
     });
 
     return Promise.all(calls).then((values) => {
@@ -40,9 +44,8 @@ class SingleRelayLightGroup extends EventEmitter {
     });
   }
 
-  relayToggle() {
-    const on = this.isOn();
-    return this.relay(!on);
+  toggle() {
+    return this.setPower(!this.power);
   }
 
   led(on) {

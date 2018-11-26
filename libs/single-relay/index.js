@@ -47,7 +47,7 @@ class SingleRelay extends Switch {
     });
 
     this._singleRelay = {};
-    this.relayState = false;
+    this.power = false;
 
     rebind(this, '_handleSingleRelayConnection');
     this.on('connect', this._handleSingleRelayConnection);
@@ -57,10 +57,10 @@ class SingleRelay extends Switch {
   }
 
   _handleSingleRelayConnection() {
-    this.relay(this.relayState);
+    this.setPower(this.power);
   }
 
-  relay(on) {
+  setPower(on) {
     const { log } = this._singleRelay;
 
     return this.set('relay', on).then((value) => {
@@ -68,8 +68,8 @@ class SingleRelay extends Switch {
         throw new Error('could not set relay');
       }
 
-      if (value !== this.relayState) {
-        this.relayState = value;
+      if (value !== this.power) {
+        this.power = value;
         this.emit('change');
       }
       return value;
@@ -81,8 +81,8 @@ class SingleRelay extends Switch {
     });
   }
 
-  relayToggle() {
-    return this.relay(!this.relayState);
+  toggle() {
+    return this.setPower(!this.power);
   }
 
   led(on) {
@@ -122,13 +122,13 @@ class SingleRelay extends Switch {
   // Public methods:
   // connect
   // disconnect
-  // relay
-  // relayToggle
+  // setPower
+  // toggle
   // led
   // ledBlink
   //
   // Public properties:
-  // relayState
+  // power
 }
 
 module.exports = {

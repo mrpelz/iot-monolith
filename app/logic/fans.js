@@ -8,7 +8,7 @@ function manageSingleRelayFan(fan, httpHookServer) {
   });
 
   instance.on('buttonShortpress', () => {
-    instance.relayToggle();
+    instance.toggle();
   });
 
   httpHookServer.route(`/${name}`, (request) => {
@@ -22,17 +22,17 @@ function manageSingleRelayFan(fan, httpHookServer) {
 
     if (on === undefined) {
       return {
-        handler: instance.relayToggle().then(handleResult)
+        handler: instance.toggle().then(handleResult)
       };
     }
 
     return {
-      handler: instance.relay(Boolean(parseString(on) || false)).then(handleResult)
+      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
     };
   });
 
   instance.on('change', () => {
-    instance.ledBlink(instance.relayState ? 2 : 1);
+    instance.ledBlink(instance.power ? 2 : 1);
   });
 }
 

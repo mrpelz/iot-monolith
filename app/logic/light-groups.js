@@ -13,7 +13,7 @@ function manageSingleRelayLightGroup(group, httpHookServer) {
 
   if (enableButton) {
     instance.on('buttonShortpress', () => {
-      instance.relayToggle();
+      instance.toggle();
     });
   }
 
@@ -23,17 +23,17 @@ function manageSingleRelayLightGroup(group, httpHookServer) {
     } = request;
 
     const handleResult = () => {
-      return instance.isOn() ? 'on' : 'off';
+      return instance.power ? 'on' : 'off';
     };
 
     if (on === undefined) {
       return {
-        handler: instance.relayToggle().then(handleResult)
+        handler: instance.toggle().then(handleResult)
       };
     }
 
     return {
-      handler: instance.relay(Boolean(parseString(on) || false)).then(handleResult)
+      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
     };
   });
 }
@@ -66,7 +66,7 @@ function groupWithWallSwitch(lightGroups, wallSwitches) {
   const { instance: wallSwitchInstance } = wallSwitchMatch;
 
   wallSwitchInstance.on(0, () => {
-    groupInstance.relayToggle();
+    groupInstance.toggle();
   });
 }
 

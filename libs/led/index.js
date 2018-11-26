@@ -4,8 +4,12 @@ const {
   readNumber,
   writeNumber
 } = require('../utils/data');
+const { sanity } = require('../utils/math');
 
 const libName = 'led';
+
+const minCycle = 0;
+const maxCycle = 255;
 
 function getMessageTypes(channels) {
   return Array(channels).map((_, index) => {
@@ -108,6 +112,7 @@ class LedLight {
       throw new Error('insufficient options provided');
     }
 
+    this.power = false;
     this.brightness = 0;
 
     this._ledLight = {
@@ -117,19 +122,24 @@ class LedLight {
     this._ledLight.log = this.log.withPrefix(libName);
   }
 
-  brightness(input) {
+  setBrightness(input) {
     const { log, set } = this._ledDriver;
 
-    const cycle = Math.round(Math.abs(Number(input)) * 255);
+    const cycle = sanity(input, {
+      max: maxCycle,
+      min: minCycle,
+      round: true
+    });
 
     return set(cycle).then((value) => {
       if (value !== cycle) {
         throw new Error('could not set brightness');
       }
 
-      const brightness = value / 255;
+      const brightness = value / maxCycle;
 
       if (brightness !== this.brightness) {
+        this.power = Boolean(brightness);
         this.brightness = brightness;
         this.emit('change');
       }
@@ -144,17 +154,30 @@ class LedLight {
 
   toggle() {
     if (this.brightness === 0) {
-      return this.brightness(1);
+      return this.setBrightness(1);
     }
 
-    return this.brightness(0);
+    return this.setBrightness(0);
+  }
+
+  setPower(on) {
+    if (on) {
+      return this.setBrightness(1);
+    }
+
+    return this.setBrightness(0);
   }
 
   // Public methods:
   // connect
   // disconnect
-  // brightness
+  // setBrightness
   // toggle
+  // setPower
+  //
+  // Public properties:
+  // brightness
+  // power
 }
 
 module.exports = {

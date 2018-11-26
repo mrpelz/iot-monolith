@@ -10,10 +10,10 @@ function singleRelayLightToPrometheus(light, prometheus) {
     }
   );
 
-  push(instance.relayState);
+  push(instance.power);
 
   instance.on('change', () => {
-    push(instance.relayState);
+    push(instance.power);
   });
 }
 
@@ -42,10 +42,10 @@ function singleRelayLightGroupToPrometheus(group, prometheus) {
     }
   );
 
-  push(instance.relayState);
+  push(instance.power);
 
   instance.on('change', () => {
-    push(instance.relayState);
+    push(instance.power);
   });
 }
 
@@ -74,10 +74,10 @@ function singleRelayFanToPrometheus(fan, prometheus) {
     }
   );
 
-  push(instance.relayState);
+  push(instance.power);
 
   instance.on('change', () => {
-    push(instance.relayState);
+    push(instance.power);
   });
 }
 
