@@ -1,4 +1,5 @@
 const { parseString } = require('../../libs/utils/string');
+const { coupleRfSwitchToLight } = require('../utils/rf-switches');
 
 function manageLightGroup(group, httpHookServer) {
   const {
@@ -66,34 +67,48 @@ function manageAllLightsGroup(instance, httpHookServer) {
   });
 }
 
-function groupWithWallSwitch(lightGroups, wallSwitches) {
-  const groupMatch = lightGroups.find(({ name }) => {
-    return name === 'kuecheAmbience';
+function groupWithRfSwitch(lightGroups, rfSwitches) {
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'kuecheAmbience',
+    'kuecheButton1',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'kuecheAmbience',
+    'multiWZ',
+    4
+  );
+}
+
+function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
+  const rfSwitchMatch = rfSwitches.find(({ name }) => {
+    return name === 'multiWZ';
   });
 
-  const wallSwitchMatch = wallSwitches.find(({ name }) => {
-    return name === 'kuecheButton1';
-  });
+  if (!allLightsGroup || !rfSwitchMatch) return;
 
-  if (!groupMatch || !wallSwitchMatch) return;
+  const { instance: rfSwitchInstance } = rfSwitchMatch;
 
-  const { instance: groupInstance } = groupMatch;
-  const { instance: wallSwitchInstance } = wallSwitchMatch;
-
-  wallSwitchInstance.on(0, () => {
-    groupInstance.toggle();
+  rfSwitchInstance.on(3, () => {
+    allLightsGroup.toggle();
   });
 }
 
 (function main() {
   const {
     allLightsGroup,
+    httpHookServer,
     lightGroups,
-    wallSwitches,
-    httpHookServer
+    rfSwitches
   } = global;
 
   manage(lightGroups, httpHookServer);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
-  groupWithWallSwitch(lightGroups, wallSwitches);
+  groupWithRfSwitch(lightGroups, rfSwitches);
+  allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches);
 }());

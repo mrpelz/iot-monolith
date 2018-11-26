@@ -9,7 +9,7 @@ function createInstances() {
   require('./instances/light-groups');
   require('./instances/fans');
   require('./instances/ev1527-server');
-  require('./instances/wall-switches');
+  require('./instances/rf-switches');
   require('./instances/door-sensors');
   require('./instances/histories');
   require('./instances/hmi-server');

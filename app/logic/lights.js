@@ -1,4 +1,5 @@
 const { parseString } = require('../../libs/utils/string');
+const { coupleRfSwitchToLight } = require('../utils/rf-switches');
 
 function manageSingleRelayLight(light, httpHookServer) {
   const {
@@ -78,34 +79,57 @@ function manage(lights, httpHookServer) {
 //   });
 // }
 
-// function lightWithWallSwitch(lights, wallSwitches) {
-//   const lightMatch = lights.find((light) => {
-//     return light.name === 'kuecheLedLeft';
-//   });
+function lightWithRfSwitch(lights, rfSwitches) {
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerStehlampe',
+    'multiWZ',
+    1
+  );
 
-//   const wallSwitchMatch = wallSwitches.find((wallSwitch) => {
-//     return wallSwitch.name === 'kuecheButton1';
-//   });
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerStehlampe',
+    'multiWZ',
+    2
+  );
 
-//   if (!lightMatch || !wallSwitchMatch) return;
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerStehlampe',
+    'stehlampeEZ',
+    4
+  );
 
-//   const { instance: lightInstance } = lightMatch;
-//   const { instance: wallSwitchInstance } = wallSwitchMatch;
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerSteinlampe',
+    'steinI',
+    4
+  );
 
-//   wallSwitchInstance.on(0, () => {
-//     lightInstance.toggle();
-//   });
-// }
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerSteinlampe',
+    'steinII',
+    4
+  );
+}
 
 (function main() {
   const {
     // doorSensors,
+    httpHookServer,
     lights,
-    // wallSwitches,
-    httpHookServer
+    rfSwitches
   } = global;
 
   manage(lights, httpHookServer);
   // lightWithDoorSensor(lights, doorSensors);
-  // lightWithWallSwitch(lights, wallSwitches);
+  lightWithRfSwitch(lights, rfSwitches);
 }());
