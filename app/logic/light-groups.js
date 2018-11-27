@@ -80,6 +80,14 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
+    'kuecheButton2',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'kuecheAmbience',
     'multiWZ',
     4
   );
