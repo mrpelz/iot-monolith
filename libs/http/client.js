@@ -1,6 +1,9 @@
+const EventEmitter = require('events');
 const { request: httpRequest } = require('http');
 const { request: httpsRequest } = require('https');
 const { URL } = require('url');
+
+const { rebind, resolveAlways } = require('../utils/oop');
 
 function httpClient(method, url = {}, options = {}, data) {
   const {
@@ -88,8 +91,48 @@ function post(url, data, options) {
   return httpClient('POST', url, options, data);
 }
 
+class LongPollClient extends EventEmitter {
+  constructor(scheduler, caller) {
+    if (!scheduler || !caller) {
+      throw new Error('insufficient options provided!');
+    }
+
+    super();
+
+    this._scheduler = scheduler;
+    this._caller = caller;
+    this._active = false;
+
+    rebind(this, '_poll');
+  }
+
+  _poll() {
+    if (this._active) return;
+    this._active = true;
+
+    (async () => {
+      const payload = await resolveAlways(this._caller());
+
+      if (payload) {
+        this.emit('message', payload);
+      }
+
+      this._active = false;
+    })();
+  }
+
+  start() {
+    this._scheduler.on('tick', this._poll);
+  }
+
+  stop() {
+    this._scheduler.removeListener('tick', this._poll);
+  }
+}
+
 module.exports = {
   get,
   post,
-  httpClient
+  httpClient,
+  LongPollClient
 };

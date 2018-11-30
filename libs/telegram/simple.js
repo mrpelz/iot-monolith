@@ -1,9 +1,9 @@
 const { post } = require('../http/client');
 
 const {
-  telegramApiHost,
-  telegramBotToken,
-  telegramChatIds
+  apiHost,
+  token,
+  chatIds
 } = require('./config.json');
 
 const telegramHttpOptions = {
@@ -19,7 +19,7 @@ const telegramMessageOptions = {
 
 function telegramSend(chatId, message) {
   return post(
-    `https://${telegramApiHost}/bot${telegramBotToken}/sendMessage`,
+    `https://${apiHost}/bot${token}/sendMessage`,
     Buffer.from(JSON.stringify(Object.assign(telegramMessageOptions, {
       chat_id: chatId,
       text: message
@@ -38,6 +38,6 @@ function telegramSend(chatId, message) {
 }
 
 module.exports = {
-  chatIds: telegramChatIds,
+  chatIds,
   telegramSend
 };

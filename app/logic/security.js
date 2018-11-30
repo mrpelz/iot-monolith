@@ -1,10 +1,12 @@
-const { chatIds, TelegramChat } = require('../../libs/telegram');
+async function entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage) {
+  const { client: awaitingClient, chatIds } = telegram;
 
-function entryDoorTimer(entryDoor, entryDoorTimeout, entryDoorMessage) {
+  const client = await awaitingClient; // wait for bot instance is available
+
   const { instance } = entryDoor;
   let timer = null;
 
-  const telegramChat = new TelegramChat(chatIds.iot);
+  const chat = await client.addChat(chatIds.iot);
 
   const clear = () => {
     if (timer) clearTimeout(timer);
@@ -20,7 +22,9 @@ function entryDoorTimer(entryDoor, entryDoorTimeout, entryDoorMessage) {
 
     timer = setTimeout(() => {
       clear();
-      telegramChat.send(entryDoorMessage);
+      chat.addMessage({
+        text: entryDoorMessage
+      });
     }, entryDoorTimeout);
   });
 }
@@ -33,7 +37,8 @@ function entryDoorTimer(entryDoor, entryDoorTimeout, entryDoorMessage) {
         entryDoorMessage
       }
     },
-    doorSensors
+    doorSensors,
+    telegram
   } = global;
 
   const entryDoor = doorSensors.find(({ name }) => {
@@ -41,5 +46,5 @@ function entryDoorTimer(entryDoor, entryDoorTimeout, entryDoorMessage) {
   });
   if (!entryDoor) return;
 
-  entryDoorTimer(entryDoor, entryDoorTimeout, entryDoorMessage);
+  entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage);
 }());

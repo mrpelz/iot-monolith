@@ -16,6 +16,7 @@ function createInstances() {
   require('./instances/web-api');
   require('./instances/prometheus');
   require('./instances/http-hooks');
+  require('./instances/telegram');
 }
 
 function runLogic() {

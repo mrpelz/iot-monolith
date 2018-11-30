@@ -1,13 +1,16 @@
-const { chatIds, TelegramChat } = require('../../libs/telegram');
 // const { epochs } = require('../../libs/utils/time');
 // const { post } = require('../../libs/http/client');
 
-function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
+async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
+  const { client: awaitingClient, chatIds } = telegram;
+
+  const client = await awaitingClient; // wait for bot instance is available
+
   const { instance } = fridge;
   let timer = null;
-  const closeIds = [];
+  const messages = [];
 
-  const telegramChat = new TelegramChat(chatIds.iot);
+  const chat = await client.addChat(chatIds.iot);
 
   const clear = () => {
     if (timer) clearTimeout(timer);
@@ -18,19 +21,21 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
     clear();
 
     if (!instance.isOpen) {
-      closeIds.forEach((id) => {
-        telegramChat.delete(id);
+      messages.forEach((message) => {
+        message.delete();
       });
 
-      closeIds.length = 0;
+      messages.length = 0;
       return;
     }
 
     timer = setTimeout(() => {
       clear();
 
-      telegramChat.send(fridgeMessage).then(({ message_id: messageId }) => {
-        closeIds.push(messageId);
+      chat.addMessage({
+        text: fridgeMessage
+      }).then((message) => {
+        messages.push(message);
       });
     }, fridgeTimeout);
   });
@@ -68,7 +73,8 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
         fridgeMessage
       }
     },
-    doorSensors
+    doorSensors,
+    telegram
   } = global;
 
   const fridge = doorSensors.find(({ name }) => {
@@ -76,6 +82,6 @@ function fridgeTimer(fridge, fridgeTimeout, fridgeMessage) {
   });
   if (!fridge) return;
 
-  fridgeTimer(fridge, fridgeTimeout, fridgeMessage);
+  fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage);
   // fridgeTwitter(fridge);
 }());
