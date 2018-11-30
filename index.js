@@ -2,13 +2,19 @@ process.stdin.resume();
 
 const { chatIds, telegramSend } = require('./libs/telegram/simple');
 
+function quit(signal) {
+  process.nextTick(() => {
+    process.exit(signal);
+  });
+}
+
 function exit(signal = 0) {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
   process.removeListener('SIGUSR1', exit);
   process.removeListener('SIGUSR2', exit);
 
-  process.exit(signal);
+  quit(signal);
 }
 
 process.on('uncaughtException', (error) => {
@@ -22,11 +28,13 @@ process.on('uncaughtException', (error) => {
       error.message || null,
       error.stack ? `\`${error.stack}\`` : null
     ].filter(Boolean).join('  \n')
-  ).catch((telegramError) => {
+  ).then(() => {
+    exit(1);
+  }).catch((telegramError) => {
     /* eslint-disable-next-line no-console */
     console.error(`error logging to telegram: "${telegramError}"`);
+    exit(1);
   });
-  exit(1);
 });
 
 process.on('unhandledRejection', (error) => {
@@ -40,11 +48,13 @@ process.on('unhandledRejection', (error) => {
       error.message || null,
       error.stack ? `\`${error.stack}\`` : null
     ].filter(Boolean).join('  \n')
-  ).catch((telegramError) => {
+  ).then(() => {
+    exit(1);
+  }).catch((telegramError) => {
     /* eslint-disable-next-line no-console */
     console.error(`error logging to telegram: "${telegramError}"`);
+    exit(1);
   });
-  exit(1);
 });
 
 process.on('SIGINT', exit);
