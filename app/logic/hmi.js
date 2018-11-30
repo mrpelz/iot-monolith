@@ -70,6 +70,28 @@ function doorSensorsHmi(doorSensors, hmiServer) {
   });
 }
 
+function outwardsDoorSensorsGroupHmi(instance, hmiServer) {
+  const hmi = new HmiElement({
+    name: 'outwardsDoorSensors',
+    attributes: {
+      category: 'doors',
+      label: '§{all} §{window}',
+      section: 'global',
+      sortCategory: '_top',
+      subType: 'door',
+      type: 'door-sensor'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(instance.isOpen);
+    }
+  });
+
+  instance.on('change', () => {
+    hmi.update();
+  });
+}
+
 function roomSensorsHmi(
   roomSensors,
   histories,
@@ -363,13 +385,15 @@ function fansHmi(fans, hmiServer) {
     fans,
     histories,
     hmiServer,
-    lights,
     lightGroups,
+    lights,
     metricAggregates,
+    outwardsDoorSensorsGroup,
     roomSensors
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
+  outwardsDoorSensorsGroupHmi(outwardsDoorSensorsGroup, hmiServer);
   roomSensorsHmi(
     roomSensors,
     histories,

@@ -1,9 +1,36 @@
 const EventEmitter = require('events');
 const { SingleRelay } = require('../single-relay');
 const { LedLight } = require('../led');
+const { DoorSensor } = require('../door-sensor');
+
+class DoorSensorGroup extends EventEmitter {
+  constructor(instances = []) {
+    instances.forEach((instance) => {
+      if (instance instanceof DoorSensor) return;
+
+      throw new Error('insufficient options provided');
+    });
+
+    super();
+
+    instances.forEach((instance) => {
+      instance.on('change', () => {
+        this.emit('change');
+      });
+    });
+
+    this._instances = instances;
+  }
+
+  get isOpen() {
+    return this._instances.some((instance) => {
+      return instance.isOpen;
+    });
+  }
+}
 
 class LightGroup extends EventEmitter {
-  constructor(instances, events = []) {
+  constructor(instances = [], events = []) {
     instances.forEach((instance) => {
       if (
         instance instanceof SingleRelay
@@ -77,5 +104,6 @@ class LightGroup extends EventEmitter {
 }
 
 module.exports = {
+  DoorSensorGroup,
   LightGroup
 };

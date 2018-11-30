@@ -32,7 +32,7 @@
     "attributes": {
       "hmi": {
         "label": "entry-door",
-        "section": "flur"
+        "section": "global"
       }
     }
   },
@@ -58,6 +58,9 @@
     "name": "arbeitszimmerWindowLeft",
     "id": 51866,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window",
         "section": "arbeitszimmer",
@@ -70,6 +73,9 @@
     "name": "arbeitszimmerWindowRight",
     "id": 52455,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window",
         "section": "arbeitszimmer",
@@ -82,6 +88,9 @@
     "name": "schlafzimmerWindowLeft",
     "id": 47642,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window",
         "section": "schlafzimmer",
@@ -94,6 +103,9 @@
     "name": "schlafzimmerWindowDoorRight",
     "id": 15442,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window-door",
         "section": "schlafzimmer",
@@ -106,6 +118,9 @@
     "name": "kuecheWindowDoor",
     "id": 52595,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window-door",
         "section": "kueche",
@@ -117,6 +132,9 @@
     "name": "wohnzimmerWindowDoor",
     "id": 41906,
     "attributes": {
+      "security": {
+        "outwards": true
+      },
       "hmi": {
         "label": "window-door",
         "section": "wohnzimmer",
