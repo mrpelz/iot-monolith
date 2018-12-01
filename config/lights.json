@@ -45,6 +45,21 @@
     }
   },
   {
+    "name": "kuecheDeckenlampe",
+    "host": "10.97.4.39",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "label": "ceiling-lamp",
+        "section": "kueche"
+      }
+    }
+  },
+  {
     "name": "kuecheLedLeft",
     "host": "10.97.4.31",
     "port": 5045,
