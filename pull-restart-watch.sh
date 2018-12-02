@@ -2,5 +2,6 @@
 
 git reset --hard HEAD~1
 git pull
-systemctl restart iot-monolith.service
-messages | grep "iot-monolith"
+
+/bin/systemctl restart iot-monolith.service
+tailf /var/log/syslog | grep "iot-monolith"

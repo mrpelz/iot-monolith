@@ -2,6 +2,26 @@ process.stdin.resume();
 
 const { chatIds, telegramSend } = require('./libs/telegram/simple');
 
+function telegramRoot(title = '', message, stack) {
+  return telegramSend(
+    chatIds.log,
+    [
+      '*ROOT*',
+      `_${title}_`,
+      message || null,
+      stack ? `\`${stack}\`` : null
+    ].filter(Boolean).join('  \n')
+  ).then(() => {
+    return null;
+  }).catch(() => {
+    return null;
+  });
+}
+
+(function onStart() {
+  telegramRoot('Starting process');
+}());
+
 function quit(signal) {
   process.nextTick(() => {
     process.exit(signal);
@@ -14,45 +34,23 @@ function exit(signal = 0) {
   process.removeListener('SIGUSR1', exit);
   process.removeListener('SIGUSR2', exit);
 
-  quit(signal);
+  telegramRoot('Stopping process', `Signal = ${signal}`).then(() => {
+    quit(signal);
+  });
 }
 
 process.on('uncaughtException', (error) => {
   /* eslint-disable-next-line no-console */
-  console.error(`unhandled exception: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
-  telegramSend(
-    chatIds.log,
-    [
-      '*$ROOT*',
-      '_uncaughtException_',
-      error.message || null,
-      error.stack ? `\`${error.stack}\`` : null
-    ].filter(Boolean).join('  \n')
-  ).then(() => {
-    exit(1);
-  }).catch((telegramError) => {
-    /* eslint-disable-next-line no-console */
-    console.error(`error logging to telegram: "${telegramError}"`);
+  console.error(`uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
+  telegramRoot('uncaughtException', error.message, error.stack).then(() => {
     exit(1);
   });
 });
 
 process.on('unhandledRejection', (error) => {
   /* eslint-disable-next-line no-console */
-  console.error(`unhandled rejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
-  telegramSend(
-    chatIds.log,
-    [
-      '*$ROOT*',
-      '_unhandledRejection_',
-      error.message || null,
-      error.stack ? `\`${error.stack}\`` : null
-    ].filter(Boolean).join('  \n')
-  ).then(() => {
-    exit(1);
-  }).catch((telegramError) => {
-    /* eslint-disable-next-line no-console */
-    console.error(`error logging to telegram: "${telegramError}"`);
+  console.error(`unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
+  telegramRoot('unhandledRejection', error.message, error.stack).then(() => {
     exit(1);
   });
 });

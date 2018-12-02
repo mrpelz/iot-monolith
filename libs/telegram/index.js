@@ -53,6 +53,58 @@ function telegramRequest(host, token, method, payload) {
 }
 
 class Message {
+  static createPayload(chat = {}, options = {}) {
+    const {
+      html,
+      markdown,
+      notification = true,
+      pagePreviews = true,
+      responseToId,
+      text
+    } = options;
+
+    let parseMode;
+    if (html) parseMode = 'HTML';
+    else if (markdown) parseMode = 'Markdown';
+
+    return {
+      chat_id: chat.id,
+      disable_notification: !notification,
+      disable_web_page_preview: !pagePreviews,
+      parse_mode: parseMode,
+      reply_to_message_id: responseToId,
+      text
+    };
+  }
+
+  static createOutgoing(client, chat, options) {
+    if (!client || !chat || !options) {
+      throw new Error('insufficient options provided!');
+    }
+
+    return client.request('sendMessage', Message.createPayload(chat, options)).then((payload) => {
+      if (!payload) throw new Error('error sending message');
+
+      const {
+        date,
+        from: {
+          id: fromId
+        } = {},
+        message_id: messageId,
+        text
+      } = payload;
+
+      return new Message({
+        chat,
+        client,
+        date,
+        from: fromId,
+        id: messageId,
+        text
+      });
+    });
+  }
+
   constructor(options) {
     const {
       chat,
@@ -93,10 +145,9 @@ class Message {
       if (!value) return Promise.resolve();
 
       return this._client.request(method, Object.assign({
-        chat_id: this._chat.id,
         message_id: this.id,
         [key]: value
-      }, excludeKeys(options, ...editKeys)));
+      }, excludeKeys(Message.createPayload(this._chat, options), ...editKeys)));
     });
 
     return Promise.all(calls).then((payload = {}) => {
@@ -115,13 +166,40 @@ class Message {
     return this._client.request('deleteMessage', {
       chat_id: this._chat.id,
       message_id: this.id
-    }).then(() => {
+    }).then((result) => {
       this._deleted = true;
+
+      return result;
     });
   }
 }
 
 class Chat {
+  static create(client, chatId) {
+    if (!client || !chatId) {
+      throw new Error('insufficient options provided!');
+    }
+
+    return client.request('getChat', {
+      chat_id: chatId
+    }).then((payload) => {
+      if (!payload) throw new Error('chat does not exist');
+
+      const {
+        id,
+        title,
+        type
+      } = payload;
+
+      return new Chat({
+        client,
+        id,
+        title,
+        type
+      });
+    });
+  }
+
   constructor(options) {
     const {
       client,
@@ -177,40 +255,43 @@ class Chat {
     }
   }
 
-  async addMessage(options) {
-    const messageInfo = await this._client.request('sendMessage', Object.assign({
-      chat_id: this.id
-    }, options));
+  addMessage(options) {
+    return Message.createOutgoing(this._client, this, options).then((message) => {
+      this._messages.set(message.id, message);
 
-    if (!messageInfo) {
-      throw new Error('chat does not exist');
-    }
-
-    const {
-      date,
-      from: {
-        id: fromId
-      } = {},
-      message_id: messageId,
-      text
-    } = messageInfo;
-
-    const message = new Message({
-      chat: this,
-      client: this._client,
-      date,
-      from: fromId,
-      id: messageId,
-      text
+      return message;
     });
-
-    this._messages.set(messageId, message);
-
-    return message;
   }
 }
 
 class Client {
+  static create(scheduler, token, host) {
+    if (!scheduler || !token || !host) {
+      throw new Error('insufficient options provided!');
+    }
+
+    return telegramRequest(host, token, 'getMe', {}).then((payload) => {
+      if (!payload) throw new Error('bot credentials invalid');
+
+      const {
+        first_name: firstName,
+        id,
+        last_name: lastName,
+        username
+      } = payload;
+
+      return new Client({
+        firstName,
+        host,
+        id,
+        lastName,
+        scheduler,
+        token,
+        username
+      });
+    });
+  }
+
   constructor(options) {
     const {
       firstName,
@@ -285,34 +366,16 @@ class Client {
     return telegramRequest(this._host, this._token, method, payload);
   }
 
-  async addChat(chatId) {
-    if (!chatId) {
-      throw new Error('chatId missing');
+  addChat(chatId) {
+    if (this._chats.has(chatId)) {
+      return Promise.resolve(this._chats.get(chatId));
     }
 
-    const chatInfo = await this.request('getChat', {
-      chat_id: chatId
+    return Chat.create(this, chatId).then((chat) => {
+      this._chats.set(chatId, chat);
+
+      return chat;
     });
-
-    if (!chatInfo) {
-      throw new Error('chat does not exist');
-    }
-
-    const { id, title, type } = chatInfo;
-
-    if (this._chats.has(id)) {
-      return this._chats.get(id);
-    }
-
-    const chat = new Chat({
-      client: this,
-      id,
-      title,
-      type
-    });
-    this._chats.set(chatId, chat);
-
-    return chat;
   }
 
   start() {
@@ -326,29 +389,8 @@ class Client {
   }
 }
 
-async function createTelegramClient(scheduler) {
-  const botInfo = await telegramRequest(apiHost, configToken, 'getMe', {});
-
-  if (!botInfo) {
-    throw new Error('bot info invalid');
-  }
-
-  const {
-    first_name: firstName,
-    id,
-    last_name: lastName,
-    username
-  } = botInfo;
-
-  return new Client({
-    firstName,
-    host: apiHost,
-    id,
-    lastName,
-    scheduler,
-    token: configToken,
-    username
-  });
+function createTelegramClient(scheduler) {
+  return Client.create(scheduler, configToken, apiHost);
 }
 
 module.exports = {
