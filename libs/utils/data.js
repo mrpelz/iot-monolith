@@ -1,3 +1,5 @@
+const { randomFillSync } = require('crypto');
+
 const emptyBuffer = Buffer.from([]);
 const falseBuffer = Buffer.from([0]);
 const trueBuffer = Buffer.from([1]);
@@ -65,6 +67,11 @@ function numberToDigits(input, pad = 0, radix = 10) {
   return number.toString(radix).padStart(pad, '0').split('').map((x) => {
     return Number.parseInt(x, radix);
   });
+}
+
+function randomString(length = 2) {
+  const cache = Buffer.alloc(Math.max(1, length / 2));
+  return randomFillSync(cache).toString('hex');
 }
 
 function readNumber(input, bytes = 1) {
@@ -135,6 +142,7 @@ module.exports = {
   concatBytes,
   humanPayload,
   numberToDigits,
+  randomString,
   readNumber,
   swapByte,
   trueBuffer,

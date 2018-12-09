@@ -8,7 +8,7 @@
   "historyRetainHours": 1,
   "historyUpdateSeconds": 10,
   "fridgeTimeout": 20000,
-  "entryDoorTimeout": 120000,
+  "entryDoorTimeout": 60000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",
   "entryDoorMessage": "Die Wohnungstür ist noch offen. ❗️",
   "ev1527": [

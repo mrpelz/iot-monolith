@@ -1,5 +1,7 @@
 // const { epochs } = require('../../libs/utils/time');
 // const { post } = require('../../libs/http/client');
+const { createInlineKeyboard } = require('../../libs/telegram');
+const { resolveAlways } = require('../../libs/utils/oop');
 
 async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
   const { client: awaitingClient, chatIds } = telegram;
@@ -12,6 +14,29 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
 
   const chat = await client.addChat(chatIds.iot);
 
+  const deleteMessages = () => {
+    return Promise.all(messages.map((message) => {
+      return resolveAlways(message.delete());
+    })).then((result) => {
+      messages.length = 0;
+
+      return result;
+    });
+  };
+
+  const deleteInlineKeyboard = createInlineKeyboard([
+    [
+      {
+        text: 'Ausblenden',
+        callback: () => {
+          return deleteMessages().then(() => {
+            return 'ausgeblendet';
+          });
+        }
+      }
+    ]
+  ]);
+
   const clear = () => {
     if (timer) clearTimeout(timer);
     timer = null;
@@ -21,11 +46,7 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
     clear();
 
     if (!instance.isOpen) {
-      messages.forEach((message) => {
-        message.delete();
-      });
-
-      messages.length = 0;
+      deleteMessages();
       return;
     }
 
@@ -33,7 +54,8 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
       clear();
 
       chat.addMessage({
-        text: fridgeMessage
+        text: fridgeMessage,
+        inlineKeyboard: deleteInlineKeyboard
       }).then((message) => {
         messages.push(message);
       });

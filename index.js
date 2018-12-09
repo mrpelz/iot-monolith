@@ -39,7 +39,7 @@ function exit(signal = 0) {
   });
 }
 
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (error = {}) => {
   /* eslint-disable-next-line no-console */
   console.error(`uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('uncaughtException', error.message, error.stack).then(() => {
@@ -47,7 +47,7 @@ process.on('uncaughtException', (error) => {
   });
 });
 
-process.on('unhandledRejection', (error) => {
+process.on('unhandledRejection', (error = {}) => {
   /* eslint-disable-next-line no-console */
   console.error(`unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('unhandledRejection', error.message, error.stack).then(() => {

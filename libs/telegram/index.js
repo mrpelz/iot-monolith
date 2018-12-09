@@ -1,7 +1,9 @@
 const { post, LongPollClient } = require('../http/client');
 const { Logger } = require('../log');
+const { randomString } = require('../utils/data');
 const { rebind } = require('../utils/oop');
-const { excludeKeys } = require('../utils/structures');
+const { excludeKeys, flattenArrays } = require('../utils/structures');
+const { sleep } = require('../utils/time');
 
 const libName = 'telegram';
 
@@ -13,7 +15,7 @@ const supportedUpdateTypes = [
   'edited_channel_post',
   // 'inline_query',
   // 'chosen_inline_result',
-  // 'callback_query',
+  'callback_query',
   // 'shipping_query',
   // 'pre_checkout_query'
 ];
@@ -23,6 +25,7 @@ const editMethods = {
   media: 'editMessageMedia',
   reply_markup: 'editMessageReplyMarkup'
 };
+const apiCoolDownTime = 50;
 
 const {
   apiHost,
@@ -52,10 +55,105 @@ function telegramRequest(host, token, method, payload) {
   });
 }
 
+class InlineKeyboardButton {
+  constructor(options = {}) {
+    const {
+      callback,
+      text,
+      url
+    } = options;
+
+    if (!text || !(callback || url) || (callback && url)) {
+      throw new Error('insufficient options provided!');
+    }
+
+    this.id = randomString(32);
+    this.callback = callback;
+
+    this._text = text;
+    this._url = url;
+  }
+
+  get() {
+    return {
+      callback_data: this.id,
+      text: this._text,
+      url: this._url
+    };
+  }
+}
+
+class InlineKeyboardRow {
+  constructor(buttons = []) {
+    this.buttons = new Set();
+
+    this._addButtons(buttons);
+  }
+
+  _addButtons(buttons) {
+    buttons.forEach((button) => {
+      if (!(button instanceof InlineKeyboardButton)) {
+        throw new Error('insufficient arguments provided');
+      }
+
+      this.buttons.add(button);
+    });
+  }
+
+  get() {
+    return Array.from(this.buttons).map((button) => {
+      return button.get();
+    });
+  }
+}
+
+class InlineKeyboard {
+  constructor(rows = []) {
+    this.rows = new Set();
+
+    this._addRows(rows);
+  }
+
+  _addRows(rows) {
+    rows.forEach((row) => {
+      if (!(row instanceof InlineKeyboardRow)) {
+        throw new Error('insufficient arguments provided');
+      }
+
+      this.rows.add(row);
+    });
+  }
+
+  get() {
+    return Array.from(this.rows).map((row) => {
+      return row.get();
+    });
+  }
+
+  query(options = {}, message) {
+    const {
+      data
+    } = options;
+
+    const match = flattenArrays(Array.from(this.rows).map((row) => {
+      return Array.from(row.buttons);
+    })).find((button) => {
+      return button.id === data;
+    });
+
+    if (!match || typeof match.callback !== 'function') {
+      return sleep(apiCoolDownTime);
+    }
+
+    return sleep(apiCoolDownTime).then(match.callback(options, message));
+  }
+}
+
 class Message {
   static createPayload(chat = {}, options = {}) {
     const {
       html,
+      inlineKeyboard,
       markdown,
       notification = true,
       pagePreviews = true,
@@ -63,15 +161,28 @@ class Message {
       text
     } = options;
 
+    if (!text) throw new Error('no text specified');
+    if (inlineKeyboard && !(inlineKeyboard instanceof InlineKeyboard)) {
+      throw new Error('inlineKeyboard not provided correctly');
+    }
+
     let parseMode;
     if (html) parseMode = 'HTML';
     else if (markdown) parseMode = 'Markdown';
+
+    let replyMarkup;
+    if (inlineKeyboard) {
+      replyMarkup = {
+        inline_keyboard: inlineKeyboard.get()
+      };
+    }
 
     return {
       chat_id: chat.id,
       disable_notification: !notification,
       disable_web_page_preview: !pagePreviews,
       parse_mode: parseMode,
+      reply_markup: replyMarkup,
       reply_to_message_id: responseToId,
       text
     };
@@ -81,6 +192,8 @@ class Message {
     if (!client || !chat || !options) {
       throw new Error('insufficient options provided!');
     }
+
+    const { inlineKeyboard } = options;
 
     return client.request('sendMessage', Message.createPayload(chat, options)).then((payload) => {
       if (!payload) throw new Error('error sending message');
@@ -100,7 +213,8 @@ class Message {
         date,
         from: fromId,
         id: messageId,
-        text
+        inlineKeyboard,
+        text,
       });
     });
   }
@@ -112,6 +226,7 @@ class Message {
       date,
       from,
       id,
+      inlineKeyboard,
       text
     } = options;
 
@@ -129,14 +244,32 @@ class Message {
     this._chat = chat;
     this._client = client;
     this._deleted = false;
+    this._inlineKeyboard = inlineKeyboard;
   }
 
   internalEdit(editDate, newText) {
+    if (this._deleted) return;
+
     this.editDate = new Date(editDate);
     this.text = newText;
   }
 
+  callbackQuery(options) {
+    if (this._deleted || !this._inlineKeyboard) return;
+
+    const { id } = options;
+
+    this._inlineKeyboard.query(options, this).then((text) => {
+      this._client.request('answerCallbackQuery', {
+        callback_query_id: id,
+        text
+      });
+    });
+  }
+
   edit(options = {}) {
+    if (this._deleted) return Promise.reject();
+
     const editKeys = Object.keys(editMethods);
     const calls = editKeys.map((key) => {
       const { [key]: method } = editMethods;
@@ -163,6 +296,8 @@ class Message {
   }
 
   delete() {
+    if (this._deleted) return Promise.reject();
+
     return this._client.request('deleteMessage', {
       chat_id: this._chat.id,
       message_id: this.id
@@ -220,10 +355,9 @@ class Chat {
     this._messages = new Map();
   }
 
-  ingestMessage(type, payload = {}) {
+  ingestMessage(payload = {}) {
     const {
       date,
-      edit_date: editDate,
       from: {
         id: fromId
       } = {},
@@ -233,23 +367,65 @@ class Chat {
 
     if (text === undefined) return;
 
+    this._messages.set(messageId, new Message({
+      chat: this,
+      client: this._client,
+      date,
+      from: fromId,
+      id: messageId,
+      text
+    }));
+  }
+
+  ingestEditedMessage(payload = {}) {
+    const {
+      edit_date: editDate,
+      message_id: messageId,
+      text
+    } = payload;
+
+    if (text === undefined) return;
+
+    if (this._messages.has(messageId)) {
+      this._messages.get(messageId).internalEdit(editDate, text);
+    }
+  }
+
+  ingestCallbackQuery(payload = {}) {
+    const {
+      data,
+      from: {
+        id: fromId
+      } = {},
+      id,
+      message: {
+        message_id: messageId
+      } = {},
+    } = payload;
+
+    if (data === undefined) return;
+
+    if (this._messages.has(messageId)) {
+      this._messages.get(messageId).callbackQuery({
+        id,
+        data,
+        fromId
+      });
+    }
+  }
+
+  ingestUpdate(type, payload = {}) {
     switch (type) {
       case 'message':
       case 'channel_post':
-        this._messages.set(messageId, new Message({
-          chat: this,
-          client: this._client,
-          date,
-          from: fromId,
-          id: messageId,
-          text
-        }));
+        this.ingestMessage(payload);
         break;
       case 'edited_message':
       case 'edited_channel_post':
-        if (this._messages.has(messageId)) {
-          this._messages.get(messageId).internalEdit(editDate, text);
-        }
+        this.ingestEditedMessage(payload);
+        break;
+      case 'callback_query':
+        this.ingestCallbackQuery(payload);
         break;
       default:
     }
@@ -351,14 +527,23 @@ class Client {
         [type]: payload,
         [type]: {
           chat: {
-            id: chatId
+            id: chatIdA
+          } = {},
+          message: {
+            chat: {
+              id: chatIdB
+            } = {}
           } = {}
         } = {}
       } = update;
 
+      const chatId = chatIdA || chatIdB;
+
+      if (!chatId) return;
+
       if (!this._chats.has(chatId)) return;
 
-      this._chats.get(chatId).ingestMessage(type, payload);
+      this._chats.get(chatId).ingestUpdate(type, payload);
     });
   }
 
@@ -393,7 +578,16 @@ function createTelegramClient(scheduler) {
   return Client.create(scheduler, configToken, apiHost);
 }
 
+function createInlineKeyboard(layout = []) {
+  return new InlineKeyboard(layout.map((row) => {
+    return new InlineKeyboardRow(row.map((button) => {
+      return new InlineKeyboardButton(button);
+    }));
+  }));
+}
+
 module.exports = {
   chatIds,
+  createInlineKeyboard,
   createTelegramClient
 };
