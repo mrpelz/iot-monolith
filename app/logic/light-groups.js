@@ -93,19 +93,19 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   );
 }
 
-function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
-  const rfSwitchMatch = rfSwitches.find(({ name }) => {
-    return name === 'multiWZ';
-  });
+// function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
+//   const rfSwitchMatch = rfSwitches.find(({ name }) => {
+//     return name === 'multiWZ';
+//   });
 
-  if (!allLightsGroup || !rfSwitchMatch) return;
+//   if (!allLightsGroup || !rfSwitchMatch) return;
 
-  const { instance: rfSwitchInstance } = rfSwitchMatch;
+//   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
-  rfSwitchInstance.on(3, () => {
-    allLightsGroup.toggle();
-  });
-}
+//   rfSwitchInstance.on(3, () => {
+//     allLightsGroup.toggle();
+//   });
+// }
 
 (function main() {
   const {
@@ -118,5 +118,5 @@ function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
   manage(lightGroups, httpHookServer);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithRfSwitch(lightGroups, rfSwitches);
-  allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches);
+  // allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches);
 }());
