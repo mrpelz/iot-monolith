@@ -25,7 +25,7 @@ const editMethods = {
   media: 'editMessageMedia',
   reply_markup: 'editMessageReplyMarkup'
 };
-const apiCoolDownTime = 50;
+const apiCoolDownTime = 500;
 
 const {
   apiHost,

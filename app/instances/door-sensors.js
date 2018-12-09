@@ -38,7 +38,20 @@ function addPersistenceHandler(name, instance, doorDb) {
   handleInit();
 }
 
-function createDoorSensors(doorSensors, ev1527Server, doorDb) {
+function addSecurity(name, instance, security) {
+  const trigger = security.addElement(name);
+
+  instance.on('change', () => {
+    if (instance.isOpen) {
+      trigger('was opened');
+      return;
+    }
+
+    trigger('was closed');
+  });
+}
+
+function createDoorSensors(doorSensors, ev1527Server, doorDb, security) {
   return doorSensors.map((sensor) => {
     const { disable = false, name, id } = sensor;
     if (disable || !name || !id) return null;
@@ -49,6 +62,7 @@ function createDoorSensors(doorSensors, ev1527Server, doorDb) {
     instance.log.friendlyName(name);
 
     addPersistenceHandler(name, instance, doorDb);
+    addSecurity(name, instance, security);
 
     return Object.assign(sensor, {
       instance
@@ -84,11 +98,12 @@ function createOutwardsDoorSensorsGroup(allDoorSensors) {
       'door-sensors': doorSensors
     },
     db,
-    ev1527Server
+    ev1527Server,
+    security
   } = global;
 
   const doorDb = getKey(db, 'doors');
 
-  global.doorSensors = createDoorSensors(doorSensors, ev1527Server, doorDb);
+  global.doorSensors = createDoorSensors(doorSensors, ev1527Server, doorDb, security);
   global.outwardsDoorSensorsGroup = createOutwardsDoorSensorsGroup(global.doorSensors);
 }());

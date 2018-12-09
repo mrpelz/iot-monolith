@@ -31,8 +31,10 @@
     "id": 3439,
     "attributes": {
       "hmi": {
+        "category": "security",
         "label": "entry-door",
-        "section": "global"
+        "section": "global",
+        "sortCategory": "_top"
       }
     }
   },

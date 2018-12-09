@@ -15,12 +15,26 @@ function createWallSwitch(rfSwitch, server) {
   }
 }
 
+function addSecurity(name, instance, security) {
+  const trigger = security.addElement(name);
+
+  const onSwitch = () => {
+    trigger('was pressed');
+  };
+
+  instance.on(1, onSwitch);
+  instance.on(2, onSwitch);
+  instance.on(3, onSwitch);
+  instance.on(4, onSwitch);
+}
+
 (function main() {
   const {
     config: {
       'rf-switches': rfSwitches
     },
-    ev1527Server
+    ev1527Server,
+    security
   } = global;
 
   global.rfSwitches = rfSwitches.map((rfSwitch) => {
@@ -31,6 +45,8 @@ function createWallSwitch(rfSwitch, server) {
     if (!instance) return null;
 
     instance.log.friendlyName(name);
+
+    addSecurity(name, instance, security);
 
     return Object.assign(rfSwitch, {
       instance

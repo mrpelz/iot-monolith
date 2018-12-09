@@ -74,7 +74,7 @@ function outwardsDoorSensorsGroupHmi(instance, hmiServer) {
   const hmi = new HmiElement({
     name: 'outwardsDoorSensors',
     attributes: {
-      category: 'doors',
+      category: 'security',
       label: '§{all} §{window}',
       section: 'global',
       sortCategory: '_top',
@@ -370,6 +370,33 @@ function fansHmi(fans, hmiServer) {
   });
 }
 
+function securityHmi(instance, hmiServer) {
+  const hmi = new HmiElement({
+    name: 'security',
+    attributes: {
+      category: 'security',
+      label: 'security-system',
+      section: 'global',
+      setType: 'trigger',
+      sortCategory: '_top',
+      type: 'security'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(instance.armed ? 'armed' : 'disarmed');
+    },
+    settable: true
+  });
+
+  instance.on('change', () => {
+    hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.toggle();
+  });
+}
+
 
 (function main() {
   const {
@@ -389,7 +416,8 @@ function fansHmi(fans, hmiServer) {
     lights,
     metricAggregates,
     outwardsDoorSensorsGroup,
-    roomSensors
+    roomSensors,
+    security
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
@@ -414,4 +442,5 @@ function fansHmi(fans, hmiServer) {
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
+  securityHmi(security, hmiServer);
 }());

@@ -3,6 +3,8 @@
 function createInstances() {
   require('./instances/scheduler');
   require('./instances/db');
+  require('./instances/telegram');
+  require('./instances/security');
   require('./instances/room-sensors');
   require('./instances/metric-aggregates');
   require('./instances/lights');
@@ -16,7 +18,6 @@ function createInstances() {
   require('./instances/web-api');
   require('./instances/prometheus');
   require('./instances/http-hooks');
-  require('./instances/telegram');
 }
 
 function runLogic() {
