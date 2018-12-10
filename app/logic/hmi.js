@@ -383,7 +383,12 @@ function securityHmi(instance, hmiServer) {
     },
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.armed ? 'armed' : 'disarmed');
+      return Promise.resolve((() => {
+        if (instance.triggered) return 3;
+        if (instance.armed) return 1;
+        if (instance.armDelay) return 2;
+        return 0;
+      })());
     },
     settable: true
   });

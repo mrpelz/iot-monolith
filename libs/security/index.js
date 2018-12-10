@@ -15,6 +15,7 @@ class Security extends EventEmitter {
 
     this.armed = false;
     this.triggered = false;
+    this.armDelay = undefined;
 
     (async () => {
       const client = await telegram.client;
@@ -39,6 +40,8 @@ class Security extends EventEmitter {
     return (text) => {
       if (!this.armed) return;
 
+      this.triggered = true;
+
       this._log.notice({
         head: 'triggered',
         attachment: `${name}: ${text}`
@@ -51,16 +54,16 @@ class Security extends EventEmitter {
   }
 
   arm(active) {
-    if (this.armed === active && !this._armDelay) return;
+    if (this.armed === active && !this.armDelay) return;
 
     this.armed = active;
 
     if (!active) {
       this.triggered = false;
 
-      if (this._armDelay) {
-        clearTimeout(this._armDelay);
-        this._armDelay = undefined;
+      if (this.armDelay) {
+        clearTimeout(this.armDelay);
+        this.armDelay = undefined;
       }
     }
 
@@ -69,25 +72,27 @@ class Security extends EventEmitter {
       value: active
     });
 
-    this._telegram(`${active ? 'aktiv' : 'nicht aktiv'}`);
+    this._telegram(`${active ? 'aktiv' : 'inaktiv'}`);
 
     this.emit('change');
   }
 
   delayedArm() {
-    if (this.armed || this._armDelay) return;
+    if (this.armed || this.armDelay) return;
 
     this._log.info('delayed activation');
 
-    this._telegram(`arming in ${armDelay / 1000} seconds`);
+    this._telegram(`Aktivierung in ${armDelay / 1000} Sekunden`);
 
-    this._armDelay = setTimeout(() => {
+    this.armDelay = setTimeout(() => {
       this.arm(true);
     }, armDelay);
+
+    this.emit('change');
   }
 
   toggle() {
-    if (this.armed || this._armDelay) {
+    if (this.armed || this.armDelay) {
       this.arm(false);
       return;
     }

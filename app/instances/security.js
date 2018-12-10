@@ -8,4 +8,7 @@ const security = new Security({
   telegram
 });
 
+// initial arm in case of accidental crash
+security.arm(true);
+
 global.security = security;
