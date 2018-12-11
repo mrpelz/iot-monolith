@@ -9,15 +9,31 @@ const libName = 'web-api';
 
 const elementAttributes = [
   'get',
+  'isExtension',
+  'label',
   'set',
   'setType',
-  'label',
-  'subLabel',
   'showSubLabel',
-  'type',
+  'subLabel',
   'subType',
+  'type',
   'unit'
 ];
+
+function getExtensions(extensions) {
+  return Object.keys(extensions).map((name) => {
+    const {
+      [name]: attributes = {}
+    } = extensions;
+
+    return {
+      name,
+      attributes: Object.assign({
+        isExtension: true
+      }, attributes)
+    };
+  });
+}
 
 function sortElements(rawInput = [], list = [], key = 'name') {
   const altKey = camel('sort', key);
@@ -61,7 +77,10 @@ function elementsInHierarchy(elements, value, key = 'name') {
   return elements.filter(({
     attributes: { [key]: is = null } = {}
   }) => {
-    return is === value;
+    return is === value || (
+      (value === undefined || value === null)
+      && (is === undefined || is === null)
+    );
   });
 }
 
@@ -349,6 +368,7 @@ class WebApi {
     const {
       hmiService,
       meta: {
+        extensions = {},
         sort = {},
         strings = {}
       }
@@ -364,7 +384,10 @@ class WebApi {
       ).then((elements) => {
         return JSON.stringify({
           strings,
-          hierarchy: getHierarchy(elements, sort)
+          hierarchy: getHierarchy(
+            [].concat(elements, getExtensions(extensions)),
+            sort
+          )
         }, null, null);
       })
     };
