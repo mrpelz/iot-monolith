@@ -31,7 +31,7 @@ class Security extends EventEmitter {
     if (!this._chat) return;
 
     this._chat.addMessage({
-      text: `*SECURITY*\n\n${message}`,
+      text: `*SECURITY*\n${message}`,
       markdown: true
     });
   }
