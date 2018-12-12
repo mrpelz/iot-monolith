@@ -13,10 +13,8 @@ const elementAttributes = [
   'label',
   'set',
   'setType',
-  'showSubLabel',
   'subLabel',
   'subType',
-  'type',
   'unit'
 ];
 
@@ -94,36 +92,42 @@ function combineAttributes(elements) {
   );
 }
 
-function showSubLabel(elements) {
-  const labels = new Set();
+function findShowSubGroup(elements) {
+  const groups = new Set();
   const doubled = new Set();
 
   elements.forEach((element) => {
     const {
       attributes: {
-        label = null
+        group: primary,
+        groupLabel: secondary
       } = {}
     } = element;
 
-    if (!label) return;
+    const group = secondary || primary;
 
-    if (labels.has(label)) {
-      doubled.add(label);
+    if (!group) return;
+
+    if (groups.has(group)) {
+      doubled.add(group);
     }
 
-    labels.add(label);
+    groups.add(group);
   });
 
   return elements.map((element) => {
     const {
       attributes,
       attributes: {
-        label
+        group: primary,
+        groupLabel: secondary
       } = {}
     } = element;
 
-    if (doubled.has(label)) {
-      attributes.showSubLabel = true;
+    const group = secondary || primary;
+
+    if (doubled.has(group)) {
+      attributes.showSubGroup = true;
     }
 
     return element;
@@ -145,11 +149,9 @@ function getHierarchy(
   {
     sections,
     categories,
-    labels: rawLabels
+    groups
   } = {}
 ) {
-  const labels = [null, ...rawLabels];
-
   const sectionMap = sections.map((sectionGroup) => {
     return sortElements(sectionGroup.map((sectionName) => {
       const sectionElements = elementsInHierarchy(elements, sectionName, 'section');
@@ -157,7 +159,7 @@ function getHierarchy(
       if (!sectionElements.length) return null;
 
       const categoryMap = sortElements(elementNames(sectionElements, 'category').map((categoryName) => {
-        const categoryElements = showSubLabel(
+        const categoryElements = findShowSubGroup(
           elementsInHierarchy(sectionElements, categoryName, 'category')
         );
 
@@ -168,34 +170,26 @@ function getHierarchy(
 
           if (!groupElements.length) return null;
 
-          if (groupName === null) {
-            return groupElements.map((groupElement) => {
-              const {
-                attributes: {
-                  label = null,
-                  sortLabel = null
-                }
-              } = groupElement;
-
-              return {
-                group: label,
-                sortGroup: sortLabel,
-                single: true,
-                elements: [filterElementAttributes(groupElement)]
-              };
-            });
-          }
-
-          const isSingle = groupElements.length <= 1;
-          const { sortGroup } = combineAttributes(groupElements);
+          const isSingle = groupElements.length === 1;
+          const {
+            groupLabel,
+            showSubGroup,
+            sortGroup,
+            subGroup,
+            type
+          } = combineAttributes(groupElements);
 
           return [{
+            elements: groupElements.map(filterElementAttributes),
             group: groupName,
-            sortGroup,
+            groupLabel,
             single: isSingle,
-            elements: groupElements.map(filterElementAttributes)
+            showSubGroup,
+            sortGroup,
+            subGroup,
+            type
           }];
-        })), labels, 'group');
+        })), groups, 'group');
 
         const { sortCategory } = combineAttributes(categoryElements);
 

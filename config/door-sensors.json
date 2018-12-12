@@ -32,9 +32,10 @@
     "attributes": {
       "hmi": {
         "category": "security",
-        "label": "entry-door",
+        "group": "entry-door",
         "section": "global",
-        "sortCategory": "_top"
+        "sortCategory": "_top",
+        "sortGroup": "door"
       }
     }
   },
@@ -64,9 +65,10 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window",
+        "group": "windowLeft",
+        "groupLabel": "window",
         "section": "arbeitszimmer",
-        "subLabel": "left",
+        "subGroup": "left",
         "subType": "window"
       }
     }
@@ -79,9 +81,10 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window",
+        "group": "windowRight",
+        "groupLabel": "window",
         "section": "arbeitszimmer",
-        "subLabel": "right",
+        "subGroup": "right",
         "subType": "window"
       }
     }
@@ -94,7 +97,7 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window",
+        "group": "window",
         "section": "schlafzimmer",
         "subLabel": "left",
         "subType": "window"
@@ -109,7 +112,7 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window-door",
+        "group": "window-door",
         "section": "schlafzimmer",
         "subLabel": "right",
         "subType": "window"
@@ -124,7 +127,7 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window-door",
+        "group": "window-door",
         "section": "kueche",
         "subType": "window"
       }
@@ -138,7 +141,7 @@
         "outwards": true
       },
       "hmi": {
-        "label": "window-door",
+        "group": "window-door",
         "section": "wohnzimmer",
         "subType": "window"
       }
@@ -149,7 +152,7 @@
     "id": 3464,
     "attributes": {
       "hmi": {
-        "label": "fridge",
+        "group": "fridge",
         "section": "kueche"
       }
     }

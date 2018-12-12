@@ -19,9 +19,9 @@ function setUpHistoryTrendHmi(
   const trend = async () => {
     const { factor } = history.trend.get();
 
-    if (factor > trendFactorThreshold) return 1;
-    if (factor < (trendFactorThreshold * -1)) return -1;
-    return 0;
+    if (factor > trendFactorThreshold) return 'trendUp';
+    if (factor < (trendFactorThreshold * -1)) return 'trendDown';
+    return false;
   };
 
   /* eslint-disable-next-line no-new */
@@ -54,13 +54,17 @@ function doorSensorsHmi(doorSensors, hmiServer) {
       name,
       attributes: Object.assign({
         category: 'doors',
-        label: 'door',
+        group: 'door',
         subType: 'door',
         type: 'door-sensor'
       }, hmiAttributes),
       server: hmiServer,
       getter: () => {
-        return Promise.resolve(instance.isOpen);
+        return Promise.resolve((() => {
+          if (instance.isOpen) return 'open';
+          if (instance.isOpen === false) return 'close';
+          return 'unknown';
+        })());
       }
     });
 
@@ -75,15 +79,20 @@ function outwardsDoorSensorsGroupHmi(instance, hmiServer) {
     name: 'outwardsDoorSensors',
     attributes: {
       category: 'security',
-      label: '§{all} §{window}',
+      group: '§{all} §{window}',
       section: 'global',
       sortCategory: '_top',
+      sortGroup: 'door',
       subType: 'door',
       type: 'door-sensor'
     },
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.isOpen);
+      return Promise.resolve((() => {
+        if (instance.isOpen) return 'open';
+        if (instance.isOpen === false) return 'close';
+        return 'unknown';
+      })());
     }
   });
 
@@ -128,7 +137,6 @@ function roomSensorsHmi(
       const attributes = Object.assign({
         category: 'air',
         group: metric,
-        label: metric,
         subType: 'single-sensor',
         type: 'environmental-sensor',
         unit: unitMap[metric] || null
@@ -181,11 +189,11 @@ function metricAggrgatesHmi(
     const attributes = Object.assign({
       category: `§{air} (§{${type}})`,
       group: camel(group, metric),
-      label: metric,
+      groupLabel: metric,
       section: 'global',
       sortCategory: 'air',
       sortGroup: metric,
-      subLabel: group,
+      subGroup: group,
       subType: 'aggregate-value',
       type: 'environmental-sensor',
       unit: unitMap[metric] || null
@@ -218,14 +226,13 @@ function singleRelayLightHmi(light, hmiServer) {
     name,
     attributes: Object.assign({
       category: 'lamps',
-      label: 'lamp',
+      group: 'lamp',
       setType: 'trigger',
-      subType: 'binary-light',
-      type: 'lighting'
+      type: 'binary-light'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.power);
+      return Promise.resolve(instance.power ? 'on' : 'off');
     },
     settable: true
   });
@@ -267,14 +274,13 @@ function lightGroupHmi(group, hmiServer) {
     name,
     attributes: Object.assign({
       category: 'lamps',
-      label: 'lamp',
+      group: 'lamp',
       setType: 'trigger',
-      subType: 'binary-light',
-      type: 'lighting'
+      type: 'binary-light'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.power);
+      return Promise.resolve(instance.power ? 'on' : 'off');
     },
     settable: true
   });
@@ -299,16 +305,15 @@ function allLightsGroupHmi(instance, hmiServer) {
     name: 'allLights',
     attributes: {
       category: 'lamps',
-      label: '§{all} §{lamps}',
+      group: '§{all} §{lamps}',
       section: 'global',
       setType: 'trigger',
       sortCategory: '_top',
-      subType: 'binary-light',
-      type: 'lighting'
+      type: 'binary-light'
     },
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.power);
+      return Promise.resolve(instance.power ? 'on' : 'off');
     },
     settable: true
   });
@@ -337,13 +342,13 @@ function singleRelayFanHmi(fan, hmiServer) {
     name,
     attributes: Object.assign({
       category: 'other',
-      label: 'fan',
+      group: 'fan',
       setType: 'trigger',
       type: 'fan'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(instance.power);
+      return Promise.resolve(instance.power ? 'on' : 'off');
     },
     settable: true
   });
@@ -375,7 +380,7 @@ function securityHmi(instance, hmiServer) {
     name: 'security',
     attributes: {
       category: 'security',
-      label: 'security-system',
+      group: 'security-system',
       section: 'global',
       setType: 'trigger',
       sortCategory: '_top',
@@ -384,10 +389,10 @@ function securityHmi(instance, hmiServer) {
     server: hmiServer,
     getter: () => {
       return Promise.resolve((() => {
-        if (instance.triggered) return 3;
-        if (instance.armed) return 1;
-        if (instance.armDelay) return 2;
-        return 0;
+        if (instance.triggered) return 'triggered';
+        if (instance.armed) return 'on';
+        if (instance.armDelay) return 'delayed';
+        return 'off';
       })());
     },
     settable: true

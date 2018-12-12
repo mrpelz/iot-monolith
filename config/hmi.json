@@ -14,7 +14,7 @@
         "other",
         "_bottom"
       ],
-      "labels": [
+      "groups": [
         "temperature",
         "humidity",
         "brightness",
@@ -23,7 +23,8 @@
         "pm025",
         "eco2",
         "tvoc",
-        "precipitation"
+        "precipitation",
+        "door"
       ],
       "sections": [
         [
@@ -60,7 +61,7 @@
       "ceiling-lamp": "Deckenlampe",
       "close": "zu",
       "deg-c": "°C",
-      "delayed-arm": "verzögert",
+      "delayed": "verzögert",
       "door": "Tür",
       "doors": "Türen und Fenster",
       "duschbad": "Duschbad",
@@ -103,8 +104,11 @@
       "stone-lamp": "Steinlampe",
       "temperature": "Temperatur",
       "terrasse": "Terrasse",
+      "trendDown": "▼",
+      "trendUp": "▲",
       "triggered": "ausgelöst",
       "tvoc": "Flüchtige Organische Verbindungen",
+      "unknown": "?",
       "wannenbad": "Wannenbad",
       "window-door": "Fenstertür",
       "window": "Fenster",

@@ -9,7 +9,7 @@
         "enableButton": true
       },
       "hmi": {
-        "label": "ceiling-lamp",
+        "group": "ceiling-lamp",
         "section": "wohnzimmer"
       }
     }
@@ -24,7 +24,7 @@
         "enableButton": true
       },
       "hmi": {
-        "label": "standing-lamp",
+        "group": "standing-lamp",
         "section": "wohnzimmer"
       }
     }
@@ -39,7 +39,7 @@
         "enableButton": true
       },
       "hmi": {
-        "label": "stone-lamp",
+        "group": "stone-lamp",
         "section": "schlafzimmer"
       }
     }
@@ -54,7 +54,7 @@
         "enableButton": true
       },
       "hmi": {
-        "label": "standing-lamp",
+        "group": "standing-lamp",
         "section": "esszimmer"
       }
     }
