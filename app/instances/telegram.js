@@ -1,11 +1,18 @@
-const { createTelegramClient, chatIds } = require('../../libs/telegram');
+const { createTelegramClient } = require('../../libs/telegram');
 
 const {
+  config: {
+    telegram: {
+      host,
+      token,
+      chatIds
+    }
+  },
   scheduler
 } = global;
 
 try {
-  const client = createTelegramClient(scheduler);
+  const client = createTelegramClient(scheduler, token, host);
 
   client.then((instance) => {
     instance.start();

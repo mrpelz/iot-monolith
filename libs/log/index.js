@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { chatIds, telegramSend } = require('../telegram/simple');
+const { telegramSend } = require('../telegram/simple');
 const { parseString } = require('../utils/string');
 
 const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
@@ -103,7 +103,6 @@ class Logger {
     ) {
       setImmediate(() => {
         telegramSend(
-          chatIds.log,
           [
             `*${levelName}*`,
             `_${name}_`,

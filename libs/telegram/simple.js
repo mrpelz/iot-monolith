@@ -1,10 +1,8 @@
 const { post } = require('../http/client');
 
-const {
-  apiHost,
-  token,
-  chatIds
-} = require('./config.json');
+const host = 'api.telegram.org';
+const token = '514356430:AAHw7KqD8VyCoajOiR60biInqCBdNWDaKbQ';
+const chatId = -274728913;
 
 const telegramHttpOptions = {
   headers: {
@@ -17,9 +15,9 @@ const telegramMessageOptions = {
   disable_web_page_preview: true
 };
 
-function telegramSend(chatId, message) {
+function telegramSend(message) {
   return post(
-    `https://${apiHost}/bot${token}/sendMessage`,
+    `https://${host}/bot${token}/sendMessage`,
     Buffer.from(JSON.stringify(Object.assign(telegramMessageOptions, {
       chat_id: chatId,
       text: message
@@ -38,6 +36,5 @@ function telegramSend(chatId, message) {
 }
 
 module.exports = {
-  chatIds,
   telegramSend
 };

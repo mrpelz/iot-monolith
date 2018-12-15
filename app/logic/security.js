@@ -1,19 +1,6 @@
 const { createInlineKeyboard } = require('../../libs/telegram');
 const { resolveAlways } = require('../../libs/utils/oop');
 
-const deleteInlineKeyboard = createInlineKeyboard([
-  [
-    {
-      text: 'Löschen',
-      callback: (_, message) => {
-        return resolveAlways(message.delete()).then(() => {
-          return 'gelöscht';
-        });
-      }
-    }
-  ]
-]);
-
 async function entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage) {
   const { client: awaitingClient, chatIds } = telegram;
 
@@ -40,7 +27,16 @@ async function entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMe
       clear();
       chat.addMessage({
         text: entryDoorMessage,
-        inlineKeyboard: deleteInlineKeyboard
+        inlineKeyboard: createInlineKeyboard([
+          [
+            {
+              text: 'Löschen',
+              callback: (_, message) => {
+                resolveAlways(message.delete());
+              }
+            }
+          ]
+        ])
       });
     }, entryDoorTimeout);
   });

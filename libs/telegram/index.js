@@ -1,9 +1,8 @@
 const { post, LongPollClient } = require('../http/client');
 const { Logger } = require('../log');
 const { randomString } = require('../utils/data');
-const { rebind } = require('../utils/oop');
+const { rebind, resolveAlways } = require('../utils/oop');
 const { excludeKeys, flattenArrays } = require('../utils/structures');
-const { sleep } = require('../utils/time');
 
 const libName = 'telegram';
 
@@ -25,13 +24,6 @@ const editMethods = {
   media: 'editMessageMedia',
   reply_markup: 'editMessageReplyMarkup'
 };
-const apiCoolDownTime = 500;
-
-const {
-  apiHost,
-  token: configToken,
-  chatIds
-} = require('./config.json');
 
 const telegramHttpOptions = {
   headers: {
@@ -69,16 +61,15 @@ class InlineKeyboardButton {
 
     this.id = randomString(32);
     this.callback = callback;
-
-    this._text = text;
-    this._url = url;
+    this.text = text;
+    this.url = url;
   }
 
   get() {
     return {
       callback_data: this.id,
-      text: this._text,
-      url: this._url
+      text: this.text,
+      url: this.url
     };
   }
 }
@@ -130,22 +121,16 @@ class InlineKeyboard {
     });
   }
 
-  query(options = {}, message) {
+  query(options = {}) {
     const {
       data
     } = options;
 
-    const match = flattenArrays(Array.from(this.rows).map((row) => {
+    return flattenArrays(Array.from(this.rows).map((row) => {
       return Array.from(row.buttons);
     })).find((button) => {
       return button.id === data;
     });
-
-    if (!match || typeof match.callback !== 'function') {
-      return sleep(apiCoolDownTime);
-    }
-
-    return sleep(apiCoolDownTime).then(match.callback(options, message));
   }
 }
 
@@ -259,11 +244,13 @@ class Message {
 
     const { id } = options;
 
-    this._inlineKeyboard.query(options, this).then((text) => {
-      this._client.request('answerCallbackQuery', {
-        callback_query_id: id,
-        text
-      });
+    const button = this._inlineKeyboard.query(options);
+    resolveAlways(this._client.request('answerCallbackQuery', {
+      callback_query_id: id
+    })).then(() => {
+      if (!button) return;
+
+      button.callback(button, this, this._chat, this._client);
     });
   }
 
@@ -574,8 +561,8 @@ class Client {
   }
 }
 
-function createTelegramClient(scheduler) {
-  return Client.create(scheduler, configToken, apiHost);
+function createTelegramClient(scheduler, token, host) {
+  return Client.create(scheduler, token, host);
 }
 
 function createInlineKeyboard(layout = []) {
@@ -587,7 +574,6 @@ function createInlineKeyboard(layout = []) {
 }
 
 module.exports = {
-  chatIds,
   createInlineKeyboard,
   createTelegramClient
 };

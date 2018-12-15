@@ -15,27 +15,10 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
   const chat = await client.addChat(chatIds.iot);
 
   const deleteMessages = () => {
-    return Promise.all(messages.map((message) => {
-      return resolveAlways(message.delete());
-    })).then((result) => {
-      messages.length = 0;
-
-      return result;
+    messages.forEach((message) => {
+      resolveAlways(message.delete());
     });
   };
-
-  const deleteInlineKeyboard = createInlineKeyboard([
-    [
-      {
-        text: 'Ausblenden',
-        callback: () => {
-          return deleteMessages().then(() => {
-            return 'ausgeblendet';
-          });
-        }
-      }
-    ]
-  ]);
 
   const clear = () => {
     if (timer) clearTimeout(timer);
@@ -55,7 +38,14 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
 
       chat.addMessage({
         text: fridgeMessage,
-        inlineKeyboard: deleteInlineKeyboard
+        inlineKeyboard: createInlineKeyboard([
+          [
+            {
+              text: 'Ausblenden',
+              callback: deleteMessages
+            }
+          ]
+        ])
       }).then((message) => {
         messages.push(message);
       });

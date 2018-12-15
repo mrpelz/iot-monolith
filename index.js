@@ -1,10 +1,9 @@
 process.stdin.resume();
 
-const { chatIds, telegramSend } = require('./libs/telegram/simple');
+const { telegramSend } = require('./libs/telegram/simple');
 
 function telegramRoot(title = '', message, stack) {
   return telegramSend(
-    chatIds.log,
     [
       '*ROOT*',
       `_${title}_`,
