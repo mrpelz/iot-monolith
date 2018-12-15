@@ -91,6 +91,14 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'multiWZ',
     4
   );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'kuecheAmbience',
+    'kuecheLeft',
+    4
+  );
 }
 
 // function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
