@@ -1,6 +1,6 @@
 const { MessageClient } = require('../messaging');
 const { CachePromise } = require('../cache');
-const { readNumber } = require('../utils/data');
+const { readNumber, bufferToBoolean } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
 const { sanity } = require('../utils/math');
@@ -52,6 +52,12 @@ const metricOptions = {
     head: 6,
     bytes: 2,
     cache: 1000
+  },
+  movement: {
+    head: 7,
+    bytes: 1,
+    cache: 5000,
+    event: true
   }
 };
 
@@ -63,15 +69,21 @@ function getMessageTypesForMetrics(metrics) {
       head,
       bytes,
       sanity: sanityOptions = {},
-      timeout
+      timeout,
+      event
     } = options;
 
     const parser = (input) => {
-      return sanity(readNumber(input, bytes), sanityOptions);
+      if (bytes > 1) {
+        return sanity(readNumber(input, bytes), sanityOptions);
+      }
+
+      return bufferToBoolean(input);
     };
 
     return {
       name,
+      eventName: event ? name : undefined,
       head: Buffer.from([head]),
       parser,
       timeout
@@ -223,6 +235,10 @@ class RoomSensor extends MessageClient {
     return this.getMetric('tvoc');
   }
 
+  getMovement() {
+    return this.getMetric('movement');
+  }
+
   getMetricTime(metric) {
     const {
       metrics,
@@ -251,6 +267,7 @@ class RoomSensor extends MessageClient {
   // getBrightness
   // getEco2
   // getTvoc
+  // getMovement
   // getMetricTime
 }
 

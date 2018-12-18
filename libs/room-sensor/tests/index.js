@@ -2,29 +2,42 @@
 const { RoomSensor } = require('../index');
 
 const roomSensor = new RoomSensor({
-  host: 'panucci.net.wurstsalat.cloud',
-  port: 3000,
+  host: '10.97.0.222',
+  port: 5045,
   metrics: [
     'temperature',
     'pressure',
     'humidity',
-    'brightness'
+    'brightness',
+    'movement'
   ]
 });
 
-roomSensor.on('connect', async () => {
-  try {
-    console.log(`getAll result: ${JSON.stringify(await roomSensor.getAll())}`);
+roomSensor.on('connect', () => {
+  console.log('connected');
 
-    console.log(`temperature: ${await roomSensor.getTemperature()} °C`);
-    console.log(`pressure: ${await roomSensor.getPressure()} Pa`);
-    console.log(`humidity: ${await roomSensor.getHumidity()} RH`);
-    console.log(`brightness: ${await roomSensor.getBrightness()} lux`);
-  } catch (error) {
-    console.error('error', error);
-  }
+  roomSensor.getTemperature().then((value) => {
+    console.log(value);
+  });
+  roomSensor.getPressure().then((value) => {
+    console.log(value);
+  });
+  roomSensor.getHumidity().then((value) => {
+    console.log(value);
+  });
+  roomSensor.getBrightness().then((value) => {
+    console.log(value);
+  });
+  roomSensor.getMovement().then((value) => {
+    console.log(value);
+  });
+  roomSensor.on('movement', () => {
+    console.log('movement');
+  });
+});
 
-  roomSensor.disconnect();
+roomSensor.on('disconnect', () => {
+  console.log('disconnected');
 });
 
 roomSensor.connect();
