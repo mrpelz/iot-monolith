@@ -56,7 +56,6 @@ const metricOptions = {
   movement: {
     head: 7,
     bytes: 1,
-    cache: 5000,
     event: true
   }
 };
@@ -152,13 +151,22 @@ class RoomSensor extends MessageClient {
 
     const { [metric]: cache } = caches;
 
-    if (cache && cache.hit()) {
-      return cache.defer();
+    if (cache) {
+      if (cache.hit()) {
+        return cache.defer();
+      }
+
+      return cache.promise(this.request(metric)).catch((reason) => {
+        log.error({
+          head: `metric [cached] (${metric}) error`,
+          attachment: reason
+        });
+      });
     }
 
-    return cache.promise(this.request(metric)).catch((reason) => {
+    return this.request(metric).catch((reason) => {
       log.error({
-        head: `metric (${metric}) error`,
+        head: `metric [uncached] (${metric}) error`,
         attachment: reason
       });
     });

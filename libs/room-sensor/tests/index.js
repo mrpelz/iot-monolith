@@ -13,9 +13,10 @@ const roomSensor = new RoomSensor({
   ]
 });
 
-roomSensor.on('connect', () => {
-  console.log('connected');
-
+const handleMovement = () => {
+  roomSensor.getMovement().then((value) => {
+    console.log('movement', value);
+  });
   roomSensor.getTemperature().then((value) => {
     console.log(value);
   });
@@ -28,16 +29,16 @@ roomSensor.on('connect', () => {
   roomSensor.getBrightness().then((value) => {
     console.log(value);
   });
-  roomSensor.getMovement().then((value) => {
-    console.log(value);
-  });
-  roomSensor.on('movement', () => {
-    console.log('movement');
-  });
+};
+
+roomSensor.on('connect', () => {
+  console.log('connected');
+  roomSensor.on('movement', handleMovement);
 });
 
 roomSensor.on('disconnect', () => {
   console.log('disconnected');
+  roomSensor.removeListener('movement', handleMovement);
 });
 
 roomSensor.connect();
