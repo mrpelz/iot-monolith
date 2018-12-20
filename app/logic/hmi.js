@@ -1,6 +1,7 @@
 const { HmiElement } = require('../../libs/hmi');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
+const { resolveAlways } = require('../../libs/utils/oop');
 const { excludeKeys } = require('../../libs/utils/structures');
 
 function setUpHistoryTrendHmi(
@@ -107,7 +108,9 @@ function roomSensorsHmi(
   hmiServer,
   unitMap,
   valueSanity,
-  trendFactorThreshold
+  trendFactorThreshold,
+  pullMetrics,
+  pushMetrics
 ) {
   roomSensors.forEach((sensor) => {
     const {
@@ -126,32 +129,71 @@ function roomSensorsHmi(
 
       const hmiName = camel(name, metric);
       const getter = () => {
-        return instance.getMetric(metric).then((value) => {
-          return value === null ? null : sanity(
-            value,
-            valueSanity[metric] || valueSanity.default
-          );
+        return resolveAlways(instance.getMetric(metric)).then((value) => {
+          if (value === null || Number.isNaN(value)) return null;
+
+          if (typeof value === 'number') {
+            return sanity(
+              value,
+              valueSanity[metric] || valueSanity.default
+            );
+          }
+
+          if (typeof value === 'boolean') {
+            return value ? 'yes' : 'no';
+          }
+
+          return value;
         });
       };
 
       const attributes = Object.assign({
-        category: 'air',
+        category: metric === 'movement' ? 'security' : 'air',
         group: metric,
         subType: 'single-sensor',
-        type: 'environmental-sensor',
-        unit: unitMap[metric] || null
+        type: metric === 'movement' ? 'pir' : 'environmental-sensor',
+        unit: unitMap[metric] || undefined
       }, hmiAttributes);
 
-      /* eslint-disable-next-line no-new */
-      new HmiElement({
+      const hmi = new HmiElement({
         name: hmiName,
         attributes,
         server: hmiServer,
         getter
       });
 
-      setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
+      if (pullMetrics.includes(metric)) {
+        setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
+      } else if (pushMetrics.includes(metric)) {
+        instance.on(metric, () => {
+          hmi.update();
+        });
+      }
     });
+  });
+}
+
+function allMovementGroupHmi(instance, hmiServer) {
+  const hmi = new HmiElement({
+    name: 'allMovement',
+    attributes: {
+      category: 'security',
+      group: '§{all} §{movement}',
+      section: 'global',
+      sortCategory: '_top',
+      type: 'pir'
+    },
+    server: hmiServer,
+    getter: () => {
+      return instance.get().then((values) => {
+        return values.includes(true) ? 'yes' : 'no';
+      });
+    },
+    settable: true
+  });
+
+  instance.on('movement', () => {
+    hmi.update();
   });
 }
 
@@ -411,6 +453,10 @@ function securityHmi(instance, hmiServer) {
 (function main() {
   const {
     config: {
+      globals: {
+        pullMetrics,
+        pushMetrics
+      },
       hmi: {
         unitMap,
         valueSanity,
@@ -418,6 +464,7 @@ function securityHmi(instance, hmiServer) {
       }
     },
     allLightsGroup,
+    allMovementGroup,
     doorSensors,
     fans,
     histories,
@@ -438,8 +485,11 @@ function securityHmi(instance, hmiServer) {
     hmiServer,
     unitMap,
     valueSanity,
-    trendFactorThreshold
+    trendFactorThreshold,
+    pullMetrics,
+    pushMetrics
   );
+  allMovementGroupHmi(allMovementGroup, hmiServer);
   metricAggrgatesHmi(
     metricAggregates,
     histories,

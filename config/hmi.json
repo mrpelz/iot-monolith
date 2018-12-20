@@ -86,6 +86,8 @@
       "median": "x͂",
       "micrograms/m3": "µg/m³",
       "mm/h": "mm/h",
+      "movement": "Bewegung",
+      "no": "nein",
       "off": "aus",
       "on": "ein",
       "open": "offen",
@@ -112,7 +114,8 @@
       "wannenbad": "Wannenbad",
       "window-door": "Fenstertür",
       "window": "Fenster",
-      "wohnzimmer": "Wohnzimmer"
+      "wohnzimmer": "Wohnzimmer",
+      "yes": "ja"
     }
   },
   "unitMap": {

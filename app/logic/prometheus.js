@@ -1,3 +1,5 @@
+const { resolveAlways } = require('../../libs/utils/oop');
+
 function singleRelayLightToPrometheus(light, prometheus) {
   const { name, instance, type } = light;
 
@@ -113,24 +115,47 @@ function doorSensorsToPrometheus(doorSensors, prometheus) {
   });
 }
 
-function roomSensorsToPrometheus(roomSensors, prometheus) {
+function roomSensorsToPrometheus(roomSensors, prometheus, pullMetrics, pushMetrics) {
   roomSensors.forEach((sensor) => {
     const { name, instance, metrics } = sensor;
 
     metrics.forEach((metric) => {
-      prometheus.metric(
-        metric,
-        {
-          location: name,
-          type: 'room-sensor'
-        },
-        () => {
-          return instance.getMetric(metric);
-        },
-        () => {
-          return instance.getMetricTime(metric);
-        }
-      );
+      if (pullMetrics.includes(metric)) {
+        prometheus.metric(
+          metric,
+          {
+            location: name,
+            type: 'room-sensor'
+          },
+          () => {
+            return instance.getMetric(metric);
+          },
+          () => {
+            return instance.getMetricTime(metric);
+          }
+        );
+      } else if (pushMetrics.includes(metric)) {
+        const { push } = prometheus.pushMetric(
+          metric,
+          {
+            location: name,
+            type: 'room-sensor'
+          }
+        );
+
+        const get = () => {
+          resolveAlways(instance.getMetric(metric)).then((value) => {
+            if (value === null) return;
+
+            push(value);
+          });
+        };
+
+        get();
+        instance.on(metric, () => {
+          get();
+        });
+      }
     });
   });
 }
@@ -160,6 +185,12 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
 
 (function main() {
   const {
+    config: {
+      globals: {
+        pullMetrics,
+        pushMetrics
+      }
+    },
     doorSensors,
     lights,
     lightGroups,
@@ -173,6 +204,6 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   lightGroupsToPrometheus(lightGroups, prometheus);
   fansToPrometheus(fans, prometheus);
   doorSensorsToPrometheus(doorSensors, prometheus);
-  roomSensorsToPrometheus(roomSensors, prometheus);
+  roomSensorsToPrometheus(roomSensors, prometheus, pullMetrics, pushMetrics);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
 }());

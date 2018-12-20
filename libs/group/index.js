@@ -2,6 +2,8 @@ const EventEmitter = require('events');
 const { SingleRelay } = require('../single-relay');
 const { LedLight } = require('../led');
 const { DoorSensor } = require('../door-sensor');
+const { RoomSensor } = require('../room-sensor');
+const { resolveAlways } = require('../utils/oop');
 
 class DoorSensorGroup extends EventEmitter {
   constructor(instances = []) {
@@ -26,6 +28,33 @@ class DoorSensorGroup extends EventEmitter {
     return this._instances.some((instance) => {
       return instance.isOpen;
     });
+  }
+}
+
+class PushMetricGroup extends EventEmitter {
+  constructor(metric, instances = []) {
+    instances.forEach((instance) => {
+      if (instance instanceof RoomSensor) return;
+
+      throw new Error('insufficient options provided');
+    });
+
+    super();
+
+    instances.forEach((instance) => {
+      instance.on(metric, () => {
+        this.emit(metric);
+      });
+    });
+
+    this._instances = instances;
+    this._metric = metric;
+  }
+
+  get() {
+    return Promise.all(this._instances.map((roomSensor) => {
+      return resolveAlways(roomSensor.getMetric(this._metric));
+    }));
   }
 }
 
@@ -105,5 +134,6 @@ class LightGroup extends EventEmitter {
 
 module.exports = {
   DoorSensorGroup,
+  PushMetricGroup,
   LightGroup
 };
