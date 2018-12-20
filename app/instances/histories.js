@@ -46,7 +46,8 @@ function roomSensorsHistory(
   update,
   cleanup,
   ranges,
-  historyDb
+  historyDb,
+  historyMetrics
 ) {
   return roomSensors.map((sensor) => {
     const {
@@ -55,7 +56,9 @@ function roomSensorsHistory(
       metrics
     } = sensor;
 
-    return metrics.map((metric) => {
+    return metrics.filter((metric) => {
+      return historyMetrics.includes(metric);
+    }).map((metric) => {
       const historyName = camel(name, metric);
       const {
         max,
@@ -101,9 +104,12 @@ function metricAggregatesHistory(
   update,
   cleanup,
   ranges,
-  historyDb
+  historyDb,
+  historyMetrics
 ) {
-  return metricAggregates.map((aggregate) => {
+  return metricAggregates.filter(({ metric }) => {
+    return historyMetrics.includes(metric);
+  }).map((aggregate) => {
     const {
       group,
       instance,
@@ -154,7 +160,8 @@ function metricAggregatesHistory(
     config: {
       globals: {
         historyRetainHours: retainHours,
-        historyUpdateSeconds
+        historyUpdateSeconds,
+        historyMetrics
       },
       trends: {
         metricRanges: ranges
@@ -181,7 +188,8 @@ function metricAggregatesHistory(
       update,
       cleanup,
       ranges,
-      historyDb
+      historyDb,
+      historyMetrics
     ),
     metricAggregatesHistory(
       metricAggregates,
@@ -189,7 +197,8 @@ function metricAggregatesHistory(
       update,
       cleanup,
       ranges,
-      historyDb
+      historyDb,
+      historyMetrics
     )
   ]).filter(Boolean);
 }());

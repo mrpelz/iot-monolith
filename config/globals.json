@@ -7,6 +7,16 @@
   "dbWriteIntervalSeconds": 30,
   "historyRetainHours": 1,
   "historyUpdateSeconds": 10,
+  "historyMetrics": [
+    "brightness",
+    "eco2",
+    "flow_rate",
+    "humidity",
+    "precipitation",
+    "pressure",
+    "temperature",
+    "tvoc"
+  ],
   "fridgeTimeout": 20000,
   "entryDoorTimeout": 60000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",

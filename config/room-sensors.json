@@ -63,15 +63,14 @@
   },
   {
     "name": "arbeitszimmer",
-    "host": "hermes.net.wurstsalat.cloud",
-    "port": 9000,
+    "host": "10.97.0.222",
+    "port": 5045,
     "metrics": [
       "temperature",
       "pressure",
       "humidity",
       "brightness",
-      "eco2",
-      "tvoc"
+      "movement"
     ],
     "attributes": {
       "hmi": {
@@ -196,7 +195,7 @@
       "temperature",
       "pressure",
       "humidity",
-      "ow_rate",
+      "flow_rate",
       "eco2",
       "tvoc"
     ],
