@@ -6,6 +6,7 @@ const roomSensor = new RoomSensor({
   port: 5045,
   metrics: [
     'temperature',
+    'temperature2',
     'pressure',
     'humidity',
     'brightness',
@@ -14,30 +15,32 @@ const roomSensor = new RoomSensor({
 });
 
 const handleMovement = () => {
-  roomSensor.getMovement().then((value) => {
-    console.log('movement', value);
-  });
+  console.log('movement', roomSensor.getState('movement'));
+
   roomSensor.getTemperature().then((value) => {
-    console.log(value);
+    console.log('temperature', value);
+  });
+  roomSensor.getTemperature2().then((value) => {
+    console.log('temperature2', value);
   });
   roomSensor.getPressure().then((value) => {
-    console.log(value);
+    console.log('pressure', value);
   });
   roomSensor.getHumidity().then((value) => {
-    console.log(value);
+    console.log('humidity', value);
   });
   roomSensor.getBrightness().then((value) => {
-    console.log(value);
+    console.log('brightness', value, '\n');
   });
 };
 
 roomSensor.on('connect', () => {
-  console.log('connected');
+  console.log('connected', '\n');
   roomSensor.on('movement', handleMovement);
 });
 
 roomSensor.on('disconnect', () => {
-  console.log('disconnected');
+  console.log('disconnected', '\n');
   roomSensor.removeListener('movement', handleMovement);
 });
 

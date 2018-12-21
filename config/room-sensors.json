@@ -62,7 +62,6 @@
     }
   },
   {
-    "disable": true,
     "name": "arbeitszimmer",
     "host": "10.97.0.222",
     "port": 5045,

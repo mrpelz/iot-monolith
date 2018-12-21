@@ -1,5 +1,3 @@
-const { resolveAlways } = require('../../libs/utils/oop');
-
 function singleRelayLightToPrometheus(light, prometheus) {
   const { name, instance, type } = light;
 
@@ -144,11 +142,10 @@ function roomSensorsToPrometheus(roomSensors, prometheus, pullMetrics, pushMetri
         );
 
         const get = () => {
-          resolveAlways(instance.getMetric(metric)).then((value) => {
-            if (value === null) return;
+          const value = instance.getState(metric);
 
-            push(value);
-          });
+          if (value === null) return;
+          push(value);
         };
 
         get();

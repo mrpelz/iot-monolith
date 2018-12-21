@@ -1,7 +1,6 @@
 const { HmiElement } = require('../../libs/hmi');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
-const { resolveAlways } = require('../../libs/utils/oop');
 const { excludeKeys } = require('../../libs/utils/structures');
 
 function setUpHistoryTrendHmi(
@@ -128,23 +127,21 @@ function roomSensorsHmi(
       if (metric === 'pressure') return;
 
       const hmiName = camel(name, metric);
-      const getter = () => {
-        return resolveAlways(instance.getMetric(metric)).then((value) => {
-          if (value === null || Number.isNaN(value)) return null;
+      const handleValue = (value) => {
+        if (value === null || Number.isNaN(value)) return null;
 
-          if (typeof value === 'number') {
-            return sanity(
-              value,
-              valueSanity[metric] || valueSanity.default
-            );
-          }
+        if (typeof value === 'number') {
+          return sanity(
+            value,
+            valueSanity[metric] || valueSanity.default
+          );
+        }
 
-          if (typeof value === 'boolean') {
-            return value ? 'yes' : 'no';
-          }
+        if (typeof value === 'boolean') {
+          return value ? 'yes' : 'no';
+        }
 
-          return value;
-        });
+        return value;
       };
 
       const attributes = Object.assign({
@@ -155,16 +152,28 @@ function roomSensorsHmi(
         unit: unitMap[metric] || undefined
       }, hmiAttributes);
 
-      const hmi = new HmiElement({
-        name: hmiName,
-        attributes,
-        server: hmiServer,
-        getter
-      });
-
       if (pullMetrics.includes(metric)) {
+        /* eslint-disable-next-line no-new */
+        new HmiElement({
+          name: hmiName,
+          attributes,
+          server: hmiServer,
+          getter: () => {
+            return instance.getMetric(metric).then(handleValue);
+          }
+        });
+
         setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
       } else if (pushMetrics.includes(metric)) {
+        const hmi = new HmiElement({
+          name: hmiName,
+          attributes,
+          server: hmiServer,
+          getter: () => {
+            return Promise.resolve(handleValue(instance.getState(metric)));
+          }
+        });
+
         instance.on(metric, () => {
           hmi.update();
         });
@@ -185,9 +194,7 @@ function allMovementGroupHmi(instance, hmiServer) {
     },
     server: hmiServer,
     getter: () => {
-      return instance.get().then((values) => {
-        return values.includes(true) ? 'yes' : 'no';
-      });
+      return Promise.resolve(instance.getState().includes(true) ? 'yes' : 'no');
     },
     settable: true
   });

@@ -57,37 +57,70 @@ const metricOptions = {
     head: 7,
     bytes: 1,
     event: true
+  },
+  temperature2: {
+    head: 11,
+    bytes: 2,
+    sanity: {
+      offset: -4000,
+      divide: 100,
+      max: 10000,
+      min: 0
+    },
+    cache: 1000
   }
 };
 
-function getMessageTypesForMetrics(metrics) {
-  return metrics.map((name) => {
+function prepareMetricHandlers(metrics) {
+  const state = new Map();
+
+  const types = metrics.map((name) => {
     const { [name]: options } = metricOptions;
 
     const {
-      head,
       bytes,
+      event,
+      head,
       sanity: sanityOptions = {},
-      timeout,
-      event
+      timeout
     } = options;
 
     const parser = (input) => {
-      if (bytes > 1) {
-        return sanity(readNumber(input, bytes), sanityOptions);
-      }
+      const result = (bytes > 1)
+        ? sanity(readNumber(input, bytes), sanityOptions)
+        : bufferToBoolean(input);
 
-      return bufferToBoolean(input);
+      state.set(name, result);
+
+      return result;
     };
+
+    const eventParser = event ? (input) => {
+      const payload = input.slice(1);
+
+      const result = (bytes > 1)
+        ? sanity(readNumber(payload, bytes), sanityOptions)
+        : bufferToBoolean(payload);
+
+      state.set(name, result);
+
+      return result;
+    } : undefined;
 
     return {
       name,
       eventName: event ? name : undefined,
+      eventParser,
       head: Buffer.from([head]),
       parser,
       timeout
     };
   });
+
+  return {
+    state,
+    types
+  };
 }
 
 function getCaches(metrics) {
@@ -113,19 +146,26 @@ class RoomSensor extends MessageClient {
       throw new Error('insufficient options provided');
     }
 
+    const { state, types } = prepareMetricHandlers(metrics);
+
     super({
       host,
       port,
-      messageTypes: getMessageTypesForMetrics(metrics)
+      messageTypes: types
     });
 
     this._roomSensor = {
       metrics,
-      caches: getCaches(metrics)
+      caches: getCaches(metrics),
+      state
     };
 
     this.log.friendlyName(`${host}:${port}`);
     this._roomSensor.log = this.log.withPrefix(libName);
+  }
+
+  getState(metric) {
+    return this._roomSensor.state.get(metric);
   }
 
   getMetric(metric) {
@@ -223,6 +263,10 @@ class RoomSensor extends MessageClient {
     return this.getMetric('temperature');
   }
 
+  getTemperature2() {
+    return this.getMetric('temperature2');
+  }
+
   getPressure() {
     return this.getMetric('pressure');
   }
@@ -270,6 +314,7 @@ class RoomSensor extends MessageClient {
   // getCache
   // getAll
   // getTemperature
+  // getTemperature2
   // getPressure
   // getHumidity
   // getBrightness

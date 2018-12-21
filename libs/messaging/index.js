@@ -69,7 +69,8 @@ function findRequestPatternMatch(types, input) {
 }
 
 function callId(state) {
-  const id = state.callCount;
+  const inUse = Object.keys(state.calls);
+  let id = state.callCount;
 
   if (id >= maxCallId) {
     state.callCount = minCallId;
@@ -77,6 +78,9 @@ function callId(state) {
     state.callCount += 1;
   }
 
+  while (inUse.includes(id)) {
+    id = callId(state);
+  }
   return id;
 }
 

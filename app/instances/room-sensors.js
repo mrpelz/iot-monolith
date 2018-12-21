@@ -1,6 +1,5 @@
 const { RoomSensor } = require('../../libs/room-sensor');
 const { PushMetricGroup } = require('../../libs/group');
-const { resolveAlways } = require('../../libs/utils/oop');
 
 function createSensor(sensor) {
   const {
@@ -26,16 +25,16 @@ function addSecurity(name, instance, security) {
   const trigger = security.addElement(name);
 
   instance.on(metric, () => {
-    resolveAlways(instance.getMetric(metric)).then((value) => {
-      if (value === null) return;
+    const value = instance.getState(metric);
 
-      if (value) {
-        trigger('movement start');
-        return;
-      }
+    if (value === null) return;
 
-      trigger('movement stop');
-    });
+    if (value) {
+      trigger('movement start');
+      return;
+    }
+
+    trigger('movement stop');
   });
 }
 
