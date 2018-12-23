@@ -187,7 +187,7 @@ function allMovementGroupHmi(instance, hmiServer) {
     name: 'allMovement',
     attributes: {
       category: 'security',
-      group: '§{all} §{movement}',
+      group: 'movement',
       section: 'global',
       sortCategory: '_top',
       type: 'pir'
