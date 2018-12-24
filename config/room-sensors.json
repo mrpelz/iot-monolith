@@ -62,7 +62,7 @@
     }
   },
   {
-    "disable": true,
+    "disable": false,
     "name": "arbeitszimmer",
     "host": "10.97.0.222",
     "port": 5045,
@@ -70,8 +70,7 @@
       "temperature",
       "pressure",
       "humidity",
-      "brightness",
-      "movement"
+      "brightness"
     ],
     "attributes": {
       "hmi": {
