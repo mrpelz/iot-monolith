@@ -1,14 +1,47 @@
 const { Security } = require('../../libs/security');
+const { getKey } = require('../../libs/utils/structures');
 
-const {
-  telegram
-} = global;
+function createSecurity(telegram) {
+  try {
+    return new Security({
+      telegram
+    });
+  } catch (e) {
+    return null;
+  }
+}
 
-const security = new Security({
-  telegram
-});
+function addPersistenceHandler(instance, securityDb) {
+  const handleChange = () => {
+    securityDb.armed = instance.armed;
+  };
 
-// initial arm in case of accidental crash
-security.arm(true);
+  const handleInit = () => {
+    const {
+      armed = true
+    } = securityDb || {};
 
-global.security = security;
+    instance.arm(armed);
+
+    instance.on('change', handleChange);
+    handleChange();
+  };
+
+  handleInit();
+}
+
+(function main() {
+  const {
+    db,
+    telegram
+  } = global;
+
+  const securityDb = getKey(db, 'security');
+
+  const security = createSecurity(telegram);
+
+  if (!security) return;
+
+  global.outwardsDoorSensorsGroup = addPersistenceHandler(security, securityDb);
+  global.security = security;
+}());
