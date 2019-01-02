@@ -6,6 +6,8 @@ const { humanPayload, writeNumber } = require('../utils/data');
 
 const libName = 'tcp';
 
+const reconnectionDebounce = 1000;
+
 class PersistentSocket extends Base {
   constructor(options = {}) {
     super();
@@ -13,11 +15,11 @@ class PersistentSocket extends Base {
     this._persistentSocket = {};
 
     const {
+      delimiter = null,
       host = null,
-      port = null,
       keepAlive = {},
       lengthPreamble = 0,
-      delimiter = null
+      port = null
     } = options;
 
     if (!host || !port || !(lengthPreamble > 0 || delimiter)) {
@@ -25,10 +27,10 @@ class PersistentSocket extends Base {
     }
 
     const {
-      send = false,
-      receive = false,
-      time = null,
       data = null,
+      receive = false,
+      send = false,
+      time = null,
       useNative = true
     } = keepAlive;
 
@@ -40,10 +42,10 @@ class PersistentSocket extends Base {
       host,
       port,
       keepAlive: {
-        send,
-        receive,
-        time,
         data,
+        receive,
+        send,
+        time,
         useNative
       },
       lengthPreamble,
@@ -51,15 +53,16 @@ class PersistentSocket extends Base {
     };
 
     this._persistentSocket.state = {
-      isConnected: null,
-      shouldBeConnected: false,
-      keepAliveInterval: null,
-      watcherInterval: null,
-      tcpTimeout: null,
-      messageTickTimeout: null,
-      currentMessageLength: null,
+      buffer: [],
       cache: [],
-      buffer: []
+      connectionTime: 0,
+      currentMessageLength: null,
+      isConnected: null,
+      keepAliveInterval: null,
+      messageTickTimeout: null,
+      shouldBeConnected: false,
+      tcpTimeout: null,
+      watcherInterval: null
     };
 
     rebind(this, '_handleData', '_onConnection', '_onDisconnection');
@@ -175,6 +178,7 @@ class PersistentSocket extends Base {
       });
 
       state.isConnected = true;
+      state.connectionTime = Date.now();
 
       if (keepAlive && keepAlive.time && keepAlive.useNative) {
         socket.setKeepAlive(true);
@@ -209,17 +213,19 @@ class PersistentSocket extends Base {
     } = this._persistentSocket;
 
     if (state.isConnected) {
-      if (state.shouldBeConnected) {
-        log.error({
-          head: 'unexpected disconnect',
-          attachment: null || (error && error.message)
+      if (Date.now() > (state.connectionTime + reconnectionDebounce)) {
+        if (state.shouldBeConnected) {
+          log.error({
+            head: 'unexpected disconnect',
+            attachment: null || (error && error.message)
+          });
+        }
+
+        log.info({
+          head: 'is connected',
+          value: false
         });
       }
-
-      log.info({
-        head: 'is connected',
-        value: false
-      });
 
       state.isConnected = false;
 

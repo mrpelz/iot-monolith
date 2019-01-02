@@ -1,3 +1,4 @@
+const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
 const { coupleRfSwitchToLight } = require('../utils/rf-switches');
 
@@ -13,7 +14,7 @@ function manageSingleRelayLight(light, httpHookServer) {
   } = light;
 
   instance.on('connect', () => {
-    instance.ledBlink(5);
+    resolveAlways(instance.ledBlink(5));
   });
 
   if (enableButton) {
@@ -43,7 +44,7 @@ function manageSingleRelayLight(light, httpHookServer) {
   });
 
   instance.on('change', () => {
-    instance.ledBlink(instance.power ? 2 : 1);
+    resolveAlways(instance.ledBlink(instance.power ? 2 : 1));
   });
 }
 

@@ -1,10 +1,11 @@
+const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
 
 function manageSingleRelayFan(fan, httpHookServer) {
   const { instance, name } = fan;
 
   instance.on('connect', () => {
-    instance.ledBlink(5);
+    resolveAlways(instance.ledBlink(5));
   });
 
   instance.on('buttonShortpress', () => {
@@ -32,7 +33,7 @@ function manageSingleRelayFan(fan, httpHookServer) {
   });
 
   instance.on('change', () => {
-    instance.ledBlink(instance.power ? 2 : 1);
+    resolveAlways(instance.ledBlink(instance.power ? 2 : 1));
   });
 }
 
