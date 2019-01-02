@@ -93,6 +93,22 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
+    'wohnzimmer1',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerStehlampe',
+    'wohnzimmer2',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerDeckenlampe',
     'multiWZ',
     3
   );
