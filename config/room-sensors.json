@@ -70,7 +70,8 @@
       "temperature",
       "pressure",
       "humidity",
-      "brightness"
+      "brightness",
+      "movement"
     ],
     "attributes": {
       "hmi": {
