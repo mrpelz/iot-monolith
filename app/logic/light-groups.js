@@ -72,7 +72,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kuecheButton1',
+    'kueche_wall_left',
     1
   );
 
@@ -80,7 +80,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kuecheButton2',
+    'kueche_wall_right',
     1
   );
 
@@ -88,7 +88,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'multiWZ',
+    'wohnzimmer_multi_1',
     4
   );
 
@@ -96,14 +96,22 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kuecheLeft',
+    'esszimmer_multi_1',
+    4
+  );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'kuecheAmbience',
+    'kueche_button_left',
     4
   );
 }
 
 // function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
 //   const rfSwitchMatch = rfSwitches.find(({ name }) => {
-//     return name === 'multiWZ';
+//     return name === 'wohnzimmer_multi_1';
 //   });
 
 //   if (!allLightsGroup || !rfSwitchMatch) return;

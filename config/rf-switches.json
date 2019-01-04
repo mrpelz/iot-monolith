@@ -1,42 +1,46 @@
 [
   {
-    "name": "esszimmer1",
-    "id": 572645
-  },
-  {
-    "name": "kuecheButton1",
-    "id": 566837
-  },
-  {
-    "name": "kuecheButton2",
-    "id": 570816
-  },
-  {
-    "name": "kuecheLeft",
-    "id": 898570
-  },
-  {
-    "name": "multiWZ",
-    "id": 426506
-  },
-  {
-    "name": "stehlampeEZ",
+    "name": "esszimmer_button_1",
     "id": 823914
   },
   {
-    "name": "steinI",
+    "name": "esszimmer_multi_1",
+    "id": 831834
+  },
+  {
+    "name": "esszimmer_wall_front",
+    "id": 572645
+  },
+  {
+    "name": "kueche_button_left",
+    "id": 898570
+  },
+  {
+    "name": "kueche_wall_left",
+    "id": 566837
+  },
+  {
+    "name": "kueche_wall_right",
+    "id": 570816
+  },
+  {
+    "name": "schlafzimmer_button_1",
     "id": 903326
   },
   {
-    "name": "steinII",
+    "name": "schlafzimmer_button_2",
     "id": 1043626
   },
   {
-    "name": "wohnzimmer1",
-    "id": 568669
+    "name": "wohnzimmer_multi_1",
+    "id": 426506
   },
   {
-    "name": "wohnzimmer2",
+    "name": "wohnzimmer_wall_back_middle",
     "id": 39956
+  },
+  {
+    "name": "wohnzimmer_wall_back_top",
+    "id": 568669
   }
 ]

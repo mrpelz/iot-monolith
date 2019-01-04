@@ -85,7 +85,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'esszimmer1',
+    'esszimmer_wall_front',
     1
   );
 
@@ -93,7 +93,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'wohnzimmer1',
+    'wohnzimmer_wall_back_top',
     1
   );
 
@@ -101,7 +101,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerStehlampe',
-    'wohnzimmer2',
+    'wohnzimmer_wall_back_middle',
     1
   );
 
@@ -109,7 +109,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'multiWZ',
+    'wohnzimmer_multi_1',
     3
   );
 
@@ -117,7 +117,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerStehlampe',
-    'multiWZ',
+    'wohnzimmer_multi_1',
     1
   );
 
@@ -125,7 +125,23 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerStehlampe',
-    'multiWZ',
+    'wohnzimmer_multi_1',
+    2
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerDeckenlampe',
+    'esszimmer_multi_1',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'esszimmer_multi_1',
     2
   );
 
@@ -133,7 +149,15 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerStehlampe',
-    'stehlampeEZ',
+    'esszimmer_multi_1',
+    3
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerStehlampe',
+    'esszimmer_button_1',
     4
   );
 
@@ -141,7 +165,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'schlafzimmerSteinlampe',
-    'steinI',
+    'schlafzimmer_button_1',
     4
   );
 
@@ -149,7 +173,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'schlafzimmerSteinlampe',
-    'steinII',
+    'schlafzimmer_button_2',
     4
   );
 }
