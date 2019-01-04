@@ -60,6 +60,21 @@
     }
   },
   {
+    "name": "esszimmerDeckenlampe",
+    "host": "10.97.4.38",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "ceiling-lamp",
+        "section": "esszimmer"
+      }
+    }
+  },
+  {
     "name": "kuecheLedLeft",
     "host": "10.97.4.31",
     "port": 5045,
