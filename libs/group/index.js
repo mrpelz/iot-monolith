@@ -3,6 +3,7 @@ const { SingleRelay } = require('../single-relay');
 const { LedLight } = require('../led');
 const { DoorSensor } = require('../door-sensor');
 const { RoomSensor } = require('../room-sensor');
+const { resolveAlways } = require('../utils/oop');
 
 class DoorSensorGroup extends EventEmitter {
   constructor(instances = []) {
@@ -124,7 +125,7 @@ class LightGroup extends EventEmitter {
 
   ledBlink(count) {
     const calls = this._instances.map((instance) => {
-      return instance.ledBlink(count);
+      return resolveAlways(instance.ledBlink(count));
     });
 
     return Promise.all(calls);
