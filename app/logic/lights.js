@@ -84,7 +84,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'wohnzimmerDeckenlampe',
+    'esszimmerDeckenlampe',
     'esszimmer_wall_front',
     1
   );
@@ -93,7 +93,15 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'wohnzimmer_wall_back_top',
+    'esszimmer_wall_front',
+    2
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerDeckenlampe',
+    'wohnzimmer_wall_back',
     1
   );
 
@@ -101,8 +109,16 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerStehlampe',
-    'wohnzimmer_wall_back_middle',
-    1
+    'wohnzimmer_wall_back',
+    2
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'wohnzimmer_wall_back',
+    3
   );
 
   coupleRfSwitchToLight(
