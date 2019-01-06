@@ -183,6 +183,8 @@ function roomSensorsHmi(
 }
 
 function allMovementGroupHmi(instance, hmiServer) {
+  if (!instance) return;
+
   const hmi = new HmiElement({
     name: 'allMovement',
     attributes: {
@@ -195,8 +197,7 @@ function allMovementGroupHmi(instance, hmiServer) {
     server: hmiServer,
     getter: () => {
       return Promise.resolve(instance.getState().includes(true) ? 'yes' : 'no');
-    },
-    settable: true
+    }
   });
 
   instance.on('movement', () => {

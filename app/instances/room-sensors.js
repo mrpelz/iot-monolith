@@ -66,6 +66,8 @@ function createAllMovementGroup(allRoomSensors) {
     return instance;
   });
 
+  if (!roomSensors.length) return null;
+
   try {
     return new PushMetricGroup(metric, roomSensors);
   } catch (e) {
