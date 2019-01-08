@@ -58,6 +58,23 @@ const metricOptions = {
     bytes: 1,
     event: true
   },
+  pm025: {
+    head: 8,
+    bytes: 4,
+    cache: 300000,
+    timeout: 35000
+  },
+  pm10: {
+    head: 9,
+    bytes: 4,
+    cache: 300000,
+    timeout: 35000
+  },
+  co2: {
+    head: 10,
+    bytes: 2,
+    cache: 1000
+  },
   temperature2: {
     head: 11,
     bytes: 2,
@@ -287,6 +304,18 @@ class RoomSensor extends MessageClient {
     return this.getMetric('tvoc');
   }
 
+  getPm025() {
+    return this.getMetric('pm025');
+  }
+
+  getPm10() {
+    return this.getMetric('pm10');
+  }
+
+  getCo2() {
+    return this.getMetric('co2');
+  }
+
   getMovement() {
     return this.getMetric('movement');
   }
@@ -320,6 +349,9 @@ class RoomSensor extends MessageClient {
   // getBrightness
   // getEco2
   // getTvoc
+  // getPm025
+  // getPm10
+  // getCo2
   // getMovement
   // getMetricTime
 }
