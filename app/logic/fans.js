@@ -5,7 +5,7 @@ function manageSingleRelayFan(fan, httpHookServer) {
   const { instance, name } = fan;
 
   instance.on('connect', () => {
-    resolveAlways(instance.ledBlink(5));
+    resolveAlways(instance.ledBlink(5, true));
   });
 
   instance.on('buttonShortpress', () => {
@@ -33,7 +33,7 @@ function manageSingleRelayFan(fan, httpHookServer) {
   });
 
   instance.on('change', () => {
-    resolveAlways(instance.ledBlink(instance.power ? 2 : 1));
+    resolveAlways(instance.ledBlink(instance.power ? 2 : 1, true));
   });
 }
 

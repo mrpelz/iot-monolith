@@ -9,7 +9,7 @@ const jack = new SingleRelay({
 
 jack.on('connect', () => {
   console.log('connected');
-  jack.ledBlink(5);
+  jack.ledBlink(5, true);
 
   jack.on('buttonDown', () => {
     console.log('button is down');
@@ -22,7 +22,7 @@ jack.on('connect', () => {
   jack.on('buttonShortpress', () => {
     console.log('button was short-pressed');
     jack.setPower(!jack.power);
-    jack.ledBlink(jack.power ? 2 : 1);
+    jack.ledBlink(jack.power ? 2 : 1, true);
   });
 
   jack.on('buttonLongpress', () => {

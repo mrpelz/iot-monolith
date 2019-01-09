@@ -123,9 +123,9 @@ class LightGroup extends EventEmitter {
     return Promise.all(calls);
   }
 
-  ledBlink(count) {
+  ledBlink(count, quiet) {
     const calls = this._instances.map((instance) => {
-      return resolveAlways(instance.ledBlink(count));
+      return resolveAlways(instance.ledBlink(count, quiet));
     });
 
     return Promise.all(calls);

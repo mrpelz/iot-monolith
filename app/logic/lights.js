@@ -14,7 +14,7 @@ function manageSingleRelayLight(light, httpHookServer) {
   } = light;
 
   instance.on('connect', () => {
-    resolveAlways(instance.ledBlink(5));
+    resolveAlways(instance.ledBlink(5, true));
   });
 
   if (enableButton) {
@@ -44,7 +44,7 @@ function manageSingleRelayLight(light, httpHookServer) {
   });
 
   instance.on('change', () => {
-    resolveAlways(instance.ledBlink(instance.power ? 2 : 1));
+    resolveAlways(instance.ledBlink(instance.power ? 2 : 1, true));
   });
 }
 

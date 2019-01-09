@@ -1,5 +1,5 @@
 const { Switch } = require('../switch');
-const { rebind } = require('../utils/oop');
+const { resolveAlways, rebind } = require('../utils/oop');
 
 const libName = 'single-relay';
 
@@ -102,21 +102,29 @@ class SingleRelay extends Switch {
     });
   }
 
-  ledBlink(count) {
+  ledBlink(count, quiet = false) {
     const { log } = this._singleRelay;
 
-    return this.set('ledBlink', count).then((result) => {
+    const blink = this.set('ledBlink', count).then((result) => {
       if (result !== count) {
         throw new Error('could not set ledBlink');
       }
 
       return result;
-    }).catch((reason) => {
-      log.error({
-        head: 'led-blink error',
-        attachment: reason
-      });
     });
+
+    if (quiet) {
+      resolveAlways(blink);
+    } else {
+      blink.catch((reason) => {
+        log.error({
+          head: 'led-blink error',
+          attachment: reason
+        });
+      });
+    }
+
+    return blink;
   }
 
   // Public methods:
