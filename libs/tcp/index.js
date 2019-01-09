@@ -6,7 +6,7 @@ const { humanPayload, writeNumber } = require('../utils/data');
 
 const libName = 'tcp';
 
-const reconnectionDebounce = 1000;
+const reconnectionDebounce = 10000;
 
 class PersistentSocket extends Base {
   constructor(options = {}) {
@@ -170,15 +170,19 @@ class PersistentSocket extends Base {
       socket
     } = this._persistentSocket;
 
+    const now = Date.now();
+
     if (!state.isConnected) {
-      log.info({
-        head: 'is connected',
-        value: true,
-        telegram: state.isConnected !== null
-      });
+      if (now > (state.connectionTime + reconnectionDebounce)) {
+        log.info({
+          head: 'is connected',
+          value: true,
+          telegram: state.isConnected !== null
+        });
+      }
 
       state.isConnected = true;
-      state.connectionTime = Date.now();
+      state.connectionTime = now;
 
       if (keepAlive && keepAlive.time && keepAlive.useNative) {
         socket.setKeepAlive(true);

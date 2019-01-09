@@ -46,12 +46,14 @@ const metricOptions = {
   eco2: {
     head: 5,
     bytes: 2,
-    cache: 1000
+    cache: 1000,
+    leadIn: 10000
   },
   tvoc: {
     head: 6,
     bytes: 2,
-    cache: 1000
+    cache: 1000,
+    leadIn: 10000
   },
   movement: {
     head: 7,
@@ -73,7 +75,8 @@ const metricOptions = {
   co2: {
     head: 10,
     bytes: 2,
-    cache: 1000
+    cache: 1000,
+    leadIn: 180000
   },
   temperature2: {
     head: 11,
@@ -103,6 +106,10 @@ function prepareMetricHandlers(metrics) {
     } = options;
 
     const parser = (input) => {
+      if (!input.length) {
+        throw new Error('received null value');
+      }
+
       const result = (bytes > 1)
         ? sanity(readNumber(input, bytes), sanityOptions)
         : bufferToBoolean(input);
@@ -144,9 +151,29 @@ function getCaches(metrics) {
   return arraysToObject(
     metrics,
     metrics.map((name) => {
-      const { [name]: { cache = 0 } = {} } = metricOptions;
+      const {
+        [name]: {
+          cache = 0
+        } = {}
+      } = metricOptions;
+
       if (!cache) return null;
       return new CachePromise(cache);
+    })
+  );
+}
+
+function getLeadIns(metrics) {
+  return arraysToObject(
+    metrics,
+    metrics.map((name) => {
+      const {
+        [name]: {
+          leadIn = 0
+        } = {}
+      } = metricOptions;
+
+      return leadIn;
     })
   );
 }
@@ -174,6 +201,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor = {
       metrics,
       caches: getCaches(metrics),
+      leadIns: getLeadIns(metrics),
       state
     };
 
@@ -188,14 +216,16 @@ class RoomSensor extends MessageClient {
   getMetric(metric) {
     const {
       state: {
-        isConnected
+        isConnected,
+        connectionTime
       }
     } = this._persistentSocket;
 
     const {
       log,
       metrics,
-      caches
+      caches,
+      leadIns
     } = this._roomSensor;
 
     if (!isConnected) {
@@ -207,6 +237,7 @@ class RoomSensor extends MessageClient {
     }
 
     const { [metric]: cache } = caches;
+    const { [metric]: leadIn } = leadIns;
 
     if (cache) {
       if (cache.hit()) {
@@ -221,12 +252,20 @@ class RoomSensor extends MessageClient {
       });
     }
 
-    return this.request(metric).catch((reason) => {
-      log.error({
-        head: `metric [uncached] (${metric}) error`,
-        attachment: reason
+    const request = this.request(metric);
+
+    if (Date.now() > (connectionTime + leadIn)) {
+      request.catch((reason) => {
+        log.error({
+          head: `metric [uncached] (${metric}) error`,
+          attachment: reason
+        });
       });
-    });
+    } else {
+      resolveAlways(request);
+    }
+
+    return request;
   }
 
   getCache(metric) {
