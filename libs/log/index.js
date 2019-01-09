@@ -2,8 +2,9 @@
 const { telegramSend } = require('../telegram/simple');
 const { parseString } = require('../utils/string');
 
-const { PROD_ENV, LOG_TELEGRAM } = process.env;
+const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
 const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
+const logLevel = parseString(LOG_LEVEL);
 const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
 
 const telegramLogLevel = 3;
@@ -83,7 +84,7 @@ class Logger {
         name,
         messageBody
       ].filter(Boolean).join(' | ')}`);
-    } else {
+    } else if (level <= logLevel) {
       const logFn = (() => {
         if (level >= 6) return console.debug;
         if (level <= 3) return console.error;

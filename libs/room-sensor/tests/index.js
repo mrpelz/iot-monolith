@@ -37,12 +37,12 @@ const get = () => {
   // roomSensor.getBrightness().then((value) => {
   //   console.log('brightness', value, '\n');
   // });
-  roomSensor.getEco2().then((value) => {
-    console.log('eco2', value);
-  });
-  roomSensor.getTvoc().then((value) => {
-    console.log('tvoc', value);
-  });
+  // roomSensor.getEco2().then((value) => {
+  //   console.log('eco2', value);
+  // });
+  // roomSensor.getTvoc().then((value) => {
+  //   console.log('tvoc', value);
+  // });
   roomSensor.getPm025().then((value) => {
     console.log('pm025', value);
   });
@@ -65,6 +65,7 @@ roomSensor.on('connect', () => {
   // roomSensor.on('movement', handleMovement);
 
   interval = setInterval(get, 10000);
+  get();
 });
 
 roomSensor.on('disconnect', () => {

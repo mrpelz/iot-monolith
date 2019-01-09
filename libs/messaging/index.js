@@ -184,7 +184,7 @@ class MessageClient extends PersistentSocket {
     }
   }
 
-  request(name, data = emptyBuffer) {
+  request(name, data = emptyBuffer, quietParse = false) {
     const {
       state: {
         isConnected
@@ -234,7 +234,11 @@ class MessageClient extends PersistentSocket {
           try {
             resolve(parser(input));
           } catch (parseError) {
-            reject(new Error(`parse error: ${parseError}`));
+            if (quietParse) {
+              resolve();
+            } else {
+              reject(new Error(`parse error: ${parseError}`));
+            }
           }
         }
 

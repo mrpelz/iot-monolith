@@ -63,12 +63,18 @@ const metricOptions = {
   pm025: {
     head: 8,
     bytes: 4,
+    sanity: {
+      divide: 1000
+    },
     cache: 300000,
     timeout: 35000
   },
   pm10: {
     head: 9,
     bytes: 4,
+    sanity: {
+      divide: 1000
+    },
     cache: 300000,
     timeout: 35000
   },
@@ -239,12 +245,14 @@ class RoomSensor extends MessageClient {
     const { [metric]: cache } = caches;
     const { [metric]: leadIn } = leadIns;
 
+    const isLeadIn = Date.now() < (connectionTime + leadIn);
+
     if (cache) {
       if (cache.hit()) {
         return cache.defer();
       }
 
-      return cache.promise(this.request(metric)).catch((reason) => {
+      return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
         log.error({
           head: `metric [cached] (${metric}) error`,
           attachment: reason
@@ -252,20 +260,12 @@ class RoomSensor extends MessageClient {
       });
     }
 
-    const request = this.request(metric);
-
-    if (Date.now() > (connectionTime + leadIn)) {
-      request.catch((reason) => {
-        log.error({
-          head: `metric [uncached] (${metric}) error`,
-          attachment: reason
-        });
+    return this.request(metric, undefined, isLeadIn).catch((reason) => {
+      log.error({
+        head: `metric [uncached] (${metric}) error`,
+        attachment: reason
       });
-    } else {
-      resolveAlways(request);
-    }
-
-    return request;
+    });
   }
 
   getCache(metric) {

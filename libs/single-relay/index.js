@@ -114,17 +114,15 @@ class SingleRelay extends Switch {
     });
 
     if (quiet) {
-      resolveAlways(blink);
-    } else {
-      blink.catch((reason) => {
-        log.error({
-          head: 'led-blink error',
-          attachment: reason
-        });
-      });
+      return resolveAlways(blink);
     }
 
-    return blink;
+    return blink.catch((reason) => {
+      log.error({
+        head: 'led-blink error',
+        attachment: reason
+      });
+    });
   }
 
   // Public methods:
