@@ -2,9 +2,8 @@
 const { telegramSend } = require('../telegram/simple');
 const { parseString } = require('../utils/string');
 
-const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+const { PROD_ENV, LOG_TELEGRAM } = process.env;
 const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
-const logLevel = parseString(LOG_LEVEL);
 const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
 
 const telegramLogLevel = 3;
@@ -78,21 +77,25 @@ class Logger {
 
     const levelName = level === null ? '_' : levelNames[level];
 
-    if (level <= logLevel) {
-      if (isProd) {
-        console.log(`[${levelName}] ${[
-          _prefixes[0] || null,
-          name,
-          messageBody
-        ].filter(Boolean).join(' | ')}`);
-      } else {
-        console.log(`\n[${levelName}]\n${[
-          name,
-          prefixChain.length ? prefixChain : null,
-          messageBody,
-          messageAttachment
-        ].filter(Boolean).join('\n')}\n`);
-      }
+    if (isProd) {
+      console.log(`<${level}>[${levelName}] ${[
+        _prefixes[0] || null,
+        name,
+        messageBody
+      ].filter(Boolean).join(' | ')}`);
+    } else {
+      const logFn = (() => {
+        if (level >= 6) return console.debug;
+        if (level <= 3) return console.error;
+        return console.log;
+      })();
+
+      logFn(`\n[${levelName}]\n${[
+        name,
+        prefixChain.length ? prefixChain : null,
+        messageBody,
+        messageAttachment
+      ].filter(Boolean).join('\n')}\n`);
     }
 
     if (!logTelegram) return;
