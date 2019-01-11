@@ -58,7 +58,8 @@ const metricOptions = {
   movement: {
     head: 7,
     bytes: 1,
-    event: true
+    event: true,
+    request: false
   },
   pm025: {
     head: 8,
@@ -126,7 +127,10 @@ function prepareMetricHandlers(metrics) {
     };
 
     const eventParser = event ? (input) => {
+      if (!input.length) return undefined;
+
       const payload = input.slice(1);
+      if (!payload.length) return undefined;
 
       const result = (bytes > 1)
         ? sanity(readNumber(payload, bytes), sanityOptions)
@@ -169,21 +173,6 @@ function getCaches(metrics) {
   );
 }
 
-function getLeadIns(metrics) {
-  return arraysToObject(
-    metrics,
-    metrics.map((name) => {
-      const {
-        [name]: {
-          leadIn = 0
-        } = {}
-      } = metricOptions;
-
-      return leadIn;
-    })
-  );
-}
-
 class RoomSensor extends MessageClient {
   constructor(options = {}) {
     const {
@@ -207,7 +196,6 @@ class RoomSensor extends MessageClient {
     this._roomSensor = {
       metrics,
       caches: getCaches(metrics),
-      leadIns: getLeadIns(metrics),
       state
     };
 
@@ -230,8 +218,7 @@ class RoomSensor extends MessageClient {
     const {
       log,
       metrics,
-      caches,
-      leadIns
+      caches
     } = this._roomSensor;
 
     if (!isConnected) {
@@ -243,7 +230,16 @@ class RoomSensor extends MessageClient {
     }
 
     const { [metric]: cache } = caches;
-    const { [metric]: leadIn } = leadIns;
+    const {
+      [metric]: {
+        leadIn = 0,
+        request = true
+      } = {}
+    } = metricOptions;
+
+    if (!request) {
+      return Promise.resolve(this.getState(metric));
+    }
 
     const isLeadIn = Date.now() < (connectionTime + leadIn);
 

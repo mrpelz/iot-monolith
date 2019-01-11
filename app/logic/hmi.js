@@ -107,9 +107,7 @@ function roomSensorsHmi(
   hmiServer,
   unitMap,
   valueSanity,
-  trendFactorThreshold,
-  pullMetrics,
-  pushMetrics
+  trendFactorThreshold
 ) {
   roomSensors.forEach((sensor) => {
     const {
@@ -152,32 +150,20 @@ function roomSensorsHmi(
         unit: unitMap[metric] || undefined
       }, hmiAttributes);
 
-      if (pullMetrics.includes(metric)) {
-        /* eslint-disable-next-line no-new */
-        new HmiElement({
-          name: hmiName,
-          attributes,
-          server: hmiServer,
-          getter: () => {
-            return instance.getMetric(metric).then(handleValue);
-          }
-        });
+      const hmi = new HmiElement({
+        name: hmiName,
+        attributes,
+        server: hmiServer,
+        getter: () => {
+          return instance.getMetric(metric).then(handleValue);
+        }
+      });
 
-        setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
-      } else if (pushMetrics.includes(metric)) {
-        const hmi = new HmiElement({
-          name: hmiName,
-          attributes,
-          server: hmiServer,
-          getter: () => {
-            return Promise.resolve(handleValue(instance.getState(metric)));
-          }
-        });
+      instance.on(metric, () => {
+        hmi.update();
+      });
 
-        instance.on(metric, () => {
-          hmi.update();
-        });
-      }
+      setUpHistoryTrendHmi(histories, hmiName, attributes, hmiServer, trendFactorThreshold);
     });
   });
 }
@@ -461,10 +447,6 @@ function securityHmi(instance, hmiServer) {
 (function main() {
   const {
     config: {
-      globals: {
-        pullMetrics,
-        pushMetrics
-      },
       hmi: {
         unitMap,
         valueSanity,
@@ -493,9 +475,7 @@ function securityHmi(instance, hmiServer) {
     hmiServer,
     unitMap,
     valueSanity,
-    trendFactorThreshold,
-    pullMetrics,
-    pushMetrics
+    trendFactorThreshold
   );
   allMovementGroupHmi(allMovementGroup, hmiServer);
   metricAggrgatesHmi(

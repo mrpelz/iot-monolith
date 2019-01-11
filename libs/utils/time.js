@@ -242,6 +242,16 @@ function sleep(time, data) {
   });
 }
 
+class CallTiming {
+  hit() {
+    this._callTime = Date.now();
+  }
+
+  check(duration = 10000) {
+    return (this._callTime || 0) > Date.now() - duration;
+  }
+}
+
 class TimeFloor {
   static second(input) {
     const result = new Date(input.getTime());
@@ -538,6 +548,7 @@ class RecurringTimeRange extends EventEmitter {
 }
 
 module.exports = {
+  CallTiming,
   Moment,
   RecurringMoment,
   Scheduler,

@@ -1,3 +1,5 @@
+const { CallTiming } = require('../../libs/utils/time');
+
 function singleRelayLightToPrometheus(light, prometheus) {
   const { name, instance, type } = light;
 
@@ -113,46 +115,55 @@ function doorSensorsToPrometheus(doorSensors, prometheus) {
   });
 }
 
-function roomSensorsToPrometheus(roomSensors, prometheus, pullMetrics, pushMetrics) {
+function roomSensorsToPrometheus(roomSensors, prometheus) {
   roomSensors.forEach((sensor) => {
     const { name, instance, metrics } = sensor;
 
     metrics.forEach((metric) => {
-      if (pullMetrics.includes(metric)) {
-        prometheus.metric(
-          metric,
-          {
-            location: name,
-            type: 'room-sensor'
-          },
-          () => {
-            return instance.getMetric(metric);
-          },
-          () => {
-            return instance.getMetricTime(metric);
-          }
-        );
-      } else if (pushMetrics.includes(metric)) {
-        const { push } = prometheus.pushMetric(
-          metric,
-          {
-            location: name,
-            type: 'room-sensor'
-          }
-        );
+      if (metric === 'movement') return;
 
-        const get = () => {
-          const value = instance.getState(metric);
+      prometheus.metric(
+        metric,
+        {
+          location: name,
+          type: 'room-sensor'
+        },
+        () => {
+          return instance.getMetric(metric);
+        },
+        () => {
+          return instance.getMetricTime(metric);
+        }
+      );
+    });
+  });
+}
 
-          if (value === null) return;
-          push(value);
-        };
+function roomSensorsMovementToPrometheus(roomSensors, prometheus) {
+  const metric = 'movement';
 
-        get();
-        instance.on(metric, () => {
-          get();
-        });
+  roomSensors.filter(({ metrics }) => {
+    return metrics.includes(metric);
+  }).forEach((sensor) => {
+    const timing = new CallTiming();
+
+    const { name, instance } = sensor;
+
+    prometheus.metric(
+      metric,
+      {
+        location: name,
+        type: 'room-sensor'
+      },
+      async () => {
+        return (await instance.getMetric(metric)) || timing.check(10000);
       }
+    );
+
+    instance.on(metric, () => {
+      if (!instance.getMetric(metric)) return;
+
+      timing.hit();
     });
   });
 }
@@ -182,12 +193,6 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
 
 (function main() {
   const {
-    config: {
-      globals: {
-        pullMetrics,
-        pushMetrics
-      }
-    },
     doorSensors,
     lights,
     lightGroups,
@@ -201,6 +206,7 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   lightGroupsToPrometheus(lightGroups, prometheus);
   fansToPrometheus(fans, prometheus);
   doorSensorsToPrometheus(doorSensors, prometheus);
-  roomSensorsToPrometheus(roomSensors, prometheus, pullMetrics, pushMetrics);
+  roomSensorsToPrometheus(roomSensors, prometheus);
+  roomSensorsMovementToPrometheus(roomSensors, prometheus);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
 }());
