@@ -121,6 +121,8 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
 
     metrics.forEach((metric) => {
       if (metric === 'movement') return;
+      if (metric === 'pm025') return;
+      if (metric === 'pm10') return;
 
       prometheus.metric(
         metric,
@@ -168,6 +170,31 @@ function roomSensorsMovementToPrometheus(roomSensors, prometheus) {
   });
 }
 
+function roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus) {
+  roomSensors.forEach((sensor) => {
+    const { name, instance, metrics } = sensor;
+
+    metrics.forEach((metric) => {
+      if ((() => {
+        if (metric === 'pm025') return false;
+        if (metric === 'pm10') return false;
+        return true;
+      })()) return;
+
+      prometheus.slowMetric(
+        metric,
+        {
+          location: name,
+          type: 'room-sensor'
+        },
+        () => {
+          return instance.getMetric(metric);
+        }
+      );
+    });
+  });
+}
+
 function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   metricAggregates.forEach((aggregate) => {
     const {
@@ -208,5 +235,6 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   doorSensorsToPrometheus(doorSensors, prometheus);
   roomSensorsToPrometheus(roomSensors, prometheus);
   roomSensorsMovementToPrometheus(roomSensors, prometheus);
+  roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
 }());

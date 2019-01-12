@@ -28,6 +28,12 @@ function drawMetric(prefix, name, labelString, value, time) {
   return `${prefix}${name}{${labelString}} ${value} ${time}`;
 }
 
+function isLegalMetricName(name) {
+  if (name.includes(' ') || name.includes('-')) {
+    throw new Error('illegal metric name');
+  }
+}
+
 class Prometheus {
   constructor(options = {}) {
     const {
@@ -71,7 +77,7 @@ class Prometheus {
 
     const calls = metrics.map((metric) => {
       return metric(testOnly);
-    });
+    }).filter(Boolean);
 
     return {
       handler: Promise.all(calls).then((values) => {
@@ -107,9 +113,7 @@ class Prometheus {
       throw new Error('insufficient options provided');
     }
 
-    if (name.includes(' ') || name.includes('-')) {
-      throw new Error('illegal metric name');
-    }
+    isLegalMetricName(name);
 
     const { log, metrics, prefix } = this._prometheus;
 
@@ -145,13 +149,11 @@ class Prometheus {
       throw new Error('insufficient options provided');
     }
 
-    if (name.includes(' ') || name.includes('-')) {
-      throw new Error('illegal metric name');
-    }
+    isLegalMetricName(name);
 
     const { log, metrics, prefix } = this._prometheus;
 
-    log.info(`add metric "${name}"`);
+    log.info(`add push metric "${name}"`);
 
     const labelString = makeLabelString(labels);
 
@@ -193,6 +195,47 @@ class Prometheus {
     return {
       push
     };
+  }
+
+  slowMetric(name, labels, handler) {
+    if (!name || !handler) {
+      throw new Error('insufficient options provided');
+    }
+
+    isLegalMetricName(name);
+
+    const { log, metrics, prefix } = this._prometheus;
+
+    log.info(`add slow metric "${name}"`);
+
+    const labelString = makeLabelString(labels);
+
+    let lastValue = null;
+    let lastTime = null;
+
+    metrics.push((test) => {
+      resolveAlways(handler()).then((value) => {
+        lastValue = value;
+        lastTime = new Date();
+      });
+
+      const result = Promise.resolve(
+        drawMetric(
+          prefix,
+          name,
+          labelString,
+          drawValue(lastValue),
+          (lastTime || new Date()).getTime()
+        )
+      );
+
+      if (!test) {
+        lastValue = null;
+        lastTime = null;
+      }
+
+      return result;
+    });
   }
 }
 
