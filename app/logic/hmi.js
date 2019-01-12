@@ -122,7 +122,11 @@ function roomSensorsHmi(
     if (!hmiAttributes) return;
 
     metrics.forEach((metric) => {
-      if (metric === 'pressure') return;
+      // don't show pressure for single rooms, except für metrics shown on global
+      if (
+        hmiAttributes.section !== 'global'
+        && metric === 'pressure'
+      ) return;
 
       const hmiName = camel(name, metric);
       const handleValue = (value) => {
@@ -155,7 +159,7 @@ function roomSensorsHmi(
         attributes,
         server: hmiServer,
         getter: () => {
-          return instance.getMetric(metric).then(handleValue);
+          return instance.getMetric(metric, 2000).then(handleValue);
         }
       });
 

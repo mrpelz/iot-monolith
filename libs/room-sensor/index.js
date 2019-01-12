@@ -4,6 +4,7 @@ const { readNumber, bufferToBoolean } = require('../utils/data');
 const { arraysToObject } = require('../utils/structures');
 const { resolveAlways } = require('../utils/oop');
 const { sanity } = require('../utils/math');
+const { sleep } = require('../utils/time');
 
 const libName = 'room-sensor';
 
@@ -207,7 +208,7 @@ class RoomSensor extends MessageClient {
     return this._roomSensor.state.get(metric);
   }
 
-  getMetric(metric) {
+  getMetric(metric, timeout = null) {
     const {
       state: {
         isConnected,
@@ -241,27 +242,38 @@ class RoomSensor extends MessageClient {
       return Promise.resolve(this.getState(metric));
     }
 
-    const isLeadIn = Date.now() < (connectionTime + leadIn);
+    const call = () => {
+      const isLeadIn = Date.now() < (connectionTime + leadIn);
 
-    if (cache) {
-      if (cache.hit()) {
-        return cache.defer();
+      if (cache) {
+        if (cache.hit()) {
+          return cache.defer();
+        }
+
+        return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
+          log.error({
+            head: `metric [cached] (${metric}) error`,
+            attachment: reason
+          });
+        });
       }
 
-      return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
+      return this.request(metric, undefined, isLeadIn).catch((reason) => {
         log.error({
-          head: `metric [cached] (${metric}) error`,
+          head: `metric [uncached] (${metric}) error`,
           attachment: reason
         });
       });
+    };
+
+    if (timeout) {
+      return Promise.race([
+        call(),
+        sleep(timeout, this.getState(metric))
+      ]);
     }
 
-    return this.request(metric, undefined, isLeadIn).catch((reason) => {
-      log.error({
-        head: `metric [uncached] (${metric}) error`,
-        attachment: reason
-      });
-    });
+    return call();
   }
 
   getCache(metric) {

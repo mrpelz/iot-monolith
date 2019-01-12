@@ -9,11 +9,14 @@
   "historyUpdateSeconds": 10,
   "historyMetrics": [
     "brightness",
+    "co2",
     "eco2",
     "flow_rate",
     "humidity",
     "precipitation",
     "pressure",
+    "pm025",
+    "pm10",
     "temperature",
     "tvoc"
   ],

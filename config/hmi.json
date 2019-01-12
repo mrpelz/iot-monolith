@@ -8,6 +8,8 @@
     "sort": {
       "categories": [
         "_top",
+        "ahu-in",
+        "ahu-out",
         "air",
         "lamps",
         "doors",
@@ -21,6 +23,7 @@
         "pressure",
         "pm10",
         "pm025",
+        "co2",
         "eco2",
         "tvoc",
         "precipitation",
@@ -60,6 +63,7 @@
       "brightness": "Helligkeit",
       "ceiling-lamp": "Deckenlampe",
       "close": "zu",
+      "co2": "CO₂",
       "deg-c": "°C",
       "delayed": "verzögert",
       "door": "Tür",
@@ -120,6 +124,7 @@
   },
   "unitMap": {
     "brightness": "lux",
+    "co2": "ppm",
     "eco2": "ppm",
     "humidity": "percent-rh",
     "pm025": "micrograms/m3",

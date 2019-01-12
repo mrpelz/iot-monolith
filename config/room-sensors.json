@@ -174,23 +174,26 @@
     }
   },
   {
-    "name": "ahu_in",
+    "name": "ahuIn",
+    "host": "10.97.0.223",
+    "port": 5045,
     "metrics": [
       "temperature",
       "pressure",
       "humidity",
-      "flow_rate",
-      "eco2",
-      "tvoc"
+      "co2",
+      "pm025",
+      "pm10"
     ],
     "attributes": {
       "hmi": {
-        "section": "global"
+        "section": "global",
+        "category": "ahu-in"
       }
     }
   },
   {
-    "name": "ahu_out",
+    "name": "ahuOut",
     "metrics": [
       "temperature",
       "pressure",
