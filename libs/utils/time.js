@@ -75,6 +75,36 @@ const every = {
   year: (input) => {
     return everyTime('year', input);
   },
+  parse: (input) => {
+    if (typeof input !== 'string') throw new Error(`"${input}" is not a string`);
+
+    const [keyword, num, option] = input.split(':');
+    const count = Number.parseInt(num, 10);
+
+    if (keyword !== 'every') throw new Error(`"${input}" does not start with "every" keyword`);
+    if (Number.isNaN(count) || count <= 0) throw new Error('illegal number given');
+
+    switch (option) {
+      case 'second':
+        return everyTime('second', count);
+      case 'minute':
+        return everyTime('minute', count);
+      case 'hour':
+        return everyTime('hour', count);
+      case 'date':
+        return everyTime('date', count);
+      case 'day':
+        return everyTime('day', count);
+      case 'week':
+        return everyTime('week', count);
+      case 'month':
+        return everyTime('month', count);
+      case 'year':
+        return everyTime('year', count);
+      default:
+        throw new Error('illegal option given');
+    }
+  }
 };
 
 const epochs = (() => {

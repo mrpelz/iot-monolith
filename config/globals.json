@@ -3,10 +3,10 @@
   "prometheusPort": 5555,
   "webApiPort": 5556,
   "httpHooksPort": 5557,
-  "webApiUpdateSeconds": 5,
-  "dbWriteIntervalSeconds": 30,
+  "webApiUpdate": "every:5:second",
+  "dbWriteInterval": "every:30:second",
   "historyRetainHours": 1,
-  "historyUpdateSeconds": 10,
+  "historyUpdate": "every:10:second",
   "historyMetrics": [
     "brightness",
     "co2",
@@ -20,6 +20,10 @@
     "temperature",
     "tvoc"
   ],
+  "metricSchedule": {
+    "pm025": "every:5:minute",
+    "pm10": "every:5:minute"
+  },
   "fridgeTimeout": 20000,
   "entryDoorTimeout": 60000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",

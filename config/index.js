@@ -28,7 +28,7 @@ function readConfig() {
       result[name] = config;
     } catch (e) {
       /* eslint-disable-next-line no-console */
-      console.error(`Could not read config "${fileName}" / ${e}`);
+      console.log(`<3>could not read config "${fileName}" / ${e}`);
     }
   });
 

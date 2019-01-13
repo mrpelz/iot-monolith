@@ -18,6 +18,8 @@ function telegramRoot(title = '', message, stack) {
 }
 
 (function onStart() {
+  /* eslint-disable-next-line no-console */
+  console.log('<6>starting process');
   telegramRoot('Starting process');
 }());
 
@@ -33,6 +35,8 @@ function exit(signal = 0) {
   process.removeListener('SIGUSR1', exit);
   process.removeListener('SIGUSR2', exit);
 
+  /* eslint-disable-next-line no-console */
+  console.log('<6>stopping process');
   telegramRoot('Stopping process', `Signal = ${signal}`).then(() => {
     quit(signal);
   });
@@ -40,7 +44,7 @@ function exit(signal = 0) {
 
 process.on('uncaughtException', (error = {}) => {
   /* eslint-disable-next-line no-console */
-  console.error(`uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
+  console.log(`<0>uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('uncaughtException', error.message, error.stack).then(() => {
     exit(1);
   });
@@ -48,7 +52,7 @@ process.on('uncaughtException', (error = {}) => {
 
 process.on('unhandledRejection', (error = {}) => {
   /* eslint-disable-next-line no-console */
-  console.error(`unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
+  console.log(`<0>unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('unhandledRejection', error.message, error.stack).then(() => {
     exit(1);
   });

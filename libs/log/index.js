@@ -115,7 +115,7 @@ class Logger {
             messageAttachment ? `\`${messageAttachment}\`` : null
           ].filter(Boolean).join('  \n')
         ).catch((error) => {
-          console.error(`error logging to telegram: "${error}"`);
+          console.log(`<3>error logging to telegram: "${error}"`);
         });
       });
     }

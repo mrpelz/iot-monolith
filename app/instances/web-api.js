@@ -4,7 +4,7 @@ const {
   config: {
     globals: {
       webApiPort,
-      webApiUpdateSeconds: update
+      webApiUpdate: update
     },
     hmi: {
       webApi: meta

@@ -220,7 +220,10 @@ class Prometheus {
         if (timeHandler) {
           const time = timeHandler();
 
-          if (!time) return;
+          if (!time) {
+            lastTime = null;
+            return;
+          }
 
           if (lastTime && (lastTime.getTime() === time.getTime())) return;
 
@@ -235,7 +238,7 @@ class Prometheus {
         name,
         labelString,
         drawValue(lastValue),
-        (lastValue !== null ? lastTime : new Date()).getTime()
+        Date.now()
       );
 
       if (!test) {

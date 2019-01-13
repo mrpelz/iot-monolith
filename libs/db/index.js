@@ -40,7 +40,7 @@ class Db {
 
     new RecurringMoment(
       scheduler,
-      every.second(saveInterval)
+      every.parse(saveInterval)
     ).on('hit', this._onSave);
 
     return this._data;

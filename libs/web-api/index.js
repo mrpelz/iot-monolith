@@ -270,7 +270,7 @@ class WebApi {
     const hmiService = hmiServer.addService(this._handleIngest);
     new RecurringMoment(
       scheduler,
-      every.second(update)
+      every.parse(update)
     ).on('hit', () => {
       if (
         this._webApi.isActive

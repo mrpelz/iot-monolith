@@ -3,7 +3,7 @@ const { Db } = require('../../libs/db');
 const {
   config: {
     globals: {
-      dbWriteIntervalSeconds: saveInterval
+      dbWriteInterval: saveInterval
     }
   },
   scheduler

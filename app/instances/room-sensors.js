@@ -1,5 +1,7 @@
 const { RoomSensor } = require('../../libs/room-sensor');
 const { PushMetricGroup } = require('../../libs/group');
+const { every, RecurringMoment } = require('../../libs/utils/time');
+const { resolveAlways } = require('../../libs/utils/oop');
 
 function createSensor(sensor) {
   const {
@@ -17,6 +19,21 @@ function createSensor(sensor) {
   } catch (e) {
     return null;
   }
+}
+
+function addSchedule(metrics, instance, metricSchedule, scheduler) {
+  metrics.filter((metric) => {
+    return Object.keys(metricSchedule).includes(metric);
+  }).forEach((metric) => {
+    const { [metric]: config } = metricSchedule;
+
+    new RecurringMoment(
+      scheduler,
+      every.parse(config)
+    ).on('hit', () => {
+      resolveAlways(instance.requestMetric(metric));
+    });
+  });
 }
 
 function addSecurity(name, instance, security) {
@@ -38,7 +55,7 @@ function addSecurity(name, instance, security) {
   });
 }
 
-function createRoomSensors(roomSensors, security) {
+function createRoomSensors(roomSensors, metricSchedule, scheduler, security) {
   return roomSensors.map((sensor) => {
     const { disable = false, name, metrics = [] } = sensor;
     if (disable || !name || !metrics.length) return null;
@@ -49,6 +66,7 @@ function createRoomSensors(roomSensors, security) {
     instance.log.friendlyName(name);
     instance.connect();
 
+    addSchedule(metrics, instance, metricSchedule, scheduler);
     addSecurity(name, instance, security);
 
     return Object.assign(sensor, {
@@ -78,11 +96,15 @@ function createAllMovementGroup(allRoomSensors) {
 (function main() {
   const {
     config: {
+      globals: {
+        metricSchedule
+      },
       'room-sensors': roomSensors
     },
+    scheduler,
     security
   } = global;
 
-  global.roomSensors = createRoomSensors(roomSensors, security);
+  global.roomSensors = createRoomSensors(roomSensors, metricSchedule, scheduler, security);
   global.allMovementGroup = createAllMovementGroup(global.roomSensors);
 }());

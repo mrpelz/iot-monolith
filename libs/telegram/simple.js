@@ -31,7 +31,7 @@ function telegramSend(message) {
     }
   }).catch((error) => {
     /* eslint-disable-next-line no-console */
-    console.error(`error logging to telegram: "${error}"`);
+    console.log(`<3>error logging to telegram: "${error}"`);
   });
 }
 

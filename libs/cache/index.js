@@ -27,6 +27,7 @@ class CachePromise {
     this._deferred = [];
     this._fulfilled = false;
     this._promised = null;
+    this._timer = null;
     this._timeout = timeout;
     this.requestTime = null;
     this.resultTime = null;
@@ -57,14 +58,23 @@ class CachePromise {
     });
   }
 
-  hit() {
-    const now = Date.now();
+  _reTime() {
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
+    }
 
+    this._timer = setTimeout(() => {
+      this.value = null;
+      this._timer = null;
+    }, this._timeout);
+  }
+
+  hit() {
     if (this.requestTime === null) return false;
     if (!this._fulfilled) return true;
-    if (now > (this.requestTime.getTime() + this._timeout)) return false;
 
-    return true;
+    return Boolean(this._timer);
   }
 
   defer() {
@@ -80,6 +90,8 @@ class CachePromise {
           reject
         });
       };
+
+    this._reTime();
 
     return new Promise(executor);
   }

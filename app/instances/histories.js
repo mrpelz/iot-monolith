@@ -160,7 +160,7 @@ function metricAggregatesHistory(
     config: {
       globals: {
         historyRetainHours: retainHours,
-        historyUpdateSeconds,
+        historyUpdate: updateTime,
         historyMetrics
       },
       trends: {
@@ -175,7 +175,7 @@ function metricAggregatesHistory(
 
   const historyDb = getKey(db, 'histories');
 
-  const update = new RecurringMoment(scheduler, every.second(historyUpdateSeconds));
+  const update = new RecurringMoment(scheduler, every.parse(updateTime));
   update.setMaxListeners(0);
 
   const cleanup = new RecurringMoment(scheduler, every.hour(retainHours));

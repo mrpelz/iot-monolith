@@ -69,7 +69,8 @@ const metricOptions = {
       divide: 1000
     },
     cache: 300000,
-    timeout: 35000
+    timeout: 35000,
+    request: false
   },
   pm10: {
     head: 9,
@@ -78,7 +79,8 @@ const metricOptions = {
       divide: 1000
     },
     cache: 300000,
-    timeout: 35000
+    timeout: 35000,
+    request: false
   },
   co2: {
     head: 10,
@@ -204,11 +206,7 @@ class RoomSensor extends MessageClient {
     this._roomSensor.log = this.log.withPrefix(libName);
   }
 
-  getState(metric) {
-    return this._roomSensor.state.get(metric);
-  }
-
-  getMetric(metric, timeout = null) {
+  requestMetric(metric) {
     const {
       state: {
         isConnected,
@@ -218,7 +216,6 @@ class RoomSensor extends MessageClient {
 
     const {
       log,
-      metrics,
       caches
     } = this._roomSensor;
 
@@ -226,54 +223,66 @@ class RoomSensor extends MessageClient {
       return Promise.reject(new Error('sensor not connected'));
     }
 
+    const { [metric]: cache } = caches;
+    const {
+      [metric]: {
+        leadIn = 0
+      } = {}
+    } = metricOptions;
+
+    const isLeadIn = Date.now() < (connectionTime + leadIn);
+
+    if (cache) {
+      if (cache.hit()) {
+        return cache.defer();
+      }
+
+      return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
+        log.error({
+          head: `metric [cached] (${metric}) error`,
+          attachment: reason
+        });
+      });
+    }
+
+    return this.request(metric, undefined, isLeadIn).catch((reason) => {
+      log.error({
+        head: `metric [uncached] (${metric}) error`,
+        attachment: reason
+      });
+    });
+  }
+
+  getMetric(metric, timeout = null) {
+    const {
+      metrics
+    } = this._roomSensor;
+
     if (!metrics.includes(metric)) {
       throw new Error('metric not configured');
     }
 
-    const { [metric]: cache } = caches;
     const {
       [metric]: {
-        leadIn = 0,
+        cache = 0,
         request = true
       } = {}
     } = metricOptions;
 
+    const fallback = cache ? this.getCache(metric) : this.getState(metric);
+
     if (!request) {
-      return Promise.resolve(this.getState(metric));
+      return Promise.resolve(fallback);
     }
-
-    const call = () => {
-      const isLeadIn = Date.now() < (connectionTime + leadIn);
-
-      if (cache) {
-        if (cache.hit()) {
-          return cache.defer();
-        }
-
-        return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
-          log.error({
-            head: `metric [cached] (${metric}) error`,
-            attachment: reason
-          });
-        });
-      }
-
-      return this.request(metric, undefined, isLeadIn).catch((reason) => {
-        log.error({
-          head: `metric [uncached] (${metric}) error`,
-          attachment: reason
-        });
-      });
-    };
 
     if (timeout) {
       return Promise.race([
-        call(),
-        sleep(timeout, this.getState(metric))
+        this.requestMetric(metric),
+        sleep(timeout, fallback)
       ]);
     }
 
-    return call();
+    return this.requestMetric(metric);
   }
 
   getCache(metric) {
@@ -288,11 +297,28 @@ class RoomSensor extends MessageClient {
 
     const { [metric]: cache } = caches;
 
-    if (cache) {
-      return Promise.resolve(cache.value);
+    if (!cache) return null;
+
+    return cache.value;
+  }
+
+  getState(metric) {
+    return this._roomSensor.state.get(metric);
+  }
+
+  getMetricTime(metric) {
+    const {
+      metrics,
+      caches
+    } = this._roomSensor;
+
+    if (!metrics.includes(metric)) {
+      throw new Error('metric not configured');
     }
 
-    return Promise.resolve(null);
+    const { [metric]: cache } = caches;
+
+    return cache ? cache.resultTime : null;
   }
 
   getAll() {
@@ -367,27 +393,15 @@ class RoomSensor extends MessageClient {
     return this.getMetric('movement');
   }
 
-  getMetricTime(metric) {
-    const {
-      metrics,
-      caches
-    } = this._roomSensor;
-
-    if (!metrics.includes(metric)) {
-      throw new Error('metric not configured');
-    }
-
-    const { [metric]: cache } = caches;
-
-    return cache ? cache.resultTime : null;
-  }
-
   // Public methods:
   // connect (inherited from PersistenSocket)
   // disconnect (inherited from PersistenSocket)
   // access (inherited from Base)
+  // requestMetric
   // getMetric
   // getCache
+  // getState
+  // getMetricTime
   // getAll
   // getTemperature
   // getTemperature2
@@ -400,7 +414,6 @@ class RoomSensor extends MessageClient {
   // getPm10
   // getCo2
   // getMovement
-  // getMetricTime
 }
 
 module.exports = {

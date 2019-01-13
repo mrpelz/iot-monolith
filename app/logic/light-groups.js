@@ -1,4 +1,6 @@
 const { parseString } = require('../../libs/utils/string');
+const { resolveAlways } = require('../../libs/utils/oop');
+const { sleep } = require('../../libs/utils/time');
 const { coupleRfSwitchToLight } = require('../utils/rf-switches');
 
 function manageLightGroup(group, httpHookServer) {
@@ -83,6 +85,31 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'kueche_wall_right',
     1
   );
+
+  // <😏>
+  (() => {
+    const lightMatch = lightGroups.find(({ name }) => {
+      return name === 'kuecheAmbience';
+    });
+
+    const rfSwitchMatch = rfSwitches.find(({ name }) => {
+      return name === 'kueche_wall_right';
+    });
+
+    if (!lightMatch || !rfSwitchMatch) return;
+
+    const { instance: lightInstance } = lightMatch;
+    const { instance: rfSwitchInstance } = rfSwitchMatch;
+
+    rfSwitchInstance.on(2, async () => {
+      await resolveAlways(lightInstance.toggle());
+      await sleep(1000);
+      await resolveAlways(lightInstance.toggle());
+      await sleep(1000);
+      await resolveAlways(lightInstance.toggle());
+    });
+  })();
+  // </😏>
 
   coupleRfSwitchToLight(
     lightGroups,

@@ -198,9 +198,9 @@
       "temperature",
       "pressure",
       "humidity",
-      "flow_rate",
-      "eco2",
-      "tvoc"
+      "co2",
+      "pm025",
+      "pm10"
     ],
     "attributes": {
       "hmi": {
