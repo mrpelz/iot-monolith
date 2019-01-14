@@ -197,7 +197,7 @@ class Prometheus {
     };
   }
 
-  slowMetric(name, labels, handler, timeHandler = null) {
+  slowMetric(name, labels, handler) {
     if (!name || !handler) {
       throw new Error('insufficient options provided');
     }
@@ -211,25 +211,9 @@ class Prometheus {
     const labelString = makeLabelString(labels);
 
     let lastValue = null;
-    let lastTime = null;
 
-    metrics.push(async (test) => {
+    metrics.push(async () => {
       resolveAlways(handler()).then((value) => {
-        if (value === null) return;
-
-        if (timeHandler) {
-          const time = timeHandler();
-
-          if (!time) {
-            lastTime = null;
-            return;
-          }
-
-          if (lastTime && (lastTime.getTime() === time.getTime())) return;
-
-          lastTime = time;
-        }
-
         lastValue = value;
       });
 
@@ -240,10 +224,6 @@ class Prometheus {
         drawValue(lastValue),
         Date.now()
       );
-
-      if (!test) {
-        lastValue = null;
-      }
 
       return result;
     });

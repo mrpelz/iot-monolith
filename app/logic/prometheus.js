@@ -188,10 +188,7 @@ function roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus) {
           type: 'room-sensor'
         },
         () => {
-          return instance.getMetric(metric);
-        },
-        () => {
-          return instance.getMetricTime(metric);
+          return instance.getMetric(metric, 2000);
         }
       );
     });
