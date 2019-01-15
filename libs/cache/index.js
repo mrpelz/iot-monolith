@@ -39,6 +39,11 @@ class CachePromise {
   _onResolve(value) {
     this._fulfilled = true;
 
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
+    }
+
     this.value = value;
     this.resultTime = new Date();
 
@@ -49,6 +54,11 @@ class CachePromise {
 
   _onReject(error) {
     this._fulfilled = true;
+
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
+    }
 
     this.value = null;
     this.resultTime = null;
@@ -91,8 +101,6 @@ class CachePromise {
         });
       };
 
-    this._reTime();
-
     return new Promise(executor);
   }
 
@@ -111,6 +119,8 @@ class CachePromise {
       .catch(this._onReject);
 
     this._promised = promise;
+
+    this._reTime();
 
     return result;
   }

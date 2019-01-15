@@ -166,12 +166,13 @@ function getCaches(metrics) {
     metrics.map((name) => {
       const {
         [name]: {
-          cache = 0
+          cache = 0,
+          timeout = 1000
         } = {}
       } = metricOptions;
 
       if (!cache) return null;
-      return new CachePromise(cache);
+      return new CachePromise(cache + timeout);
     })
   );
 }
