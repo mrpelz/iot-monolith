@@ -68,8 +68,8 @@ const metricOptions = {
     sanity: {
       divide: 1000
     },
-    cache: 300000,
-    timeout: 35000,
+    cache: 60000,
+    timeout: 15000,
     request: false
   },
   pm10: {
@@ -78,8 +78,8 @@ const metricOptions = {
     sanity: {
       divide: 1000
     },
-    cache: 300000,
-    timeout: 35000,
+    cache: 60000,
+    timeout: 15000,
     request: false
   },
   co2: {

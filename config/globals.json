@@ -21,8 +21,8 @@
     "tvoc"
   ],
   "metricSchedule": {
-    "pm025": "every:5:minute",
-    "pm10": "every:5:minute"
+    "pm025": "every:1:minute",
+    "pm10": "every:1:minute"
   },
   "fridgeTimeout": 20000,
   "entryDoorTimeout": 60000,
