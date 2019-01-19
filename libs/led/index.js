@@ -108,7 +108,9 @@ class LedLight {
       useChannel = 0
     } = options;
 
-    if (!driver || useChannel === undefined) {
+    if (!driver
+      || useChannel === undefined
+      || !(driver instanceof LedDriver)) {
       throw new Error('insufficient options provided');
     }
 

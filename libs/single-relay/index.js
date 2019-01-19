@@ -47,7 +47,8 @@ class SingleRelay extends Switch {
     });
 
     this._singleRelay = {};
-    this.power = false;
+    this._powerSetpoint = false;
+    this.power = null;
 
     rebind(this, '_handleSingleRelayConnection');
     this.on('connect', this._handleSingleRelayConnection);
@@ -57,22 +58,24 @@ class SingleRelay extends Switch {
   }
 
   _handleSingleRelayConnection() {
-    this.setPower(this.power);
+    this.setPower(this._powerSetpoint);
   }
 
   setPower(on) {
     const { log } = this._singleRelay;
 
-    return this.set('relay', on).then((value) => {
-      if (value !== on) {
+    this._powerSetpoint = Boolean(on);
+
+    return this.set('relay', this._powerSetpoint).then((result) => {
+      if (result !== this._powerSetpoint) {
         throw new Error('could not set relay');
       }
 
-      if (value !== this.power) {
-        this.power = value;
+      if (result !== this.power) {
+        this.power = this._powerSetpoint;
         this.emit('change');
       }
-      return value;
+      return this.power;
     }).catch((reason) => {
       log.error({
         head: 'relay error',
@@ -82,18 +85,18 @@ class SingleRelay extends Switch {
   }
 
   toggle() {
-    return this.setPower(!this.power);
+    return this.setPower(!this._powerSetpoint);
   }
 
   led(on) {
     const { log } = this._singleRelay;
 
-    return this.set('led', on).then((value) => {
-      if (value !== on) {
+    return this.set('led', on).then((result) => {
+      if (result !== on) {
         throw new Error('could not set led');
       }
 
-      return value;
+      return result;
     }).catch((reason) => {
       log.error({
         head: 'led error',
