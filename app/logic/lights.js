@@ -1,6 +1,6 @@
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
-const { coupleRfSwitchToLight } = require('../utils/rf-switches');
+const { coupleDoorSensorToLight, coupleRfSwitchToLight } = require('../utils/lights');
 
 function manageSingleRelayLight(light, httpHookServer) {
   const {
@@ -61,24 +61,14 @@ function manage(lights, httpHookServer) {
   });
 }
 
-// function lightWithDoorSensor(lights, doorSensors) {
-//   const lightMatch = lights.find((light) => {
-//     return light.name === 'testLicht';
-//   });
-
-//   const doorSensorMatch = doorSensors.find((sensor) => {
-//     return sensor.name === 'wannenbad';
-//   });
-
-//   if (!lightMatch || !doorSensorMatch) return;
-
-//   const { instance: lightInstance } = lightMatch;
-//   const { instance: doorSensorInstance } = doorSensorMatch;
-
-//   doorSensorInstance.on('change', () => {
-//     lightInstance.setPower(doorSensorInstance.isOpen);
-//   });
-// }
+function lightWithDoorSensor(lights, doorSensors) {
+  coupleDoorSensorToLight(
+    lights,
+    doorSensors,
+    'abstellraumDeckenlampe',
+    'abstellraumDoor'
+  );
+}
 
 function lightWithRfSwitch(lights, rfSwitches) {
   coupleRfSwitchToLight(
@@ -192,17 +182,25 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'schlafzimmer_button_2',
     4
   );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'abstellraumDeckenlampe',
+    'abstellraum_wall',
+    1
+  );
 }
 
 (function main() {
   const {
-    // doorSensors,
+    doorSensors,
     httpHookServer,
     lights,
     rfSwitches
   } = global;
 
   manage(lights, httpHookServer);
-  // lightWithDoorSensor(lights, doorSensors);
+  lightWithDoorSensor(lights, doorSensors);
   lightWithRfSwitch(lights, rfSwitches);
 }());

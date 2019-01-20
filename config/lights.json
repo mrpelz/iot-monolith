@@ -1,5 +1,79 @@
 [
   {
+    "name": "abstellraumDeckenlampe",
+    "host": "10.97.4.46",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "ceiling-lamp",
+        "section": "abstellraum"
+      }
+    }
+  },
+  {
+    "name": "esszimmerDeckenlampe",
+    "host": "10.97.4.38",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "ceiling-lamp",
+        "section": "esszimmer"
+      }
+    }
+  },
+  {
+    "name": "esszimmerStehlampe",
+    "host": "10.97.4.12",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "standing-lamp",
+        "section": "esszimmer"
+      }
+    }
+  },
+  {
+    "name": "kuecheLedLeft",
+    "host": "10.97.4.31",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {}
+  },
+  {
+    "name": "kuecheLedRight",
+    "host": "10.97.4.37",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {}
+  },
+  {
+    "name": "schlafzimmerSteinlampe",
+    "host": "10.97.4.32",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "stone-lamp",
+        "section": "schlafzimmer"
+      }
+    }
+  },
+  {
     "name": "wohnzimmerDeckenlampe",
     "host": "10.97.4.39",
     "port": 5045,
@@ -28,64 +102,5 @@
         "section": "wohnzimmer"
       }
     }
-  },
-  {
-    "name": "schlafzimmerSteinlampe",
-    "host": "10.97.4.32",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "light": {
-        "enableButton": true
-      },
-      "hmi": {
-        "group": "stone-lamp",
-        "section": "schlafzimmer"
-      }
-    }
-  },
-  {
-    "name": "esszimmerStehlampe",
-    "host": "10.97.4.12",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "light": {
-        "enableButton": true
-      },
-      "hmi": {
-        "group": "standing-lamp",
-        "section": "esszimmer"
-      }
-    }
-  },
-  {
-    "name": "esszimmerDeckenlampe",
-    "host": "10.97.4.38",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "light": {
-        "enableButton": true
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "esszimmer"
-      }
-    }
-  },
-  {
-    "name": "kuecheLedLeft",
-    "host": "10.97.4.31",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {}
-  },
-  {
-    "name": "kuecheLedRight",
-    "host": "10.97.4.37",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {}
   }
 ]

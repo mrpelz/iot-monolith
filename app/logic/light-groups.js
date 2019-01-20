@@ -1,7 +1,7 @@
 const { parseString } = require('../../libs/utils/string');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { sleep } = require('../../libs/utils/time');
-const { coupleRfSwitchToLight } = require('../utils/rf-switches');
+const { coupleRfSwitchToLight } = require('../utils/lights');
 
 function manageLightGroup(group, httpHookServer) {
   const {
