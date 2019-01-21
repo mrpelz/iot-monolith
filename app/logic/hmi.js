@@ -3,6 +3,40 @@ const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
 const { excludeKeys } = require('../../libs/utils/structures');
 
+function setUpConnectionHmi(element, subGroup, hmiServer) {
+  const {
+    name,
+    instance
+  } = element;
+
+  let connected = false;
+
+  const hmi = new HmiElement({
+    name: camel(name, 'connection'),
+    attributes: {
+      category: 'connections',
+      group: camel(name, 'connection'),
+      section: 'tech',
+      showSubGroup: Boolean(subGroup),
+      subGroup,
+      type: 'connection'
+    },
+    server: hmiServer,
+    getter: async () => {
+      return connected ? 'connected' : 'disconnected';
+    }
+  });
+
+  instance.on('connect', () => {
+    connected = true;
+    hmi.update();
+  });
+  instance.on('disconnect', () => {
+    connected = false;
+    hmi.update();
+  });
+}
+
 function setUpHistoryTrendHmi(
   histories,
   hmiName,
@@ -118,6 +152,8 @@ function roomSensorsHmi(
         hmi: hmiAttributes
       } = {}
     } = sensor;
+
+    setUpConnectionHmi(sensor, 'room-sensor', hmiServer);
 
     if (!hmiAttributes) return;
 
@@ -260,6 +296,8 @@ function singleRelayLightHmi(light, hmiServer) {
     } = {}
   } = light;
 
+  setUpConnectionHmi(light, 'single-relay light', hmiServer);
+
   if (!hmiAttributes) return;
 
   const hmi = new HmiElement({
@@ -375,6 +413,8 @@ function singleRelayFanHmi(fan, hmiServer) {
       hmi: hmiAttributes
     } = {}
   } = fan;
+
+  setUpConnectionHmi(fan, 'single-relay fan', hmiServer);
 
   if (!hmiAttributes) return;
 

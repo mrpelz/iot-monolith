@@ -6,7 +6,7 @@ const { humanPayload, writeNumber } = require('../utils/data');
 
 const libName = 'tcp';
 
-const reconnectionDebounce = 10000;
+const reconnectionDebounce = 20000;
 
 class PersistentSocket extends Base {
   constructor(options = {}) {
