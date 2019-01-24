@@ -1,37 +1,23 @@
 /* eslint-disable no-console */
 const { SingleRelay } = require('../index');
+const { resolveAlways } = require('../../../libs/utils/oop');
 
 // SINGLE-RELAY TEST
-const jack = new SingleRelay({
-  host: '127.0.0.1',
-  port: 3001
+const instance = new SingleRelay({
+  host: '10.97.4.45',
+  port: 5045
 });
 
-jack.on('connect', () => {
-  console.log('connected');
-  jack.ledBlink(5, true);
-
-  jack.on('buttonDown', () => {
-    console.log('button is down');
-  });
-
-  jack.on('buttonUp', () => {
-    console.log('button is up');
-  });
-
-  jack.on('buttonShortpress', () => {
-    console.log('button was short-pressed');
-    jack.setPower(!jack.power);
-    jack.ledBlink(jack.power ? 2 : 1, true);
-  });
-
-  jack.on('buttonLongpress', () => {
-    console.log('button was long-pressed');
-  });
-
-  jack.on('disconnect', () => {
-    console.log('disconnected');
-  });
+instance.on('connect', () => {
+  resolveAlways(instance.ledBlink(5, true));
 });
 
-jack.connect();
+instance.on('buttonShortpress', () => {
+  instance.toggle();
+});
+
+instance.on('change', () => {
+  resolveAlways(instance.ledBlink(instance.power ? 2 : 1, true));
+});
+
+instance.connect();
