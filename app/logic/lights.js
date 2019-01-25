@@ -1,3 +1,6 @@
+const { URL } = require('url');
+
+const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
 const { coupleDoorSensorToLight, coupleRfSwitchToLight } = require('../utils/lights');
@@ -224,6 +227,27 @@ function lightWithRfSwitch(lights, rfSwitches) {
   );
 }
 
+function arbeitszimmerDeckenlampeWithHttpHook(lights) {
+  const name = 'arbeitszimmerDeckenlampe';
+  const lightMatch = lights.find(({ name: n }) => {
+    return n === name;
+  });
+
+  if (!lightMatch) {
+    throw new Error('could not find light');
+  }
+
+  const { instance } = lightMatch;
+  const url = new URL('https://hermes.net.wurstsalat.cloud/phonebutton.php');
+  url.searchParams.append('change', '1');
+  url.searchParams.append('symbn', name);
+
+  instance.on('change', () => {
+    url.searchParams.append('state', instance.power ? '1' : '0');
+    resolveAlways(get(url));
+  });
+}
+
 (function main() {
   const {
     doorSensors,
@@ -235,4 +259,5 @@ function lightWithRfSwitch(lights, rfSwitches) {
   manage(lights, httpHookServer);
   lightWithDoorSensor(lights, doorSensors);
   lightWithRfSwitch(lights, rfSwitches);
+  arbeitszimmerDeckenlampeWithHttpHook(lights);
 }());
