@@ -12,7 +12,9 @@ function coupleDoorSensorToLight(
     return sensor.name === doorSensorName;
   });
 
-  if (!lightMatch || !doorSensorMatch) return;
+  if (!lightMatch || !doorSensorMatch) {
+    throw new Error('could not find light or door-sensor instance');
+  }
 
   const { instance: lightInstance } = lightMatch;
   const { instance: doorSensorInstance } = doorSensorMatch;
@@ -37,7 +39,9 @@ function coupleRfSwitchToLight(
     return name === rfSwitchName;
   });
 
-  if (!lightMatch || !rfSwitchMatch) return;
+  if (!lightMatch || !rfSwitchMatch) {
+    throw new Error('could not find light or button instance');
+  }
 
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;

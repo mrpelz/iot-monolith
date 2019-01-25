@@ -1,6 +1,4 @@
 const { parseString } = require('../../libs/utils/string');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { sleep } = require('../../libs/utils/time');
 const { coupleRfSwitchToLight } = require('../utils/lights');
 
 function manageLightGroup(group, httpHookServer) {
@@ -74,7 +72,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kueche_wall_left',
+    'kuecheWallLeft',
     1
   );
 
@@ -82,40 +80,15 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kueche_wall_right',
+    'kuecheWallRight',
     1
   );
 
-  // <😏>
-  (() => {
-    const lightMatch = lightGroups.find(({ name }) => {
-      return name === 'kuecheAmbience';
-    });
-
-    const rfSwitchMatch = rfSwitches.find(({ name }) => {
-      return name === 'kueche_wall_right';
-    });
-
-    if (!lightMatch || !rfSwitchMatch) return;
-
-    const { instance: lightInstance } = lightMatch;
-    const { instance: rfSwitchInstance } = rfSwitchMatch;
-
-    rfSwitchInstance.on(2, async () => {
-      await resolveAlways(lightInstance.toggle());
-      await sleep(1000);
-      await resolveAlways(lightInstance.toggle());
-      await sleep(1000);
-      await resolveAlways(lightInstance.toggle());
-    });
-  })();
-  // </😏>
-
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'wohnzimmer_multi_1',
+    'wohnzimmerMulti1',
     4
   );
 
@@ -123,7 +96,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'esszimmer_multi_1',
+    'esszimmerMulti1',
     4
   );
 
@@ -131,7 +104,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     lightGroups,
     rfSwitches,
     'kuecheAmbience',
-    'kueche_button_left',
+    'kuecheButtonLeft',
     4
   );
 }

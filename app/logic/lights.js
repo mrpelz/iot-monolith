@@ -75,7 +75,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerDeckenlampe',
-    'esszimmer_wall_front',
+    'esszimmerWallFront',
     1
   );
 
@@ -83,7 +83,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'esszimmer_wall_front',
+    'esszimmerWallFront',
     2
   );
 
@@ -91,7 +91,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'wohnzimmer_wall_back',
+    'wohnzimmerWallBack',
     1
   );
 
@@ -99,7 +99,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerStehlampe',
-    'wohnzimmer_wall_back',
+    'wohnzimmerWallBack',
     2
   );
 
@@ -107,7 +107,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerDeckenlampe',
-    'wohnzimmer_wall_back',
+    'wohnzimmerWallBack',
     3
   );
 
@@ -115,7 +115,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'wohnzimmer_multi_1',
+    'wohnzimmerMulti1',
     3
   );
 
@@ -123,7 +123,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerStehlampe',
-    'wohnzimmer_multi_1',
+    'wohnzimmerMulti1',
     1
   );
 
@@ -131,7 +131,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerStehlampe',
-    'wohnzimmer_multi_1',
+    'wohnzimmerMulti1',
     2
   );
 
@@ -139,7 +139,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'wohnzimmerDeckenlampe',
-    'esszimmer_multi_1',
+    'esszimmerMulti1',
     1
   );
 
@@ -147,7 +147,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerDeckenlampe',
-    'esszimmer_multi_1',
+    'esszimmerMulti1',
     2
   );
 
@@ -155,7 +155,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerStehlampe',
-    'esszimmer_multi_1',
+    'esszimmerMulti1',
     3
   );
 
@@ -163,7 +163,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'esszimmerStehlampe',
-    'esszimmer_button_1',
+    'esszimmerButton1',
     4
   );
 
@@ -171,7 +171,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'schlafzimmerSteinlampe',
-    'schlafzimmer_button_1',
+    'schlafzimmerButton1',
     4
   );
 
@@ -179,7 +179,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'schlafzimmerSteinlampe',
-    'schlafzimmer_button_2',
+    'schlafzimmerButton2',
     4
   );
 
@@ -187,8 +187,24 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'abstellraumDeckenlampe',
-    'abstellraum_wall',
+    'abstellraumWall',
     1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'arbeitszimmerDeckenlampe',
+    'arbeitszimmerWall',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'kuecheWallRight',
+    2
   );
 }
 

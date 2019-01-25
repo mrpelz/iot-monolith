@@ -1,46 +1,50 @@
 [
   {
-    "name": "abstellraum_wall",
+    "name": "abstellraumWall",
     "id": 568669
   },
   {
-    "name": "esszimmer_button_1",
+    "name": "arbeitszimmerWall",
+    "id": 44526
+  },
+  {
+    "name": "esszimmerButton1",
     "id": 823914
   },
   {
-    "name": "esszimmer_multi_1",
+    "name": "esszimmerMulti1",
     "id": 831834
   },
   {
-    "name": "esszimmer_wall_front",
+    "name": "esszimmerWallFront",
     "id": 572645
   },
   {
-    "name": "kueche_button_left",
+    "name": "kuecheButtonLeft",
     "id": 898570
   },
   {
-    "name": "kueche_wall_left",
+    "name": "kuecheWallLeft",
     "id": 570816
   },
   {
-    "name": "kueche_wall_right",
+    "name": "kuecheWallRight",
     "id": 566837
   },
   {
-    "name": "schlafzimmer_button_1",
+    "name": "schlafzimmerButton1",
     "id": 903326
   },
   {
-    "name": "schlafzimmer_button_2",
+    "name": "schlafzimmerButton2",
     "id": 1043626
   },
   {
-    "name": "wohnzimmer_multi_1",
+    "name": "wohnzimmerMulti1",
     "id": 426506
   },
   {
-    "name": "wohnzimmer_wall_back",
+    "name": "wohnzimmerWallBack",
     "id": 39956
   }
 ]

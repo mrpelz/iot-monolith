@@ -15,6 +15,21 @@
     }
   },
   {
+    "name": "arbeitszimmerDeckenlampe",
+    "host": "10.97.4.45",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "ceiling-lamp",
+        "section": "arbeitszimmer"
+      }
+    }
+  },
+  {
     "name": "esszimmerDeckenlampe",
     "host": "10.97.4.38",
     "port": 5045,
