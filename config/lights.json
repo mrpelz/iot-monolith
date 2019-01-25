@@ -74,6 +74,18 @@
     "attributes": {}
   },
   {
+    "name": "schlafzimmerDeckenlampe",
+    "host": "10.97.4.47",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "hmi": {
+        "group": "ceiling-lamp",
+        "section": "schlafzimmer"
+      }
+    }
+  },
+  {
     "name": "schlafzimmerSteinlampe",
     "host": "10.97.4.32",
     "port": 5045,

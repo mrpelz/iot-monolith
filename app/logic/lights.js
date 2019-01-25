@@ -206,6 +206,22 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'kuecheWallRight',
     2
   );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerDeckenlampe',
+    'schlafzimmerWallLeft',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerDeckenlampe',
+    'schlafzimmerWallRight',
+    1
+  );
 }
 
 (function main() {
