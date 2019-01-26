@@ -1,5 +1,25 @@
 [
   {
+    "name": "flurDeckenlampe",
+    "type": "SINGLE_RELAY",
+    "lights": [
+      "flurDeckenlampeFront",
+      "flurDeckenlampeBack"
+    ],
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "ceiling-lamp-group",
+        "groupLabel": "ceiling-lamp",
+        "section": "flur",
+        "sortGroup": "group",
+        "subGroup": "group"
+      }
+    }
+  },
+  {
     "name": "kuecheAmbience",
     "type": "SINGLE_RELAY",
     "lights": [

@@ -60,6 +60,36 @@
     }
   },
   {
+    "name": "flurDeckenlampeFront",
+    "host": "10.97.4.49",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "hmi": {
+        "group": "ceiling-lamp-front",
+        "groupLabel": "ceiling-lamp",
+        "section": "flur",
+        "sortGroup": "front",
+        "subGroup": "front"
+      }
+    }
+  },
+  {
+    "name": "flurDeckenlampeBack",
+    "host": "10.97.4.50",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "hmi": {
+        "group": "ceiling-lamp-back",
+        "groupLabel": "ceiling-lamp",
+        "section": "flur",
+        "sortGroup": "back",
+        "subGroup": "back"
+      }
+    }
+  },
+  {
     "name": "kuecheLedLeft",
     "host": "10.97.4.31",
     "port": 5045,

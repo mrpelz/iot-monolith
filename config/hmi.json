@@ -28,7 +28,10 @@
         "eco2",
         "tvoc",
         "precipitation",
-        "door"
+        "door",
+        "group",
+        "front",
+        "back"
       ],
       "sections": [
         [
@@ -61,6 +64,7 @@
       "all": "alle",
       "arbeitszimmer": "Arbeitszimmer",
       "aussen": "außen",
+      "back": "hinten",
       "balkon": "Balkon",
       "brightness": "Helligkeit",
       "ceiling-lamp": "Deckenlampe",
@@ -80,7 +84,9 @@
       "fan": "Ventilator",
       "flur": "Flur",
       "fridge": "Kühlschrank",
+      "front": "vorne",
       "global": "global",
+      "group": "Gruppe",
       "hpa": "hPa",
       "humidity": "Luftfeuchtigkeit",
       "innen": "innen",

@@ -20,6 +20,18 @@
     "id": 572645
   },
   {
+    "name": "flurWallFront",
+    "id": 43096
+  },
+  {
+    "name": "flurWallMiddle",
+    "id": 43097
+  },
+  {
+    "name": "flurWallBack",
+    "id": 43098
+  },
+  {
     "name": "kuecheButtonLeft",
     "id": 898570
   },

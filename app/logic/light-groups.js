@@ -107,6 +107,30 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'kuecheButtonLeft',
     4
   );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallFront',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallMiddle',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallBack',
+    1
+  );
 }
 
 // function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
