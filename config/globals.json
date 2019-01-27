@@ -26,6 +26,7 @@
   },
   "fridgeTimeout": 20000,
   "entryDoorTimeout": 60000,
+  "entryDoorLightTimeout": 60000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",
   "entryDoorMessage": "Die Wohnungstür ist noch offen. ❗️",
   "ev1527": [

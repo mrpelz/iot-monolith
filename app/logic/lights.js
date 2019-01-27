@@ -248,8 +248,60 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   });
 }
 
+function flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTimeout) {
+  const lightMatch = lights.find((light) => {
+    return light.name === 'flurDeckenlampeFront';
+  });
+
+  const doorSensorMatch = doorSensors.find((sensor) => {
+    return sensor.name === 'entryDoor';
+  });
+
+  if (!lightMatch || !doorSensorMatch) {
+    throw new Error('could not find light or door-sensor instance');
+  }
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: doorSensorInstance } = doorSensorMatch;
+
+  let affect = false;
+  let timer = null;
+
+  const clearTimer = () => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  };
+
+  doorSensorInstance.on('change', () => {
+    if (doorSensorInstance.isOpen) {
+      affect = !lightInstance.power;
+      lightInstance.setPower(true);
+    } else if (affect) {
+      clearTimer();
+
+      timer = setTimeout(() => {
+        lightInstance.setPower(false);
+      }, entryDoorLightTimeout);
+
+      affect = false;
+    }
+  });
+
+  lightInstance.on('change', () => {
+    if (lightInstance.power) return;
+    clearTimer();
+  });
+}
+
 (function main() {
   const {
+    config: {
+      globals: {
+        entryDoorLightTimeout
+      }
+    },
     doorSensors,
     httpHookServer,
     lights,
@@ -260,4 +312,5 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   lightWithDoorSensor(lights, doorSensors);
   lightWithRfSwitch(lights, rfSwitches);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
+  flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTimeout);
 }());
