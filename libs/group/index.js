@@ -59,7 +59,7 @@ class PushMetricGroup extends EventEmitter {
 }
 
 class LightGroup extends EventEmitter {
-  constructor(instances = [], events = []) {
+  constructor(instances = [], events = [], allOf = false) {
     instances.forEach((instance) => {
       if (
         instance instanceof SingleRelay
@@ -89,9 +89,16 @@ class LightGroup extends EventEmitter {
     });
 
     this._instances = instances;
+    this._allOf = allOf;
   }
 
   get power() {
+    if (this._allOf) {
+      return this._instances.every((instance) => {
+        return instance.power;
+      });
+    }
+
     return this._instances.some((instance) => {
       return instance.power;
     });

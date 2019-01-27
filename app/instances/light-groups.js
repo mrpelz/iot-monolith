@@ -2,6 +2,11 @@ const { LightGroup } = require('../../libs/group');
 
 function createLightGroup(group, allLights) {
   const {
+    attributes: {
+      light: {
+        allOf = false
+      } = {}
+    } = {},
     lights: includedLights,
     type: includedType
   } = group;
@@ -15,7 +20,7 @@ function createLightGroup(group, allLights) {
   const events = ['buttonShortpress'];
 
   try {
-    return new LightGroup(lights, events);
+    return new LightGroup(lights, events, allOf);
   } catch (e) {
     return null;
   }

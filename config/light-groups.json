@@ -8,7 +8,8 @@
     ],
     "attributes": {
       "light": {
-        "enableButton": true
+        "enableButton": true,
+        "allOf": true
       },
       "hmi": {
         "group": "ceiling-lamp-group",
