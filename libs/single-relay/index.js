@@ -66,6 +66,12 @@ class SingleRelay extends Switch {
 
     this._powerSetpoint = Boolean(on);
 
+    this.emit('set');
+
+    if (this._powerSetpoint === this.power) {
+      return Promise.resolve(this.power);
+    }
+
     return this.set('relay', this._powerSetpoint).then((result) => {
       if (result !== this._powerSetpoint) {
         throw new Error('could not set relay');
@@ -75,6 +81,7 @@ class SingleRelay extends Switch {
         this.power = this._powerSetpoint;
         this.emit('change');
       }
+
       return this.power;
     }).catch((reason) => {
       log.error({

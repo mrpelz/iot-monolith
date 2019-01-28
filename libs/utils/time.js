@@ -30,8 +30,7 @@ function daysInMonth(month, year) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-function isLeapYear(date) {
-  const year = date.getFullYear();
+function isLeapYear(year) {
   /* eslint-disable-next-line no-bitwise */
   return !((year & 3 || !(year % 25)) && year & 15);
 }
@@ -136,7 +135,7 @@ const epochs = (() => {
     year,
     leapYear,
     get thisYear() {
-      const leap = isLeapYear(new Date());
+      const leap = isLeapYear(new Date().getFullYear());
       return leap ? leapYear : year;
     },
     specificYear: (y) => {
@@ -443,6 +442,42 @@ class Scheduler extends EventEmitter {
   }
 }
 
+class Timer extends EventEmitter {
+  constructor(time = 0) {
+    super();
+
+    this._time = time;
+    this._timeout = null;
+
+    rebind(this, '_handleFire');
+  }
+
+  _handleFire() {
+    this.stop(true);
+    this.emit('hit');
+  }
+
+  stop(suppressEvent = false) {
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = null;
+
+      if (suppressEvent) return;
+      this.emit('aborted');
+    }
+  }
+
+  start() {
+    this.stop(true);
+    this.emit('start');
+    this._timeout = setTimeout(this._handleFire, this._time);
+  }
+
+  get isRunning() {
+    return Boolean(this._timeout);
+  }
+}
+
 class TimeRange extends EventEmitter {
   static prepare(input) {
     const now = TimeFloor.second(new Date()).getTime();
@@ -582,6 +617,7 @@ module.exports = {
   Moment,
   RecurringMoment,
   Scheduler,
+  Timer,
   TimeRange,
   RecurringTimeRange,
   TimeFloor,

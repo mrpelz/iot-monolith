@@ -3,6 +3,7 @@ const { URL } = require('url');
 const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
+const { Timer } = require('../../libs/utils/time');
 const { coupleDoorSensorToLight, coupleRfSwitchToLight } = require('../utils/lights');
 
 function manageSingleRelayLight(light, httpHookServer) {
@@ -264,34 +265,25 @@ function flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTi
   const { instance: lightInstance } = lightMatch;
   const { instance: doorSensorInstance } = doorSensorMatch;
 
-  let affect = false;
-  let timer = null;
-
-  const clearTimer = () => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-    }
-  };
+  const timer = new Timer(entryDoorLightTimeout);
+  let lightChanged = null;
 
   doorSensorInstance.on('change', () => {
     if (doorSensorInstance.isOpen) {
-      affect = !lightInstance.power;
-      lightInstance.setPower(true);
-    } else if (affect) {
-      clearTimer();
-
-      timer = setTimeout(() => {
-        lightInstance.setPower(false);
-      }, entryDoorLightTimeout);
-
-      affect = false;
+      resolveAlways(lightInstance.setPower(true));
+      lightChanged = false;
+    } else if (!lightChanged) {
+      timer.start();
     }
   });
 
-  lightInstance.on('change', () => {
-    if (lightInstance.power) return;
-    clearTimer();
+  timer.on('hit', () => {
+    resolveAlways(lightInstance.setPower(false));
+  });
+
+  lightInstance.on('set', () => {
+    timer.stop();
+    lightChanged = true;
   });
 }
 
