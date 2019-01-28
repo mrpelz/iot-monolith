@@ -271,7 +271,7 @@ class PersistentSocket extends Base {
     }
   }
 
-  _timeoutTick(stop) {
+  _timeoutTick(stop = false) {
     const { log, state, options: { keepAlive } } = this._persistentSocket;
 
     if (state.tcpTimeout) {
@@ -286,7 +286,7 @@ class PersistentSocket extends Base {
         log.notice('timeout');
 
         this._onDisconnection();
-      }, Math.round(keepAlive.time * 1.5));
+      }, Math.round(keepAlive.time * 3));
     }
   }
 
