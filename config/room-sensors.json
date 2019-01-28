@@ -146,9 +146,7 @@
       "pressure",
       "humidity",
       "brightness",
-      "precipitation",
-      "eco2",
-      "tvoc"
+      "precipitation"
     ],
     "attributes": {
       "hmi": {

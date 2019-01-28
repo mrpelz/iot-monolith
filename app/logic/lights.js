@@ -269,7 +269,7 @@ function flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTi
   let lightChanged = null;
 
   doorSensorInstance.on('change', () => {
-    if (doorSensorInstance.isOpen) {
+    if (doorSensorInstance.isOpen && !lightInstance.power) {
       resolveAlways(lightInstance.setPower(true));
       lightChanged = false;
     } else if (!lightChanged) {
