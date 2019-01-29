@@ -30,6 +30,21 @@
     }
   },
   {
+    "name": "arbeitszimmerTest",
+    "host": "10.97.4.41",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "lamp",
+        "section": "arbeitszimmer"
+      }
+    }
+  },
+  {
     "name": "esszimmerDeckenlampe",
     "host": "10.97.4.38",
     "port": 5045,
