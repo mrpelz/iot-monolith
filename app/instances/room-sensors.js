@@ -47,11 +47,11 @@ function addSecurity(name, instance, security) {
     if (value === null) return;
 
     if (value) {
-      trigger('movement start');
+      trigger(true, 'movement start');
       return;
     }
 
-    trigger('movement stop');
+    trigger(false, 'movement stop');
   });
 }
 

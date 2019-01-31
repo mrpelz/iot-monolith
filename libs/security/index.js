@@ -37,13 +37,22 @@ class Security extends EventEmitter {
   }
 
   addElement(name) {
-    return (text) => {
-      if (!this.armed) return;
+    let lastState;
+
+    return (state, text) => {
+      if (
+        !this.armed
+        || (
+          state !== undefined
+          && state === lastState
+        )
+      ) return;
 
       this.triggered = true;
 
       this._log.notice({
         head: 'triggered',
+        value: state,
         attachment: `${name}: ${text}`
       });
 

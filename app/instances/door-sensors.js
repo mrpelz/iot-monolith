@@ -43,11 +43,11 @@ function addSecurity(name, instance, security) {
 
   instance.on('change', () => {
     if (instance.isOpen) {
-      trigger('was opened');
+      trigger(true, 'was opened');
       return;
     }
 
-    trigger('was closed');
+    trigger(false, 'was closed');
   });
 }
 

@@ -19,7 +19,7 @@ function addSecurity(name, instance, security) {
   const trigger = security.addElement(name);
 
   const onSwitch = () => {
-    trigger('was pressed');
+    trigger(undefined, 'was pressed');
   };
 
   instance.on(1, onSwitch);
