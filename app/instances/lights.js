@@ -1,4 +1,5 @@
 const { SingleRelay } = require('../../libs/single-relay');
+const { getKey } = require('../../libs/utils/structures');
 
 function createSingleRelayLight(light) {
   const {
@@ -16,12 +17,36 @@ function createSingleRelayLight(light) {
   }
 }
 
+function addPersistenceHandler(name, instance, lightDb) {
+  const handleChange = () => {
+    lightDb[name] = {
+      power: instance.powerSetpoint
+    };
+  };
+
+  const handleInit = () => {
+    const {
+      power = false
+    } = lightDb[name] || {};
+
+    instance.powerSetpoint = power;
+
+    instance.on('set', handleChange);
+    handleChange();
+  };
+
+  handleInit();
+}
+
 (function main() {
   const {
     config: {
       lights
-    }
+    },
+    db
   } = global;
+
+  const lightDb = getKey(db, 'lights');
 
   global.lights = lights.map((light) => {
     const { disable = false, name, type } = light;
@@ -39,6 +64,9 @@ function createSingleRelayLight(light) {
     if (!instance) return null;
 
     instance.log.friendlyName(name);
+
+    addPersistenceHandler(name, instance, lightDb);
+
     instance.connect();
 
     return Object.assign(light, {
