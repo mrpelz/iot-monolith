@@ -10,8 +10,6 @@
   "historyMetrics": [
     "brightness",
     "co2",
-    "dihydrogen",
-    "ethanol",
     "flow_rate",
     "humidity",
     "pm025",
