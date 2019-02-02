@@ -10,13 +10,15 @@
   "historyMetrics": [
     "brightness",
     "co2",
+    "eco2",
     "flow_rate",
     "humidity",
-    "pm025",
-    "pm10",
     "precipitation",
     "pressure",
-    "temperature"
+    "pm025",
+    "pm10",
+    "temperature",
+    "tvoc"
   ],
   "metricSchedule": {
     "pm025": "every:1:minute",

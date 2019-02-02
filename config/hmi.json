@@ -25,8 +25,8 @@
         "pm10",
         "pm025",
         "co2",
-        "dihydrogen",
-        "ethanol",
+        "eco2",
+        "tvoc",
         "precipitation",
         "door",
         "group",
@@ -35,9 +35,7 @@
       ],
       "sections": [
         [
-          "global"
-        ],
-        [
+          "global",
           "map"
         ],
         [
@@ -76,14 +74,13 @@
       "connections": "Verbindungen",
       "deg-c": "°C",
       "delayed": "verzögert",
-      "dihydrogen": "H₂",
       "disconnected": "getrennt",
       "door": "Tür",
       "doors": "Türen und Fenster",
       "duschbad": "Duschbad",
+      "eco2": "Eq. CO₂",
       "entry-door": "Wohnungstür",
       "esszimmer": "Esszimmer",
-      "ethanol": "Ethanol",
       "fan": "Ventilator",
       "flur": "Flur",
       "fridge": "Kühlschrank",
@@ -128,6 +125,7 @@
       "trendDown": "▼",
       "trendUp": "▲",
       "triggered": "ausgelöst",
+      "tvoc": "Flüchtige Organische Verbindungen",
       "unknown": "?",
       "wannenbad": "Wannenbad",
       "window-door": "Fenstertür",
@@ -139,14 +137,14 @@
   "unitMap": {
     "brightness": "lux",
     "co2": "ppm",
-    "dihydrogen": "ppm",
-    "ethanol": "ppm",
+    "eco2": "ppm",
     "humidity": "percent-rh",
     "pm025": "micrograms/m3",
     "pm10": "micrograms/m3",
     "precipitation": "mm/h",
     "pressure": "hpa",
-    "temperature": "deg-c"
+    "temperature": "deg-c",
+    "tvoc": "ppm"
   },
   "valueSanity": {
     "default": {
@@ -155,10 +153,10 @@
     "brightness": {
       "round": 2
     },
-    "dihydrogen": {
+    "eco2": {
       "round": 0
     },
-    "ethanol": {
+    "tvoc": {
       "round": 0
     },
     "pressure": {

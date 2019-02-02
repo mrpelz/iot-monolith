@@ -10,8 +10,8 @@ const roomSensor = new RoomSensor({
     'pressure',
     'humidity',
     // 'brightness',
-    'dihydrogen',
-    'ethanol',
+    'eco2',
+    'tvoc',
     'pm025',
     'pm10',
     'co2',
@@ -37,11 +37,11 @@ const get = () => {
   // roomSensor.getBrightness().then((value) => {
   //   console.log('brightness', value, '\n');
   // });
-  // roomSensor.getDihydrogen().then((value) => {
-  //   console.log('dihydrogen', value);
+  // roomSensor.getEco2().then((value) => {
+  //   console.log('eco2', value);
   // });
-  // roomSensor.getEthanol().then((value) => {
-  //   console.log('ethanol', value);
+  // roomSensor.getTvoc().then((value) => {
+  //   console.log('tvoc', value);
   // });
   roomSensor.getPm025().then((value) => {
     console.log('pm025', value);

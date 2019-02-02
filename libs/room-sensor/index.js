@@ -44,17 +44,17 @@ const metricOptions = {
     },
     cache: 1000
   },
-  dihydrogen: {
+  eco2: {
     head: 5,
     bytes: 2,
     cache: 1000,
-    leadIn: 15000
+    leadIn: 10000
   },
-  ethanol: {
+  tvoc: {
     head: 6,
     bytes: 2,
     cache: 1000,
-    leadIn: 15000
+    leadIn: 10000
   },
   movement: {
     head: 7,
@@ -370,12 +370,12 @@ class RoomSensor extends MessageClient {
     return this.getMetric('brightness');
   }
 
-  getDihydrogen() {
-    return this.getMetric('dihydrogen');
+  getEco2() {
+    return this.getMetric('eco2');
   }
 
-  getEthanol() {
-    return this.getMetric('ethanol');
+  getTvoc() {
+    return this.getMetric('tvoc');
   }
 
   getPm025() {
@@ -409,8 +409,8 @@ class RoomSensor extends MessageClient {
   // getPressure
   // getHumidity
   // getBrightness
-  // getDihydrogen
-  // getEthanol
+  // getEco2
+  // getTvoc
   // getPm025
   // getPm10
   // getCo2
