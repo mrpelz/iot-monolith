@@ -183,7 +183,9 @@
       "humidity",
       "co2",
       "pm025",
-      "pm10"
+      "pm10",
+      "eco2",
+      "tvoc"
     ],
     "attributes": {
       "hmi": {
