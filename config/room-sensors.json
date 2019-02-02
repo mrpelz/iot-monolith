@@ -183,9 +183,7 @@
       "humidity",
       "co2",
       "pm025",
-      "pm10",
-      "dihydrogen",
-      "ethanol"
+      "pm10"
     ],
     "attributes": {
       "hmi": {
