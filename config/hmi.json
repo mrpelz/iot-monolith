@@ -112,6 +112,7 @@
       "percent-rh": "%RH",
       "pm025": "PM (2,5 µm)",
       "pm10": "PM (10 µm)",
+      "ppb": "ppb",
       "ppm": "ppm",
       "precipitation": "Niederschlag",
       "pressure": "Luftdruck",
@@ -146,7 +147,7 @@
     "precipitation": "mm/h",
     "pressure": "hpa",
     "temperature": "deg-c",
-    "tvoc": "ppm"
+    "tvoc": "ppb"
   },
   "valueSanity": {
     "default": {
