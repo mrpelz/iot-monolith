@@ -48,13 +48,13 @@ const metricOptions = {
     head: 5,
     bytes: 2,
     cache: 1000,
-    leadIn: 10000
+    leadIn: 15000
   },
   tvoc: {
     head: 6,
     bytes: 2,
     cache: 1000,
-    leadIn: 10000
+    leadIn: 15000
   },
   movement: {
     head: 7,
