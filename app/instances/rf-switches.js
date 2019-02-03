@@ -16,7 +16,7 @@ function createWallSwitch(rfSwitch, server) {
 }
 
 function addSecurity(name, instance, security) {
-  const trigger = security.addElement(name);
+  const trigger = security.addElement(name, 1);
 
   const onSwitch = () => {
     trigger(undefined, 'was pressed');

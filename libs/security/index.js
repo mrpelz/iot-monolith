@@ -1,9 +1,12 @@
 const EventEmitter = require('events');
 const { Logger } = require('../log');
+const { Timer } = require('../utils/time');
 
 const libName = 'security';
 
 const armDelay = 30000;
+const defaultLevel = 1;
+const allowedLevels = [0, 1];
 
 class Security extends EventEmitter {
   constructor(options = {}) {
@@ -14,17 +17,27 @@ class Security extends EventEmitter {
     super();
 
     this.armed = false;
+    this.level = defaultLevel;
     this.triggered = false;
-    this.armDelay = undefined;
 
     (async () => {
       const client = await telegram.client;
       this._chat = await client.addChat(telegram.chatIds.iot);
     })();
 
+    this.timer = new Timer(armDelay);
+
     const log = new Logger();
     log.friendlyName('Security');
     this._log = log.withPrefix(libName);
+
+    this.timer.on('hit', () => {
+      this.arm(true, this.level);
+    });
+  }
+
+  get armDelay() {
+    return this.timer.isRunning;
   }
 
   _telegram(message) {
@@ -36,12 +49,13 @@ class Security extends EventEmitter {
     });
   }
 
-  addElement(name) {
+  addElement(name, level = 0) {
     let lastState;
 
     return (state, text) => {
       if (
         !this.armed
+        || level > this.level
         || (
           state !== undefined
           && state === lastState
@@ -62,18 +76,16 @@ class Security extends EventEmitter {
     };
   }
 
-  arm(active) {
-    if (this.armed === active && !this.armDelay) return;
+  arm(active, level = defaultLevel) {
+    if (!allowedLevels.includes(level)) {
+      throw new Error('illegal security level used');
+    }
 
     this.armed = active;
+    this.level = level;
 
     if (!active) {
       this.triggered = false;
-
-      if (this.armDelay) {
-        clearTimeout(this.armDelay);
-        this.armDelay = undefined;
-      }
     }
 
     this._log.info({
@@ -83,30 +95,42 @@ class Security extends EventEmitter {
 
     this._telegram(`${active ? 'aktiv' : 'inaktiv'}`);
 
+    if (active) {
+      this._log.info({
+        head: 'level',
+        value: this.level
+      });
+
+      this._telegram(`level ${level}`);
+    }
+
     this.emit('change');
   }
 
-  delayedArm() {
+  delayedArm(level = defaultLevel) {
+    if (!allowedLevels.includes(level)) {
+      throw new Error('illegal security level used');
+    }
     if (this.armed || this.armDelay) return;
 
-    this._log.info('delayed activation');
+    this.level = level;
 
+    this._log.info('delayed activation');
     this._telegram(`Aktivierung in ${armDelay / 1000} Sekunden`);
 
-    this.armDelay = setTimeout(() => {
-      this.arm(true);
-    }, armDelay);
+    this.timer.start();
 
     this.emit('change');
   }
 
-  toggle() {
+  toggle(level) {
     if (this.armed || this.armDelay) {
-      this.arm(false);
+      this.timer.stop();
+      this.arm(false, level);
       return;
     }
 
-    this.delayedArm();
+    this.delayedArm(level);
   }
 }
 

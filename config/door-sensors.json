@@ -30,6 +30,9 @@
     "name": "entryDoor",
     "id": 3439,
     "attributes": {
+      "security": {
+        "alarmLevel": 0
+      },
       "hmi": {
         "category": "security",
         "group": "entry-door",

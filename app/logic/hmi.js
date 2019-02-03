@@ -456,35 +456,44 @@ function fansHmi(fans, hmiServer) {
 }
 
 function securityHmi(instance, hmiServer) {
-  const hmi = new HmiElement({
-    name: 'security',
-    attributes: {
-      category: 'security',
-      group: 'security-system',
-      section: 'global',
-      setType: 'trigger',
-      sortCategory: '_top',
-      type: 'security'
-    },
-    server: hmiServer,
-    getter: () => {
-      return Promise.resolve((() => {
-        if (instance.triggered) return 'triggered';
-        if (instance.armed) return 'on';
-        if (instance.armDelay) return 'delayed';
-        return 'off';
-      })());
-    },
-    settable: true
-  });
+  const addHmi = (level) => {
+    const hmi = new HmiElement({
+      name: `security${level}`,
+      attributes: {
+        category: 'security',
+        group: `§{security-system} L${level}`,
+        section: 'global',
+        setType: 'trigger',
+        sortCategory: '_top',
+        sortGroup: 'security-system',
+        type: 'security'
+      },
+      server: hmiServer,
+      getter: () => {
+        return Promise.resolve((() => {
+          if (instance.level === level) {
+            if (instance.armDelay) return 'delayed';
+            if (instance.triggered) return 'triggered';
+            if (instance.armed) return 'on';
+          }
 
-  instance.on('change', () => {
-    hmi.update();
-  });
+          return 'off';
+        })());
+      },
+      settable: true
+    });
 
-  hmi.on('set', () => {
-    instance.toggle();
-  });
+    instance.on('change', () => {
+      hmi.update();
+    });
+
+    hmi.on('set', () => {
+      instance.toggle(level);
+    });
+  };
+
+  addHmi(1); // include levels <= 1 (e.g. alarm for when no one is home)
+  addHmi(0); // include levels <= 0 (e.g. alarm for when people are sleeping)
 }
 
 

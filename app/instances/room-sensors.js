@@ -39,7 +39,7 @@ function addSchedule(metrics, instance, metricSchedule, scheduler) {
 function addSecurity(name, instance, security) {
   const metric = 'movement';
 
-  const trigger = security.addElement(name);
+  const trigger = security.addElement(name, 1);
 
   instance.on(metric, () => {
     const value = instance.getState(metric);
