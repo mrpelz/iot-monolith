@@ -195,17 +195,19 @@
   },
   {
     "name": "ahuOut",
+    "host": "10.97.0.224",
+    "port": 5045,
     "metrics": [
       "temperature",
-      "pressure",
-      "humidity",
       "co2",
       "pm025",
-      "pm10"
+      "pm10",
+      "tvoc"
     ],
     "attributes": {
       "hmi": {
-        "section": "global"
+        "section": "global",
+        "category": "ahu-out"
       }
     }
   }
