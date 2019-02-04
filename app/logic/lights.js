@@ -226,6 +226,30 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'schlafzimmerWallRight',
     1
   );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wannenbadDeckenlampe',
+    'wannenbadWallDoor',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'duschbadDeckenlampe',
+    'duschbadWallDoor',
+    1
+  );
+
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'duschbadSpiegellampe',
+    'duschbadWallSink',
+    1
+  );
 }
 
 function arbeitszimmerDeckenlampeWithHttpHook(lights) {

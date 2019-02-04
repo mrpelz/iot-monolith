@@ -8,6 +8,14 @@
     "id": 44526
   },
   {
+    "name": "duschbadWallDoor",
+    "id": 43091
+  },
+  {
+    "name": "duschbadWallSink",
+    "id": 44306
+  },
+  {
     "name": "esszimmerButton1",
     "id": 823914
   },
@@ -58,6 +66,10 @@
   {
     "name": "schlafzimmerWallRight",
     "id": 33370
+  },
+  {
+    "name": "wannenbadWallDoor",
+    "id": 29621
   },
   {
     "name": "wohnzimmerMulti1",
