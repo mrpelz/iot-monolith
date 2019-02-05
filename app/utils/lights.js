@@ -1,8 +1,12 @@
+const { resolveAlways } = require('../../libs/utils/oop');
+const { Timer } = require('../../libs/utils/time');
+
 function coupleDoorSensorToLight(
   lights,
   doorSensors,
   lightName,
-  doorSensorName
+  doorSensorName,
+  timeout = 0
 ) {
   const lightMatch = lights.find((light) => {
     return light.name === lightName;
@@ -19,8 +23,25 @@ function coupleDoorSensorToLight(
   const { instance: lightInstance } = lightMatch;
   const { instance: doorSensorInstance } = doorSensorMatch;
 
+  const timer = new Timer(timeout);
+  let lightChanged = null;
+
   doorSensorInstance.on('change', () => {
-    lightInstance.setPower(doorSensorInstance.isOpen);
+    if (doorSensorInstance.isOpen && !lightInstance.power) {
+      resolveAlways(lightInstance.setPower(true));
+      lightChanged = false;
+    } else if (!lightChanged) {
+      timer.start();
+    }
+  });
+
+  timer.on('hit', () => {
+    resolveAlways(lightInstance.setPower(false));
+  });
+
+  lightInstance.on('set', () => {
+    timer.stop();
+    lightChanged = true;
   });
 }
 

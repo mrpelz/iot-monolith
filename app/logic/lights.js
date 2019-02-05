@@ -3,7 +3,6 @@ const { URL } = require('url');
 const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
-const { Timer } = require('../../libs/utils/time');
 const { coupleDoorSensorToLight, coupleRfSwitchToLight } = require('../utils/lights');
 
 function manageSingleRelayLight(light, httpHookServer) {
@@ -65,12 +64,37 @@ function manage(lights, httpHookServer) {
   });
 }
 
-function lightWithDoorSensor(lights, doorSensors) {
+function lightWithDoorSensor(lights, doorSensors, lightTimeouts) {
   coupleDoorSensorToLight(
     lights,
     doorSensors,
     'abstellraumDeckenlampe',
-    'abstellraumDoor'
+    'abstellraumDoor',
+    lightTimeouts.abstellraum
+  );
+
+  coupleDoorSensorToLight(
+    lights,
+    doorSensors,
+    'flurDeckenlampeFront',
+    'entryDoor',
+    lightTimeouts.flur
+  );
+
+  coupleDoorSensorToLight(
+    lights,
+    doorSensors,
+    'duschbadDeckenlampe',
+    'duschbadDoor',
+    lightTimeouts.duschbad
+  );
+
+  coupleDoorSensorToLight(
+    lights,
+    doorSensors,
+    'wannenbadDeckenlampe',
+    'wannenbadDoor',
+    lightTimeouts.wannenbad
   );
 }
 
@@ -273,49 +297,11 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   });
 }
 
-function flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTimeout) {
-  const lightMatch = lights.find((light) => {
-    return light.name === 'flurDeckenlampeFront';
-  });
-
-  const doorSensorMatch = doorSensors.find((sensor) => {
-    return sensor.name === 'entryDoor';
-  });
-
-  if (!lightMatch || !doorSensorMatch) {
-    throw new Error('could not find light or door-sensor instance');
-  }
-
-  const { instance: lightInstance } = lightMatch;
-  const { instance: doorSensorInstance } = doorSensorMatch;
-
-  const timer = new Timer(entryDoorLightTimeout);
-  let lightChanged = null;
-
-  doorSensorInstance.on('change', () => {
-    if (doorSensorInstance.isOpen && !lightInstance.power) {
-      resolveAlways(lightInstance.setPower(true));
-      lightChanged = false;
-    } else if (!lightChanged) {
-      timer.start();
-    }
-  });
-
-  timer.on('hit', () => {
-    resolveAlways(lightInstance.setPower(false));
-  });
-
-  lightInstance.on('set', () => {
-    timer.stop();
-    lightChanged = true;
-  });
-}
-
 (function main() {
   const {
     config: {
       globals: {
-        entryDoorLightTimeout
+        lightTimeouts
       }
     },
     doorSensors,
@@ -325,8 +311,7 @@ function flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTi
   } = global;
 
   manage(lights, httpHookServer);
-  lightWithDoorSensor(lights, doorSensors);
+  lightWithDoorSensor(lights, doorSensors, lightTimeouts);
   lightWithRfSwitch(lights, rfSwitches);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
-  flurDeckenlampeFrontWithEntryDoor(lights, doorSensors, entryDoorLightTimeout);
 }());

@@ -26,7 +26,6 @@
   },
   "fridgeTimeout": 20000,
   "entryDoorTimeout": 60000,
-  "entryDoorLightTimeout": 60000,
   "fridgeMessage": "Bitte mach den Kühlschrank zu. 🥶",
   "entryDoorMessage": "Die Wohnungstür ist noch offen. ❗️",
   "ev1527": [
@@ -42,5 +41,11 @@
       "host": "flexo.net.wurstsalat.cloud",
       "port": 9000
     }
-  ]
+  ],
+  "lightTimeouts": {
+    "abstellraum": 30000,
+    "duschbad": 900000,
+    "flur": 60000,
+    "wannenbad": 900000
+  }
 }
