@@ -50,6 +50,47 @@ class Latch extends EventEmitter {
   }
 }
 
+class Remap {
+  constructor(ranges = []) {
+    this._ranges = ranges;
+  }
+
+  convert(inKey, outKey, input) {
+    const matchingRange = this._ranges.find((range) => {
+      if (!range[inKey] || !range[outKey]) return false;
+
+      const {
+        [inKey]: [from, to] = []
+      } = range;
+      return from !== undefined
+        && to !== undefined
+        && input >= from
+        && input <= to;
+    });
+
+    if (!matchingRange) return null;
+
+    const {
+      [inKey]: [inFrom, inTo] = [],
+      [outKey]: [outFrom, outTo] = []
+    } = matchingRange;
+
+    const ratio = (input - inFrom) / (Math.abs(inTo - inFrom));
+    const output = Math.round((ratio * Math.abs(outTo - outFrom)) + outFrom);
+
+    return output;
+  }
+
+  aToB(input) {
+    return this.convert('a', 'b', input);
+  }
+
+  bToA(input) {
+    return this.convert('b', 'a', input);
+  }
+}
+
 module.exports = {
-  Latch
+  Latch,
+  Remap
 };
