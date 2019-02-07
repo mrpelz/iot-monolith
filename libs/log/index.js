@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 const { telegramSend } = require('../telegram/simple');
-const { parseString } = require('../utils/string');
 
-const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
-const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
-const logLevel = parseString(LOG_LEVEL);
-const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
+const {
+  isProd,
+  logLevel,
+  logTelegram
+} = global;
 
 const telegramLogLevel = 3;
 const levelNames = [

@@ -1,8 +1,26 @@
 process.stdin.resume();
 
 const { telegramSend } = require('./libs/telegram/simple');
+const { parseString } = require('./libs/utils/string');
+
+(function populateGlobalVars() {
+  const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+  const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
+  const logLevel = parseString(LOG_LEVEL);
+  const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
+
+  Object.assign(global, {
+    isProd,
+    logLevel,
+    logTelegram
+  });
+}());
 
 function telegramRoot(title = '', message, stack) {
+  if (!global.logTelegram) {
+    return Promise.resolve(null);
+  }
+
   return telegramSend(
     [
       '*ROOT*',
