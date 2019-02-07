@@ -30,5 +30,7 @@ function manage(vent, httpHookServer) {
     httpHookServer
   } = global;
 
+  if (!vent) return;
+
   manage(vent, httpHookServer);
 }());
