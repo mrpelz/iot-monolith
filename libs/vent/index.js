@@ -98,6 +98,10 @@ class Vent extends MessageClient {
     this._vent.log = this.log.withPrefix(libName);
   }
 
+  get default() {
+    return this._vent.default;
+  }
+
   _handleVentConnection() {
     resolveAlways(this.setTarget(this.targetSetpoint, true));
   }

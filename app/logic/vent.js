@@ -9,6 +9,10 @@ function manage(vent, httpHookServer) {
     } = request;
 
     const handleResult = (result) => {
+      if (result === undefined) {
+        return 'Error';
+      }
+
       return result.toString(10);
     };
 

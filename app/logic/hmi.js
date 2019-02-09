@@ -455,6 +455,10 @@ function fansHmi(fans, hmiServer) {
   });
 }
 
+function ventHmi(vent, hmiServer) {
+  setUpConnectionHmi(vent, 'vent', hmiServer);
+}
+
 function securityHmi(instance, hmiServer) {
   const addHmi = (level) => {
     const hmi = new HmiElement({
@@ -517,7 +521,8 @@ function securityHmi(instance, hmiServer) {
     metricAggregates,
     outwardsDoorSensorsGroup,
     roomSensors,
-    security
+    security,
+    vent
   } = global;
 
   doorSensorsHmi(doorSensors, hmiServer);
@@ -543,5 +548,6 @@ function securityHmi(instance, hmiServer) {
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
+  ventHmi(vent, hmiServer);
   securityHmi(security, hmiServer);
 }());
