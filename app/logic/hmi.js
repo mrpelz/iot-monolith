@@ -459,6 +459,34 @@ function ventHmi(vent, hmiServer) {
   setUpConnectionHmi(vent, 'vent', hmiServer);
 }
 
+function floodlightAlarmClockHmi(floodlightAlarmClock, hmiServer) {
+  const hmi = new HmiElement({
+    name: 'floodlightAlarmClock',
+    attributes: {
+      category: 'lamps',
+      group: '§{flood-lamp}-Wecker',
+      section: 'schlafzimmer',
+      setType: 'trigger',
+      type: 'binary-light'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(floodlightAlarmClock.state ? 'on' : 'off');
+    },
+    settable: true
+  });
+
+  hmi.on('set', () => {
+    if (floodlightAlarmClock.state) {
+      floodlightAlarmClock.disarm();
+    } else {
+      floodlightAlarmClock.arm();
+    }
+
+    hmi.update();
+  });
+}
+
 function securityHmi(instance, hmiServer) {
   const addHmi = (level) => {
     const hmi = new HmiElement({
@@ -514,6 +542,7 @@ function securityHmi(instance, hmiServer) {
     allMovementGroup,
     doorSensors,
     fans,
+    floodlightAlarmClock,
     histories,
     hmiServer,
     lightGroups,
@@ -549,5 +578,6 @@ function securityHmi(instance, hmiServer) {
   lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
   ventHmi(vent, hmiServer);
+  floodlightAlarmClockHmi(floodlightAlarmClock, hmiServer);
   securityHmi(security, hmiServer);
 }());
