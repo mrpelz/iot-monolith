@@ -176,6 +176,21 @@
     }
   },
   {
+    "name": "schlafzimmerFloodlight",
+    "host": "10.97.4.33",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "flood-lamp",
+        "section": "schlafzimmer"
+      }
+    }
+  },
+  {
     "name": "wannenbadDeckenlampe",
     "host": "10.97.4.43",
     "port": 5045,

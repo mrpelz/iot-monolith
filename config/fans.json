@@ -11,6 +11,7 @@
     }
   },
   {
+    "disable": true,
     "name": "schlafzimmerFan",
     "host": "10.97.4.33",
     "port": 5045,
