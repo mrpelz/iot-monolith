@@ -213,7 +213,7 @@ class RoomSensor extends MessageClient {
         isConnected,
         connectionTime
       }
-    } = this._persistentSocket;
+    } = this._reliableSocket;
 
     const {
       log,
@@ -327,7 +327,7 @@ class RoomSensor extends MessageClient {
       state: {
         isConnected
       }
-    } = this._persistentSocket;
+    } = this._reliableSocket;
 
     const {
       log,

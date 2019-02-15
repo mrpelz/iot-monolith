@@ -393,7 +393,7 @@ class ReliableSocket extends Base {
       host = null,
       port = null,
       lengthPreamble = 1,
-      keepAlive = 5000
+      keepAlive = 2000
     } = options;
 
     if (!host || !port || !lengthPreamble) {
@@ -417,7 +417,8 @@ class ReliableSocket extends Base {
         outbox: new Set()
       },
       socket: new Socket(),
-      disconnectTimer: new Timer(keepAlive),
+      messageTimer: new Timer(keepAlive * 2),
+      disconnectTimer: new Timer(keepAlive * 4),
       log: this.log.withPrefix(libName)
     };
 
@@ -447,7 +448,7 @@ class ReliableSocket extends Base {
       socket
     } = this._reliableSocket;
 
-    if (shouldBeConnected && !isConnected) {
+    if (shouldBeConnected && !isConnected && !socket.connecting) {
       socket.connect({ host, port });
     } else if (!shouldBeConnected && isConnected) {
       socket.end();
@@ -455,10 +456,16 @@ class ReliableSocket extends Base {
   }
 
   _handleReadable() {
+    const { messageTimer } = this._reliableSocket;
+
+    messageTimer.stop();
+
     let remainder = true;
     while (remainder) {
       remainder = this._read();
     }
+
+    messageTimer.start();
   }
 
   _notifyDisconnect() {
@@ -493,11 +500,13 @@ class ReliableSocket extends Base {
         shouldBeConnected
       },
       socket,
+      messageTimer,
       disconnectTimer
     } = this._reliableSocket;
 
     if (!isConnected) return;
 
+    messageTimer.stop();
     socket.destroy();
 
     if (shouldBeConnected) {
@@ -545,6 +554,7 @@ class ReliableSocket extends Base {
         keepAlive
       },
       socket,
+      messageTimer,
       disconnectTimer
     } = this._reliableSocket;
 
@@ -554,15 +564,18 @@ class ReliableSocket extends Base {
       socket.setKeepAlive(true, keepAlive);
       socket.setTimeout(keepAlive * 2);
 
-      setInterval(this._connect, keepAlive);
+      setInterval(this._connect, Math.round(keepAlive / 2));
       setInterval(this._sendKeepAlive, keepAlive);
     }
 
     socket.on('readable', this._handleReadable);
+
     socket.on('connect', this._onConnection);
+
     socket.on('end', this._onDisconnection);
     socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
+    messageTimer.on('hit', this._onDisconnection);
 
     disconnectTimer.on('hit', this._notifyDisconnect);
   }

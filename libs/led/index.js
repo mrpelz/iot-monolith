@@ -57,7 +57,7 @@ class LedDriver extends MessageClient {
       state: {
         isConnected
       }
-    } = this._persistentSocket;
+    } = this._reliableSocket;
 
     const { channels, log } = this._ledDriver;
 

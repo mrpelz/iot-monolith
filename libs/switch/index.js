@@ -120,7 +120,7 @@ class Switch extends MessageClient {
       state: {
         isConnected
       }
-    } = this._persistentSocket;
+    } = this._reliableSocket;
 
     const { capabilities, log } = this._switch;
 

@@ -1,4 +1,4 @@
-const { PersistentSocket } = require('../tcp');
+const { ReliableSocket } = require('../tcp');
 const { emptyBuffer, readNumber } = require('../utils/data');
 const { rebind } = require('../utils/oop');
 
@@ -84,13 +84,13 @@ function callId(state) {
   return id;
 }
 
-class MessageClient extends PersistentSocket {
+class MessageClient extends ReliableSocket {
   constructor(options = {}) {
     const {
       host = null,
       port = null,
       lengthBytes = 1,
-      timeout = 10000,
+      timeout = 2000,
       messageTypes = []
     } = options;
 
@@ -101,14 +101,8 @@ class MessageClient extends PersistentSocket {
     super({
       host,
       port,
-      keepAlive: {
-        send: true,
-        receive: true,
-        time: timeout,
-        data: Buffer.from([0xff])
-      },
-      lengthPreamble: lengthBytes,
-      delimiter: false
+      keepAlive: timeout,
+      lengthPreamble: lengthBytes
     });
 
     this._messaging = {};
@@ -189,7 +183,7 @@ class MessageClient extends PersistentSocket {
       state: {
         isConnected
       }
-    } = this._persistentSocket;
+    } = this._reliableSocket;
 
     const {
       log,
