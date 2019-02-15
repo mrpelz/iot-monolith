@@ -2,7 +2,8 @@ const { Socket } = require('net');
 
 const { Base } = require('../base');
 const { rebind } = require('../utils/oop');
-const { humanPayload, writeNumber } = require('../utils/data');
+const { humanPayload, writeNumber, readNumber } = require('../utils/data');
+const { Timer } = require('../utils/time');
 
 const libName = 'tcp';
 
@@ -384,6 +385,240 @@ class PersistentSocket extends Base {
   // write
 }
 
+class ReliableSocket extends Base {
+  constructor(options = {}) {
+    super();
+
+    const {
+      host = null,
+      port = null,
+      lengthPreamble = 1,
+      keepAlive = 5000
+    } = options;
+
+    if (!host || !port || !lengthPreamble) {
+      throw new Error('insufficient options provided');
+    }
+
+    this.log.friendlyName(`${host}:${port}`);
+
+    this._reliableSocket = {
+      options: {
+        host,
+        port,
+        lengthPreamble,
+        keepAlive
+      },
+      state: {
+        connectionTime: 0,
+        currentLength: 0,
+        isConnected: null,
+        shouldBeConnected: false,
+        outbox: new Set()
+      },
+      socket: new Socket(),
+      disconnectTimer: new Timer(keepAlive),
+      log: this.log.withPrefix(libName)
+    };
+
+    rebind(
+      this,
+      '_connect',
+      '_handleReadable',
+      '_notifyDisconnect',
+      '_onConnection',
+      '_onDisconnection',
+      '_sendKeepAlive'
+    );
+
+    this._setUpSocket();
+  }
+
+  _connect() {
+    const {
+      options: {
+        host,
+        port
+      },
+      state: {
+        isConnected,
+        shouldBeConnected
+      },
+      socket
+    } = this._reliableSocket;
+
+    if (shouldBeConnected && !isConnected) {
+      socket.connect({ host, port });
+    } else if (!shouldBeConnected && isConnected) {
+      socket.end();
+    }
+  }
+
+  _handleReadable() {
+    let remainder = true;
+    while (remainder) {
+      remainder = this._read();
+    }
+  }
+
+  _notifyDisconnect() {
+    const { log } = this._reliableSocket;
+    log.error('unrecovered socket disconnect');
+  }
+
+  _onConnection() {
+    const {
+      state: {
+        isConnected
+      },
+      disconnectTimer
+    } = this._reliableSocket;
+
+    if (isConnected) return;
+
+    this._reliableSocket.state.connectionTime = Date.now();
+
+    disconnectTimer.stop();
+
+    this._writeOut();
+
+    this._reliableSocket.state.isConnected = true;
+    this.emit('connect');
+  }
+
+  _onDisconnection() {
+    const {
+      state: {
+        isConnected,
+        shouldBeConnected
+      },
+      socket,
+      disconnectTimer
+    } = this._reliableSocket;
+
+    if (!isConnected) return;
+
+    socket.destroy();
+
+    if (shouldBeConnected) {
+      disconnectTimer.start();
+    }
+
+    this._reliableSocket.state.isConnected = false;
+    this.emit('disconnect');
+  }
+
+  _read() {
+    const {
+      socket,
+      options: {
+        lengthPreamble
+      }
+    } = this._reliableSocket;
+
+    if (this._reliableSocket.state.currentLength) {
+      const bodyPayload = socket.read(this._reliableSocket.state.currentLength);
+      if (!bodyPayload) return false;
+
+      this._reliableSocket.state.currentLength = 0;
+      this.emit('data', bodyPayload);
+
+      return true;
+    }
+
+    const lengthPayload = socket.read(lengthPreamble);
+    if (!lengthPayload) return false;
+
+    this._reliableSocket.state.currentLength = readNumber(lengthPayload, lengthPreamble);
+
+    return true;
+  }
+
+  _sendKeepAlive() {
+    if (!this._reliableSocket.state.isConnected) return;
+    this.write(Buffer.from([0xFF]), false);
+  }
+
+  _setUpSocket() {
+    const {
+      options: {
+        keepAlive
+      },
+      socket,
+      disconnectTimer
+    } = this._reliableSocket;
+
+    socket.setNoDelay(true);
+
+    if (keepAlive) {
+      socket.setKeepAlive(true, keepAlive);
+      socket.setTimeout(keepAlive * 2);
+
+      setInterval(this._connect, keepAlive);
+      setInterval(this._sendKeepAlive, keepAlive);
+    }
+
+    socket.on('readable', this._handleReadable);
+    socket.on('connect', this._onConnection);
+    socket.on('end', this._onDisconnection);
+    socket.on('timeout', this._onDisconnection);
+    socket.on('error', this._onDisconnection);
+
+    disconnectTimer.on('hit', this._notifyDisconnect);
+  }
+
+  _writeOut() {
+    const {
+      state: {
+        outbox
+      },
+      socket
+    } = this._reliableSocket;
+
+    outbox.forEach((message) => {
+      socket.write(message);
+    });
+
+    outbox.clear();
+  }
+
+  connect() {
+    this._reliableSocket.state.shouldBeConnected = true;
+    this._connect();
+  }
+
+  disconnect() {
+    this._reliableSocket.state.shouldBeConnected = false;
+    this._connect();
+  }
+
+  write(input, spontaneousSocket = true) {
+    const {
+      options: {
+        lengthPreamble
+      },
+      state: {
+        isConnected,
+        outbox
+      }
+    } = this._reliableSocket;
+
+    if (!isConnected && !spontaneousSocket) {
+      throw new Error('socket is not connected!');
+    }
+
+    outbox.add(Buffer.concat([
+      writeNumber(input.length, lengthPreamble),
+      input
+    ]));
+
+    if (isConnected) {
+      this._writeOut();
+    }
+  }
+}
+
 module.exports = {
-  PersistentSocket
+  PersistentSocket,
+  ReliableSocket
 };

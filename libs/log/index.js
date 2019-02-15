@@ -2,9 +2,9 @@
 const { telegramSend } = require('../telegram/simple');
 
 const {
-  isProd,
-  logLevel,
-  logTelegram
+  isProd = false,
+  logLevel = 7,
+  logTelegram = false
 } = global;
 
 const telegramLogLevel = 3;

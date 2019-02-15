@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-const { PersistentSocket } = require('../index');
+const { PersistentSocket, ReliableSocket } = require('../index');
 
-// SOCKET TEST
-const socket = new PersistentSocket({
+// PERSISTENT SOCKET TEST
+const persistentSocket = new PersistentSocket({
   host: '127.0.0.1',
   port: 3000,
   keepAlive: {
@@ -14,28 +14,61 @@ const socket = new PersistentSocket({
   lengthPreamble: 2
 });
 
-let writeInterval;
+let writeInterval1;
 
-socket.on('data', (input) => {
+persistentSocket.on('data', (input) => {
   console.log(input);
 });
 
-socket.on('connect', () => {
+persistentSocket.on('connect', () => {
   console.log('connected');
 
-  writeInterval = setInterval(() => {
-    socket.write(Buffer.from('test'));
+  writeInterval1 = setInterval(() => {
+    persistentSocket.write(Buffer.from('test'));
   }, 1000);
 });
 
-socket.on('disconnect', () => {
+persistentSocket.on('disconnect', () => {
   console.log('disconnected');
 
-  clearInterval(writeInterval);
+  clearInterval(writeInterval1);
 });
 
-socket.connect();
+persistentSocket.connect();
 
 setTimeout(() => {
-  socket.disconnect();
+  persistentSocket.disconnect();
 }, 10000);
+
+
+// RELIABLE SOCKET TEST
+const reliableSocket = new ReliableSocket({
+  host: '127.0.0.1',
+  port: 3000
+});
+
+let writeInterval2;
+
+reliableSocket.on('data', (input) => {
+  console.log(input);
+});
+
+reliableSocket.on('connect', () => {
+  console.log('connected');
+
+  writeInterval2 = setInterval(() => {
+    reliableSocket.write(Buffer.from('test'));
+  }, 1000);
+});
+
+reliableSocket.on('disconnect', () => {
+  console.log('disconnected');
+
+  clearInterval(writeInterval2);
+});
+
+reliableSocket.connect();
+
+setTimeout(() => {
+  reliableSocket.disconnect();
+}, 60000);
