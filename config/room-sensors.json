@@ -188,7 +188,7 @@
     ],
     "attributes": {
       "hmi": {
-        "section": "global",
+        "section": "ahu",
         "category": "ahu-in"
       }
     }
@@ -206,7 +206,7 @@
     ],
     "attributes": {
       "hmi": {
-        "section": "global",
+        "section": "ahu",
         "category": "ahu-out"
       }
     }

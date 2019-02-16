@@ -35,7 +35,8 @@
       ],
       "sections": [
         [
-          "global"
+          "global",
+          "ahu"
         ],
         [
           "map"
@@ -60,8 +61,10 @@
     },
     "strings": {
       "abstellraum": "Abstellraum",
+      "ahu-control": "Lüftungssteuerung",
       "ahu-in": "Lufteinlass",
       "ahu-out": "Luftauslass",
+      "ahu": "Lüftung",
       "air": "Luft",
       "all": "alle",
       "arbeitszimmer": "Arbeitszimmer",
@@ -74,6 +77,7 @@
       "co2": "CO₂",
       "connected": "verbunden",
       "connections": "Verbindungen",
+      "decrease": "-",
       "deg-c": "°C",
       "delayed": "verzögert",
       "disconnected": "getrennt",
@@ -92,6 +96,7 @@
       "group": "Gruppe",
       "hpa": "hPa",
       "humidity": "Luftfeuchtigkeit",
+      "increase": "+",
       "innen": "innen",
       "kueche": "Küche",
       "lamp": "Lampe",
@@ -124,7 +129,8 @@
       "security": "Sicherheit",
       "standing-lamp": "Stehlampe",
       "stone-lamp": "Steinlampe",
-      "tech": "tech",
+      "target": "Soll",
+      "tech": "Tech",
       "temperature": "Temperatur",
       "terrasse": "Terrasse",
       "trendDown": "▼",

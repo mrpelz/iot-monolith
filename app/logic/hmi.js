@@ -456,7 +456,72 @@ function fansHmi(fans, hmiServer) {
 }
 
 function ventHmi(vent, hmiServer) {
+  const { instance, name } = vent;
+
   setUpConnectionHmi(vent, 'vent', hmiServer);
+
+  const hmiAttributes = {
+    category: 'ahu-control',
+    group: '§{ahu}-§{target}',
+    section: 'ahu',
+    sortCategory: '_top',
+    type: 'ahu'
+  };
+
+  const hmiTarget = new HmiElement({
+    name: `${name}Target`,
+    attributes: Object.assign({
+      subType: 'read'
+    }, hmiAttributes),
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(
+        instance.targetPercentage
+      );
+    }
+  });
+
+  const hmiTargetUp = new HmiElement({
+    name: `${name}TargetUp`,
+    attributes: Object.assign({
+      label: 'increase',
+      setType: 'trigger',
+      subType: 'increase'
+    }, hmiAttributes),
+    server: hmiServer,
+    settable: true
+  });
+
+  const hmiTargetDown = new HmiElement({
+    name: `${name}TargetDown`,
+    attributes: Object.assign({
+      label: 'decrease',
+      setType: 'trigger',
+      subType: 'decrease'
+    }, hmiAttributes),
+    server: hmiServer,
+    settable: true
+  });
+
+  instance.on('change', () => {
+    hmiTarget.update();
+  });
+
+  hmiTargetUp.on('set', () => {
+    const target = (instance.target === instance.maxTarget)
+      ? instance.minTarget
+      : instance.target + 1;
+
+    instance.setTarget(target);
+  });
+
+  hmiTargetDown.on('set', () => {
+    const target = (instance.target === instance.minTarget)
+      ? instance.maxTarget
+      : instance.target - 1;
+
+    instance.setTarget(target);
+  });
 }
 
 function floodlightAlarmClockHmi(floodlightAlarmClock, hmiServer) {

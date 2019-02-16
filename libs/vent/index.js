@@ -10,12 +10,13 @@ const { Timer } = require('../utils/time');
 
 const libName = 'vent';
 
-const validFrom = 0;
-const validTo = 7;
+const minTarget = 0;
+const maxTarget = 7;
 
-const switchRemap = new Remap([{
+const stateRemap = new Remap([{
   switch: [0, 1024],
-  control: [validFrom, validTo]
+  control: [minTarget, maxTarget],
+  percent: [0, 100]
 }]);
 
 const messageTypes = [
@@ -74,6 +75,9 @@ class Vent extends MessageClient {
       messageTypes
     });
 
+    this.minTarget = minTarget;
+    this.maxTarget = maxTarget;
+
     this._vent = {
       default: 0,
       caches: {
@@ -98,6 +102,10 @@ class Vent extends MessageClient {
     this._vent.log = this.log.withPrefix(libName);
   }
 
+  get targetPercentage() {
+    return stateRemap.convert('control', 'percent', this.target);
+  }
+
   get default() {
     return this._vent.default;
   }
@@ -109,7 +117,7 @@ class Vent extends MessageClient {
   _handleSwitchChange(_, switchState) {
     this._vent.timer.stop();
 
-    this._vent.default = switchRemap.convert('switch', 'control', switchState);
+    this._vent.default = stateRemap.convert('switch', 'control', switchState);
     resolveAlways(this.setTarget(this._vent.default, true));
 
     this.emit('switch', this._vent.default);
@@ -157,7 +165,7 @@ class Vent extends MessageClient {
   }
 
   setTarget(target, suppressTimer = false) {
-    if (target < validFrom && target > validTo) {
+    if (target < this.minTarget && target > this.maxTarget) {
       throw new Error('illegal target value');
     }
 

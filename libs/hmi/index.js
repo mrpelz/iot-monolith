@@ -120,7 +120,7 @@ class HmiServer {
     };
 
     const lister = async (includeValues) => {
-      const value = includeValues
+      const value = (includeValues && get)
         ? await get(true)
         : null;
 
