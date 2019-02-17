@@ -413,8 +413,7 @@ class ReliableSocket extends Base {
         connectionTime: 0,
         currentLength: 0,
         isConnected: null,
-        shouldBeConnected: false,
-        outbox: new Set()
+        shouldBeConnected: false
       },
       socket: new Socket(),
       messageTimer: new Timer(keepAlive * 2),
@@ -487,8 +486,6 @@ class ReliableSocket extends Base {
 
     disconnectTimer.stop();
 
-    this._writeOut();
-
     this._reliableSocket.state.isConnected = true;
     this.emit('connect');
   }
@@ -545,7 +542,7 @@ class ReliableSocket extends Base {
 
   _sendKeepAlive() {
     if (!this._reliableSocket.state.isConnected) return;
-    this.write(Buffer.from([0xFF]), false);
+    this.write(Buffer.from([0xFF]));
   }
 
   _setUpSocket() {
@@ -580,21 +577,6 @@ class ReliableSocket extends Base {
     disconnectTimer.on('hit', this._notifyDisconnect);
   }
 
-  _writeOut() {
-    const {
-      state: {
-        outbox
-      },
-      socket
-    } = this._reliableSocket;
-
-    outbox.forEach((message) => {
-      socket.write(message);
-    });
-
-    outbox.clear();
-  }
-
   connect() {
     this._reliableSocket.state.shouldBeConnected = true;
     this._connect();
@@ -605,29 +587,25 @@ class ReliableSocket extends Base {
     this._connect();
   }
 
-  write(input, spontaneousSocket = true) {
+  write(input) {
     const {
       options: {
         lengthPreamble
       },
       state: {
-        isConnected,
-        outbox
-      }
+        isConnected
+      },
+      socket
     } = this._reliableSocket;
 
-    if (!isConnected && !spontaneousSocket) {
+    if (!isConnected) {
       throw new Error('socket is not connected!');
     }
 
-    outbox.add(Buffer.concat([
+    socket.write(Buffer.concat([
       writeNumber(input.length, lengthPreamble),
       input
     ]));
-
-    if (isConnected) {
-      this._writeOut();
-    }
   }
 }
 
