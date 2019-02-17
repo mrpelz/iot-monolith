@@ -471,7 +471,8 @@ function ventHmi(vent, hmiServer) {
   const hmiTarget = new HmiElement({
     name: `${name}Target`,
     attributes: Object.assign({
-      subType: 'read'
+      subType: 'read',
+      unit: 'percent'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
