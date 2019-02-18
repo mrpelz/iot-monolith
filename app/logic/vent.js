@@ -3,27 +3,35 @@ const { parseString } = require('../../libs/utils/string');
 function manage(vent, httpHookServer) {
   const { instance, name } = vent;
 
-  httpHookServer.route(`/${name}`, (request) => {
+  httpHookServer.route(`/${name}/actualIn`, () => {
+    return {
+      handler: instance.getActualIn().then((value) => {
+        return `${value}`;
+      })
+    };
+  });
+
+  httpHookServer.route(`/${name}/actualOut`, () => {
+    return {
+      handler: instance.getActualOut().then((value) => {
+        return `${value}`;
+      })
+    };
+  });
+
+  httpHookServer.route(`/${name}/target`, (request) => {
     const {
       urlQuery: { target }
     } = request;
 
-    const handleResult = (result) => {
-      if (result === undefined) {
-        return 'Error';
-      }
-
-      return result.toString(10);
-    };
-
     if (target === undefined) {
       return {
-        handler: Promise.reject(new Error('"target" not set'))
+        handler: Promise.reject(new Error('target not set'))
       };
     }
 
     return {
-      handler: instance.setTarget(parseString(target)).then(handleResult)
+      handler: instance.setTarget(parseString(target))
     };
   });
 }

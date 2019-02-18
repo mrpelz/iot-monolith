@@ -468,6 +468,42 @@ function ventHmi(vent, hmiServer) {
     type: 'ahu'
   };
 
+  /* eslint-disable-next-line no-new */
+  new HmiElement({
+    name: `${name}ActualIn`,
+    attributes: Object.assign({}, hmiAttributes, {
+      group: 'flowRateIn',
+      groupLabel: 'flow-rate',
+      sortGroup: 'flow-rate',
+      subGroup: 'ahu-in',
+      subType: 'single-sensor',
+      type: 'environmental-sensor',
+      unit: 'm3/h'
+    }),
+    server: hmiServer,
+    getter: () => {
+      return instance.getActualIn();
+    }
+  });
+
+  /* eslint-disable-next-line no-new */
+  new HmiElement({
+    name: `${name}ActualOut`,
+    attributes: Object.assign({}, hmiAttributes, {
+      group: 'flowRateOut',
+      groupLabel: 'flow-rate',
+      sortGroup: 'flow-rate',
+      subGroup: 'ahu-out',
+      subType: 'single-sensor',
+      type: 'environmental-sensor',
+      unit: 'm3/h'
+    }),
+    server: hmiServer,
+    getter: () => {
+      return instance.getActualOut();
+    }
+  });
+
   const hmiTarget = new HmiElement({
     name: `${name}Target`,
     attributes: Object.assign({

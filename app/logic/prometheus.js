@@ -217,6 +217,40 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   });
 }
 
+function ventToPrometheus(vent, prometheus) {
+  const {
+    instance
+  } = vent;
+
+  prometheus.metric(
+    'flow_rate',
+    {
+      location: 'ahu-in',
+      type: 'room-sensor'
+    },
+    instance.getActualIn
+  );
+
+  prometheus.metric(
+    'flow_rate',
+    {
+      location: 'ahu-out',
+      type: 'room-sensor'
+    },
+    instance.getActualOut
+  );
+
+  prometheus.metric(
+    'ahu_target',
+    {
+      location: 'ahu'
+    },
+    () => {
+      return Promise.resolve(instance.target);
+    }
+  );
+}
+
 
 (function main() {
   const {
@@ -226,7 +260,8 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
     fans,
     metricAggregates,
     prometheus,
-    roomSensors
+    roomSensors,
+    vent
   } = global;
 
   lightsToPrometheus(lights, prometheus);
@@ -237,4 +272,5 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
   roomSensorsMovementToPrometheus(roomSensors, prometheus);
   roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
+  ventToPrometheus(vent, prometheus);
 }());

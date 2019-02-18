@@ -6,7 +6,7 @@ const {
 } = require('../utils/data');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { Remap } = require('../utils/logic');
-const { Timer } = require('../utils/time');
+const { Timer, sleep } = require('../utils/time');
 
 const libName = 'vent';
 
@@ -93,7 +93,16 @@ class Vent extends MessageClient {
     this.actualIn = undefined;
     this.actualOut = undefined;
 
-    rebind(this, '_handleVentConnection', '_handleSwitchChange', '_handleDefaultTimer');
+    rebind(
+      this,
+      '_handleVentConnection',
+      '_handleSwitchChange',
+      '_handleDefaultTimer',
+      'getActualIn',
+      'getActualOut',
+      'setTarget'
+    );
+
     this.on('connect', this._handleVentConnection);
     this.on('switchRaw', this._handleSwitchChange);
     this._vent.timer.on('hit', this._handleDefaultTimer);
@@ -110,7 +119,8 @@ class Vent extends MessageClient {
     return this._vent.default;
   }
 
-  _handleVentConnection() {
+  async _handleVentConnection() {
+    await sleep(1000);
     resolveAlways(this.setTarget(this.targetSetpoint, true));
   }
 
@@ -166,7 +176,7 @@ class Vent extends MessageClient {
 
   setTarget(target, suppressTimer = false) {
     if (target < this.minTarget || target > this.maxTarget) {
-      throw new Error('illegal target value');
+      return Promise.reject(new Error('illegal target value'));
     }
 
     const { log, timer } = this._vent;
