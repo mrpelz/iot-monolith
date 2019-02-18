@@ -165,7 +165,7 @@ class Vent extends MessageClient {
   }
 
   setTarget(target, suppressTimer = false) {
-    if (target < this.minTarget && target > this.maxTarget) {
+    if (target < this.minTarget || target > this.maxTarget) {
       throw new Error('illegal target value');
     }
 
