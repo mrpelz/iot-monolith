@@ -472,10 +472,8 @@ function ventHmi(vent, hmiServer) {
   new HmiElement({
     name: `${name}ActualIn`,
     attributes: Object.assign({}, hmiAttributes, {
-      group: 'flowRateIn',
-      groupLabel: 'flow-rate',
+      group: 'ahu-in',
       sortGroup: 'flow-rate',
-      subGroup: 'ahu-in',
       subType: 'single-sensor',
       type: 'environmental-sensor',
       unit: 'm3/h'
@@ -490,10 +488,8 @@ function ventHmi(vent, hmiServer) {
   new HmiElement({
     name: `${name}ActualOut`,
     attributes: Object.assign({}, hmiAttributes, {
-      group: 'flowRateOut',
-      groupLabel: 'flow-rate',
+      group: 'ahu-out',
       sortGroup: 'flow-rate',
-      subGroup: 'ahu-out',
       subType: 'single-sensor',
       type: 'environmental-sensor',
       unit: 'm3/h'

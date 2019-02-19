@@ -19,6 +19,10 @@ const stateRemap = new Remap([{
   percent: [0, 100]
 }]);
 
+const adcToFlowRate = (input) => {
+  return input * 0.28769663;
+};
+
 const messageTypes = [
   {
     name: 'actualIn',
@@ -150,7 +154,7 @@ class Vent extends MessageClient {
         return cache.defer();
       }
 
-      return cache.promise(this.request(direction)).catch((reason) => {
+      return cache.promise(this.request(direction).then(adcToFlowRate)).catch((reason) => {
         log.error({
           head: `get [cached] (${direction}) error`,
           attachment: reason
@@ -158,7 +162,7 @@ class Vent extends MessageClient {
       });
     }
 
-    return this.request(direction).catch((reason) => {
+    return this.request(direction).then(adcToFlowRate).catch((reason) => {
       log.error({
         head: `get [uncached] (${direction}) error`,
         attachment: reason
