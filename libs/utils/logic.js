@@ -50,6 +50,44 @@ class Latch extends EventEmitter {
   }
 }
 
+class Hysteresis extends EventEmitter {
+  constructor(options = {}) {
+    const {
+      inRangeAbove = 0,
+      outOfRangeBelow = 0
+    } = options;
+
+    if (inRangeAbove === outOfRangeBelow) {
+      throw new Error('insufficient options provided');
+    }
+
+    super();
+
+    this.inRangeAbove = inRangeAbove;
+    this.outOfRangeBelow = outOfRangeBelow;
+    this.inRange = false;
+  }
+
+  feed(input) {
+    if (typeof input !== 'number') return null;
+
+    const inRange = input > this.inRangeAbove
+    || (
+      this.inRange
+      && input > this.outOfRangeBelow
+    );
+
+    if (inRange === this.inRange) return this.inRange;
+
+    this.inRange = inRange;
+
+    this.emit(this.inRange ? 'inRange' : 'outOfRange');
+    this.emit('hit', this.inRange);
+
+    return this.inRange;
+  }
+}
+
 class Remap {
   constructor(ranges = []) {
     this._ranges = ranges;
@@ -92,5 +130,6 @@ class Remap {
 
 module.exports = {
   Latch,
+  Hysteresis,
   Remap
 };

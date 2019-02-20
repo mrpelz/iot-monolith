@@ -132,13 +132,13 @@ class Vent extends MessageClient {
     this._vent.timer.stop();
 
     this._vent.default = stateRemap.convert('switch', 'control', switchState);
-    resolveAlways(this.setTarget(this._vent.default, true));
+    resolveAlways(this.resetTarget());
 
     this.emit('switch', this._vent.default);
   }
 
   _handleDefaultTimer() {
-    resolveAlways(this.setTarget(this._vent.default, true));
+    resolveAlways(this.resetTarget());
   }
 
   _getActual(direction) {
@@ -216,10 +216,9 @@ class Vent extends MessageClient {
     });
   }
 
-  // Public methods:
-  // connect
-  // disconnect
-  // set
+  resetTarget() {
+    return this.setTarget(this._vent.default, true);
+  }
 }
 
 module.exports = {

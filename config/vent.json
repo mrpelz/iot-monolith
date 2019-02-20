@@ -3,6 +3,11 @@
   "host": "10.97.0.225",
   "port": 5045,
   "setDefaultTimeout": 7200000,
+  "fullVentAboveHumidity": 40,
+  "resetVentBelowHumidity": 35,
+  "fullVentMessage": "Luftfeuchtigkeit zu hoch, Lüftung 100% 🚿",
+  "resetVentMessage": "Luftfeuchtigkeit gesunken, Lüftung reset 🚿",
+  "ventHumidityControlUpdate": "every:10:second",
   "attributes": {
     "hmi": {
       "section": "global"
