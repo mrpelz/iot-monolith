@@ -1,55 +1,42 @@
 // const { epochs } = require('../../libs/utils/time');
 // const { post } = require('../../libs/http/client');
-const { createInlineKeyboard } = require('../../libs/telegram');
+const { Timer } = require('../../libs/utils/time');
 const { resolveAlways } = require('../../libs/utils/oop');
 
 async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
   const { client: awaitingClient, chatIds } = telegram;
+  const { instance } = fridge;
 
   const client = await awaitingClient; // wait for bot instance is available
 
-  const { instance } = fridge;
-  let timer = null;
   const messages = [];
-
-  const chat = await client.addChat(chatIds.iot);
-
   const deleteMessages = () => {
     messages.forEach((message) => {
       resolveAlways(message.delete());
     });
+    messages.length = 0;
   };
 
-  const clear = () => {
-    if (timer) clearTimeout(timer);
-    timer = null;
-  };
+  const chat = await client.addChat(chatIds.iot);
+  const timer = new Timer(fridgeTimeout);
+
+  timer.on('hit', () => {
+    chat.addMessage({
+      text: fridgeMessage
+    }).then((message) => {
+      messages.push(message);
+    });
+  });
 
   instance.on('change', () => {
-    clear();
+    timer.stop();
 
     if (!instance.isOpen) {
       deleteMessages();
       return;
     }
 
-    timer = setTimeout(() => {
-      clear();
-
-      chat.addMessage({
-        text: fridgeMessage,
-        inlineKeyboard: createInlineKeyboard([
-          [
-            {
-              text: 'Ausblenden',
-              callback: deleteMessages
-            }
-          ]
-        ])
-      }).then((message) => {
-        messages.push(message);
-      });
-    }, fridgeTimeout);
+    timer.start();
   });
 }
 
