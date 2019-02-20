@@ -74,6 +74,7 @@ class SingleRelay extends Switch {
 
     return this.set('relay', this.powerSetpoint).then((result) => {
       if (result !== this.powerSetpoint) {
+        this.power = result;
         throw new Error('could not set relay');
       }
 
