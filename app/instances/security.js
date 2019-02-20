@@ -42,6 +42,6 @@ function addPersistenceHandler(instance, securityDb) {
 
   if (!security) return;
 
-  global.outwardsDoorSensorsGroup = addPersistenceHandler(security, securityDb);
+  addPersistenceHandler(security, securityDb);
   global.security = security;
 }());

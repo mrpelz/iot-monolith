@@ -251,6 +251,30 @@ function ventToPrometheus(vent, prometheus) {
   );
 }
 
+function securityToPrometheus(security, prometheus) {
+  prometheus.metric(
+    'security_state',
+    {},
+    () => {
+      return Promise.resolve((() => {
+        if (security.armDelay) return 300;
+        if (security.triggered) return 400;
+        if (security.armed) return 200;
+
+        return 100;
+      })());
+    }
+  );
+
+  prometheus.metric(
+    'security_level',
+    {},
+    () => {
+      return Promise.resolve(security.level);
+    }
+  );
+}
+
 
 (function main() {
   const {
@@ -261,7 +285,8 @@ function ventToPrometheus(vent, prometheus) {
     metricAggregates,
     prometheus,
     roomSensors,
-    vent
+    vent,
+    security
   } = global;
 
   lightsToPrometheus(lights, prometheus);
@@ -273,4 +298,5 @@ function ventToPrometheus(vent, prometheus) {
   roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus);
   metricAggregatesToPrometheus(metricAggregates, prometheus);
   ventToPrometheus(vent, prometheus);
+  securityToPrometheus(security, prometheus);
 }());
