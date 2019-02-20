@@ -270,7 +270,7 @@ function securityToPrometheus(security, prometheus) {
     'security_level',
     {},
     () => {
-      return Promise.resolve(security.level);
+      return Promise.resolve(security.armed ? security.level : null);
     }
   );
 }
