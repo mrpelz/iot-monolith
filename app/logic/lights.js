@@ -4,7 +4,12 @@ const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
 const { Timer } = require('../../libs/utils/time');
-const { coupleDoorSensorToLight, coupleRfSwitchToLight, coupleRfToggleToLight } = require('../utils/lights');
+const {
+  coupleDoorSensorToLight,
+  coupleDoorSensorToLightTimeout,
+  coupleRfSwitchToLight,
+  coupleRfToggleToLight
+} = require('../utils/lights');
 
 function manageSingleRelayLight(light, httpHookServer) {
   const {
@@ -89,13 +94,6 @@ function lightWithDoorSensor(lights, doorSensors) {
   coupleDoorSensorToLight(
     lights,
     doorSensors,
-    'flurDeckenlampeFront',
-    'entryDoor'
-  );
-
-  coupleDoorSensorToLight(
-    lights,
-    doorSensors,
     'duschbadDeckenlampe',
     'duschbadDoor'
   );
@@ -105,6 +103,14 @@ function lightWithDoorSensor(lights, doorSensors) {
     doorSensors,
     'wannenbadDeckenlampe',
     'wannenbadDoor'
+  );
+
+  coupleDoorSensorToLightTimeout(
+    lights,
+    doorSensors,
+    'flurDeckenlampeFront',
+    'entryDoor',
+    60000
   );
 }
 

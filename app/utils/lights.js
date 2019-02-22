@@ -29,6 +29,50 @@ function coupleDoorSensorToLight(
   });
 }
 
+function coupleDoorSensorToLightTimeout(
+  lights,
+  doorSensors,
+  lightName,
+  doorSensorName,
+  timeout = 0
+) {
+  const lightMatch = lights.find((light) => {
+    return light.name === lightName;
+  });
+
+  const doorSensorMatch = doorSensors.find((sensor) => {
+    return sensor.name === doorSensorName;
+  });
+
+  if (!lightMatch || !doorSensorMatch) {
+    throw new Error('could not find light or door-sensor instance');
+  }
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: doorSensorInstance } = doorSensorMatch;
+
+  const timer = new Timer(timeout);
+  let lightChanged = null;
+
+  doorSensorInstance.on('change', () => {
+    if (doorSensorInstance.isOpen && !lightInstance.power) {
+      resolveAlways(lightInstance.setPower(true));
+      lightChanged = false;
+    } else if (!lightChanged) {
+      timer.start();
+    }
+  });
+
+  timer.on('hit', () => {
+    resolveAlways(lightInstance.setPower(false));
+  });
+
+  lightInstance.on('set', () => {
+    timer.stop();
+    lightChanged = true;
+  });
+}
+
 function coupleRfSwitchToLight(
   lights,
   rfSwitches,
@@ -88,6 +132,7 @@ function coupleRfToggleToLight(
 
 module.exports = {
   coupleDoorSensorToLight,
+  coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
   coupleRfToggleToLight
 };
