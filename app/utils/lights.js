@@ -105,8 +105,13 @@ function coupleRfToggleToLight(
   rfSwitches,
   lightName,
   rfSwitchName,
-  rfSwitchState
+  rfSwitchState,
+  rfSwitchLongPressTimeout
 ) {
+  if (!rfSwitchLongPressTimeout) {
+    throw new Error('not timeout provided');
+  }
+
   const lightMatch = lights.find(({ name }) => {
     return name === lightName;
   });
@@ -119,7 +124,7 @@ function coupleRfToggleToLight(
     throw new Error('could not find light or button instance');
   }
 
-  const timer = new Timer(1500);
+  const timer = new Timer(rfSwitchLongPressTimeout);
 
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;

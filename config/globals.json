@@ -41,5 +41,6 @@
       "host": "flexo.net.wurstsalat.cloud",
       "port": 9000
     }
-  ]
+  ],
+  "rfSwitchLongPressTimeout": 2500
 }
