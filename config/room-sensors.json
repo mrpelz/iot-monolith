@@ -1,5 +1,6 @@
 [
   {
+    "disable": true,
     "name": "wohnzimmer",
     "host": "10.97.4.10",
     "port": 3000,
