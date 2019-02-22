@@ -5,8 +5,7 @@ function coupleDoorSensorToLight(
   lights,
   doorSensors,
   lightName,
-  doorSensorName,
-  timeout = 0
+  doorSensorName
 ) {
   const lightMatch = lights.find((light) => {
     return light.name === lightName;
@@ -23,25 +22,10 @@ function coupleDoorSensorToLight(
   const { instance: lightInstance } = lightMatch;
   const { instance: doorSensorInstance } = doorSensorMatch;
 
-  const timer = new Timer(timeout);
-  let lightChanged = null;
-
   doorSensorInstance.on('change', () => {
     if (doorSensorInstance.isOpen && !lightInstance.power) {
       resolveAlways(lightInstance.setPower(true));
-      lightChanged = false;
-    } else if (!lightChanged) {
-      timer.start();
     }
-  });
-
-  timer.on('hit', () => {
-    resolveAlways(lightInstance.setPower(false));
-  });
-
-  lightInstance.on('set', () => {
-    timer.stop();
-    lightChanged = true;
   });
 }
 
@@ -72,7 +56,38 @@ function coupleRfSwitchToLight(
   });
 }
 
+function coupleRfToggleToLight(
+  lights,
+  rfSwitches,
+  lightName,
+  rfSwitchName,
+  rfSwitchState
+) {
+  const lightMatch = lights.find(({ name }) => {
+    return name === lightName;
+  });
+
+  const rfSwitchMatch = rfSwitches.find(({ name }) => {
+    return name === rfSwitchName;
+  });
+
+  if (!lightMatch || !rfSwitchMatch) {
+    throw new Error('could not find light or button instance');
+  }
+
+  const timer = new Timer(1500);
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: rfSwitchInstance } = rfSwitchMatch;
+
+  rfSwitchInstance.on(rfSwitchState, () => {
+    lightInstance.setPower(!timer.isRunning);
+    timer.start();
+  });
+}
+
 module.exports = {
   coupleDoorSensorToLight,
-  coupleRfSwitchToLight
+  coupleRfSwitchToLight,
+  coupleRfToggleToLight
 };

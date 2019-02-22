@@ -3,7 +3,8 @@ const { URL } = require('url');
 const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
-const { coupleDoorSensorToLight, coupleRfSwitchToLight } = require('../utils/lights');
+const { Timer } = require('../../libs/utils/time');
+const { coupleDoorSensorToLight, coupleRfSwitchToLight, coupleRfToggleToLight } = require('../utils/lights');
 
 function manageSingleRelayLight(light, httpHookServer) {
   const {
@@ -11,7 +12,8 @@ function manageSingleRelayLight(light, httpHookServer) {
     name,
     attributes: {
       light: {
-        enableButton = false
+        enableButton = false,
+        timeout = 0
       } = {}
     } = {}
   } = light;
@@ -23,6 +25,18 @@ function manageSingleRelayLight(light, httpHookServer) {
   if (enableButton) {
     instance.on('buttonShortpress', () => {
       instance.toggle();
+    });
+  }
+
+  if (timeout) {
+    const timer = new Timer(timeout);
+
+    timer.on('hit', () => {
+      resolveAlways(instance.setPower(false));
+    });
+
+    instance.on('set', () => {
+      timer.start();
     });
   }
 
@@ -64,37 +78,33 @@ function manage(lights, httpHookServer) {
   });
 }
 
-function lightWithDoorSensor(lights, doorSensors, lightTimeouts) {
+function lightWithDoorSensor(lights, doorSensors) {
   coupleDoorSensorToLight(
     lights,
     doorSensors,
     'abstellraumDeckenlampe',
-    'abstellraumDoor',
-    lightTimeouts.abstellraum
+    'abstellraumDoor'
   );
 
   coupleDoorSensorToLight(
     lights,
     doorSensors,
     'flurDeckenlampeFront',
-    'entryDoor',
-    lightTimeouts.flur
+    'entryDoor'
   );
 
   coupleDoorSensorToLight(
     lights,
     doorSensors,
     'duschbadDeckenlampe',
-    'duschbadDoor',
-    lightTimeouts.duschbad
+    'duschbadDoor'
   );
 
   coupleDoorSensorToLight(
     lights,
     doorSensors,
     'wannenbadDeckenlampe',
-    'wannenbadDoor',
-    lightTimeouts.wannenbad
+    'wannenbadDoor'
   );
 }
 
@@ -211,7 +221,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     4
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lights,
     rfSwitches,
     'abstellraumDeckenlampe',
@@ -251,7 +261,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     1
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lights,
     rfSwitches,
     'wannenbadDeckenlampe',
@@ -259,7 +269,7 @@ function lightWithRfSwitch(lights, rfSwitches) {
     1
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lights,
     rfSwitches,
     'duschbadDeckenlampe',
@@ -299,11 +309,6 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
 
 (function main() {
   const {
-    config: {
-      globals: {
-        lightTimeouts
-      }
-    },
     doorSensors,
     httpHookServer,
     lights,
@@ -311,7 +316,7 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   } = global;
 
   manage(lights, httpHookServer);
-  lightWithDoorSensor(lights, doorSensors, lightTimeouts);
+  lightWithDoorSensor(lights, doorSensors);
   lightWithRfSwitch(lights, rfSwitches);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
 }());

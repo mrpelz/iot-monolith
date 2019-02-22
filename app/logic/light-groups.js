@@ -1,5 +1,5 @@
 const { parseString } = require('../../libs/utils/string');
-const { coupleRfSwitchToLight } = require('../utils/lights');
+const { coupleRfSwitchToLight, coupleRfToggleToLight } = require('../utils/lights');
 
 function manageLightGroup(group, httpHookServer) {
   const {
@@ -108,7 +108,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     4
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lightGroups,
     rfSwitches,
     'flurDeckenlampe',
@@ -116,7 +116,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     1
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lightGroups,
     rfSwitches,
     'flurDeckenlampe',
@@ -124,7 +124,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     1
   );
 
-  coupleRfSwitchToLight(
+  coupleRfToggleToLight(
     lightGroups,
     rfSwitches,
     'flurDeckenlampe',
