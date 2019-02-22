@@ -49,7 +49,12 @@ function addPersistenceHandler(name, instance, lightDb) {
   const lightDb = getKey(db, 'lights');
 
   global.lights = lights.map((light) => {
-    const { disable = false, name, type } = light;
+    const {
+      disable = false,
+      host,
+      name,
+      type
+    } = light;
     if (disable || !name || !type) return null;
 
     let instance;
@@ -63,7 +68,7 @@ function addPersistenceHandler(name, instance, lightDb) {
 
     if (!instance) return null;
 
-    instance.log.friendlyName(name);
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
 
     addPersistenceHandler(name, instance, lightDb);
 

@@ -75,7 +75,7 @@ function createDoorSensors(doorSensors, ev1527Server, doorDb, security) {
     const instance = createSensor(sensor, ev1527Server);
     if (!instance) return null;
 
-    instance.log.friendlyName(name);
+    instance.log.friendlyName(`${name} (ID: ${id})`);
 
     addPersistenceHandler(name, instance, doorDb);
     addSecurity(name, instance, alarmLevel, outwards, security);

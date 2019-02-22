@@ -25,7 +25,7 @@ function createVent(vent) {
     }
   } = global;
 
-  const { disable = false, name } = vent;
+  const { disable = false, name, host } = vent;
 
   if (disable || !name) return;
 
@@ -33,7 +33,7 @@ function createVent(vent) {
 
   if (!instance) return;
 
-  instance.log.friendlyName(name);
+  instance.log.friendlyName(`${name} (HOST: ${host})`);
   instance.connect();
 
   global.vent = Object.assign(vent, {

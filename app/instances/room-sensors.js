@@ -57,13 +57,18 @@ function addSecurity(name, instance, security) {
 
 function createRoomSensors(roomSensors, metricSchedule, scheduler, security) {
   return roomSensors.map((sensor) => {
-    const { disable = false, name, metrics = [] } = sensor;
+    const {
+      disable = false,
+      host,
+      metrics = [],
+      name
+    } = sensor;
     if (disable || !name || !metrics.length) return null;
 
     const instance = createSensor(sensor);
     if (!instance) return null;
 
-    instance.log.friendlyName(name);
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
     instance.connect();
 
     addSchedule(metrics, instance, metricSchedule, scheduler);

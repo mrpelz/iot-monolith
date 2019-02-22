@@ -24,7 +24,12 @@ function createSingleRelayFan(fan) {
   } = global;
 
   global.fans = fans.map((fan) => {
-    const { disable = false, name, type } = fan;
+    const {
+      disable = false,
+      host,
+      name,
+      type
+    } = fan;
     if (disable || !name || !type) return null;
 
     let instance;
@@ -38,7 +43,7 @@ function createSingleRelayFan(fan) {
 
     if (!instance) return null;
 
-    instance.log.friendlyName(name);
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
     instance.connect();
 
     return Object.assign(fan, {

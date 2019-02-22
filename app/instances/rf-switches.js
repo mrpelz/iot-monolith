@@ -44,7 +44,7 @@ function addSecurity(name, instance, security) {
     const instance = createWallSwitch(rfSwitch, ev1527Server);
     if (!instance) return null;
 
-    instance.log.friendlyName(name);
+    instance.log.friendlyName(`${name} (ID: ${id})`);
 
     addSecurity(name, instance, security);
 
