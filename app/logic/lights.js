@@ -29,7 +29,7 @@ function manageSingleRelayLight(light, httpHookServer) {
 
   if (enableButton) {
     instance.on('buttonShortpress', () => {
-      instance.toggle();
+      resolveAlways(instance.toggle());
     });
   }
 

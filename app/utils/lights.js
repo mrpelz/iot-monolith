@@ -96,7 +96,7 @@ function coupleRfSwitchToLight(
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
   rfSwitchInstance.on(rfSwitchState, () => {
-    lightInstance.toggle();
+    resolveAlways(lightInstance.toggle());
   });
 }
 
@@ -130,7 +130,7 @@ function coupleRfToggleToLight(
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
   rfSwitchInstance.on(rfSwitchState, () => {
-    lightInstance.setPower(!timer.isRunning);
+    resolveAlways(lightInstance.setPower(!timer.isRunning));
     timer.start();
   });
 }

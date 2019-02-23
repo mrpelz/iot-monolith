@@ -1,5 +1,6 @@
 const { parseString } = require('../../libs/utils/string');
 const { coupleRfSwitchToLight } = require('../utils/lights');
+const { resolveAlways } = require('../../libs/utils/oop');
 
 function manageLightGroup(group, httpHookServer) {
   const {
@@ -14,7 +15,7 @@ function manageLightGroup(group, httpHookServer) {
 
   if (enableButton) {
     instance.on('buttonShortpress', () => {
-      instance.toggle();
+      resolveAlways(instance.toggle());
     });
   }
 

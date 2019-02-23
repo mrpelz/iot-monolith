@@ -9,7 +9,7 @@ function makeMatchOptions(id) {
         model: 'TX118SA-4',
         id
       },
-      debounce: 1000
+      debounce: 500
     },
     states: {
       1: {

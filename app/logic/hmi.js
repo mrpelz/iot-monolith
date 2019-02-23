@@ -2,6 +2,7 @@ const { HmiElement } = require('../../libs/hmi');
 const { sanity } = require('../../libs/utils/math');
 const { camel } = require('../../libs/utils/string');
 const { excludeKeys } = require('../../libs/utils/structures');
+const { resolveAlways } = require('../../libs/utils/oop');
 
 function setUpConnectionHmi(element, subGroup, hmiServer) {
   const {
@@ -320,7 +321,7 @@ function singleRelayLightHmi(light, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.toggle();
+    resolveAlways(instance.toggle());
   });
 }
 
@@ -368,7 +369,7 @@ function lightGroupHmi(group, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.toggle();
+    resolveAlways(instance.toggle());
   });
 }
 
@@ -401,7 +402,7 @@ function allLightsGroupHmi(instance, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.toggle();
+    resolveAlways(instance.toggle());
   });
 }
 
@@ -438,7 +439,7 @@ function singleRelayFanHmi(fan, hmiServer) {
   });
 
   hmi.on('set', () => {
-    instance.toggle();
+    resolveAlways(instance.toggle());
   });
 }
 
@@ -545,7 +546,7 @@ function ventHmi(vent, hmiServer) {
       ? instance.minTarget
       : instance.target + 1;
 
-    instance.setTarget(target);
+    resolveAlways(instance.setTarget(target));
   });
 
   hmiTargetDown.on('set', () => {
@@ -553,7 +554,7 @@ function ventHmi(vent, hmiServer) {
       ? instance.maxTarget
       : instance.target - 1;
 
-    instance.setTarget(target);
+    resolveAlways(instance.setTarget(target));
   });
 }
 

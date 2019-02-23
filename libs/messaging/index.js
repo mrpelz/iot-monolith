@@ -219,7 +219,7 @@ class MessageClient extends ReliableSocket {
         delete calls[id];
       }
 
-      throw new Error(`call timed out after ${timeout}ms`);
+      return Promise.reject(new Error(`call timed out after ${timeout}ms`));
     });
 
     const responseHandler = new Promise((resolve, reject) => {
