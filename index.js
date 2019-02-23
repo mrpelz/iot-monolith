@@ -1,3 +1,4 @@
+Error.stackTraceLimit = 50;
 process.stdin.resume();
 
 const { telegramSend } = require('./libs/telegram/simple');

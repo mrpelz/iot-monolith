@@ -9,7 +9,7 @@ function manageSingleRelayFan(fan, httpHookServer) {
   });
 
   instance.on('buttonShortpress', () => {
-    instance.toggle();
+    resolveAlways(instance.toggle());
   });
 
   httpHookServer.route(`/${name}`, (request) => {
