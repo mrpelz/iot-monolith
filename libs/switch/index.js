@@ -137,6 +137,8 @@ class Switch extends MessageClient {
         head: 'set error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

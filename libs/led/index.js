@@ -74,6 +74,8 @@ class LedDriver extends MessageClient {
         head: 'set error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -151,6 +153,8 @@ class LedLight {
         head: 'brightness error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

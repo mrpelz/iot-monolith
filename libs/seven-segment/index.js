@@ -261,6 +261,8 @@ class SevenSegment extends MessageClient {
         head: 'display error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -324,6 +326,8 @@ class SevenSegment extends MessageClient {
         head: 'slideshow error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -351,6 +355,8 @@ class SevenSegment extends MessageClient {
         head: 'crawl error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

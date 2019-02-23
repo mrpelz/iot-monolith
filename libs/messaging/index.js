@@ -251,6 +251,8 @@ class MessageClient extends ReliableSocket {
         head: 'request error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

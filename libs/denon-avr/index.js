@@ -87,6 +87,8 @@ class DenonAvr extends PersistentSocket {
         head: 'request error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

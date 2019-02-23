@@ -159,6 +159,8 @@ class Vent extends MessageClient {
           head: `get [cached] (${direction}) error`,
           attachment: reason
         });
+
+        throw reason;
       });
     }
 
@@ -167,6 +169,8 @@ class Vent extends MessageClient {
         head: `get [uncached] (${direction}) error`,
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -213,6 +217,8 @@ class Vent extends MessageClient {
         head: 'target error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

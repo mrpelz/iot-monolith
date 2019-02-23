@@ -243,6 +243,8 @@ class RoomSensor extends MessageClient {
           head: `metric [cached] (${metric}) error`,
           attachment: reason
         });
+
+        throw reason;
       });
     }
 
@@ -251,6 +253,8 @@ class RoomSensor extends MessageClient {
         head: `metric [uncached] (${metric}) error`,
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -347,6 +351,8 @@ class RoomSensor extends MessageClient {
         head: 'getAll error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 

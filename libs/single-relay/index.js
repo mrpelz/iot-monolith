@@ -91,6 +91,8 @@ class SingleRelay extends Switch {
         head: 'relay error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -112,6 +114,8 @@ class SingleRelay extends Switch {
         head: 'led error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
@@ -135,6 +139,8 @@ class SingleRelay extends Switch {
         head: 'led-blink error',
         attachment: reason
       });
+
+      throw reason;
     });
   }
 
