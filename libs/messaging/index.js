@@ -1,6 +1,7 @@
 const { ReliableSocket } = require('../tcp');
 const { emptyBuffer, readNumber } = require('../utils/data');
 const { rebind } = require('../utils/oop');
+const { sleep } = require('../utils/time');
 
 const libName = 'messaging';
 
@@ -213,14 +214,15 @@ class MessageClient extends ReliableSocket {
     const id = callId(state);
     const payload = generator(data);
 
-    return new Promise((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        if (calls[id]) {
-          reject(new Error(`call timed out after ${timeout}ms`));
-          delete calls[id];
-        }
-      }, timeout);
+    const timeoutHandler = sleep(timeout).then(() => {
+      if (calls[id]) {
+        delete calls[id];
+      }
 
+      throw new Error(`call timed out after ${timeout}ms`);
+    });
+
+    const responseHandler = new Promise((resolve, reject) => {
       calls[id] = (error, input) => {
         if (error) {
           reject(new Error(error));
@@ -236,7 +238,6 @@ class MessageClient extends ReliableSocket {
           }
         }
 
-        clearTimeout(timeoutId);
         delete calls[id];
       };
 
@@ -246,7 +247,9 @@ class MessageClient extends ReliableSocket {
         payload,
         tail
       ]));
-    }).catch((reason) => {
+    });
+
+    return Promise.race([timeoutHandler, responseHandler]).catch((reason) => {
       log.warning({
         head: 'request error',
         attachment: reason
