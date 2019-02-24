@@ -40,6 +40,14 @@ server.route('/no', () => {
   };
 });
 
+server.route('/postTest', (request) => {
+  return {
+    handler: (request.postPayload || Promise.reject(new Error('not a POST!'))).then((value) => {
+      return `Received POST: ${value}`;
+    })
+  };
+});
+
 server.route('/404', () => {
   return {
     handler: Promise.reject(new Error('This is 404-land')),

@@ -9,6 +9,11 @@ const { Logger } = require('../log');
 
 const libName = 'http-server';
 
+const allowedMethods = [
+  'GET',
+  'POST'
+];
+
 class HttpServer extends EventEmitter {
   static do404() {
     return {
@@ -60,7 +65,7 @@ class HttpServer extends EventEmitter {
   }
 
   _handleRequest(request, response) {
-    if (request.method !== 'GET') {
+    if (!allowedMethods.includes(request.method)) {
       response.writeHead(405);
       response.end();
     }
@@ -90,9 +95,40 @@ class HttpServer extends EventEmitter {
       )
     });
 
+    if (request.method === 'POST') {
+      let postActive = false;
+      let payload = Buffer.from([]);
+
+      const getPostPayload = () => {
+        if (!postActive) {
+          postActive = true;
+          request.on('data', (chunk) => {
+            payload = Buffer.concat([payload, chunk]);
+          });
+        }
+
+        return new Promise((resolve, reject) => {
+          request.on('end', () => {
+            if (!request.complete) {
+              reject(new Error('post transaction was prematurely terminated'));
+            }
+
+            resolve(payload);
+          });
+        });
+      };
+
+      Object.assign(request, {
+        get postPayload() {
+          return getPostPayload();
+        }
+      });
+    }
+
     log.info({
       head: 'request received',
       attachment: [
+        `Method: ${request.method}`,
         `URL: ${request.url.href}`,
         `RemoteAddress: ${request.connection.remoteAddress}`,
         `RemotePort: ${request.connection.remotePort}`
