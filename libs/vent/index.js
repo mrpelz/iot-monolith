@@ -83,7 +83,7 @@ class Vent extends MessageClient {
     this.maxTarget = maxTarget;
 
     this._vent = {
-      default: 0,
+      default: undefined,
       caches: {
         actualIn: new CachePromise(1000),
         actualOut: new CachePromise(1000)
@@ -91,7 +91,7 @@ class Vent extends MessageClient {
       timer: new Timer(setDefaultTimeout)
     };
 
-    this.targetSetpoint = this._vent.default;
+    this.targetSetpoint = 0;
     this.target = undefined;
 
     this.actualIn = undefined;
@@ -131,7 +131,11 @@ class Vent extends MessageClient {
   _handleSwitchChange(_, switchState) {
     this._vent.timer.stop();
 
-    this._vent.default = stateRemap.convert('switch', 'control', switchState);
+    const newDefault = stateRemap.convert('switch', 'control', switchState);
+
+    if (newDefault === this._vent.default) return;
+
+    this._vent.default = newDefault;
     resolveAlways(this.resetTarget());
 
     this.emit('switch', this._vent.default);
