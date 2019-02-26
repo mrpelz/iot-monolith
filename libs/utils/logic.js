@@ -110,11 +110,12 @@ class Remap {
 
     const {
       [inKey]: [inFrom, inTo] = [],
-      [outKey]: [outFrom, outTo] = []
+      [outKey]: [outFrom, outTo, round = true] = []
     } = matchingRange;
 
     const ratio = (input - inFrom) / (Math.abs(inTo - inFrom));
-    const output = Math.round((ratio * Math.abs(outTo - outFrom)) + outFrom);
+    const intermediate = (ratio * Math.abs(outTo - outFrom)) + outFrom;
+    const output = round ? Math.round(intermediate) : intermediate;
 
     return output;
   }

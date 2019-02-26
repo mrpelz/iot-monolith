@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 const { SingleRelay } = require('../index');
-const { resolveAlways } = require('../../../libs/utils/oop');
+const { resolveAlways } = require('../../utils/oop');
 
 // SINGLE-RELAY TEST
 const instance = new SingleRelay({
