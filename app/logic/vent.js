@@ -4,6 +4,8 @@ const { resolveAlways } = require('../../libs/utils/oop');
 const { every, RecurringMoment } = require('../../libs/utils/time');
 
 function manage(vent, httpHookServer) {
+  if (!vent) return;
+
   const { instance, name } = vent;
 
   httpHookServer.route(`/${name}/actualIn`, () => {
@@ -50,6 +52,8 @@ async function createHysteresis(
   fullVentMessage,
   resetVentMessage
 ) {
+  if (!vent) return;
+
   const ventControlAggregate = metricAggregates.find((aggregate = {}) => {
     const { group, type, metric } = aggregate;
     return group === 'ventControl'

@@ -457,6 +457,8 @@ function fansHmi(fans, hmiServer) {
 }
 
 function ventHmi(vent, hmiServer) {
+  if (!vent) return;
+
   const { instance, name } = vent;
 
   setUpConnectionHmi(vent, 'vent', hmiServer);

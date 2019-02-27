@@ -218,6 +218,8 @@ function metricAggregatesToPrometheus(metricAggregates, prometheus) {
 }
 
 function ventToPrometheus(vent, prometheus) {
+  if (!vent) return;
+
   const {
     instance
   } = vent;
