@@ -1,5 +1,11 @@
 /* eslint-disable no-bitwise */
 
+function gammaCorrect(input, gamma = 2.8) {
+  if (input === 0) return 0;
+  if (input === 1) return 1;
+  return input ** gamma;
+}
+
 function maxNumber(numbers) {
   if (!numbers.length) return null;
 
@@ -111,7 +117,25 @@ const transitions = {
   }
 };
 
+function ledCalc(
+  from,
+  to,
+  transition = transitions.linear,
+  gamma = gammaCorrect
+) {
+  let value = from;
+  let progress = 0;
+  while (value < to) {
+    value = gamma(transition(progress));
+    progress += 0.001;
+  }
+
+  return Math.min(progress, 1);
+}
+
 module.exports = {
+  gammaCorrect,
+  ledCalc,
   maxNumber,
   mean,
   median,
