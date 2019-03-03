@@ -1,5 +1,5 @@
 {
-  "disable": true,
+  "disable": false,
   "name": "ventController",
   "host": "10.97.0.225",
   "port": 5045,
