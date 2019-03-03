@@ -6,6 +6,7 @@ const {
   readNumber,
   writeNumber
 } = require('../utils/data');
+const { ledCalc, transitions } = require('../utils/math');
 const { Remap } = require('../utils/logic');
 const { rebind, resolveAlways } = require('../utils/oop');
 
@@ -20,6 +21,15 @@ const remap = new Remap([{
   percent: [0, 100, true]
 }]);
 
+function createAnimationPayload(from, to, duration) {
+  return ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle).map((frame) => {
+    return Buffer.concat([
+      writeNumber(frame.time, 4),
+      writeNumber(frame.value, 1)
+    ]);
+  });
+}
+
 function getMessageTypes(channels) {
   return [
     ...new Array(channels).fill(undefined).map((_, index) => {
@@ -28,7 +38,6 @@ function getMessageTypes(channels) {
         eventParser: (input) => {
           return bufferToBoolean(input.slice(2));
         },
-        generator: writeNumber,
         head: Buffer.from([1, index]),
         name: index,
         parser: readNumber
@@ -65,7 +74,8 @@ class LedDriver extends MessageClient {
     super({
       host,
       port,
-      messageTypes: getMessageTypes(channels)
+      messageTypes: getMessageTypes(channels),
+      lengthBytes: 2
     });
 
     this._ledDriver = {
@@ -77,7 +87,7 @@ class LedDriver extends MessageClient {
     this._ledDriver.log = this.log.withPrefix(libName);
   }
 
-  _set(channel, brightness) {
+  _set(channel, payload) {
     const {
       state: {
         isConnected
@@ -94,7 +104,7 @@ class LedDriver extends MessageClient {
       throw new Error('channel not supported by driver');
     }
 
-    return this.request(channel, brightness).catch((reason) => {
+    return this.request(channel, payload).catch((reason) => {
       log.error({
         head: 'set error',
         attachment: reason
@@ -217,7 +227,7 @@ class LedLight extends Base {
     this.setBrightness(this.brightness);
   }
 
-  setBrightness(input) {
+  setBrightness(input, duration = 0) {
     const { log, setChannel } = this._ledLight;
 
     this.brightnessSetpoint = input;
@@ -230,7 +240,9 @@ class LedLight extends Base {
 
     const cycle = remap.convert('logic', 'cycle', this.brightnessSetpoint);
 
-    return setChannel(cycle).then((result) => {
+    const payload = createAnimationPayload(this.brightness, this.brightnessSetpoint, duration);
+
+    return setChannel(payload).then((result) => {
       if (result !== cycle) {
         // reset, as conflicting message suggest a hardware fail
         // resetting to null will make following requests go through regardless of state
@@ -318,11 +330,11 @@ class RGBLed {
     });
   }
 
-  setColor(r = 0, g = 0, b = 0) {
+  setColor(r = 0, g = 0, b = 0, duration = 0) {
     return Promise.all([
-      this.r.setBrightness(r),
-      this.g.setBrightness(g),
-      this.b.setBrightness(b)
+      this.r.setBrightness(r, duration),
+      this.g.setBrightness(g, duration),
+      this.b.setBrightness(b, duration)
     ]);
   }
 }

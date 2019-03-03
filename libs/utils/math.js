@@ -1,9 +1,10 @@
 /* eslint-disable no-bitwise */
 
-function gammaCorrect(input, gamma = 2.8) {
+function gammaCorrect(input, range = 1023, gamma = 2.8) {
+  // return input;
   if (input === 0) return 0;
-  if (input === 1) return 1;
-  return input ** gamma;
+  if (input === range) return range;
+  return ((input / range) ** gamma) * range;
 }
 
 function maxNumber(numbers) {
@@ -118,19 +119,73 @@ const transitions = {
 };
 
 function ledCalc(
-  from,
-  to,
+  fromP,
+  toP,
+  duration = 3000,
   transition = transitions.linear,
-  gamma = gammaCorrect
+  range = 255,
+  gamma = 2.8,
+  timeStep = 17
 ) {
-  let value = from;
-  let progress = 0;
-  while (value < to) {
-    value = gamma(transition(progress));
-    progress += 0.001;
+  const toPwm = (input) => {
+    return Math.round(
+      Math.max(
+        Math.min(
+          gammaCorrect(
+            input,
+            range,
+            gamma
+          ),
+          range
+        ),
+        0
+      )
+    );
+  };
+
+  const from = Math.round(fromP * range);
+  const to = Math.round(toP * range);
+
+  const distance = to - from;
+  if (!distance) return null;
+
+  const target = toPwm(to);
+
+  let timeProgress = timeStep;
+  let valueProgress = from;
+
+  const result = [];
+
+  while (timeProgress < duration) {
+    const value = toPwm(
+      from + (
+        transition(
+          timeProgress / duration
+        ) * distance
+      )
+    );
+
+    if (
+      (distance > 0 ? value < target : value > target)
+      && Math.abs(value - valueProgress) >= 1
+    ) {
+      valueProgress = value;
+
+      result.push({
+        time: timeProgress,
+        value
+      });
+    }
+
+    timeProgress += timeStep;
   }
 
-  return Math.min(progress, 1);
+  result.push({
+    time: duration,
+    value: target
+  });
+
+  return result;
 }
 
 module.exports = {

@@ -18,24 +18,24 @@ rgb.driver.once('connect', async () => {
   console.log('connected');
   resolveAlways(rgb.driver.indicatorBlink(3));
 
-  resolveAlways(rgb.setColor(1, 1, 1));
+  resolveAlways(rgb.setColor(1, 1, 1, 3000));
 
   await sleep(5000);
-  resolveAlways(rgb.setColor(1, 0, 0));
+  resolveAlways(rgb.setColor(1, 0, 0, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(0, 1, 0));
+  resolveAlways(rgb.setColor(0, 1, 0, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(0, 0, 1));
+  resolveAlways(rgb.setColor(0, 0, 1, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 1));
+  resolveAlways(rgb.setColor(1, 1, 1, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(1, 0, 1));
+  resolveAlways(rgb.setColor(1, 0, 1, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 0));
+  resolveAlways(rgb.setColor(1, 1, 0, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(0, 1, 1));
+  resolveAlways(rgb.setColor(0, 1, 1, 3000));
   await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 1));
+  resolveAlways(rgb.setColor(1, 1, 1, 3000));
 });
 
 rgb.driver.connect();
