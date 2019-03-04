@@ -22,12 +22,14 @@ const remap = new Remap([{
 }]);
 
 function createAnimationPayload(from, to, duration) {
-  return ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle).map((frame) => {
-    return Buffer.concat([
-      writeNumber(frame.time, 4),
-      writeNumber(frame.value, 1)
-    ]);
-  });
+  return Buffer.concat(
+    ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle).map((frame) => {
+      return Buffer.concat([
+        writeNumber(frame.time + 1, 4),
+        writeNumber(frame.value, 1)
+      ]);
+    })
+  );
 }
 
 function getMessageTypes(channels) {
@@ -241,8 +243,22 @@ class LedLight extends Base {
     const cycle = remap.convert('logic', 'cycle', this.brightnessSetpoint);
 
     const payload = createAnimationPayload(this.brightness, this.brightnessSetpoint, duration);
+    if (payload === null) {
+      return Promise.resolve(this.brightness);
+    }
+    if (payload.length > 1275) {
+      return Promise.reject(new Error('animation sequence is too long'));
+    }
 
-    return setChannel(payload).then((result) => {
+    // Complete message:
+    // length (2 bytes) + ID + CMD + index + target cycle + animation-payload (max. 1275 bytes)
+    // = 1279 bytes
+    return setChannel(
+      Buffer.concat([
+        writeNumber(cycle, 1),
+        payload
+      ])
+    ).then((result) => {
       if (result !== cycle) {
         // reset, as conflicting message suggest a hardware fail
         // resetting to null will make following requests go through regardless of state

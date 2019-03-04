@@ -16,7 +16,7 @@ const rgb = new RGBLed({
 
 rgb.driver.once('connect', async () => {
   console.log('connected');
-  resolveAlways(rgb.driver.indicatorBlink(3));
+  resolveAlways(rgb.driver.indicatorBlink(5));
 
   resolveAlways(rgb.setColor(1, 1, 1, 3000));
 
