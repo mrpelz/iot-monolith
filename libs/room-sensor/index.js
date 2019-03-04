@@ -70,7 +70,8 @@ const metricOptions = {
     },
     cache: 60000,
     timeout: 15000,
-    request: false
+    request: false,
+    tolerateNull: true
   },
   pm10: {
     head: 9,
@@ -80,13 +81,15 @@ const metricOptions = {
     },
     cache: 60000,
     timeout: 15000,
-    request: false
+    request: false,
+    tolerateNull: true
   },
   co2: {
     head: 10,
     bytes: 2,
     cache: 1000,
-    leadIn: 180000
+    leadIn: 180000,
+    tolerateNull: true
   },
   temperature2: {
     head: 11,
@@ -112,11 +115,16 @@ function prepareMetricHandlers(metrics) {
       event,
       head,
       sanity: sanityOptions = {},
-      timeout
+      timeout,
+      tolerateNull
     } = options;
 
     const parser = (input) => {
       if (!input.length) {
+        if (tolerateNull) {
+          return null;
+        }
+
         throw new Error('received null value');
       }
 
