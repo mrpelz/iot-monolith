@@ -75,7 +75,7 @@ async function createHysteresis(
   });
 
   hysteresis.on('inRange', () => {
-    resolveAlways(ventInstance.setTarget(ventInstance.maxTarget));
+    resolveAlways(ventInstance.setTarget(ventInstance.maxTarget, true));
     chat.addMessage({
       text: fullVentMessage
     });
