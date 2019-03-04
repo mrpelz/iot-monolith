@@ -444,8 +444,11 @@ class ReliableSocket extends Base {
         isConnected,
         shouldBeConnected
       },
-      socket
+      socket,
+      log
     } = this._reliableSocket;
+
+    log.debug('connection/disconnection handling');
 
     if (shouldBeConnected && !isConnected && !socket.connecting) {
       socket.connect({ host, port });
@@ -477,7 +480,8 @@ class ReliableSocket extends Base {
       state: {
         isConnected
       },
-      disconnectTimer
+      disconnectTimer,
+      log
     } = this._reliableSocket;
 
     if (isConnected) return;
@@ -487,6 +491,12 @@ class ReliableSocket extends Base {
     disconnectTimer.stop();
 
     this._reliableSocket.state.isConnected = true;
+
+    log.info({
+      head: 'is connected',
+      value: true
+    });
+
     this.emit('connect');
   }
 
@@ -498,7 +508,8 @@ class ReliableSocket extends Base {
       },
       socket,
       messageTimer,
-      disconnectTimer
+      disconnectTimer,
+      log
     } = this._reliableSocket;
 
     if (!isConnected) return;
@@ -511,6 +522,12 @@ class ReliableSocket extends Base {
     }
 
     this._reliableSocket.state.isConnected = false;
+
+    log.info({
+      head: 'is connected',
+      value: false
+    });
+
     this.emit('disconnect');
   }
 
@@ -519,7 +536,8 @@ class ReliableSocket extends Base {
       socket,
       options: {
         lengthPreamble
-      }
+      },
+      log
     } = this._reliableSocket;
 
     if (this._reliableSocket.state.currentLength) {
@@ -536,6 +554,8 @@ class ReliableSocket extends Base {
     if (!lengthPayload) return false;
 
     this._reliableSocket.state.currentLength = readNumber(lengthPayload, lengthPreamble);
+
+    log.debug(`receive ${this._reliableSocket.state.currentLength} byte payload`);
 
     return true;
   }
@@ -579,11 +599,23 @@ class ReliableSocket extends Base {
 
   connect() {
     this._reliableSocket.state.shouldBeConnected = true;
+
+    this._reliableSocket.log.info({
+      head: 'set connect',
+      value: true
+    });
+
     this._connect();
   }
 
   disconnect() {
     this._reliableSocket.state.shouldBeConnected = false;
+
+    this._reliableSocket.log.info({
+      head: 'set connect',
+      value: false
+    });
+
     this._connect();
   }
 
@@ -595,12 +627,15 @@ class ReliableSocket extends Base {
       state: {
         isConnected
       },
-      socket
+      socket,
+      log
     } = this._reliableSocket;
 
     if (!isConnected) {
       throw new Error('socket is not connected!');
     }
+
+    log.debug(`send ${input.length} byte payload`);
 
     socket.write(Buffer.concat([
       writeNumber(input.length, lengthPreamble),
