@@ -132,19 +132,5 @@
     "attributes": {
       "hmi": {}
     }
-  },
-  {
-    "name": "ventControl",
-    "type": "max",
-    "sensors": [
-      "kueche",
-      "abstellraum",
-      "duschbad",
-      "wannenbad"
-    ],
-    "metrics": [
-      "humidity"
-    ],
-    "attributes": {}
   }
 ]

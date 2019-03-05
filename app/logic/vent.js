@@ -44,7 +44,7 @@ function manage(vent, httpHookServer) {
 async function createHysteresis(
   scheduler,
   vent,
-  metricAggregates,
+  roomSensors,
   fullVentAboveHumidity,
   resetVentBelowHumidity,
   ventHumidityControlUpdate,
@@ -54,15 +54,16 @@ async function createHysteresis(
 ) {
   if (!vent) return;
 
-  const ventControlAggregate = metricAggregates.find((aggregate = {}) => {
-    const { group, type, metric } = aggregate;
-    return group === 'ventControl'
-    && type === 'max'
-    && metric === 'humidity';
+  const metric = 'humidity';
+
+  const ventControlSensor = roomSensors.find((sensor = {}) => {
+    const { name, metrics } = sensor;
+    return name === 'ahuOut'
+    && metrics.includes(metric);
   });
 
-  if (!ventControlAggregate) return;
-  const { instance: aggregateInstance } = ventControlAggregate;
+  if (!ventControlSensor) return;
+  const { instance: sensorInstance } = ventControlSensor;
   const { instance: ventInstance } = vent;
 
   const { client: awaitingClient, chatIds } = telegram;
@@ -74,25 +75,39 @@ async function createHysteresis(
     outOfRangeBelow: resetVentBelowHumidity
   });
 
+  let message = null;
+
   hysteresis.on('inRange', () => {
     resolveAlways(ventInstance.setTarget(ventInstance.maxTarget, true));
-    chat.addMessage({
-      text: fullVentMessage
-    });
+
+    (async () => {
+      if (message) {
+        await resolveAlways(message.delete());
+      }
+      message = await resolveAlways(chat.addMessage({
+        text: fullVentMessage
+      }));
+    })();
   });
 
   hysteresis.on('outOfRange', () => {
     resolveAlways(ventInstance.resetTarget());
-    chat.addMessage({
-      text: resetVentMessage
-    });
+
+    (async () => {
+      if (message) {
+        await resolveAlways(message.delete());
+      }
+      message = await resolveAlways(chat.addMessage({
+        text: resetVentMessage
+      }));
+    })();
   });
 
   new RecurringMoment(
     scheduler,
     every.parse(ventHumidityControlUpdate)
   ).on('hit', () => {
-    resolveAlways(aggregateInstance.get()).then((value) => {
+    resolveAlways(sensorInstance.getMetric(metric)).then((value) => {
       if (value === null) return;
       hysteresis.feed(value);
     });
@@ -111,7 +126,7 @@ async function createHysteresis(
       }
     },
     httpHookServer,
-    metricAggregates,
+    roomSensors,
     scheduler,
     telegram,
     vent
@@ -123,7 +138,7 @@ async function createHysteresis(
   createHysteresis(
     scheduler,
     vent,
-    metricAggregates,
+    roomSensors,
     fullVentAboveHumidity,
     resetVentBelowHumidity,
     ventHumidityControlUpdate,

@@ -200,6 +200,8 @@
     "port": 5045,
     "metrics": [
       "temperature",
+      "pressure",
+      "humidity",
       "co2",
       "pm025",
       "pm10",
