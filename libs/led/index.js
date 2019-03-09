@@ -28,7 +28,7 @@ function createAnimationPayload(from, to, duration) {
   return Buffer.concat(
     animation.map((frame) => {
       return Buffer.concat([
-        writeNumber(frame.time + 1, 4),
+        writeNumber(frame.time, 4),
         writeNumber(frame.value, 1)
       ]);
     })
