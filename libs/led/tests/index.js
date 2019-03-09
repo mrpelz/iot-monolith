@@ -1,41 +1,22 @@
 /* eslint-disable no-console */
-const { LedDriver, RGBLed } = require('../index');
+const { LedDriver, LedLight } = require('../index');
 const { resolveAlways } = require('../../utils/oop');
-const { sleep } = require('../../utils/time');
+// const { sleep } = require('../../utils/time');
 
-const rgb = new RGBLed({
+const led = new LedLight({
   driver: new LedDriver({
     host: '10.97.4.51',
     port: 5045,
     channels: 5
   }),
-  r: 0,
-  g: 1,
-  b: 2
+  useChannel: 0
 });
 
-rgb.driver.once('connect', async () => {
+led.driver.once('connect', async () => {
   console.log('connected');
-  resolveAlways(rgb.driver.indicatorBlink(5));
+  resolveAlways(led.driver.indicatorBlink(5));
 
-  resolveAlways(rgb.setColor(1, 1, 1, 3000));
-
-  await sleep(5000);
-  resolveAlways(rgb.setColor(1, 0, 0, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(0, 1, 0, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(0, 0, 1, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 1, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(1, 0, 1, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 0, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(0, 1, 1, 3000));
-  await sleep(5000);
-  resolveAlways(rgb.setColor(1, 1, 1, 3000));
+  resolveAlways(led.setBrightness(0.5, 10000));
 });
 
-rgb.driver.connect();
+led.driver.connect();
