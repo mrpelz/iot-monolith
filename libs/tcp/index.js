@@ -418,6 +418,7 @@ class ReliableSocket extends Base {
       socket: new Socket(),
       messageTimer: new Timer(keepAlive * 2),
       disconnectTimer: new Timer(keepAlive * 10),
+      connectDebounceTimer: new Timer(keepAlive),
       log: this.log.withPrefix(libName)
     };
 
@@ -425,6 +426,7 @@ class ReliableSocket extends Base {
       this,
       '_connect',
       '_handleReadable',
+      '_notifyConnect',
       '_notifyDisconnect',
       '_onConnection',
       '_onDisconnection',
@@ -470,9 +472,18 @@ class ReliableSocket extends Base {
     messageTimer.start();
   }
 
+  _notifyConnect() {
+    const { log } = this._reliableSocket;
+    log.info('debounced socket connect');
+
+    this.emit('reliableConnect');
+  }
+
   _notifyDisconnect() {
     const { log } = this._reliableSocket;
     log.error('unrecovered socket disconnect');
+
+    this.emit('reliableDisconnect');
   }
 
   _onConnection() {
@@ -481,6 +492,7 @@ class ReliableSocket extends Base {
         isConnected
       },
       disconnectTimer,
+      connectDebounceTimer,
       log
     } = this._reliableSocket;
 
@@ -488,6 +500,7 @@ class ReliableSocket extends Base {
 
     this._reliableSocket.state.connectionTime = Date.now();
 
+    connectDebounceTimer.start();
     disconnectTimer.stop();
 
     this._reliableSocket.state.isConnected = true;
@@ -509,11 +522,13 @@ class ReliableSocket extends Base {
       socket,
       messageTimer,
       disconnectTimer,
+      connectDebounceTimer,
       log
     } = this._reliableSocket;
 
     if (!isConnected) return;
 
+    connectDebounceTimer.stop();
     messageTimer.stop();
     socket.destroy();
 
@@ -572,7 +587,8 @@ class ReliableSocket extends Base {
       },
       socket,
       messageTimer,
-      disconnectTimer
+      disconnectTimer,
+      connectDebounceTimer
     } = this._reliableSocket;
 
     socket.setNoDelay(true);
@@ -594,6 +610,7 @@ class ReliableSocket extends Base {
     socket.on('error', this._onDisconnection);
     messageTimer.on('hit', this._onDisconnection);
 
+    connectDebounceTimer.on('hit', this._notifyConnect);
     disconnectTimer.on('hit', this._notifyDisconnect);
   }
 

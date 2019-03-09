@@ -107,7 +107,7 @@ class Vent extends MessageClient {
       'setTarget'
     );
 
-    this.on('connect', this._handleVentConnection);
+    this.on('reliableConnect', this._handleVentConnection);
     this.on('switchRaw', this._handleSwitchChange);
     this._vent.timer.on('hit', this._handleDefaultTimer);
 

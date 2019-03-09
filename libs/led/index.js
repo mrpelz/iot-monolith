@@ -216,7 +216,7 @@ class LedLight extends Base {
     };
 
     rebind(this, '_handleLedDriverConnection');
-    this.driver.on('connect', this._handleLedDriverConnection);
+    this.driver.on('reliableConnect', this._handleLedDriverConnection);
 
     this._ledLight.log = this.log.withPrefix(libName);
   }

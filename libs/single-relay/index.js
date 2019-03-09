@@ -51,7 +51,7 @@ class SingleRelay extends Switch {
     this.power = null;
 
     rebind(this, '_handleSingleRelayConnection');
-    this.on('connect', this._handleSingleRelayConnection);
+    this.on('reliableConnect', this._handleSingleRelayConnection);
 
     this.log.friendlyName(`${host}:${port}`);
     this._singleRelay.log = this.log.withPrefix(libName);

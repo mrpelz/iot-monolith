@@ -4,7 +4,7 @@ const { parseString } = require('../../libs/utils/string');
 function manageSingleRelayFan(fan, httpHookServer) {
   const { instance, name } = fan;
 
-  instance.on('connect', () => {
+  instance.on('reliableConnect', () => {
     resolveAlways(instance.ledBlink(5, true));
   });
 

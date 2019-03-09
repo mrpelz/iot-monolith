@@ -23,7 +23,7 @@ function manageSingleRelayLight(light, httpHookServer) {
     } = {}
   } = light;
 
-  instance.on('connect', () => {
+  instance.on('reliableConnect', () => {
     resolveAlways(instance.ledBlink(5, true));
   });
 
