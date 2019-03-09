@@ -22,7 +22,7 @@ const remap = new Remap([{
 }]);
 
 function createAnimationPayload(from, to, duration) {
-  const animation = ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle);
+  const animation = ledCalc(from, to, duration, transitions.linear, maxCycle);
   if (!animation) return null;
 
   // console.log(JSON.stringify(animation, null, 2));

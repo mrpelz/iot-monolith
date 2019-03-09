@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
 
-function gammaCorrect(input, range = 1023, gamma = 2.8) {
+function gammaCorrect(input, range, gamma) {
   // return input;
   if (input === 0) return 0;
   if (input === range) return range;
@@ -124,7 +124,7 @@ function ledCalc(
   duration = 3000,
   transition = transitions.linear,
   range = 255,
-  gamma = 2.8,
+  gamma = 2.2,
   timeStep = 17
 ) {
   const toPwm = (input) => {
