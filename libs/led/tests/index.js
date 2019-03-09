@@ -12,7 +12,7 @@ const led = new LedLight({
   useChannel: 0
 });
 
-led.driver.once('connect', async () => {
+led.driver.once('reliableConnect', async () => {
   console.log('connected');
   resolveAlways(led.driver.indicatorBlink(5));
 

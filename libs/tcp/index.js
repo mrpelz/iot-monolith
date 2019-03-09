@@ -536,6 +536,7 @@ class ReliableSocket extends Base {
       disconnectTimer.start();
     }
 
+    this._reliableSocket.state.currentLength = 0;
     this._reliableSocket.state.isConnected = false;
 
     log.info({
