@@ -22,8 +22,11 @@ const remap = new Remap([{
 }]);
 
 function createAnimationPayload(from, to, duration) {
+  const animation = ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle);
+  if (!animation) return null;
+
   return Buffer.concat(
-    ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle).map((frame) => {
+    animation.map((frame) => {
       return Buffer.concat([
         writeNumber(frame.time + 1, 4),
         writeNumber(frame.value, 1)
