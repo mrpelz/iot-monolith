@@ -25,6 +25,8 @@ function createAnimationPayload(from, to, duration) {
   const animation = ledCalc(from, to, duration, transitions.easeOutCubic, maxCycle);
   if (!animation) return null;
 
+  // console.log(JSON.stringify(animation, null, 2));
+
   return Buffer.concat(
     animation.map((frame) => {
       return Buffer.concat([
