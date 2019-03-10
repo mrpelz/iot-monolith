@@ -19,8 +19,11 @@ rgb.driver.once('connect', async () => {
   resolveAlways(rgb.driver.indicatorBlink(5));
 
   await sleep(5000);
+  resolveAlways(rgb.setColor(1, 1, 1, 30000));
+  await sleep(30000 + 5000);
+  resolveAlways(rgb.setColor(0, 0, 0, 1500));
+  await sleep(1500 + 5000);
   resolveAlways(rgb.setColor(1, 1, 1, 10000));
-
   await sleep(10000 + 5000);
   resolveAlways(rgb.setColor(0, 0, 0, 1500));
   await sleep(1500 + 5000);

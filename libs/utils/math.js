@@ -165,10 +165,7 @@ function ledCalc(
       )
     );
 
-    if (
-      (distance > 0 ? value < target : value > target)
-      && Math.abs(value - valueProgress) >= 1
-    ) {
+    if (Math.abs(value - valueProgress) >= 1) {
       valueProgress = value;
 
       result.push({
@@ -180,10 +177,12 @@ function ledCalc(
     timeProgress += timeStep;
   }
 
-  result.push({
-    time: duration,
-    value: target
-  });
+  if (!result.length) {
+    result.push({
+      time: duration,
+      value: target
+    });
+  }
 
   return result;
 }
