@@ -52,7 +52,7 @@ function createAllLightsGroup(allLights) {
     return l.map(({ instance: ledInstance }) => {
       return ledInstance;
     });
-  }));
+  })).filter(Boolean);
 
   try {
     return new LightGroup(lights);
