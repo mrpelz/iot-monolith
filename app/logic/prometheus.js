@@ -19,6 +19,29 @@ function singleRelayLightToPrometheus(light, prometheus) {
   });
 }
 
+function ledDriverLightToPrometheus(options, prometheus) {
+  const { lights = [], type } = options;
+
+  lights.forEach((light) => {
+    const { name, instance } = light;
+
+    const { push } = prometheus.pushMetric(
+      'power',
+      {
+        name,
+        type: 'light',
+        subtype: type
+      }
+    );
+
+    push(instance.power);
+
+    instance.on('change', () => {
+      push(instance.power);
+    });
+  });
+}
+
 function lightsToPrometheus(lights, prometheus) {
   lights.forEach((light) => {
     const { type } = light;
@@ -26,6 +49,9 @@ function lightsToPrometheus(lights, prometheus) {
     switch (type) {
       case 'SINGLE_RELAY':
         singleRelayLightToPrometheus(light, prometheus);
+        break;
+      case 'LED_H801':
+        ledDriverLightToPrometheus(light, prometheus);
         break;
       default:
     }

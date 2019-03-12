@@ -108,6 +108,8 @@ function createLedLight(options, lightDb) {
 
     addPersistenceHandler(name, instance, lightDb, 'brightness', 'brightnessSetpoint');
 
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
+
     return Object.assign(lightOpts, {
       instance
     });
@@ -116,7 +118,7 @@ function createLedLight(options, lightDb) {
   driver.connect();
 
   return Object.assign(options, {
-    driver,
+    instance: driver,
     lights
   });
 }

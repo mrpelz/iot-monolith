@@ -193,6 +193,53 @@
     }
   },
   {
+    "name": "schlafzimmerBedLed",
+    "host": "10.97.4.52",
+    "port": 5045,
+    "type": "LED_H801",
+    "lights": [
+      {
+        "name": "schlafzimmerBedLedRed",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "led-red",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "red",
+            "subGroup": "red"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedGreen",
+        "useChannel": 1,
+        "attributes": {
+          "hmi": {
+            "group": "led-green",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "green",
+            "subGroup": "green"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedBlue",
+        "useChannel": 2,
+        "attributes": {
+          "hmi": {
+            "group": "led-blue",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "blue",
+            "subGroup": "blue"
+          }
+        }
+      }
+    ]
+  },
+  {
     "name": "wannenbadDeckenlampe",
     "host": "10.97.4.43",
     "port": 5045,
@@ -252,6 +299,7 @@
             "group": "led-red",
             "groupLabel": "led",
             "section": "wohnzimmer",
+            "sortGroup": "red",
             "subGroup": "red"
           }
         }
@@ -264,6 +312,7 @@
             "group": "led-green",
             "groupLabel": "led",
             "section": "wohnzimmer",
+            "sortGroup": "green",
             "subGroup": "green"
           }
         }
@@ -276,6 +325,7 @@
             "group": "led-blue",
             "groupLabel": "led",
             "section": "wohnzimmer",
+            "sortGroup": "blue",
             "subGroup": "blue"
           }
         }

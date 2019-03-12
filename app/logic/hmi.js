@@ -325,6 +325,79 @@ function singleRelayLightHmi(light, hmiServer) {
   });
 }
 
+function ledDriverLightHmi(options, hmiServer) {
+  const { lights = [] } = options;
+
+  setUpConnectionHmi(options, 'led light', hmiServer);
+
+  lights.forEach((light) => {
+    const {
+      name,
+      instance,
+      attributes: {
+        hmi: hmiDefaults
+      } = {}
+    } = light;
+
+    if (!hmiDefaults) return;
+
+    const hmiAttributes = Object.assign({
+      category: 'lamps',
+      group: 'led',
+      sortGroup: '_bottom',
+      type: 'led'
+    }, hmiDefaults);
+
+    const hmiValue = new HmiElement({
+      name: `${name}Value`,
+      attributes: Object.assign({
+        subType: 'read',
+        unit: 'percent'
+      }, hmiAttributes),
+      server: hmiServer,
+      getter: () => {
+        return Promise.resolve(
+          instance.brightnessPercentage
+        );
+      }
+    });
+
+    const hmiUp = new HmiElement({
+      name: `${name}Up`,
+      attributes: Object.assign({
+        label: 'increase',
+        setType: 'trigger',
+        subType: 'increase'
+      }, hmiAttributes),
+      server: hmiServer,
+      settable: true
+    });
+
+    const hmiDown = new HmiElement({
+      name: `${name}Down`,
+      attributes: Object.assign({
+        label: 'decrease',
+        setType: 'trigger',
+        subType: 'decrease'
+      }, hmiAttributes),
+      server: hmiServer,
+      settable: true
+    });
+
+    instance.on('change', () => {
+      hmiValue.update();
+    });
+
+    hmiUp.on('set', () => {
+      resolveAlways(instance.increase(0.25));
+    });
+
+    hmiDown.on('set', () => {
+      resolveAlways(instance.increase(-0.25));
+    });
+  });
+}
+
 function lightsHmi(lights, hmiServer) {
   lights.forEach((light) => {
     const { type } = light;
@@ -332,6 +405,9 @@ function lightsHmi(lights, hmiServer) {
     switch (type) {
       case 'SINGLE_RELAY':
         singleRelayLightHmi(light, hmiServer);
+        break;
+      case 'LED_H801':
+        ledDriverLightHmi(light, hmiServer);
         break;
       default:
     }
@@ -546,7 +622,10 @@ function ventHmi(vent, hmiServer) {
   });
 
   hmiTargetUp.on('set', () => {
-    const target = (instance.target === instance.maxTarget)
+    const target = (
+      instance.target === null
+      || instance.target === instance.maxTarget
+    )
       ? instance.minTarget
       : instance.target + 1;
 
@@ -554,7 +633,10 @@ function ventHmi(vent, hmiServer) {
   });
 
   hmiTargetDown.on('set', () => {
-    const target = (instance.target === instance.minTarget)
+    const target = (
+      instance.target === null
+      || instance.target === instance.minTarget
+    )
       ? instance.maxTarget
       : instance.target - 1;
 

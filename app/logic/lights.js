@@ -71,7 +71,7 @@ function manageSingleRelayLight(light, httpHookServer) {
 }
 
 function manageLedLight(options, httpHookServer) {
-  const { driver, lights = [] } = options;
+  const { instance: driver, lights = [] } = options;
 
   driver.on('reliableConnect', () => {
     resolveAlways(driver.indicatorBlink(5, true));
@@ -102,12 +102,19 @@ function manageLedLight(options, httpHookServer) {
 
     httpHookServer.route(`/${name}`, (request) => {
       const {
-        urlQuery: { on }
+        urlQuery: { on, br }
       } = request;
 
       const handleResult = (result) => {
-        return result ? 'on' : 'off';
+        return result ? result.toString() : '0';
       };
+
+      const brightness = Number.parseFloat(br);
+      if (!Number.isNaN(brightness)) {
+        return {
+          handler: instance.setBrightness(brightness).then(handleResult)
+        };
+      }
 
       if (on === undefined) {
         return {
@@ -118,10 +125,6 @@ function manageLedLight(options, httpHookServer) {
       return {
         handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
       };
-    });
-
-    instance.on('change', () => {
-      resolveAlways(driver.indicatorBlink(instance.power ? 2 : 1, true));
     });
   });
 }

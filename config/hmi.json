@@ -18,6 +18,7 @@
         "_bottom"
       ],
       "groups": [
+        "_top",
         "temperature",
         "humidity",
         "brightness",
@@ -31,7 +32,14 @@
         "door",
         "group",
         "front",
-        "back"
+        "back",
+        "ceiling-lamp",
+        "standing-lamp",
+        "led",
+        "red",
+        "green",
+        "blue",
+        "_bottom"
       ],
       "sections": [
         [
@@ -71,6 +79,7 @@
       "aussen": "außen",
       "back": "hinten",
       "balkon": "Balkon",
+      "blue": "blau",
       "brightness": "Helligkeit",
       "ceiling-lamp": "Deckenlampe",
       "close": "zu",
@@ -94,6 +103,7 @@
       "fridge": "Kühlschrank",
       "front": "vorne",
       "global": "global",
+      "green": "grün",
       "group": "Gruppe",
       "hpa": "hPa",
       "humidity": "Luftfeuchtigkeit",
@@ -126,6 +136,7 @@
       "ppm": "ppm",
       "precipitation": "Niederschlag",
       "pressure": "Luftdruck",
+      "red": "rot",
       "right": "rechts",
       "schlafzimmer": "Schlafzimmer",
       "security-system": "Alarmanlage",

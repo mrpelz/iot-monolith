@@ -24,6 +24,8 @@ const remap = new Remap([{
 }]);
 
 function createAnimationPayload(from, to, duration) {
+  if (from === null) return null;
+
   const animation = ledCalc(from, to, duration, transitions.linear, maxCycle);
   if (!animation) return null;
 
@@ -241,14 +243,24 @@ class LedLight extends Base {
   }
 
   get power() {
+    if (this.brightness === null) return null;
+
     return Boolean(this.brightness);
   }
 
+  get brightnessPercentage() {
+    return remap.convert('logic', 'percent', this.brightness);
+  }
+
   _handleLedDriverConnection() {
-    this.setBrightness(this.brightness);
+    this.setBrightness(this.brightnessSetpoint, 0);
   }
 
   setBrightness(input, duration = defaultAnimationDuration) {
+    if (input < 0 || input > 1 || Number.isNaN(input)) {
+      throw new Error('brightness input out of range');
+    }
+
     const { log, setChannel } = this._ledLight;
 
     this.brightnessSetpoint = input;
@@ -261,9 +273,16 @@ class LedLight extends Base {
 
     const cycle = remap.convert('logic', 'cycle', this.brightnessSetpoint);
 
-    const payload = createAnimationPayload(this.brightness, this.brightnessSetpoint, duration);
-    if (payload === null) {
-      return Promise.resolve(this.brightness);
+    let payload = createAnimationPayload(
+      this.brightness,
+      this.brightnessSetpoint,
+      duration
+    );
+    if (!payload) {
+      payload = Buffer.from([
+        writeNumber(0, 4),
+        writeNumber(cycle, 1)
+      ]);
     }
     if (payload.length > 1275) {
       return Promise.reject(new Error('animation sequence is too long'));
@@ -312,6 +331,18 @@ class LedLight extends Base {
     }
 
     return this.setBrightness(0);
+  }
+
+  increase(amount = 0.2, duration) {
+    let newBrightness = this.brightnessSetpoint + amount;
+
+    if (newBrightness < 0) {
+      newBrightness = 1;
+    } else if (newBrightness > 1) {
+      newBrightness = 0;
+    }
+
+    return this.setBrightness(newBrightness, duration);
   }
 
   // Public methods:
