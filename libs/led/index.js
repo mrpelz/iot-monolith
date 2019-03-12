@@ -15,6 +15,8 @@ const libName = 'led';
 const minCycle = 0;
 const maxCycle = 255;
 
+const defaultAnimationDuration = 1500;
+
 const remap = new Remap([{
   logic: [0, 1, false],
   cycle: [minCycle, maxCycle, true],
@@ -196,6 +198,14 @@ class LedDriver extends MessageClient {
   // getChannel
 }
 
+class H801 extends LedDriver {
+  constructor(options) {
+    super(Object.assign({}, {
+      channels: 5
+    }, options));
+  }
+}
+
 class LedLight extends Base {
   constructor(options = {}) {
     super();
@@ -226,6 +236,10 @@ class LedLight extends Base {
     this._ledLight.log = this.log.withPrefix(libName);
   }
 
+  get powerSetpoint() {
+    return Boolean(this.brightnessSetpoint);
+  }
+
   get power() {
     return Boolean(this.brightness);
   }
@@ -234,7 +248,7 @@ class LedLight extends Base {
     this.setBrightness(this.brightness);
   }
 
-  setBrightness(input, duration = 0) {
+  setBrightness(input, duration = defaultAnimationDuration) {
     const { log, setChannel } = this._ledLight;
 
     this.brightnessSetpoint = input;
@@ -289,11 +303,7 @@ class LedLight extends Base {
   }
 
   toggle() {
-    if (this.brightness === 0) {
-      return this.setBrightness(1);
-    }
-
-    return this.setBrightness(0);
+    return this.setPower(!this.powerSetpoint);
   }
 
   setPower(on) {
@@ -361,6 +371,7 @@ class RGBLed {
 }
 
 module.exports = {
+  H801,
   LedDriver,
   LedLight,
   RGBLed

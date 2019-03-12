@@ -380,6 +380,8 @@ function lightGroupsHmi(groups, hmiServer) {
 }
 
 function allLightsGroupHmi(instance, hmiServer) {
+  if (!instance) return;
+
   const hmi = new HmiElement({
     name: 'allLights',
     attributes: {

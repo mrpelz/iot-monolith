@@ -70,13 +70,72 @@ function manageSingleRelayLight(light, httpHookServer) {
   });
 }
 
-function manage(lights, httpHookServer) {
+function manageLedLight(options, httpHookServer) {
+  const { driver, lights = [] } = options;
+
+  driver.on('reliableConnect', () => {
+    resolveAlways(driver.indicatorBlink(5, true));
+  });
+
   lights.forEach((light) => {
-    const { type } = light;
+    const {
+      instance,
+      name,
+      attributes: {
+        light: {
+          timeout = 0
+        } = {}
+      } = {}
+    } = light;
+
+    if (timeout) {
+      const timer = new Timer(timeout);
+
+      timer.on('hit', () => {
+        resolveAlways(instance.setPower(false));
+      });
+
+      instance.on('set', () => {
+        timer.start();
+      });
+    }
+
+    httpHookServer.route(`/${name}`, (request) => {
+      const {
+        urlQuery: { on }
+      } = request;
+
+      const handleResult = (result) => {
+        return result ? 'on' : 'off';
+      };
+
+      if (on === undefined) {
+        return {
+          handler: instance.toggle().then(handleResult)
+        };
+      }
+
+      return {
+        handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
+      };
+    });
+
+    instance.on('change', () => {
+      resolveAlways(driver.indicatorBlink(instance.power ? 2 : 1, true));
+    });
+  });
+}
+
+function manage(lights, httpHookServer) {
+  lights.forEach((options) => {
+    const { type } = options;
 
     switch (type) {
       case 'SINGLE_RELAY':
-        manageSingleRelayLight(light, httpHookServer);
+        manageSingleRelayLight(options, httpHookServer);
+        break;
+      case 'LED_H801':
+        manageLedLight(options, httpHookServer);
         break;
       default:
     }

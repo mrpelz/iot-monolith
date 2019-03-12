@@ -237,5 +237,49 @@
         "section": "wohnzimmer"
       }
     }
+  },
+  {
+    "name": "wohnzimmerKallaxLed",
+    "host": "10.97.4.51",
+    "port": 5045,
+    "type": "LED_H801",
+    "lights": [
+      {
+        "name": "wohnzimmerKallaxLedRed",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "led-red",
+            "groupLabel": "led",
+            "section": "wohnzimmer",
+            "subGroup": "red"
+          }
+        }
+      },
+      {
+        "name": "wohnzimmerKallaxLedGreen",
+        "useChannel": 1,
+        "attributes": {
+          "hmi": {
+            "group": "led-green",
+            "groupLabel": "led",
+            "section": "wohnzimmer",
+            "subGroup": "green"
+          }
+        }
+      },
+      {
+        "name": "wohnzimmerKallaxLedBlue",
+        "useChannel": 2,
+        "attributes": {
+          "hmi": {
+            "group": "led-blue",
+            "groupLabel": "led",
+            "section": "wohnzimmer",
+            "subGroup": "blue"
+          }
+        }
+      }
+    ]
   }
 ]

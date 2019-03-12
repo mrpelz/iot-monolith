@@ -1,11 +1,33 @@
 const { SingleRelay } = require('../../libs/single-relay');
+const { H801, LedLight } = require('../../libs/led');
 const { getKey } = require('../../libs/utils/structures');
 
-function createSingleRelayLight(light) {
+function addPersistenceHandler(name, instance, lightDb, dbKey, instanceKey) {
+  const handleChange = () => {
+    lightDb[name] = {
+      [dbKey]: instance[instanceKey]
+    };
+  };
+
+  const handleInit = () => {
+    const {
+      [dbKey]: value = false
+    } = lightDb[name] || {};
+
+    instance[instanceKey] = value;
+
+    instance.on('set', handleChange);
+    handleChange();
+  };
+
+  handleInit();
+}
+
+function createSingleRelayLight(options) {
   const {
     host,
     port
-  } = light;
+  } = options;
 
   try {
     return new SingleRelay({
@@ -17,25 +39,86 @@ function createSingleRelayLight(light) {
   }
 }
 
-function addPersistenceHandler(name, instance, lightDb) {
-  const handleChange = () => {
-    lightDb[name] = {
-      power: instance.powerSetpoint
-    };
-  };
+function createSwitchLight(options, lightDb) {
+  const instance = createSingleRelayLight(options);
+  if (!instance) return null;
 
-  const handleInit = () => {
-    const {
-      power = false
-    } = lightDb[name] || {};
+  const { name, host } = options;
 
-    instance.powerSetpoint = power;
+  instance.log.friendlyName(`${name} (HOST: ${host})`);
 
-    instance.on('set', handleChange);
-    handleChange();
-  };
+  addPersistenceHandler(name, instance, lightDb, 'power', 'powerSetpoint');
 
-  handleInit();
+  instance.connect();
+
+  return Object.assign(options, {
+    instance
+  });
+}
+
+function createH801(options) {
+  const {
+    host,
+    port
+  } = options;
+
+  try {
+    return new H801({
+      host,
+      port
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function createLedInstance(options, driver) {
+  const {
+    useChannel
+  } = options;
+
+  try {
+    return new LedLight({
+      driver,
+      useChannel
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function createLedLight(options, lightDb) {
+  const { name: driverName, host, lights: l = [] } = options;
+
+  const lightsOpts = l.filter(({ disable = false, name }) => {
+    return name && !disable;
+  });
+  if (!lightsOpts.length) return null;
+
+  const driver = createH801(options);
+  if (!driver) return null;
+
+  driver.log.friendlyName(`${driverName} (HOST: ${host})`);
+
+  const lights = lightsOpts.map((lightOpts) => {
+    const { name } = lightOpts;
+
+    const instance = createLedInstance(lightOpts, driver);
+    if (!instance) return null;
+
+    addPersistenceHandler(name, instance, lightDb, 'brightness', 'brightnessSetpoint');
+
+    return Object.assign(lightOpts, {
+      instance
+    });
+  }).filter(Boolean);
+
+  driver.connect();
+
+  return Object.assign(options, {
+    driver,
+    lights
+  });
 }
 
 (function main() {
@@ -48,34 +131,21 @@ function addPersistenceHandler(name, instance, lightDb) {
 
   const lightDb = getKey(db, 'lights');
 
-  global.lights = lights.map((light) => {
+  global.lights = lights.map((options) => {
     const {
       disable = false,
-      host,
       name,
       type
-    } = light;
+    } = options;
     if (disable || !name || !type) return null;
-
-    let instance;
 
     switch (type) {
       case 'SINGLE_RELAY':
-        instance = createSingleRelayLight(light);
-        break;
+        return createSwitchLight(options, lightDb);
+      case 'LED_H801':
+        return createLedLight(options, lightDb);
       default:
+        return null;
     }
-
-    if (!instance) return null;
-
-    instance.log.friendlyName(`${name} (HOST: ${host})`);
-
-    addPersistenceHandler(name, instance, lightDb);
-
-    instance.connect();
-
-    return Object.assign(light, {
-      instance
-    });
   }).filter(Boolean);
 }());

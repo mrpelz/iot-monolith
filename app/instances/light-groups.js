@@ -1,4 +1,5 @@
 const { LightGroup } = require('../../libs/group');
+const { flattenArrays } = require('../../libs/utils/structures');
 
 function createLightGroup(group, allLights) {
   const {
@@ -42,9 +43,13 @@ function createLightGroups(lightGroups, lights) {
 }
 
 function createAllLightsGroup(allLights) {
-  const lights = allLights.map(({ instance }) => {
-    return instance;
-  });
+  const lights = flattenArrays(allLights.map(({ instance: relayInstance, lights: l = [] }) => {
+    if (relayInstance) return relayInstance;
+
+    return l.map(({ instance: ledInstance }) => {
+      return ledInstance;
+    });
+  }));
 
   try {
     return new LightGroup(lights);
