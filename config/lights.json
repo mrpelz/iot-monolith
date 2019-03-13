@@ -287,7 +287,6 @@
     }
   },
   {
-    "disable": true,
     "name": "wohnzimmerKallaxLed",
     "host": "10.97.4.51",
     "port": 5045,
