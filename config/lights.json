@@ -330,6 +330,19 @@
             "subGroup": "blue"
           }
         }
+      },
+      {
+        "name": "wohnzimmerKallaxLedWWhite",
+        "useChannel": 3,
+        "attributes": {
+          "hmi": {
+            "group": "led-w-white",
+            "groupLabel": "led",
+            "section": "wohnzimmer",
+            "sortGroup": "w-white",
+            "subGroup": "w-white"
+          }
+        }
       }
     ]
   }
