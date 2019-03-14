@@ -18,6 +18,23 @@ class HmiServer {
     this._hmi.log = log.withPrefix(libName);
   }
 
+  _pushNewElementToServices() {
+    const {
+      ingests,
+      log
+    } = this._hmi;
+
+    Promise.all(
+      ingests.map((ingest) => {
+        return resolveAlways(ingest({
+          type: 'element'
+        }));
+      })
+    ).then(() => {
+      log.info('pushed new element to all ingests');
+    });
+  }
+
   _pushElementStateToServices(name, value) {
     const {
       ingests,
@@ -28,7 +45,8 @@ class HmiServer {
       ingests.map((ingest) => {
         return resolveAlways(ingest({
           name,
-          value
+          value,
+          type: 'stream'
         }));
       })
     ).then(() => {
@@ -140,6 +158,8 @@ class HmiServer {
       lister,
       setter: set ? setter : null
     };
+
+    this._pushNewElementToServices();
 
     return getter;
   }

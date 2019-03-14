@@ -230,6 +230,7 @@ class WebApi {
     this._webApi = {
       isActive: false,
       clients: {},
+      list: null,
       meta
     };
 
@@ -304,18 +305,52 @@ class WebApi {
     this._sendToStream(payload);
   }
 
+  _updateList() {
+    const {
+      hmiService,
+      meta: {
+        extensions = {},
+        sort = {},
+        strings = {}
+      }
+    } = this._webApi;
+
+    hmiService.list().then((elements) => {
+      return JSON.stringify({
+        strings,
+        hierarchy: getHierarchy(
+          [].concat(elements, getExtensions(extensions)),
+          sort
+        )
+      }, null, null);
+    }).catch(() => {}).then((result) => {
+      if (!result) return;
+
+      this._webApi.list = result;
+    });
+  }
+
   _handleIngest(options) {
     const {
       name,
       attributes,
-      value
+      value,
+      type
     } = options;
 
-    this._publishMessage({
-      name,
-      attributes,
-      value
-    });
+    switch (type) {
+      case 'stream':
+        this._publishMessage({
+          name,
+          attributes,
+          value
+        });
+        break;
+      case 'element':
+        this._updateList();
+        break;
+      default:
+    }
   }
 
   _handleStream(request, response) {
@@ -361,6 +396,7 @@ class WebApi {
   _handleList(request) {
     const {
       hmiService,
+      list,
       meta: {
         extensions = {},
         sort = {},
@@ -369,13 +405,13 @@ class WebApi {
     } = this._webApi;
     const { urlQuery: { values = false } } = request;
 
+    const getValues = Boolean(parseString(values));
+
     return {
       headers: {
         'Content-Type': 'application/json; charset=utf-8'
       },
-      handler: hmiService.list(
-        Boolean(parseString(values))
-      ).then((elements) => {
+      handler: getValues ? hmiService.list(true).then((elements) => {
         return JSON.stringify({
           strings,
           hierarchy: getHierarchy(
@@ -383,7 +419,7 @@ class WebApi {
             sort
           )
         }, null, null);
-      })
+      }) : Promise.resolve(list)
     };
   }
 
