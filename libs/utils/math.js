@@ -124,7 +124,7 @@ function ledCalc(
   duration = 3000,
   transition = transitions.linear,
   range = 255,
-  gamma = 2.2,
+  gamma = 2.8,
   timeStep = 17
 ) {
   const toPwm = (input) => {

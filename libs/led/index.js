@@ -15,7 +15,7 @@ const libName = 'led';
 const minCycle = 0;
 const maxCycle = 255;
 
-const defaultAnimationDuration = 1500;
+const defaultAnimationDuration = 600;
 
 const remap = new Remap([{
   logic: [0, 1, false],
@@ -26,7 +26,7 @@ const remap = new Remap([{
 function createAnimationPayload(from, to, duration) {
   if (from === null) return null;
 
-  const animation = ledCalc(from, to, duration, transitions.linear, maxCycle);
+  const animation = ledCalc(from, to, duration, transitions.easeOutQuad, maxCycle);
   if (!animation) return null;
 
   // console.log(JSON.stringify(animation, null, 2));
@@ -273,17 +273,21 @@ class LedLight extends Base {
 
     const cycle = remap.convert('logic', 'cycle', this.brightnessSetpoint);
 
-    let payload = createAnimationPayload(
+    let payload;
+
+    payload = createAnimationPayload(
       this.brightness,
       this.brightnessSetpoint,
       duration
     );
+
     if (!payload) {
       payload = Buffer.from([
         writeNumber(0, 4),
         writeNumber(cycle, 1)
       ]);
     }
+
     if (payload.length > 1275) {
       return Promise.reject(new Error('animation sequence is too long'));
     }
@@ -333,7 +337,7 @@ class LedLight extends Base {
     return this.setBrightness(0);
   }
 
-  increase(amount = 0.2, duration) {
+  increase(amount = 0.2, speed = defaultAnimationDuration) {
     let newBrightness = this.brightnessSetpoint + amount;
 
     if (newBrightness < 0) {
@@ -341,6 +345,8 @@ class LedLight extends Base {
     } else if (newBrightness > 1) {
       newBrightness = 0;
     }
+
+    const duration = Math.abs(newBrightness - this.brightnessSetpoint) * speed;
 
     return this.setBrightness(newBrightness, duration);
   }

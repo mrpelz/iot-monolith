@@ -389,11 +389,11 @@ function ledDriverLightHmi(options, hmiServer) {
     });
 
     hmiUp.on('set', () => {
-      resolveAlways(instance.increase(0.25));
+      resolveAlways(instance.increase(0.2));
     });
 
     hmiDown.on('set', () => {
-      resolveAlways(instance.increase(-0.25));
+      resolveAlways(instance.increase(-0.2));
     });
   });
 }
