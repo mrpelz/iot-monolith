@@ -92,6 +92,21 @@
     }
   },
   {
+    "name": "esszimmerFloodlight",
+    "host": "10.97.4.33",
+    "port": 5045,
+    "type": "SINGLE_RELAY",
+    "attributes": {
+      "light": {
+        "enableButton": true
+      },
+      "hmi": {
+        "group": "flood-lamp",
+        "section": "esszimmer"
+      }
+    }
+  },
+  {
     "name": "esszimmerStehlampe",
     "host": "10.97.4.12",
     "port": 5045,
@@ -173,21 +188,6 @@
       },
       "hmi": {
         "group": "stone-lamp",
-        "section": "schlafzimmer"
-      }
-    }
-  },
-  {
-    "name": "schlafzimmerFloodlight",
-    "host": "10.97.4.33",
-    "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "light": {
-        "enableButton": true
-      },
-      "hmi": {
-        "group": "flood-lamp",
         "section": "schlafzimmer"
       }
     }

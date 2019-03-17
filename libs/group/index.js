@@ -92,19 +92,17 @@ class LightGroup extends EventEmitter {
   }
 
   get power() {
-    if (this._instances.some((instance) => {
-      return instance.power === null;
-    })) {
-      return null;
-    }
+    const sane = this._instances.filter((instance) => {
+      return instance.power !== null;
+    });
 
     if (this._allOf) {
-      return this._instances.every((instance) => {
+      return sane.every((instance) => {
         return instance.power;
       });
     }
 
-    return this._instances.some((instance) => {
+    return sane.some((instance) => {
       return instance.power;
     });
   }

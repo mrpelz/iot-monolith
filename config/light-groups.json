@@ -1,7 +1,6 @@
 [
   {
     "name": "flurDeckenlampe",
-    "type": "SINGLE_RELAY",
     "lights": [
       "flurDeckenlampeFront",
       "flurDeckenlampeBack"
@@ -22,7 +21,6 @@
   },
   {
     "name": "kuecheAmbience",
-    "type": "SINGLE_RELAY",
     "lights": [
       "kuecheLedLeft",
       "kuecheLedRight"
@@ -34,6 +32,48 @@
       "hmi": {
         "group": "led",
         "section": "kueche"
+      }
+    }
+  },
+  {
+    "name": "wohnzimmerLedAll",
+    "lights": [
+      "wohnzimmerKallaxLedBlue",
+      "wohnzimmerKallaxLedGreen",
+      "wohnzimmerKallaxLedRed",
+      "wohnzimmerKallaxLedWWhite"
+    ],
+    "attributes": {
+      "hmi": {
+        "group": "led-all",
+          "groupLabel": "led",
+          "section": "wohnzimmer",
+          "sortGroup": "all",
+          "subGroup": "all"
+      }
+    }
+  },
+  {
+    "name": "wohnzimmerRelated",
+    "lights": [
+      "esszimmerDeckenlampe",
+      "esszimmerFloodlight",
+      "esszimmerStehlampe",
+      "flurDeckenlampeBack",
+      "flurDeckenlampeFront",
+      "kuecheLedLeft",
+      "kuecheLedRight",
+      "wohnzimmerDeckenlampe",
+      "wohnzimmerKallaxLedBlue",
+      "wohnzimmerKallaxLedGreen",
+      "wohnzimmerKallaxLedRed",
+      "wohnzimmerKallaxLedWWhite",
+      "wohnzimmerStehlampe"
+    ],
+    "attributes": {
+      "hmi": {
+        "group": "~§{wohnzimmer}",
+        "section": "wohnzimmer"
       }
     }
   }

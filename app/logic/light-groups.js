@@ -69,6 +69,51 @@ function manageAllLightsGroup(instance, httpHookServer) {
 }
 
 function groupWithRfSwitch(lightGroups, rfSwitches) {
+  //  ESSZIMMER
+  //    buttons
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'wohnzimmerRelated',
+    'esszimmerButton1',
+    4
+  );
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'wohnzimmerLedAll',
+    'esszimmerMulti1',
+    4
+  );
+
+
+  //  FLUR
+  //    wall switches
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallFront',
+    1
+  );
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallMiddle',
+    1
+  );
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'flurDeckenlampe',
+    'flurWallBack',
+    1
+  );
+
+
+  //  KUECHE
+  //    wall switches
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
@@ -76,7 +121,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'kuecheWallLeft',
     1
   );
-
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
@@ -85,22 +129,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     1
   );
 
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'kuecheAmbience',
-    'wohnzimmerMulti1',
-    4
-  );
-
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'kuecheAmbience',
-    'esszimmerMulti1',
-    4
-  );
-
+  //    buttons
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
@@ -109,28 +138,22 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     4
   );
 
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'flurDeckenlampe',
-    'flurWallFront',
-    1
-  );
 
+  //  WOHNZIMMER
+  //    buttons
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
-    'flurDeckenlampe',
-    'flurWallMiddle',
-    1
+    'wohnzimmerRelated',
+    'wohnzimmerButton1',
+    4
   );
-
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
-    'flurDeckenlampe',
-    'flurWallBack',
-    1
+    'wohnzimmerLedAll',
+    'wohnzimmerMulti1',
+    4
   );
 }
 

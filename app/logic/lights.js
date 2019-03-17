@@ -177,118 +177,8 @@ function lightWithDoorSensor(lights, doorSensors) {
 }
 
 function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerDeckenlampe',
-    'esszimmerWallFront',
-    1
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerDeckenlampe',
-    'esszimmerWallFront',
-    2
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerDeckenlampe',
-    'wohnzimmerWallBack',
-    1
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerStehlampe',
-    'wohnzimmerWallBack',
-    2
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerDeckenlampe',
-    'wohnzimmerWallBack',
-    3
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerDeckenlampe',
-    'wohnzimmerMulti1',
-    3
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerStehlampe',
-    'wohnzimmerMulti1',
-    1
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerStehlampe',
-    'wohnzimmerMulti1',
-    2
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'wohnzimmerDeckenlampe',
-    'esszimmerMulti1',
-    1
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerDeckenlampe',
-    'esszimmerMulti1',
-    2
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerStehlampe',
-    'esszimmerMulti1',
-    3
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerStehlampe',
-    'esszimmerButton1',
-    4
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'schlafzimmerSteinlampe',
-    'schlafzimmerButton1',
-    4
-  );
-
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'schlafzimmerSteinlampe',
-    'schlafzimmerButton2',
-    4
-  );
-
+  //  ABSTELLRAUM
+  //    wall switches
   coupleRfToggleToLight(
     lights,
     rfSwitches,
@@ -298,6 +188,9 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitchLongPressTimeout
   );
 
+
+  //  ARBEITSZIMMER
+  //    wall switches
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -306,6 +199,69 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     1
   );
 
+
+  //  DUSCHBAD
+  //    wall switches
+  coupleRfToggleToLight(
+    lights,
+    rfSwitches,
+    'duschbadDeckenlampe',
+    'duschbadWallDoor',
+    1,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'duschbadSpiegellampe',
+    'duschbadWallSink',
+    1
+  );
+
+
+  //  ESSZIMMER
+  //    wall switches
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'esszimmerWallFront',
+    1
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerDeckenlampe',
+    'esszimmerWallFront',
+    2
+  );
+
+  //    buttons
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'esszimmerMulti1',
+    1
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerStehlampe',
+    'esszimmerMulti1',
+    2
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerFloodlight',
+    'esszimmerMulti1',
+    3
+  );
+
+
+  //  KUECHE
+  //    wall switches
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -314,6 +270,9 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     2
   );
 
+
+  //  SCHLAFZIMMER
+  //    wall switches
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -321,7 +280,6 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     'schlafzimmerWallLeft',
     1
   );
-
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -330,6 +288,25 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     1
   );
 
+  //    buttons
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerSteinlampe',
+    'schlafzimmerButton1',
+    4
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'schlafzimmerSteinlampe',
+    'schlafzimmerButton2',
+    4
+  );
+
+
+  //  WANNENBAD
+  //    wall switches
   coupleRfToggleToLight(
     lights,
     rfSwitches,
@@ -339,21 +316,52 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitchLongPressTimeout
   );
 
-  coupleRfToggleToLight(
-    lights,
-    rfSwitches,
-    'duschbadDeckenlampe',
-    'duschbadWallDoor',
-    1,
-    rfSwitchLongPressTimeout
-  );
 
+  // WOHNZIMMER
+  //    wall switches
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'duschbadSpiegellampe',
-    'duschbadWallSink',
+    'wohnzimmerDeckenlampe',
+    'wohnzimmerWallBack',
     1
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerStehlampe',
+    'wohnzimmerWallBack',
+    2
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerDeckenlampe',
+    'wohnzimmerWallBack',
+    3
+  );
+
+  // buttons
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerDeckenlampe',
+    'wohnzimmerMulti1',
+    1
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerStehlampe',
+    'wohnzimmerMulti1',
+    2
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerFloodlight',
+    'wohnzimmerMulti1',
+    3
   );
 }
 

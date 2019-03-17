@@ -1,20 +1,20 @@
 const { LightGroup } = require('../../libs/group');
 const { SingleRelay } = require('../../libs/single-relay');
+const { LedLight } = require('../../libs/led');
 const { flattenArrays } = require('../../libs/utils/structures');
 
-function createLightGroup(group, allLights) {
+function createLightGroup(group, lights) {
   const {
     attributes: {
       light: {
         allOf = false
       } = {}
     } = {},
-    lights: includedLights,
-    type: includedType
+    lights: includedLights
   } = group;
 
-  const lights = allLights.filter(({ name, type }) => {
-    return includedLights.includes(name) && type === includedType;
+  const instances = lights.filter(({ name }) => {
+    return includedLights.includes(name);
   }).map(({ instance }) => {
     return instance;
   });
@@ -22,7 +22,7 @@ function createLightGroup(group, allLights) {
   const events = ['buttonShortpress'];
 
   try {
-    return new LightGroup(lights, events, allOf);
+    return new LightGroup(instances, events, allOf);
   } catch (e) {
     return null;
   }
@@ -30,8 +30,8 @@ function createLightGroup(group, allLights) {
 
 function createLightGroups(lightGroups, lights) {
   return lightGroups.map((group) => {
-    const { disable = false, name, type } = group;
-    if (disable || !name || !type) return null;
+    const { disable = false, name } = group;
+    if (disable || !name) return null;
 
     const instance = createLightGroup(group, lights);
 
@@ -43,19 +43,13 @@ function createLightGroups(lightGroups, lights) {
   }).filter(Boolean);
 }
 
-function createAllLightsGroup(allLights) {
-  const lights = flattenArrays(allLights.map(({ instance: relayInstance, lights: l = [] }) => {
-    if (relayInstance instanceof SingleRelay) {
-      return relayInstance;
-    }
-
-    return l.map(({ instance: ledInstance }) => {
-      return ledInstance;
-    });
-  })).filter(Boolean);
+function createAllLightsGroup(lights) {
+  const instances = lights.map(({ instance }) => {
+    return instance;
+  });
 
   try {
-    return new LightGroup(lights);
+    return new LightGroup(instances);
   } catch (e) {
     return null;
   }
@@ -69,6 +63,24 @@ function createAllLightsGroup(allLights) {
     }
   } = global;
 
-  global.lightGroups = createLightGroups(lightGroups, lights);
-  global.allLightsGroup = createAllLightsGroup(lights);
+  const allLights = flattenArrays(lights.map((light) => {
+    const { instance: relayInstance, lights: l = [] } = light;
+
+    if (relayInstance instanceof SingleRelay) {
+      return light;
+    }
+
+    return l.map((led) => {
+      const { instance: ledInstance } = led;
+
+      if (ledInstance instanceof LedLight) {
+        return led;
+      }
+
+      return null;
+    });
+  })).filter(Boolean);
+
+  global.lightGroups = createLightGroups(lightGroups, allLights);
+  global.allLightsGroup = createAllLightsGroup(allLights);
 }());
