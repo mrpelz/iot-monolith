@@ -72,9 +72,7 @@ process.on('uncaughtException', (error = {}) => {
 process.on('unhandledRejection', (error = {}) => {
   /* eslint-disable-next-line no-console */
   console.log(`<0>unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
-  telegramRoot('unhandledRejection', error.message, error.stack).then(() => {
-    exit(1);
-  });
+  telegramRoot('unhandledRejection', error.message, error.stack);
 });
 
 process.on('SIGINT', exit);
