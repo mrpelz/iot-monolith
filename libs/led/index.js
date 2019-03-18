@@ -41,6 +41,16 @@ function createAnimationPayload(from, to, duration) {
   );
 }
 
+function getClosestStep(steps = [], input = 0) {
+  const closest = [...steps].sort((a, b) => {
+    return Math.abs(input - a) - Math.abs(input - b);
+  })[0];
+
+  if (closest === undefined) return null;
+
+  return steps.indexOf(closest);
+}
+
 function getMessageTypes(channels) {
   return [
     ...new Array(channels).fill(undefined).map((_, index) => {
@@ -214,12 +224,14 @@ class LedLight extends Base {
 
     const {
       driver = null,
-      useChannel
+      useChannel,
+      steps = [0, 0.2, 0.4, 0.6, 0.8, 1]
     } = options;
 
     if (!driver
       || useChannel === undefined
-      || !(driver instanceof LedDriver)) {
+      || !(driver instanceof LedDriver)
+      || !steps.length) {
       throw new Error('insufficient options provided');
     }
 
@@ -229,7 +241,8 @@ class LedLight extends Base {
     this.brightness = null;
 
     this._ledLight = {
-      setChannel: this.driver.getChannel(useChannel)
+      setChannel: this.driver.getChannel(useChannel),
+      steps
     };
 
     rebind(this, '_handleLedDriverConnection');
@@ -337,15 +350,19 @@ class LedLight extends Base {
     return this.setBrightness(0);
   }
 
-  increase(amount = 0.2, speed = defaultAnimationDuration) {
-    let newBrightness = this.brightnessSetpoint + amount;
+  increase(up, speed = defaultAnimationDuration) {
+    const { steps } = this._ledLight;
 
-    if (newBrightness < 0) {
-      newBrightness = 1;
-    } else if (newBrightness > 1) {
-      newBrightness = 0;
+    const currentStep = getClosestStep(steps, this.brightnessSetpoint);
+    let step = currentStep + (up ? 1 : -1);
+
+    if (step < 0) {
+      step = steps.length - 1;
+    } else if (step > steps.length - 1) {
+      step = 0;
     }
 
+    const newBrightness = steps[step];
     const duration = Math.abs(newBrightness - this.brightnessSetpoint) * speed;
 
     return this.setBrightness(newBrightness, duration);
