@@ -109,7 +109,7 @@
     }
   },
   {
-    "disable": false,
+    "disable": true,
     "name": "duschbad",
     "addnTimeout": 5000,
     "host": "panucci.net.wurstsalat.cloud",
