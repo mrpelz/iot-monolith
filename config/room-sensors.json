@@ -47,13 +47,14 @@
   },
   {
     "name": "schlafzimmer",
-    "host": "10.97.4.30",
-    "port": 3000,
+    "host": "10.97.0.226",
+    "port": 5045,
     "metrics": [
       "temperature",
       "pressure",
       "humidity",
-      "brightness"
+      "brightness",
+      "movement"
     ],
     "attributes": {
       "hmi": {
