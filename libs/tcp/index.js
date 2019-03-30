@@ -417,7 +417,7 @@ class ReliableSocket extends Base {
       },
       socket: new Socket(),
       messageTimer: new Timer(keepAlive * 2),
-      disconnectTimer: new Timer(keepAlive * 10),
+      disconnectTimer: new Timer(keepAlive * 20),
       connectDebounceTimer: new Timer(keepAlive),
       log: this.log.withPrefix(libName)
     };
