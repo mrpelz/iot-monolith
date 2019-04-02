@@ -101,6 +101,10 @@ class Db {
 
     this.log.info('written db-file');
   }
+
+  save() {
+    this._onSave();
+  }
 }
 
 module.exports = {

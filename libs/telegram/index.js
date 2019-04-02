@@ -2,7 +2,7 @@ const { post, LongPollClient } = require('../http/client');
 const { Logger } = require('../log');
 const { randomString } = require('../utils/data');
 const { rebind, resolveAlways } = require('../utils/oop');
-const { excludeKeys, flattenArrays } = require('../utils/structures');
+const { excludeKeys, flattenArrays, getKey } = require('../utils/structures');
 
 const libName = 'telegram';
 
@@ -220,6 +220,7 @@ class Message {
     }
 
     this.date = new Date(date);
+    this.deleted = false;
     this.editDate = null;
     this.from = from;
     this.id = id;
@@ -228,19 +229,18 @@ class Message {
 
     this._chat = chat;
     this._client = client;
-    this._deleted = false;
     this._inlineKeyboard = inlineKeyboard;
   }
 
   internalEdit(editDate, newText) {
-    if (this._deleted) return;
+    if (this.deleted) return;
 
     this.editDate = new Date(editDate);
     this.text = newText;
   }
 
   callbackQuery(options) {
-    if (this._deleted || !this._inlineKeyboard) return;
+    if (this.deleted || !this._inlineKeyboard) return;
 
     const { id } = options;
 
@@ -255,7 +255,7 @@ class Message {
   }
 
   edit(options = {}) {
-    if (this._deleted) return Promise.reject();
+    if (this.deleted) return Promise.reject();
 
     const editKeys = Object.keys(editMethods);
     const calls = editKeys.map((key) => {
@@ -283,13 +283,13 @@ class Message {
   }
 
   delete() {
-    if (this._deleted) return Promise.reject();
+    if (this.deleted) return Promise.reject();
 
     return this._client.request('deleteMessage', {
       chat_id: this._chat.id,
       message_id: this.id
     }).then((result) => {
-      this._deleted = true;
+      this.deleted = true;
 
       return result;
     });
@@ -322,6 +322,60 @@ class Chat {
     });
   }
 
+  static restoreMessages(client, chat) {
+    const { db } = client;
+    const messages = new Map();
+    const { messages: saved = [] } = getKey(db, chat.id.toString());
+
+    saved.forEach((msg = {}) => {
+      const {
+        date,
+        from,
+        id,
+        text
+      } = msg;
+
+      messages.set(id, new Message({
+        chat,
+        client,
+        date,
+        from,
+        id,
+        text
+      }));
+    });
+
+    return messages;
+  }
+
+  static storeMessages(client, messages, chat) {
+    const { db } = client;
+
+    const chatDb = getKey(db, chat.id.toString());
+
+    const saved = [];
+    messages.forEach((msg) => {
+      const {
+        date,
+        deleted,
+        from,
+        id,
+        text
+      } = msg;
+
+      if (deleted) return;
+
+      saved.push({
+        date: date.getTime(),
+        from,
+        id,
+        text
+      });
+    });
+
+    chatDb.messages = saved;
+  }
+
   constructor(options) {
     const {
       client,
@@ -339,7 +393,8 @@ class Chat {
     this.type = type;
 
     this._client = client;
-    this._messages = new Map();
+
+    this._messages = Chat.restoreMessages(client, this);
   }
 
   ingestMessage(payload = {}) {
@@ -416,20 +471,38 @@ class Chat {
         break;
       default:
     }
+
+    Chat.storeMessages(this._client, this._messages, this);
   }
 
   addMessage(options) {
     return Message.createOutgoing(this._client, this, options).then((message) => {
       this._messages.set(message.id, message);
 
+      Chat.storeMessages(this._client, this._messages, this);
+
       return message;
+    });
+  }
+
+  clear() {
+    const deletions = [];
+
+    this._messages.forEach((msg, id) => {
+      deletions.push(resolveAlways(msg.delete()).then(() => {
+        this._messages.delete(id);
+      }));
+    });
+
+    return Promise.all(deletions).then(() => {
+      Chat.storeMessages(this._client, this._messages, this);
     });
   }
 }
 
 class Client {
-  static create(scheduler, token, host) {
-    if (!scheduler || !token || !host) {
+  static create(scheduler, token, host, db) {
+    if (!scheduler || !token || !host || !db) {
       throw new Error('insufficient options provided!');
     }
 
@@ -444,6 +517,7 @@ class Client {
       } = payload;
 
       return new Client({
+        db,
         firstName,
         host,
         id,
@@ -457,6 +531,7 @@ class Client {
 
   constructor(options) {
     const {
+      db,
       firstName,
       host,
       id,
@@ -466,12 +541,13 @@ class Client {
       username
     } = options;
 
-    if (!id || !token || !scheduler || !host) {
+    if (!id || !token || !scheduler || !host || !db) {
       throw new Error('insufficient options provided!');
     }
 
     rebind(this, 'request', '_doUpdate', '_onUpdate');
 
+    this.db = db;
     this.firstName = firstName;
     this.id = id;
     this.lastName = lastName;
@@ -561,8 +637,8 @@ class Client {
   }
 }
 
-function createTelegramClient(scheduler, token, host) {
-  return Client.create(scheduler, token, host);
+function createTelegramClient(scheduler, token, host, db) {
+  return Client.create(scheduler, token, host, db);
 }
 
 function createInlineKeyboard(layout = []) {
