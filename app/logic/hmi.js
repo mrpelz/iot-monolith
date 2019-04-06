@@ -644,6 +644,39 @@ function ventHmi(vent, hmiServer) {
   });
 }
 
+function sevenSegmentHmi(sevenSegment, hmiServer) {
+  if (!sevenSegment) return;
+
+  const { clock, name } = sevenSegment;
+
+  setUpConnectionHmi(sevenSegment, 'seven-segment', hmiServer);
+
+  const hmi = new HmiElement({
+    name,
+    attributes: {
+      category: 'other',
+      group: 'clock',
+      section: 'kueche',
+      setType: 'trigger',
+      sortCategory: '_bottom',
+      type: 'binary-light'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(clock.active ? 'on' : 'off');
+    },
+    settable: true
+  });
+
+  clock.on('change', () => {
+    hmi.update();
+  });
+
+  hmi.on('set', () => {
+    resolveAlways(clock.toggle());
+  });
+}
+
 function securityHmi(instance, hmiServer) {
   const addHmi = (level) => {
     const hmi = new HmiElement({
@@ -707,6 +740,7 @@ function securityHmi(instance, hmiServer) {
     outwardsDoorSensorsGroup,
     roomSensors,
     security,
+    sevenSegment,
     vent
   } = global;
 
@@ -733,6 +767,7 @@ function securityHmi(instance, hmiServer) {
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
   fansHmi(fans, hmiServer);
+  sevenSegmentHmi(sevenSegment, hmiServer);
   ventHmi(vent, hmiServer);
   securityHmi(security, hmiServer);
 }());

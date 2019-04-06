@@ -36,7 +36,7 @@ function createVent(vent) {
   instance.log.friendlyName(`${name} (HOST: ${host})`);
   instance.connect();
 
-  global.vent = Object.assign(vent, {
+  global.vent = Object.assign({}, vent, {
     instance
   });
 }());

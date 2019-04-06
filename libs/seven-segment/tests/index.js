@@ -3,8 +3,8 @@ const { SevenSegment } = require('../index');
 const { sleep } = require('../../utils/time');
 
 const display = new SevenSegment({
-  host: '127.0.0.1',
-  port: 3000
+  host: '10.97.0.227',
+  port: 5045
 });
 
 // (async function test() {

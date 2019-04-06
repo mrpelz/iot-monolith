@@ -561,6 +561,12 @@ class ReliableSocket extends Base {
       if (!bodyPayload) return false;
 
       this._reliableSocket.state.currentLength = 0;
+
+      log.debug({
+        head: 'msg incoming',
+        attachment: humanPayload(bodyPayload)
+      });
+
       this.emit('data', bodyPayload);
 
       return true;
@@ -654,6 +660,11 @@ class ReliableSocket extends Base {
     }
 
     log.debug(`send ${input.length} byte payload`);
+
+    log.debug({
+      head: 'msg outgoing',
+      attachment: humanPayload(input)
+    });
 
     socket.write(Buffer.concat([
       writeNumber(input.length, lengthPreamble),

@@ -36,7 +36,9 @@ function manage(vent, httpHookServer) {
     }
 
     return {
-      handler: instance.setTarget(parseString(target))
+      handler: instance.setTarget(parseString(target)).then((value) => {
+        return `${value}`;
+      })
     };
   });
 }
