@@ -42,7 +42,7 @@
       "port": 9000
     }
   ],
-  "rfSwitchLongPressTimeout": 2500,
+  "rfSwitchLongPressTimeout": 5000,
   "sevenSegment": {
     "name": "sevenSegment",
     "host": "10.97.0.227",
