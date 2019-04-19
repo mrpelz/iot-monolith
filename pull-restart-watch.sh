@@ -1,7 +1,6 @@
 #!/bin/bash
 
-git reset --hard HEAD~1
-git pull
+git pull --rebase
 
 /bin/systemctl restart iot-monolith.service
 /bin/journalctl -u iot-monolith.service -f
