@@ -23,7 +23,7 @@ function coupleDoorSensorToLight(
   const { instance: doorSensorInstance } = doorSensorMatch;
 
   doorSensorInstance.on('change', () => {
-    if (doorSensorInstance.isOpen && !lightInstance.power) {
+    if (doorSensorInstance.isOpen) {
       resolveAlways(lightInstance.setPower(true));
     }
   });
@@ -129,9 +129,18 @@ function coupleRfToggleToLight(
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
+  lightInstance.on('set', () => {
+    if (!lightInstance.power) return;
+    timer.start();
+  });
+
+  lightInstance.on('change', () => {
+    if (lightInstance.power) return;
+    timer.stop();
+  });
+
   rfSwitchInstance.on(rfSwitchState, () => {
     resolveAlways(lightInstance.setPower(!timer.isRunning));
-    timer.start();
   });
 }
 
