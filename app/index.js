@@ -18,6 +18,7 @@ function createInstances() {
   require('./instances/histories');
   require('./instances/hmi-server');
   require('./instances/web-api');
+  require('./instances/e-paper');
   require('./instances/prometheus');
   require('./instances/http-hooks');
 }

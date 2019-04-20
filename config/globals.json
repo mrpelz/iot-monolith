@@ -47,5 +47,10 @@
     "name": "sevenSegment",
     "host": "10.97.0.227",
     "port": 5045
+  },
+  "ePaper": {
+    "enabled": false,
+    "update": "every:1:minute",
+    "url": "http://localhost:4567/draw"
   }
 }
