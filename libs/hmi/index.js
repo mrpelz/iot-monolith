@@ -169,11 +169,9 @@ class HmiServer {
       ingests
     } = this._hmi;
 
-    if (!ingest) {
-      throw new Error('insufficient options provided');
+    if (typeof ingest === 'function') {
+      ingests.push(ingest);
     }
-
-    ingests.push(ingest);
 
     return {
       getAll: this._getAllElementStates,

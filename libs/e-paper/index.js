@@ -6,14 +6,13 @@ const { Logger } = require('../log');
 const libName = 'e-paper';
 
 const meta = {
-  draw: [
-    {
-      device: 'test',
-      template: 'room',
+  devices: {
+    wohnzimmer: {
+      template: 'standard',
       lockLevel: 0,
-      lockTime: 60000
+      lockTime: 60
     }
-  ]
+  }
 };
 
 class EPaper {
@@ -57,13 +56,14 @@ class EPaper {
     const {
       hmiService,
       isActive,
-      url
+      url,
+      log
     } = this._ePaper;
 
     if (!isActive) return;
 
-    const payload = hmiService.list(true).then((response = []) => {
-      const elements = response.reduce(
+    hmiService.list(true).then((response = []) => {
+      const values = response.reduce(
         (acc, { name, value }) => {
           acc[name] = value;
           return acc;
@@ -71,13 +71,20 @@ class EPaper {
         {}
       );
 
-      const data = Object.assign({}, elements, meta);
+      const data = Object.assign({ values }, meta);
       return Buffer.from(JSON.stringify(data, null, null));
+    }).catch(() => {
+      return null;
+    }).then((payload) => {
+      if (!payload) return;
+
+      resolveAlways(post(url, payload).catch((reason) => {
+        log.error({
+          head: 'error while posting to PHP-script',
+          attachment: reason
+        });
+      }));
     });
-
-    if (!payload) return;
-
-    resolveAlways(post(url, payload));
   }
 
   start() {

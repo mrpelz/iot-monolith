@@ -49,8 +49,8 @@
     "port": 5045
   },
   "ePaper": {
-    "enabled": false,
+    "enabled": true,
     "update": "every:1:minute",
-    "url": "http://localhost:4567/draw"
+    "url": "http://localhost/epaper/draw.php"
   }
 }
