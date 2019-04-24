@@ -5,23 +5,15 @@ const { Logger } = require('../log');
 
 const libName = 'e-paper';
 
-const meta = {
-  devices: {
-    wohnzimmer: {
-      template: 'standard',
-      lockLevel: 0,
-      lockTime: 60
-    }
-  }
-};
-
 class EPaper {
   constructor(options = {}) {
     const {
-      url,
       hmiServer = null,
+      meta = {},
       scheduler = null,
-      update = null
+      update = null,
+      updateOffset = 0,
+      url
     } = options;
 
     if (!url || !hmiServer || !scheduler || !update) {
@@ -29,25 +21,29 @@ class EPaper {
     }
 
     this._ePaper = {
+      meta,
       url,
       isActive: false
     };
 
     rebind(this, '_postValues');
 
-    this._setUpHmiService(hmiServer, scheduler, update);
+    this._setUpHmiService(hmiServer, scheduler, update, updateOffset);
 
     const log = new Logger();
     log.friendlyName(`ePaper (${url})`);
     this._ePaper.log = log.withPrefix(libName);
   }
 
-  _setUpHmiService(hmiServer, scheduler, update) {
+  _setUpHmiService(hmiServer, scheduler, update, updateOffset) {
     const hmiService = hmiServer.addService(this._handleIngest);
     this._ePaper.hmiService = hmiService;
 
     new RecurringMoment(
-      scheduler,
+      {
+        scheduler,
+        offset: updateOffset
+      },
       every.parse(update)
     ).on('hit', this._postValues);
   }
@@ -56,8 +52,9 @@ class EPaper {
     const {
       hmiService,
       isActive,
-      url,
-      log
+      log,
+      meta,
+      url
     } = this._ePaper;
 
     if (!isActive) return;

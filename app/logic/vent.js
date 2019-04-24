@@ -106,7 +106,7 @@ async function createHysteresis(
   });
 
   new RecurringMoment(
-    scheduler,
+    { scheduler },
     every.parse(ventHumidityControlUpdate)
   ).on('hit', () => {
     resolveAlways(sensorInstance.getMetric(metric)).then((value) => {

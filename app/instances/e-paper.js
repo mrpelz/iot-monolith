@@ -5,7 +5,9 @@ const {
     globals: {
       ePaper: {
         enabled = false,
+        meta,
         update,
+        updateOffset,
         url
       }
     }
@@ -18,10 +20,12 @@ function createEPaper() {
   if (!enabled) return null;
 
   const ePaper = new EPaper({
-    url,
     hmiServer,
+    meta,
     scheduler,
-    update
+    update,
+    updateOffset,
+    url
   });
 
   ePaper.start();

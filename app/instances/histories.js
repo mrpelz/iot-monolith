@@ -175,10 +175,10 @@ function metricAggregatesHistory(
 
   const historyDb = getKey(db, 'histories');
 
-  const update = new RecurringMoment(scheduler, every.parse(updateTime));
+  const update = new RecurringMoment({ scheduler }, every.parse(updateTime));
   update.setMaxListeners(0);
 
-  const cleanup = new RecurringMoment(scheduler, every.hour(retainHours));
+  const cleanup = new RecurringMoment({ scheduler }, every.hour(retainHours));
   cleanup.setMaxListeners(0);
 
   global.histories = flattenArrays([

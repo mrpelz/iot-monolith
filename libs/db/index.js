@@ -39,7 +39,7 @@ class Db {
     process.on('exit', this._onSave);
 
     new RecurringMoment(
-      scheduler,
+      { scheduler },
       every.parse(saveInterval)
     ).on('hit', this._onSave);
 

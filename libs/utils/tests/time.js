@@ -65,7 +65,7 @@ moment2.on('destroy', () => {
   console.log('"nowPlus10Secs" or "nowPlus15Secs": destroyed');
 });
 
-const recSecond = new RecurringMoment(scheduler, every.second());
+const recSecond = new RecurringMoment({ scheduler }, every.second());
 recSecond.on('hit', () => {
   console.log('"everySecond": hit');
 });
@@ -73,7 +73,7 @@ recSecond.on('destroy', () => {
   console.log('"everySecond": destroyed');
 });
 
-const recMinute = new RecurringMoment(scheduler, every.minute());
+const recMinute = new RecurringMoment({ scheduler }, every.minute());
 recMinute.on('hit', () => {
   console.log('"everyMinute": hit');
 });
@@ -81,7 +81,7 @@ recMinute.on('destroy', () => {
   console.log('"everyMinute": destroyed');
 });
 
-const rec1Moment = new RecurringMoment(scheduler, every.second(10));
+const rec1Moment = new RecurringMoment({ scheduler }, every.second(10));
 rec1Moment.on('hit', () => {
   console.log('"every10Secs": hit');
 });
@@ -89,7 +89,7 @@ rec1Moment.on('destroy', () => {
   console.log('"every10Secs": destroyed');
 });
 
-const rec2Moment = new RecurringMoment(scheduler, every10SecsInEvenWeek);
+const rec2Moment = new RecurringMoment({ scheduler }, every10SecsInEvenWeek);
 rec2Moment.on('hit', () => {
   console.log('"every10SecsInEvenWeek": hit');
 });
@@ -97,7 +97,7 @@ rec2Moment.on('destroy', () => {
   console.log('"every10SecsInEvenWeek": destroyed');
 });
 
-const rec3Moment = new RecurringMoment(scheduler, every10SecsInOddWeek);
+const rec3Moment = new RecurringMoment({ scheduler }, every10SecsInOddWeek);
 rec3Moment.on('hit', () => {
   console.log('"every10SecsInOddWeek": hit');
 });
@@ -150,7 +150,7 @@ range3.on('destroy', () => {
   console.log('"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": destroyed');
 });
 
-const rec1Range = new RecurringTimeRange(scheduler, {
+const rec1Range = new RecurringTimeRange({ scheduler }, {
   from: everySecond30,
   to: everySecond40
 });

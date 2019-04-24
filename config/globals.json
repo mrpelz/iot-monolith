@@ -51,6 +51,16 @@
   "ePaper": {
     "enabled": true,
     "update": "every:1:minute",
-    "url": "http://localhost/epaper/draw.php"
+    "updateOffset": -12000,
+    "url": "http://localhost/epaper/draw.php",
+    "meta": {
+      "devices": {
+        "schlafzimmer": {
+          "template": "standard",
+          "lockLevel": 0,
+          "lockTime": 60
+        }
+      }
+    }
   }
 }

@@ -41,7 +41,7 @@ async function createClock(scheduler, sevenSegment) {
       rebind(this, '_setTime');
 
       new RecurringMoment(
-        scheduler,
+        { scheduler },
         every.minute(1)
       ).on('hit', this._setTime);
 

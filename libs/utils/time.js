@@ -185,7 +185,7 @@ function getWeekNumber(input) {
   return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
 }
 
-function recurring(options) {
+function recurring(options, offset) {
   if (!isObject(options)) {
     throw new Error('insufficient options provided');
   }
@@ -242,8 +242,10 @@ function recurring(options) {
   });
 
   return (date) => {
+    const now = new Date(date.getTime() - (offset || 0));
+
     return matchers.every((match) => {
-      return match(date);
+      return match(now);
     });
   };
 }
@@ -385,11 +387,18 @@ class Moment extends EventEmitter {
 }
 
 class RecurringMoment extends EventEmitter {
-  static prepare(input) {
-    return input.map(recurring);
+  static prepare(input, offset) {
+    return input.map((moment) => {
+      return recurring(moment, offset);
+    });
   }
 
-  constructor(scheduler, ...moments) {
+  constructor(options = {}, ...moments) {
+    const {
+      scheduler,
+      offset
+    } = options;
+
     if (!scheduler || !moments.length) {
       throw new Error('insufficient options provided');
     }
@@ -397,7 +406,7 @@ class RecurringMoment extends EventEmitter {
     super();
 
     this._scheduler = scheduler;
-    this._moments = RecurringMoment.prepare(moments);
+    this._moments = RecurringMoment.prepare(moments, offset);
 
     this.is = undefined;
 
@@ -557,16 +566,21 @@ class TimeRange extends EventEmitter {
 }
 
 class RecurringTimeRange extends EventEmitter {
-  static prepare(input) {
+  static prepare(input, offset) {
     return input.map((range) => {
       return {
-        from: recurring(range.from),
-        to: recurring(range.to)
+        from: recurring(range.from, offset),
+        to: recurring(range.to, offset)
       };
     });
   }
 
-  constructor(scheduler, ...ranges) {
+  constructor(options = {}, ...ranges) {
+    const {
+      scheduler,
+      offset
+    } = options;
+
     if (!scheduler || !ranges.length) {
       throw new Error('insufficient options provided');
     }
@@ -574,7 +588,7 @@ class RecurringTimeRange extends EventEmitter {
     super();
 
     this._scheduler = scheduler;
-    this._ranges = RecurringTimeRange.prepare(ranges);
+    this._ranges = RecurringTimeRange.prepare(ranges, offset);
     this._activeRangeEnd = undefined;
 
     this.inRange = undefined;

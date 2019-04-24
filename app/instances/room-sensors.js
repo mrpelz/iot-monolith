@@ -28,7 +28,7 @@ function addSchedule(metrics, instance, metricSchedule, scheduler) {
     const { [metric]: config } = metricSchedule;
 
     new RecurringMoment(
-      scheduler,
+      { scheduler },
       every.parse(config)
     ).on('hit', () => {
       resolveAlways(instance.requestMetric(metric));
