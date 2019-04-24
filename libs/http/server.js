@@ -177,7 +177,11 @@ class HttpServer extends EventEmitter {
         }
       }).catch((reason) => {
         response.writeHead(rejectCode, headers);
-        response.end(`[${rejectCode}]\n${reason.message || ''}`);
+        try {
+          response.end(`[${rejectCode}]\n${reason.message || ''}`);
+        } catch (_) {
+          // empty
+        }
       });
     } else {
       response.writeHead(500, headers);
