@@ -8,24 +8,28 @@ const { rebind, resolveAlways } = require('../utils/oop');
 function httpClient(method, url = {}, options = {}, data) {
   const {
     auth,
-    host,
+    hostname,
     pathname = '/',
+    port: specifiedPort,
     protocol,
     search
   } = (typeof url === 'string') ? new URL(url) : url;
 
-  if (!host) {
+  if (!hostname) {
     throw new Error('unknown host in url');
   }
 
   let request;
+  let port;
 
   switch (protocol) {
     case 'http:':
       request = httpRequest;
+      port = specifiedPort ? Number.parseInt(specifiedPort, 10) : 80;
       break;
     case 'https:':
       request = httpsRequest;
+      port = specifiedPort ? Number.parseInt(specifiedPort, 10) : 443;
       break;
     default:
       throw new Error('unknown protocol in url');
@@ -40,9 +44,10 @@ function httpClient(method, url = {}, options = {}, data) {
 
   const mergedOptions = Object.assign({
     auth,
-    host,
+    hostname,
     method,
     path: `${pathname}${search}`,
+    port,
     protocol
   }, options, {
     headers: Object.assign(defaultHeaders, additionalHeaders),
