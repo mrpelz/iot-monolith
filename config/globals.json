@@ -52,7 +52,7 @@
     "enabled": true,
     "update": "every:1:minute",
     "updateOffset": -12000,
-    "url": "http://localhost/epaper/draw.php",
+    "url": "http://localhost:8080/epaper/draw.php",
     "meta": {
       "devices": {
         "schlafzimmer": {
