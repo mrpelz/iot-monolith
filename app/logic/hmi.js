@@ -718,6 +718,22 @@ function securityHmi(instance, hmiServer) {
   addHmi(0); // include levels <= 0 (e.g. alarm for when people are sleeping)
 }
 
+function ev1527SingleServerHmi(ev1527SingleServers, hmiServer) {
+  ev1527SingleServers.forEach((ev1527Server, index) => {
+    const {
+      _persistentSocket: {
+        options: {
+          host = null
+        } = {}
+      } = {}
+    } = ev1527Server;
+    setUpConnectionHmi({
+      name: host || `server${index}`,
+      instance: ev1527Server
+    }, 'ev1527-server', hmiServer);
+  });
+}
+
 
 (function main() {
   const {
@@ -730,6 +746,7 @@ function securityHmi(instance, hmiServer) {
     },
     allLightsGroup,
     allMovementGroup,
+    ev1527SingleServers,
     doorSensors,
     fans,
     histories,
@@ -770,4 +787,5 @@ function securityHmi(instance, hmiServer) {
   sevenSegmentHmi(sevenSegment, hmiServer);
   ventHmi(vent, hmiServer);
   securityHmi(security, hmiServer);
+  ev1527SingleServerHmi(ev1527SingleServers, hmiServer);
 }());

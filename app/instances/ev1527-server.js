@@ -37,5 +37,6 @@ function createEv1527Server(server) {
     return instance;
   }).filter(Boolean);
 
+  global.ev1527SingleServers = servers;
   global.ev1527Server = new Ev1527ServerAggregator(...servers);
 }());
