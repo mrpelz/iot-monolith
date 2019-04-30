@@ -4,9 +4,9 @@ Description=iot-monolith
 [Service]
 Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
-WorkingDirectory=/usr/local/scripts/iot-monolith/
+WorkingDirectory=/opt/iot-monolith/
 ExecStartPre=/bin/cp -f /var/cache/iot-monolith/iot-db.json /tmp/iot-db.json
-ExecStart=/usr/local/scripts/iot-monolith/run.sh
+ExecStart=/opt/iot-monolith/run.sh
 ExecStopPost=/bin/mkdir -p /var/cache/iot-monolith
 ExecStopPost=/bin/cp -f /tmp/iot-db.json /var/cache/iot-monolith/iot-db.json
 Restart=always
