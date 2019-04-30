@@ -577,6 +577,10 @@ class ReliableSocket extends Base {
 
     this._reliableSocket.state.currentLength = readNumber(lengthPayload, lengthPreamble);
 
+    if (this._reliableSocket.state.currentLength > 5) {
+      log.warning(`message length > 5 bytes: ${this._reliableSocket.state.currentLength} bytes`);
+    }
+
     log.debug(`receive ${this._reliableSocket.state.currentLength} byte payload`);
 
     return true;
