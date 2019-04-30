@@ -460,16 +460,10 @@ class ReliableSocket extends Base {
   }
 
   _handleReadable() {
-    const { messageTimer } = this._reliableSocket;
-
-    messageTimer.stop();
-
     let remainder = true;
     while (remainder) {
       remainder = this._read();
     }
-
-    messageTimer.start();
   }
 
   _notifyConnect() {
@@ -549,6 +543,7 @@ class ReliableSocket extends Base {
 
   _read() {
     const {
+      messageTimer,
       socket,
       options: {
         lengthPreamble
@@ -561,6 +556,8 @@ class ReliableSocket extends Base {
       if (!bodyPayload) return false;
 
       this._reliableSocket.state.currentLength = 0;
+
+      messageTimer.stop();
 
       log.debug({
         head: 'msg incoming',
@@ -577,8 +574,10 @@ class ReliableSocket extends Base {
 
     this._reliableSocket.state.currentLength = readNumber(lengthPayload, lengthPreamble);
 
+    messageTimer.start();
+
     if (this._reliableSocket.state.currentLength > 5) {
-      log.warning(`message length > 5 bytes: ${this._reliableSocket.state.currentLength} bytes`);
+      log.error(`message length > 5 bytes: ${this._reliableSocket.state.currentLength} bytes`);
     }
 
     log.debug(`receive ${this._reliableSocket.state.currentLength} byte payload`);
