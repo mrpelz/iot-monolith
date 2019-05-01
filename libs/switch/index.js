@@ -122,7 +122,7 @@ class Switch extends MessageClient {
       }
     } = this._reliableSocket;
 
-    const { capabilities, log } = this._switch;
+    const { capabilities } = this._switch;
 
     if (!isConnected) {
       return Promise.reject(new Error('device not connected'));
@@ -132,14 +132,7 @@ class Switch extends MessageClient {
       throw new Error('capability is not configured');
     }
 
-    return this.request(name, input).catch((reason) => {
-      log.error({
-        head: 'set error',
-        attachment: reason
-      });
-
-      throw reason;
-    });
+    return this.request(name, input);
   }
 
   // Public methods:
