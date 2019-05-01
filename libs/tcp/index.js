@@ -420,7 +420,7 @@ class ReliableSocket extends Base {
         isConnected: null,
         shouldBeConnected: false
       },
-      socket: new Socket(),
+      socket: null,
       keepAliveTimer: new Timer(keepAlive * 4),
       messageTimer: new Timer(keepAlive * 2),
       disconnectTimer: new Timer(keepAlive * 20),
@@ -439,7 +439,28 @@ class ReliableSocket extends Base {
       '_sendKeepAlive'
     );
 
-    this._setUpSocket();
+    this._init();
+  }
+
+  _init() {
+    const {
+      options: {
+        keepAlive
+      },
+      keepAliveTimer,
+      messageTimer,
+      disconnectTimer,
+      connectDebounceTimer
+    } = this._reliableSocket;
+
+    setInterval(this._connect, Math.round(keepAlive / 2));
+    setInterval(this._sendKeepAlive, keepAlive);
+
+    keepAliveTimer.on('hit', this._onDisconnection);
+    messageTimer.on('hit', this._onDisconnection);
+
+    connectDebounceTimer.on('hit', this._notifyConnect);
+    disconnectTimer.on('hit', this._notifyDisconnect);
   }
 
   _connect() {
@@ -452,16 +473,19 @@ class ReliableSocket extends Base {
         isConnected,
         shouldBeConnected
       },
-      socket,
       log
     } = this._reliableSocket;
 
     log.debug('connection/disconnection handling');
 
-    if (shouldBeConnected && !isConnected && !socket.connecting) {
-      socket.connect({ host, port });
+    if (shouldBeConnected && !isConnected) {
+      this._nukeSocket();
+      const newSocket = new Socket();
+      newSocket.connect({ host, port });
+      this._reliableSocket.socket = newSocket;
+      this._setUpSocket();
     } else if (!shouldBeConnected && isConnected) {
-      socket.end();
+      this._nukeSocket();
     }
   }
 
@@ -488,6 +512,22 @@ class ReliableSocket extends Base {
     log.error('unrecovered socket disconnect');
 
     this.emit('reliableDisconnect');
+  }
+
+  _nukeSocket() {
+    const { socket } = this._reliableSocket;
+    if (!socket) return;
+
+    socket.removeListener('readable', this._handleReadable);
+    socket.removeListener('connect', this._onConnection);
+    socket.removeListener('end', this._onDisconnection);
+    socket.removeListener('timeout', this._onDisconnection);
+    socket.removeListener('error', this._onDisconnection);
+
+    socket.end();
+    socket.destroy();
+
+    this._reliableSocket.socket = null;
   }
 
   _onConnection() {
@@ -525,7 +565,6 @@ class ReliableSocket extends Base {
         isConnected,
         shouldBeConnected
       },
-      socket,
       messageTimer,
       disconnectTimer,
       connectDebounceTimer,
@@ -539,13 +578,7 @@ class ReliableSocket extends Base {
     messageTimer.stop();
     keepAliveTimer.stop();
 
-    let rest = true;
-    while (rest) {
-      rest = socket.read(1);
-    }
-
-    socket.end();
-    socket.destroy();
+    this._nukeSocket();
 
     if (shouldBeConnected) {
       disconnectTimer.start();
@@ -617,10 +650,6 @@ class ReliableSocket extends Base {
         keepAlive
       },
       socket,
-      keepAliveTimer,
-      messageTimer,
-      disconnectTimer,
-      connectDebounceTimer
     } = this._reliableSocket;
 
     socket.setNoDelay(true);
@@ -628,23 +657,13 @@ class ReliableSocket extends Base {
     if (keepAlive) {
       socket.setKeepAlive(true, keepAlive);
       socket.setTimeout(keepAlive * 2);
-
-      setInterval(this._connect, Math.round(keepAlive / 2));
-      setInterval(this._sendKeepAlive, keepAlive);
     }
 
     socket.on('readable', this._handleReadable);
-
     socket.on('connect', this._onConnection);
-
     socket.on('end', this._onDisconnection);
     socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
-    keepAliveTimer.on('hit', this._onDisconnection);
-    messageTimer.on('hit', this._onDisconnection);
-
-    connectDebounceTimer.on('hit', this._notifyConnect);
-    disconnectTimer.on('hit', this._notifyDisconnect);
   }
 
   connect() {
