@@ -1,5 +1,6 @@
 [
   {
+    "disable": true,
     "name": "wohnzimmer",
     "host": "10.97.4.10",
     "port": 3000,
@@ -30,6 +31,7 @@
     }
   },
   {
+    "disable": true,
     "name": "kueche",
     "host": "10.97.4.20",
     "port": 3000,
@@ -94,6 +96,7 @@
     }
   },
   {
+    "disable": true,
     "name": "abstellraum",
     "host": "10.97.4.40",
     "port": 3000,
