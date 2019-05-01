@@ -538,6 +538,13 @@ class ReliableSocket extends Base {
     connectDebounceTimer.stop();
     messageTimer.stop();
     keepAliveTimer.stop();
+
+    let rest = true;
+    while (rest) {
+      rest = socket.read(1);
+    }
+
+    socket.end();
     socket.destroy();
 
     if (shouldBeConnected) {
