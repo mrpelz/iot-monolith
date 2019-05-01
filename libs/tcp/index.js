@@ -421,6 +421,7 @@ class ReliableSocket extends Base {
         shouldBeConnected: false
       },
       socket: new Socket(),
+      keepAliveTimer: new Timer(keepAlive * 4),
       messageTimer: new Timer(keepAlive * 2),
       disconnectTimer: new Timer(keepAlive * 20),
       connectDebounceTimer: new Timer(keepAlive),
@@ -465,6 +466,10 @@ class ReliableSocket extends Base {
   }
 
   _handleReadable() {
+    const { keepAliveTimer } = this._reliableSocket;
+
+    keepAliveTimer.start();
+
     let remainder = true;
     while (remainder) {
       remainder = this._read();
@@ -492,6 +497,7 @@ class ReliableSocket extends Base {
       },
       disconnectTimer,
       connectDebounceTimer,
+      keepAliveTimer,
       log
     } = this._reliableSocket;
 
@@ -501,6 +507,7 @@ class ReliableSocket extends Base {
 
     connectDebounceTimer.start();
     disconnectTimer.stop();
+    keepAliveTimer.start();
 
     this._reliableSocket.state.isConnected = true;
 
@@ -522,6 +529,7 @@ class ReliableSocket extends Base {
       messageTimer,
       disconnectTimer,
       connectDebounceTimer,
+      keepAliveTimer,
       log
     } = this._reliableSocket;
 
@@ -529,6 +537,7 @@ class ReliableSocket extends Base {
 
     connectDebounceTimer.stop();
     messageTimer.stop();
+    keepAliveTimer.stop();
     socket.destroy();
 
     if (shouldBeConnected) {
@@ -601,6 +610,7 @@ class ReliableSocket extends Base {
         keepAlive
       },
       socket,
+      keepAliveTimer,
       messageTimer,
       disconnectTimer,
       connectDebounceTimer
@@ -623,6 +633,7 @@ class ReliableSocket extends Base {
     socket.on('end', this._onDisconnection);
     socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
+    keepAliveTimer.on('hit', this._onDisconnection);
     messageTimer.on('hit', this._onDisconnection);
 
     connectDebounceTimer.on('hit', this._notifyConnect);
