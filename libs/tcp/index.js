@@ -379,9 +379,14 @@ class PersistentSocket extends Base {
     this._onDisconnection();
   }
 
+  reconnect() {
+    this._onDisconnection();
+  }
+
   // Public methods:
   // connect
   // disconnect
+  // reconnect
   // write
 }
 
@@ -644,6 +649,10 @@ class ReliableSocket extends Base {
     });
 
     this._connect();
+  }
+
+  reconnect() {
+    this._onDisconnection();
   }
 
   write(input) {

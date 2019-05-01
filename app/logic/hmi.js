@@ -18,6 +18,7 @@ function setUpConnectionHmi(element, subGroup, hmiServer) {
       category: 'connections',
       group: camel(name, 'connection'),
       section: 'tech',
+      setType: 'trigger',
       showSubGroup: Boolean(subGroup),
       subGroup,
       type: 'connection'
@@ -25,7 +26,8 @@ function setUpConnectionHmi(element, subGroup, hmiServer) {
     server: hmiServer,
     getter: async () => {
       return connected ? 'connected' : 'disconnected';
-    }
+    },
+    settable: true
   });
 
   instance.on('connect', () => {
@@ -35,6 +37,10 @@ function setUpConnectionHmi(element, subGroup, hmiServer) {
   instance.on('disconnect', () => {
     connected = false;
     hmi.update();
+  });
+
+  hmi.on('set', () => {
+    instance.reconnect();
   });
 }
 
