@@ -12,8 +12,6 @@ const keepAliveId = 255;
 
 const defaultTimeout = 5000;
 
-const timeoutSymbol = Symbol('timeout');
-
 function prepareMessageTypes(types) {
   return types.map((msg) => {
     const {
@@ -221,7 +219,7 @@ class MessageClient extends ReliableSocket {
         delete calls[id];
       }
 
-      return timeoutSymbol;
+      throw new Error(`call timed out after ${timeout}ms`);
     });
 
     const responseHandler = new Promise((resolve, reject) => {
@@ -251,21 +249,7 @@ class MessageClient extends ReliableSocket {
       ]));
     });
 
-    let done = false;
-
-    return Promise.race([timeoutHandler, responseHandler]).then((result) => {
-      if (!done) {
-        done = true;
-
-        if (result !== timeoutSymbol) {
-          return result;
-        }
-
-        return Promise.reject(new Error(`call timed out after ${timeout}ms`));
-      }
-
-      return emptyBuffer;
-    }).catch((reason) => {
+    return Promise.race([timeoutHandler, responseHandler]).catch((reason) => {
       log.warning({
         head: 'request error',
         attachment: reason
