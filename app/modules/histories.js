@@ -155,23 +155,24 @@ function metricAggregatesHistory(
   });
 }
 
-(function main() {
+function create(config, data) {
   const {
-    config: {
-      globals: {
-        historyRetainHours: retainHours,
-        historyUpdate: updateTime,
-        historyMetrics
-      },
-      trends: {
-        metricRanges: ranges
-      }
+    globals: {
+      historyRetainHours: retainHours,
+      historyUpdate: updateTime,
+      historyMetrics
     },
+    trends: {
+      metricRanges: ranges
+    }
+  } = config;
+
+  const {
     db,
     metricAggregates,
     roomSensors,
     scheduler
-  } = global;
+  } = data;
 
   const historyDb = getKey(db, 'histories');
 
@@ -181,7 +182,7 @@ function metricAggregatesHistory(
   const cleanup = new RecurringMoment({ scheduler }, every.hour(retainHours));
   cleanup.setMaxListeners(0);
 
-  global.histories = flattenArrays([
+  const histories = flattenArrays([
     roomSensorsHistory(
       roomSensors,
       retainHours,
@@ -201,4 +202,12 @@ function metricAggregatesHistory(
       historyMetrics
     )
   ]).filter(Boolean);
-}());
+
+  Object.assign(data, {
+    histories
+  });
+}
+
+module.exports = {
+  create
+};

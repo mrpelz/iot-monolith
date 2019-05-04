@@ -1,9 +1,58 @@
 const EventEmitter = require('events');
 
+const { HmiElement } = require('../../libs/hmi');
+const { SevenSegment } = require('../../libs/seven-segment');
 const { resolveAlways, rebind } = require('../../libs/utils/oop');
 const { every, RecurringMoment } = require('../../libs/utils/time');
 
-function manage(sevenSegment, httpHookServer) {
+const { setUpConnectionHmi } = require('../utils/hmi');
+
+
+function createSevenSegment(sevenSegment) {
+  const {
+    host,
+    port
+  } = sevenSegment;
+
+  try {
+    return new SevenSegment({
+      host,
+      port
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function create(config, data) {
+  const {
+    globals: {
+      sevenSegment: sevenSegmentConfig
+    }
+  } = config;
+
+  const { disable = false, name, host } = sevenSegmentConfig;
+
+  if (disable || !name) return;
+
+  const instance = createSevenSegment(sevenSegmentConfig);
+
+  if (!instance) return;
+
+  instance.log.friendlyName(`${name} (HOST: ${host})`);
+  instance.connect();
+
+  const sevenSegment = Object.assign({}, sevenSegmentConfig, {
+    instance
+  });
+
+  Object.assign(data, {
+    sevenSegment
+  });
+}
+
+
+function manageSevenSegment(sevenSegment, httpHookServer) {
   if (!sevenSegment) return;
 
   const { instance } = sevenSegment;
@@ -112,17 +161,58 @@ function kuecheLedWithClockToggle(lightGroups, sevenSegment) {
   });
 }
 
-(function main() {
+function sevenSegmentHmi(sevenSegment, hmiServer) {
+  if (!sevenSegment) return;
+
+  const { clock, name } = sevenSegment;
+
+  setUpConnectionHmi(sevenSegment, 'seven-segment', hmiServer);
+
+  const hmi = new HmiElement({
+    name,
+    attributes: {
+      category: 'other',
+      group: 'clock',
+      section: 'kueche',
+      setType: 'trigger',
+      sortCategory: '_bottom',
+      type: 'binary-light'
+    },
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(clock.active ? 'on' : 'off');
+    },
+    settable: true
+  });
+
+  clock.on('change', () => {
+    hmi.update();
+  });
+
+  hmi.on('set', () => {
+    resolveAlways(clock.toggle());
+  });
+}
+
+function manage(_, data) {
   const {
+    hmiServer,
     httpHookServer,
     lightGroups,
     scheduler,
     sevenSegment
-  } = global;
+  } = data;
 
   if (!sevenSegment) return;
 
-  manage(sevenSegment, httpHookServer);
+  manageSevenSegment(sevenSegment, httpHookServer);
   createClock(scheduler, sevenSegment);
   kuecheLedWithClockToggle(lightGroups, sevenSegment);
-}());
+  sevenSegmentHmi(sevenSegment, hmiServer);
+}
+
+
+module.exports = {
+  create,
+  manage
+};

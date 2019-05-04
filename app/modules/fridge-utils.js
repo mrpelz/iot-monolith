@@ -64,17 +64,18 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
 //   });
 // }
 
-(function main() {
+function manage(config, data) {
   const {
-    config: {
-      globals: {
-        fridgeTimeout,
-        fridgeMessage
-      }
-    },
+    globals: {
+      fridgeTimeout,
+      fridgeMessage
+    }
+  } = config;
+
+  const {
     doorSensors,
     telegram
-  } = global;
+  } = data;
 
   const fridge = doorSensors.find(({ name }) => {
     return name === 'kuecheFridge';
@@ -83,4 +84,8 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
 
   fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage);
   // fridgeTwitter(fridge);
-}());
+}
+
+module.exports = {
+  manage
+};

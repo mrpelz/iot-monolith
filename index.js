@@ -8,7 +8,7 @@ const { parseString } = require('./libs/utils/string');
   const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
   const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
   const logLevel = parseString(LOG_LEVEL);
-  const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : true;
+  const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : false;
 
   Object.assign(global, {
     isProd,
@@ -80,11 +80,6 @@ process.on('SIGTERM', exit);
 process.on('SIGUSR1', exit);
 process.on('SIGUSR2', exit);
 
-const { readConfig } = require('./config');
-const { createInstances, runLogic } = require('./app');
+const app = require('./app');
 
-(function run() {
-  readConfig();
-  createInstances();
-  runLogic();
-}());
+app();

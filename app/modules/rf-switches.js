@@ -28,16 +28,17 @@ function addSecurity(name, instance, security) {
   instance.on(4, onSwitch);
 }
 
-(function main() {
+function create(config, data) {
   const {
-    config: {
-      'rf-switches': rfSwitches
-    },
+    'rf-switches': rfSwitchesConfig
+  } = config;
+
+  const {
     ev1527Server,
     security
-  } = global;
+  } = data;
 
-  global.rfSwitches = rfSwitches.map((rfSwitch) => {
+  const rfSwitches = rfSwitchesConfig.map((rfSwitch) => {
     const { disable = false, name, id } = rfSwitch;
     if (disable || !name || !id) return null;
 
@@ -52,4 +53,12 @@ function addSecurity(name, instance, security) {
       instance
     });
   }).filter(Boolean);
-}());
+
+  Object.assign(data, {
+    rfSwitches
+  });
+}
+
+module.exports = {
+  create
+};

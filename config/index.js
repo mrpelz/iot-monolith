@@ -32,9 +32,7 @@ function readConfig() {
     }
   });
 
-  global.config = result;
+  return result;
 }
 
-module.exports = {
-  readConfig
-};
+module.exports = readConfig;

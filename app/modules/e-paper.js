@@ -1,7 +1,7 @@
 const { EPaper } = require('../../libs/e-paper');
 
-const {
-  config: {
+function create(config, data) {
+  const {
     globals: {
       ePaper: {
         enabled = false,
@@ -11,13 +11,14 @@ const {
         url
       }
     }
-  },
-  hmiServer,
-  scheduler
-} = global;
+  } = config;
 
-function createEPaper() {
-  if (!enabled) return null;
+  const {
+    hmiServer,
+    scheduler
+  } = data;
+
+  if (!enabled) return;
 
   const ePaper = new EPaper({
     hmiServer,
@@ -30,7 +31,11 @@ function createEPaper() {
 
   ePaper.start();
 
-  return ePaper;
+  Object.assign(data, {
+    ePaper
+  });
 }
 
-global.ePaper = createEPaper();
+module.exports = {
+  create
+};
