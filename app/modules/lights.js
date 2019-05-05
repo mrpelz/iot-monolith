@@ -5,7 +5,7 @@ const { HmiElement } = require('../../libs/hmi');
 const { SingleRelay } = require('../../libs/single-relay');
 const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
-const { parseString } = require('../../libs/utils/string');
+const { camel, parseString } = require('../../libs/utils/string');
 const { getKey } = require('../../libs/utils/structures');
 const { Timer } = require('../../libs/utils/time');
 
@@ -203,6 +203,15 @@ function manageSingleRelayLight(light, httpHookServer) {
     instance.on('set', () => {
       timer.start();
     });
+
+    instance.on('change', () => {
+      if (instance.power) return;
+      timer.stop();
+    });
+
+    Object.assign(light, {
+      timer
+    });
   }
 
   httpHookServer.route(`/${name}`, (request) => {
@@ -257,6 +266,15 @@ function manageLedLight(options, httpHookServer) {
 
       instance.on('set', () => {
         timer.start();
+      });
+
+      instance.on('change', () => {
+        if (instance.power) return;
+        timer.stop();
+      });
+
+      Object.assign(light, {
+        timer
       });
     }
 
@@ -604,26 +622,62 @@ function lightsToPrometheus(lights, prometheus) {
   });
 }
 
+function lightTimerHmi(timer, name, attributes, hmiServer) {
+  if (!timer) return null;
+
+  const hmiTimer = new HmiElement({
+    name: camel(name, 'timer'),
+    attributes: Object.assign({}, attributes, {
+      group: camel(attributes.group, 'timer'),
+      subGroup: 'timer'
+    }),
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(timer.isRunning ? 'on' : 'off');
+    },
+    settable: true
+  });
+
+  hmiTimer.on('set', () => {
+    if (timer.isRunning) {
+      timer.stop();
+    } else {
+      timer.start();
+    }
+
+    hmiTimer.update();
+  });
+
+  return hmiTimer;
+}
+
 function singleRelayLightHmi(light, hmiServer) {
   const {
     name,
     instance,
+    timer,
     attributes: {
-      hmi: hmiAttributes
+      hmi: hmiDefaults
     } = {}
   } = light;
 
   setUpConnectionHmi(light, 'single-relay light', hmiServer);
 
-  if (!hmiAttributes) return;
+  if (!hmiDefaults) return;
+
+  const hmiAttributes = Object.assign({
+    category: 'lamps',
+    groupLabel: hmiDefaults.group,
+    setType: 'trigger',
+    type: 'binary-light'
+  }, hmiDefaults);
+
+  const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
   const hmi = new HmiElement({
     name,
     attributes: Object.assign({
-      category: 'lamps',
-      group: 'lamp',
-      setType: 'trigger',
-      type: 'binary-light'
+      subGroup: 'trigger'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
@@ -634,6 +688,10 @@ function singleRelayLightHmi(light, hmiServer) {
 
   instance.on('change', () => {
     hmi.update();
+
+    if (hmiTimer) {
+      hmiTimer.update();
+    }
   });
 
   hmi.on('set', () => {
@@ -650,6 +708,7 @@ function ledDriverLightHmi(options, hmiServer) {
     const {
       name,
       instance,
+      timer,
       attributes: {
         hmi: hmiDefaults
       } = {}
@@ -660,9 +719,12 @@ function ledDriverLightHmi(options, hmiServer) {
     const hmiAttributes = Object.assign({
       category: 'lamps',
       group: 'led',
+      groupLabel: 'led',
       sortGroup: '_bottom',
       type: 'led'
     }, hmiDefaults);
+
+    const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
     const hmiValue = new HmiElement({
       name: `${name}Value`,
@@ -702,6 +764,10 @@ function ledDriverLightHmi(options, hmiServer) {
 
     instance.on('change', () => {
       hmiValue.update();
+
+      if (hmiTimer) {
+        hmiTimer.update();
+      }
     });
 
     hmiUp.on('set', () => {
