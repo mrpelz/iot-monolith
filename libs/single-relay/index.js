@@ -66,7 +66,7 @@ class SingleRelay extends Switch {
 
     this.powerSetpoint = Boolean(on);
 
-    this.emit('set');
+    this.emit('set', this.powerSetpoint);
 
     if (this.powerSetpoint === this.power) {
       return Promise.resolve(this.power);

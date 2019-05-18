@@ -201,11 +201,16 @@ function manageSingleRelayLight(light, httpHookServer) {
     });
 
     instance.on('set', () => {
+      if (!instance.power) return;
       timer.start();
     });
 
     instance.on('change', () => {
-      if (instance.power) return;
+      if (instance.power) {
+        timer.start();
+        return;
+      }
+
       timer.stop();
     });
 
@@ -265,11 +270,16 @@ function manageLedLight(options, httpHookServer) {
       });
 
       instance.on('set', () => {
+        if (!instance.power) return;
         timer.start();
       });
 
       instance.on('change', () => {
-        if (instance.power) return;
+        if (instance.power) {
+          timer.start();
+          return;
+        }
+
         timer.stop();
       });
 
@@ -647,6 +657,14 @@ function lightTimerHmi(timer, name, attributes, hmiServer) {
 
     hmiTimer.update();
   });
+
+  const onTimerChange = () => {
+    hmiTimer.update();
+  };
+
+  timer.on('start', onTimerChange);
+  timer.on('aborted', onTimerChange);
+  timer.on('hit', onTimerChange);
 
   return hmiTimer;
 }
