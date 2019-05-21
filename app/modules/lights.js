@@ -201,7 +201,7 @@ function manageSingleRelayLight(light, httpHookServer) {
     });
 
     instance.on('set', () => {
-      if (!instance.power) return;
+      if (!timer.isRunning || !instance.power) return;
       timer.start();
     });
 
@@ -270,7 +270,7 @@ function manageLedLight(options, httpHookServer) {
       });
 
       instance.on('set', () => {
-        if (!instance.power) return;
+        if (!timer.isRunning || !instance.power) return;
         timer.start();
       });
 
