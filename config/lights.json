@@ -1,200 +1,309 @@
 [
   {
-    "name": "abstellraumDeckenlampe",
+    "name": "abstellraumDeckenlampeDriver",
     "host": "10.97.4.46",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
-        "enableButton": true,
-        "timeout": 180000
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "abstellraum"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "abstellraumDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "light": {
+            "timeout": 180000
+          },
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "abstellraum"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "arbeitszimmerDeckenlampe",
+    "name": "arbeitszimmerDeckenlampeDriver",
     "host": "10.97.4.45",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "arbeitszimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "arbeitszimmerDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "arbeitszimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "arbeitszimmerTest",
+    "name": "arbeitszimmerTestDriver",
     "host": "10.97.4.41",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "lamp",
-        "section": "arbeitszimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "arbeitszimmerTest",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "lamp",
+            "section": "arbeitszimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "duschbadDeckenlampe",
+    "name": "duschbadDeckenlampeDriver",
     "host": "10.97.4.44",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
-        "enableButton": true,
-        "timeout": 900000
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "duschbad"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "duschbadDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "light": {
+            "timeout": 900000
+          },
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "duschbad"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "duschbadSpiegellampe",
+    "name": "duschbadSpiegellampeDriver",
     "host": "10.97.4.42",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "mirror-lamp",
-        "section": "duschbad"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "duschbadSpiegellampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "mirror-lamp",
+            "section": "duschbad"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "esszimmerDeckenlampe",
+    "name": "esszimmerDeckenlampeDriver",
     "host": "10.97.4.38",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "esszimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "esszimmerDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "esszimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "esszimmerFloodlight",
+    "name": "esszimmerFloodlightDriver",
     "host": "10.97.4.33",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "flood-lamp",
-        "section": "esszimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "esszimmerFloodlight",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "flood-lamp",
+            "section": "esszimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "esszimmerStehlampe",
+    "name": "esszimmerStehlampeDriver",
     "host": "10.97.4.12",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "standing-lamp",
-        "section": "esszimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "esszimmerStehlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "standing-lamp",
+            "section": "esszimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "flurDeckenlampeFront",
+    "name": "flurDeckenlampeFrontDriver",
     "host": "10.97.4.49",
     "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "hmi": {
-        "group": "ceiling-lamp-front",
-        "groupLabel": "ceiling-lamp",
-        "section": "flur",
-        "sortGroup": "front",
-        "subGroup": "front"
+    "type": "SONOFF_BASIC",
+    "lights": [
+      {
+        "name": "flurDeckenlampeFront",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp-front",
+            "groupLabel": "ceiling-lamp",
+            "section": "flur",
+            "sortGroup": "front",
+            "subGroup": "front"
+          }
+        }
       }
-    }
+    ]
   },
   {
-    "name": "flurDeckenlampeBack",
+    "name": "flurDeckenlampeBackDriver",
     "host": "10.97.4.50",
     "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {
-      "hmi": {
-        "group": "ceiling-lamp-back",
-        "groupLabel": "ceiling-lamp",
-        "section": "flur",
-        "sortGroup": "back",
-        "subGroup": "back"
+    "type": "SONOFF_BASIC",
+    "lights": [
+      {
+        "name": "flurDeckenlampeBack",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp-back",
+            "groupLabel": "ceiling-lamp",
+            "section": "flur",
+            "sortGroup": "back",
+            "subGroup": "back"
+          }
+        }
       }
-    }
+    ]
   },
   {
-    "name": "kuecheLedLeft",
+    "name": "kuecheLedLeftDriver",
     "host": "10.97.4.31",
     "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {}
+    "type": "SONOFF_BASIC",
+    "lights": [
+      {
+        "name": "kuecheLedLeft",
+        "useChannel": 0
+      }
+    ]
   },
   {
-    "name": "kuecheLedRight",
+    "name": "kuecheLedRightDriver",
     "host": "10.97.4.37",
     "port": 5045,
-    "type": "SINGLE_RELAY",
-    "attributes": {}
+    "type": "SONOFF_BASIC",
+    "lights": [
+      {
+        "name": "kuecheLedRight",
+        "useChannel": 0
+      }
+    ]
   },
   {
-    "name": "schlafzimmerDeckenlampe",
+    "name": "schlafzimmerDeckenlampeDriver",
     "host": "10.97.4.47",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "schlafzimmer"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "schlafzimmerDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "schlafzimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "schlafzimmerSteinlampe",
+    "name": "schlafzimmerSteinlampeDriver",
     "host": "10.97.4.32",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "stone-lamp",
-        "section": "schlafzimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "schlafzimmerSteinlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "stone-lamp",
+            "section": "schlafzimmer"
+          }
+        }
+      }
+    ]
   },
   {
     "disable": true,
-    "name": "schlafzimmerBedLed",
+    "name": "schlafzimmerBedLedDriver",
     "host": "10.97.4.52",
     "port": 5045,
     "type": "LED_H801",
@@ -241,53 +350,79 @@
     ]
   },
   {
-    "name": "wannenbadDeckenlampe",
+    "name": "wannenbadDeckenlampeDriver",
     "host": "10.97.4.43",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
-        "enableButton": true,
-        "timeout": 900000
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "wannenbad"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "wannenbadDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "light": {
+            "timeout": 900000
+          },
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "wannenbad"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "wohnzimmerDeckenlampe",
+    "name": "wohnzimmerDeckenlampeDriver",
     "host": "10.97.4.39",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "ceiling-lamp",
-        "section": "wohnzimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "wohnzimmerDeckenlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "ceiling-lamp",
+            "section": "wohnzimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "wohnzimmerStehlampe",
+    "name": "wohnzimmerStehlampeDriver",
     "host": "10.97.4.11",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "light": {
+      "driver": {
         "enableButton": true
-      },
-      "hmi": {
-        "group": "standing-lamp",
-        "section": "wohnzimmer"
       }
-    }
+    },
+    "lights": [
+      {
+        "name": "wohnzimmerStehlampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "standing-lamp",
+            "section": "wohnzimmer"
+          }
+        }
+      }
+    ]
   },
   {
-    "name": "wohnzimmerKallaxLed",
+    "name": "wohnzimmerKallaxLedDriver",
     "host": "10.97.4.51",
     "port": 5045,
     "type": "LED_H801",

@@ -2,7 +2,7 @@ const { URL } = require('url');
 
 const { H801, LedLight } = require('../../libs/led');
 const { HmiElement } = require('../../libs/hmi');
-const { SingleRelay } = require('../../libs/single-relay');
+const { SonoffBasic, RelayLight } = require('../../libs/relay');
 const { get } = require('../../libs/http/client');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { camel, parseString } = require('../../libs/utils/string');
@@ -36,37 +36,20 @@ function addPersistenceHandler(name, instance, lightDb, dbKey, instanceKey) {
   handleChange();
 }
 
-function createSingleRelayLight(options) {
+function createSonoffBasic(options) {
   const {
     host,
     port
   } = options;
 
   try {
-    return new SingleRelay({
+    return new SonoffBasic({
       host,
       port
     });
   } catch (e) {
     return null;
   }
-}
-
-function createSwitchLight(options, lightDb) {
-  const instance = createSingleRelayLight(options);
-  if (!instance) return null;
-
-  const { name, host } = options;
-
-  instance.log.friendlyName(`${name} (HOST: ${host})`);
-
-  addPersistenceHandler(name, instance, lightDb, 'power', 'powerSetpoint');
-
-  instance.connect();
-
-  return Object.assign(options, {
-    instance
-  });
 }
 
 function createH801(options) {
@@ -85,7 +68,22 @@ function createH801(options) {
   }
 }
 
-function createLedInstance(options, driver) {
+function createRelayLightInstance(options, driver) {
+  const {
+    useChannel
+  } = options;
+
+  try {
+    return new RelayLight({
+      driver,
+      useChannel
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function createLedLightInstance(options, driver) {
   const {
     useChannel
   } = options;
@@ -100,23 +98,28 @@ function createLedInstance(options, driver) {
   }
 }
 
-function createLedLight(options, lightDb) {
-  const { name: driverName, host, lights: l = [] } = options;
-
-  const lightsOpts = l.filter(({ disable = false, name }) => {
-    return name && !disable;
-  });
-  if (!lightsOpts.length) return null;
-
-  const driver = createH801(options);
-  if (!driver) return null;
-
-  driver.log.friendlyName(`${driverName} (HOST: ${host})`);
-
-  const lights = lightsOpts.map((lightOpts) => {
+function createRelayLightSets(lightsOpts, driver, host, lightDb) {
+  return lightsOpts.map((lightOpts) => {
     const { name } = lightOpts;
 
-    const instance = createLedInstance(lightOpts, driver);
+    const instance = createRelayLightInstance(lightOpts, driver);
+    if (!instance) return null;
+
+    addPersistenceHandler(name, instance, lightDb, 'power', 'powerSetpoint');
+
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
+
+    return Object.assign(lightOpts, {
+      instance
+    });
+  }).filter(Boolean);
+}
+
+function createLedLightSets(lightsOpts, driver, host, lightDb) {
+  return lightsOpts.map((lightOpts) => {
+    const { name } = lightOpts;
+
+    const instance = createLedLightInstance(lightOpts, driver);
     if (!instance) return null;
 
     addPersistenceHandler(name, instance, lightDb, 'brightness', 'brightnessSetpoint');
@@ -127,13 +130,6 @@ function createLedLight(options, lightDb) {
       instance
     });
   }).filter(Boolean);
-
-  driver.connect();
-
-  return Object.assign(options, {
-    instance: driver,
-    lights
-  });
 }
 
 function create(config, data) {
@@ -149,20 +145,56 @@ function create(config, data) {
 
   const lights = lightsConfig.map((options) => {
     const {
-      disable = false,
-      name,
+      disable: driverDisable = false,
+      host,
+      lights: l = [],
+      name: driverName,
       type
     } = options;
-    if (disable || !name || !type) return null;
+
+    if (driverDisable || !driverName || !type) return null;
+
+    const lightsOpts = l.filter(({ disable = false, name }) => {
+      return name && !disable;
+    });
+    if (!lightsOpts.length) return null;
+
+    let driver;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        return createSwitchLight(options, lightDb);
+      case 'SONOFF_BASIC':
+        driver = createSonoffBasic(options);
+        break;
       case 'LED_H801':
-        return createLedLight(options, lightDb);
+        driver = createH801(options);
+        break;
       default:
-        return null;
     }
+
+    if (!driver) return null;
+
+    driver.log.friendlyName(`${driverName} (HOST: ${host})`);
+
+    let lightSets;
+
+    switch (type) {
+      case 'SONOFF_BASIC':
+        lightSets = createRelayLightSets(lightsOpts, driver, host, lightDb);
+        break;
+      case 'LED_H801':
+        lightSets = createLedLightSets(lightsOpts, driver, host, lightDb);
+        break;
+      default:
+    }
+
+    if (!lightSets || !lightSets.length) return null;
+
+    driver.connect();
+
+    return Object.assign(options, {
+      instance: driver,
+      lights: lightSets
+    });
   }).filter(Boolean);
 
   Object.assign(data, {
@@ -170,77 +202,89 @@ function create(config, data) {
   });
 }
 
-
-function manageSingleRelayLight(light, httpHookServer) {
+function manageRelayLight(options, httpHookServer) {
   const {
-    instance,
-    name,
+    instance: driver,
+    lights = [],
     attributes: {
-      light: {
-        enableButton = false,
-        timeout = 0
+      driver: {
+        enableButton = false
       } = {}
     } = {}
-  } = light;
+  } = options;
 
-  instance.on('reliableConnect', () => {
-    resolveAlways(instance.ledBlink(5, true));
+  driver.on('reliableConnect', () => {
+    resolveAlways(driver.indicatorBlink(5, true));
   });
 
-  if (enableButton) {
-    instance.on('buttonShortpress', () => {
-      resolveAlways(instance.toggle());
-    });
-  }
-
-  if (timeout) {
-    const timer = new Timer(timeout);
-
-    timer.on('hit', () => {
-      resolveAlways(instance.setPower(false));
-    });
-
-    instance.on('set', () => {
-      if (!timer.isRunning || !instance.power) return;
-      timer.start();
-    });
-
-    instance.on('change', () => {
-      if (instance.power) {
-        timer.start();
-        return;
-      }
-
-      timer.stop();
-    });
-
-    Object.assign(light, {
-      timer
-    });
-  }
-
-  httpHookServer.route(`/${name}`, (request) => {
+  lights.forEach((light, index) => {
     const {
-      urlQuery: { on }
-    } = request;
+      instance,
+      name,
+      attributes: {
+        light: {
+          timeout = 0
+        } = {}
+      } = {}
+    } = light;
 
-    const handleResult = (result) => {
-      return result ? 'on' : 'off';
-    };
+    if (index === 0) {
+      instance.on('change', () => {
+        resolveAlways(instance.driver.indicatorBlink(instance.power ? 2 : 1, true));
+      });
 
-    if (on === undefined) {
-      return {
-        handler: instance.toggle().then(handleResult)
-      };
+      if (enableButton) {
+        instance.driver.on('button0Shortpress', () => {
+          resolveAlways(instance.toggle());
+        });
+      }
     }
 
-    return {
-      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
-    };
-  });
+    if (timeout) {
+      const timer = new Timer(timeout);
 
-  instance.on('change', () => {
-    resolveAlways(instance.ledBlink(instance.power ? 2 : 1, true));
+      timer.on('hit', () => {
+        resolveAlways(instance.setPower(false));
+      });
+
+      instance.on('set', () => {
+        if (!timer.isRunning || !instance.power) return;
+        timer.start();
+      });
+
+      instance.on('change', () => {
+        if (instance.power) {
+          timer.start();
+          return;
+        }
+
+        timer.stop();
+      });
+
+      Object.assign(light, {
+        timer
+      });
+    }
+
+    httpHookServer.route(`/${name}`, (request) => {
+      const {
+        urlQuery: { on }
+      } = request;
+
+      const handleResult = (result) => {
+        return result ? 'on' : 'off';
+      };
+
+      if (on === undefined) {
+        return {
+          handler: instance.toggle().then(handleResult)
+        };
+      }
+
+      return {
+        handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
+      };
+    });
   });
 }
 
@@ -322,8 +366,8 @@ function manageLights(lights, httpHookServer) {
     const { type } = options;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        manageSingleRelayLight(options, httpHookServer);
+      case 'SONOFF_BASIC':
+        manageRelayLight(options, httpHookServer);
         break;
       case 'LED_H801':
         manageLedLight(options, httpHookServer);
@@ -574,22 +618,26 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   });
 }
 
-function singleRelayLightToPrometheus(light, prometheus) {
-  const { name, instance, type } = light;
+function relayLightToPrometheus(options, prometheus) {
+  const { lights = [], type } = options;
 
-  const { push } = prometheus.pushMetric(
-    'power',
-    {
-      name,
-      type: 'light',
-      subtype: type
-    }
-  );
+  lights.forEach((light) => {
+    const { name, instance } = light;
 
-  push(instance.power);
+    const { push } = prometheus.pushMetric(
+      'power',
+      {
+        name,
+        type: 'light',
+        subtype: type
+      }
+    );
 
-  instance.on('change', () => {
     push(instance.power);
+
+    instance.on('change', () => {
+      push(instance.power);
+    });
   });
 }
 
@@ -621,8 +669,8 @@ function lightsToPrometheus(lights, prometheus) {
     const { type } = light;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayLightToPrometheus(light, prometheus);
+      case 'SONOFF_BASIC':
+        relayLightToPrometheus(light, prometheus);
         break;
       case 'LED_H801':
         ledDriverLightToPrometheus(light, prometheus);
@@ -669,51 +717,55 @@ function lightTimerHmi(timer, name, attributes, hmiServer) {
   return hmiTimer;
 }
 
-function singleRelayLightHmi(light, hmiServer) {
-  const {
-    name,
-    instance,
-    timer,
-    attributes: {
-      hmi: hmiDefaults
-    } = {}
-  } = light;
+function relayLightHmi(options, hmiServer) {
+  const { lights = [] } = options;
 
-  setUpConnectionHmi(light, 'single-relay light', hmiServer);
+  setUpConnectionHmi(options, 'relay light', hmiServer);
 
-  if (!hmiDefaults) return;
+  lights.forEach((light) => {
+    const {
+      name,
+      instance,
+      timer,
+      attributes: {
+        hmi: hmiDefaults
+      } = {}
+    } = light;
 
-  const hmiAttributes = Object.assign({
-    category: 'lamps',
-    groupLabel: hmiDefaults.group,
-    setType: 'trigger',
-    type: 'binary-light'
-  }, hmiDefaults);
+    if (!hmiDefaults) return;
 
-  const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
+    const hmiAttributes = Object.assign({
+      category: 'lamps',
+      groupLabel: hmiDefaults.group,
+      setType: 'trigger',
+      type: 'binary-light'
+    }, hmiDefaults);
 
-  const hmi = new HmiElement({
-    name,
-    attributes: Object.assign({
-      subGroup: 'trigger'
-    }, hmiAttributes),
-    server: hmiServer,
-    getter: () => {
-      return Promise.resolve(instance.power ? 'on' : 'off');
-    },
-    settable: true
-  });
+    const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
-  instance.on('change', () => {
-    hmi.update();
+    const hmi = new HmiElement({
+      name,
+      attributes: Object.assign({
+        subGroup: 'trigger'
+      }, hmiAttributes),
+      server: hmiServer,
+      getter: () => {
+        return Promise.resolve(instance.power ? 'on' : 'off');
+      },
+      settable: true
+    });
 
-    if (hmiTimer) {
-      hmiTimer.update();
-    }
-  });
+    instance.on('change', () => {
+      hmi.update();
 
-  hmi.on('set', () => {
-    resolveAlways(instance.toggle());
+      if (hmiTimer) {
+        hmiTimer.update();
+      }
+    });
+
+    hmi.on('set', () => {
+      resolveAlways(instance.toggle());
+    });
   });
 }
 
@@ -803,8 +855,8 @@ function lightsHmi(lights, hmiServer) {
     const { type } = light;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayLightHmi(light, hmiServer);
+      case 'SONOFF_BASIC':
+        relayLightHmi(light, hmiServer);
         break;
       case 'LED_H801':
         ledDriverLightHmi(light, hmiServer);
@@ -831,11 +883,16 @@ function manage(config, data) {
   } = data;
 
   manageLights(lights, httpHookServer);
-  lightWithDoorSensor(lights, doorSensors);
-  lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout);
-  arbeitszimmerDeckenlampeWithHttpHook(lights);
   lightsToPrometheus(lights, prometheus);
   lightsHmi(lights, hmiServer);
+
+  const singleLights = [].concat(...lights.map((light) => {
+    return light.lights;
+  }));
+
+  lightWithRfSwitch(singleLights, rfSwitches, rfSwitchLongPressTimeout);
+  lightWithDoorSensor(singleLights, doorSensors);
+  arbeitszimmerDeckenlampeWithHttpHook(singleLights);
 }
 
 
