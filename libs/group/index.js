@@ -1,5 +1,5 @@
 const EventEmitter = require('events');
-const { SingleRelay } = require('../single-relay');
+const { RelayLight } = require('../relay');
 const { LedLight } = require('../led');
 const { DoorSensor } = require('../door-sensor');
 const { RoomSensor } = require('../room-sensor');
@@ -58,10 +58,10 @@ class PushMetricGroup extends EventEmitter {
 }
 
 class LightGroup extends EventEmitter {
-  constructor(instances = [], events = [], allOf = false) {
+  constructor(instances = [], allOf = false) {
     instances.forEach((instance) => {
       if (
-        instance instanceof SingleRelay
+        instance instanceof RelayLight
         || instance instanceof LedLight
       ) return;
 
@@ -71,14 +71,6 @@ class LightGroup extends EventEmitter {
     super();
 
     this._isChanging = false;
-
-    events.forEach((event) => {
-      instances.forEach((instance) => {
-        instance.on(event, (...data) => {
-          this.emit(event, ...data);
-        });
-      });
-    });
 
     instances.forEach((instance) => {
       instance.on('change', () => {

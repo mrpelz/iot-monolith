@@ -1,33 +1,10 @@
 const { LightGroup } = require('../../libs/group');
 const { HmiElement } = require('../../libs/hmi');
-const { LedLight } = require('../../libs/led');
-const { SingleRelay } = require('../../libs/single-relay');
 const { resolveAlways } = require('../../libs/utils/oop');
 const { parseString } = require('../../libs/utils/string');
-const { flattenArrays } = require('../../libs/utils/structures');
 
 const { coupleRfSwitchToLight } = require('../utils/lights');
 
-
-function createAllLights(lights) {
-  return flattenArrays(lights.map((light) => {
-    const { instance: relayInstance, lights: l = [] } = light;
-
-    if (relayInstance instanceof SingleRelay) {
-      return light;
-    }
-
-    return l.map((led) => {
-      const { instance: ledInstance } = led;
-
-      if (ledInstance instanceof LedLight) {
-        return led;
-      }
-
-      return null;
-    });
-  })).filter(Boolean);
-}
 
 function createLightGroup(group, lights) {
   const {
@@ -45,10 +22,8 @@ function createLightGroup(group, lights) {
     return instance;
   });
 
-  const events = ['buttonShortpress'];
-
   try {
-    return new LightGroup(instances, events, allOf);
+    return new LightGroup(instances, allOf);
   } catch (e) {
     return null;
   }
@@ -90,11 +65,13 @@ function create(config, data) {
     lights
   } = data;
 
-  const allLights = createAllLights(lights);
+  const singleLights = [].concat(...lights.map((light) => {
+    return light.lights;
+  }));
 
   Object.assign(data, {
-    lightGroups: createLightGroups(lightGroupsConfig, allLights),
-    allLightsGroup: createAllLightsGroup(allLights)
+    lightGroups: createLightGroups(lightGroupsConfig, singleLights),
+    allLightsGroup: createAllLightsGroup(singleLights)
   });
 }
 
@@ -102,19 +79,8 @@ function create(config, data) {
 function manageLightGroup(group, httpHookServer) {
   const {
     name,
-    instance,
-    attributes: {
-      light: {
-        enableButton = false
-      } = {}
-    } = {}
+    instance
   } = group;
-
-  if (enableButton) {
-    instance.on('buttonShortpress', () => {
-      resolveAlways(instance.toggle());
-    });
-  }
 
   httpHookServer.route(`/${name}`, (request) => {
     const {
@@ -268,38 +234,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
 //   });
 // }
 
-function singleRelayLightGroupToPrometheus(group, prometheus) {
-  const { name, instance, type } = group;
-
-  const { push } = prometheus.pushMetric(
-    'power',
-    {
-      name,
-      type: 'light-group',
-      subtype: type
-    }
-  );
-
-  push(instance.power);
-
-  instance.on('change', () => {
-    push(instance.power);
-  });
-}
-
-function lightGroupsToPrometheus(lightGroups, prometheus) {
-  lightGroups.forEach((group) => {
-    const { type } = group;
-
-    switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayLightGroupToPrometheus(group, prometheus);
-        break;
-      default:
-    }
-  });
-}
-
 function lightGroupHmi(group, hmiServer) {
   const {
     name,
@@ -376,15 +310,12 @@ function manage(_, data) {
     hmiServer,
     httpHookServer,
     lightGroups,
-    prometheus,
     rfSwitches
   } = data;
 
   manageLightGroups(lightGroups, httpHookServer);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithRfSwitch(lightGroups, rfSwitches);
-  // allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches);
-  lightGroupsToPrometheus(lightGroups, prometheus);
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
 }
