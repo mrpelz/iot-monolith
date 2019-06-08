@@ -1,4 +1,4 @@
-const { Tx118sa4 } = require('../../libs/tx118sa4');
+const { Tx118sa4 } = require('../../lib/tx118sa4');
 
 function createWallSwitch(rfSwitch, server) {
   const {

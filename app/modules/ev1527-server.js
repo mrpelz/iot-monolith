@@ -1,4 +1,4 @@
-const { Ev1527Server, Ev1527ServerAggregator } = require('../../libs/ev1527');
+const { Ev1527Server, Ev1527ServerAggregator } = require('../../lib/ev1527');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 

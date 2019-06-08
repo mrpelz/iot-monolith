@@ -1,8 +1,8 @@
-const { History, Trend } = require('../../libs/history');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { flattenArrays, getKey } = require('../../libs/utils/structures');
-const { RecurringMoment, every } = require('../../libs/utils/time');
-const { camel } = require('../../libs/utils/string');
+const { History, Trend } = require('../../lib/history');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { flattenArrays, getKey } = require('../../lib/utils/structures');
+const { RecurringMoment, every } = require('../../lib/utils/time');
+const { camel } = require('../../lib/utils/string');
 
 function createHistory(name, retainHours, max, min, historyDb) {
   const history = new History({ retainHours });

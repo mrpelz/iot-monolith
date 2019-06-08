@@ -1,4 +1,4 @@
-const { Db } = require('../../libs/db');
+const { Db } = require('../../lib/db');
 
 function create(config, data) {
   const {

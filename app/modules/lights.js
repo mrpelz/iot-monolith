@@ -1,13 +1,13 @@
 const { URL } = require('url');
 
-const { H801, LedLight } = require('../../libs/led');
-const { HmiElement } = require('../../libs/hmi');
-const { SonoffBasic, RelayLight } = require('../../libs/relay');
-const { get } = require('../../libs/http/client');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { camel, parseString } = require('../../libs/utils/string');
-const { getKey } = require('../../libs/utils/structures');
-const { Timer } = require('../../libs/utils/time');
+const { H801, LedLight } = require('../../lib/led');
+const { HmiElement } = require('../../lib/hmi');
+const { SonoffBasic, RelayLight } = require('../../lib/relay');
+const { get } = require('../../lib/http/client');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { camel, parseString } = require('../../lib/utils/string');
+const { getKey } = require('../../lib/utils/structures');
+const { Timer } = require('../../lib/utils/time');
 
 const {
   coupleDoorSensorToLight,

@@ -1,8 +1,8 @@
-const { HmiElement } = require('../../libs/hmi');
-const { Security } = require('../../libs/security');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { getKey } = require('../../libs/utils/structures');
-const { Timer } = require('../../libs/utils/time');
+const { HmiElement } = require('../../lib/hmi');
+const { Security } = require('../../lib/security');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { getKey } = require('../../lib/utils/structures');
+const { Timer } = require('../../lib/utils/time');
 
 
 function createSecurity(telegram) {

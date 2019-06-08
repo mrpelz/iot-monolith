@@ -1,5 +1,5 @@
-const { createTelegramClient } = require('../../libs/telegram');
-const { getKey } = require('../../libs/utils/structures');
+const { createTelegramClient } = require('../../lib/telegram');
+const { getKey } = require('../../lib/utils/structures');
 
 function create(config, data) {
   const {

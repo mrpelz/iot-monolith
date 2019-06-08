@@ -1,7 +1,7 @@
-const { DoorSensor } = require('../../libs/door-sensor');
-const { DoorSensorGroup } = require('../../libs/group');
-const { HmiElement } = require('../../libs/hmi');
-const { getKey } = require('../../libs/utils/structures');
+const { DoorSensor } = require('../../lib/door-sensor');
+const { DoorSensorGroup } = require('../../lib/group');
+const { HmiElement } = require('../../lib/hmi');
+const { getKey } = require('../../lib/utils/structures');
 
 
 function createSensor(sensor, server) {

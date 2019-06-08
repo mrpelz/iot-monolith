@@ -1,7 +1,7 @@
-const { LightGroup } = require('../../libs/group');
-const { HmiElement } = require('../../libs/hmi');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { parseString } = require('../../libs/utils/string');
+const { LightGroup } = require('../../lib/group');
+const { HmiElement } = require('../../lib/hmi');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { parseString } = require('../../lib/utils/string');
 
 const { coupleRfSwitchToLight } = require('../utils/lights');
 

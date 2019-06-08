@@ -1,9 +1,9 @@
 const EventEmitter = require('events');
 
-const { HmiElement } = require('../../libs/hmi');
-const { SevenSegment } = require('../../libs/seven-segment');
-const { resolveAlways, rebind } = require('../../libs/utils/oop');
-const { every, RecurringMoment } = require('../../libs/utils/time');
+const { HmiElement } = require('../../lib/hmi');
+const { SevenSegment } = require('../../lib/seven-segment');
+const { resolveAlways, rebind } = require('../../lib/utils/oop');
+const { every, RecurringMoment } = require('../../lib/utils/time');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 

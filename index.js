@@ -1,8 +1,8 @@
 Error.stackTraceLimit = 50;
 process.stdin.resume();
 
-const { telegramSend } = require('./libs/telegram/simple');
-const { parseString } = require('./libs/utils/string');
+const { telegramSend } = require('./lib/telegram/simple');
+const { parseString } = require('./lib/utils/string');
 
 (function populateGlobalVars() {
   const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;

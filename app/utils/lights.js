@@ -1,5 +1,5 @@
-const { resolveAlways } = require('../../libs/utils/oop');
-const { Timer } = require('../../libs/utils/time');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { Timer } = require('../../lib/utils/time');
 
 function coupleDoorSensorToLight(
   lights,

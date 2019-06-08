@@ -1,6 +1,6 @@
-const { HmiElement } = require('../../libs/hmi');
-const { camel } = require('../../libs/utils/string');
-const { excludeKeys } = require('../../libs/utils/structures');
+const { HmiElement } = require('../../lib/hmi');
+const { camel } = require('../../lib/utils/string');
+const { excludeKeys } = require('../../lib/utils/structures');
 
 function setUpConnectionHmi(element, subGroup, hmiServer) {
   const {

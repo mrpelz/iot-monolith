@@ -1,4 +1,4 @@
-const { Scheduler } = require('../../libs/utils/time');
+const { Scheduler } = require('../../lib/utils/time');
 
 function create(config, data) {
   const {

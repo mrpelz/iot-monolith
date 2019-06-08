@@ -1,7 +1,7 @@
-// const { epochs } = require('../../libs/utils/time');
-// const { post } = require('../../libs/http/client');
-const { Timer } = require('../../libs/utils/time');
-const { resolveAlways } = require('../../libs/utils/oop');
+// const { epochs } = require('../../lib/utils/time');
+// const { post } = require('../../lib/http/client');
+const { Timer } = require('../../lib/utils/time');
+const { resolveAlways } = require('../../lib/utils/oop');
 
 async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
   const { client: awaitingClient, chatIds } = telegram;

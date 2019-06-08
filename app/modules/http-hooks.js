@@ -1,4 +1,4 @@
-const { HttpServer } = require('../../libs/http/server');
+const { HttpServer } = require('../../lib/http/server');
 
 function create(config, data) {
   const {

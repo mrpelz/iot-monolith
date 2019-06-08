@@ -1,4 +1,4 @@
-const { WebApi } = require('../../libs/web-api');
+const { WebApi } = require('../../lib/web-api');
 
 function create(config, data) {
   const {

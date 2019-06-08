@@ -1,8 +1,8 @@
-const { Aggregate } = require('../../libs/aggregate');
-const { HmiElement } = require('../../libs/hmi');
-const { sanity } = require('../../libs/utils/math');
-const { camel } = require('../../libs/utils/string');
-const { flattenArrays } = require('../../libs/utils/structures');
+const { Aggregate } = require('../../lib/aggregate');
+const { HmiElement } = require('../../lib/hmi');
+const { sanity } = require('../../lib/utils/math');
+const { camel } = require('../../lib/utils/string');
+const { flattenArrays } = require('../../lib/utils/structures');
 
 const { setUpHistoryTrendHmi } = require('../utils/hmi');
 

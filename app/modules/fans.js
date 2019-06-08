@@ -1,7 +1,7 @@
-const { HmiElement } = require('../../libs/hmi');
-const { SingleRelay } = require('../../libs/single-relay');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { parseString } = require('../../libs/utils/string');
+const { HmiElement } = require('../../lib/hmi');
+const { SingleRelay } = require('../../lib/single-relay');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { parseString } = require('../../lib/utils/string');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 

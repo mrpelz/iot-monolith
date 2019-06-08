@@ -1,9 +1,9 @@
-const { HmiElement } = require('../../libs/hmi');
-const { Vent } = require('../../libs/vent');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { Hysteresis } = require('../../libs/utils/logic');
-const { parseString } = require('../../libs/utils/string');
-const { every, RecurringMoment } = require('../../libs/utils/time');
+const { HmiElement } = require('../../lib/hmi');
+const { Vent } = require('../../lib/vent');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { Hysteresis } = require('../../lib/utils/logic');
+const { parseString } = require('../../lib/utils/string');
+const { every, RecurringMoment } = require('../../lib/utils/time');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 

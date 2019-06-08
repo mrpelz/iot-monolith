@@ -1,10 +1,10 @@
-const { RoomSensor } = require('../../libs/room-sensor');
-const { PushMetricGroup } = require('../../libs/group');
-const { HmiElement } = require('../../libs/hmi');
-const { sanity } = require('../../libs/utils/math');
-const { resolveAlways } = require('../../libs/utils/oop');
-const { camel } = require('../../libs/utils/string');
-const { every, CallTiming, RecurringMoment } = require('../../libs/utils/time');
+const { RoomSensor } = require('../../lib/room-sensor');
+const { PushMetricGroup } = require('../../lib/group');
+const { HmiElement } = require('../../lib/hmi');
+const { sanity } = require('../../lib/utils/math');
+const { resolveAlways } = require('../../lib/utils/oop');
+const { camel } = require('../../lib/utils/string');
+const { every, CallTiming, RecurringMoment } = require('../../lib/utils/time');
 
 const { setUpConnectionHmi, setUpHistoryTrendHmi } = require('../utils/hmi');
 

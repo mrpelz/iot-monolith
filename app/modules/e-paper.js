@@ -1,4 +1,4 @@
-const { EPaper } = require('../../libs/e-paper');
+const { EPaper } = require('../../lib/e-paper');
 
 function create(config, data) {
   const {

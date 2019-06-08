@@ -1,4 +1,4 @@
-const { Prometheus } = require('../../libs/prometheus');
+const { Prometheus } = require('../../lib/prometheus');
 
 function create(config, data) {
   const {
