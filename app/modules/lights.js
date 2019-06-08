@@ -2,7 +2,7 @@ const { URL } = require('url');
 
 const { H801, LedLight } = require('../../lib/led');
 const { HmiElement } = require('../../lib/hmi');
-const { SonoffBasic, RelayLight } = require('../../lib/relay');
+const { SonoffBasic, Relay } = require('../../lib/relay');
 const { get } = require('../../lib/http/client');
 const { resolveAlways } = require('../../lib/utils/oop');
 const { camel, parseString } = require('../../lib/utils/string');
@@ -74,7 +74,7 @@ function createRelayLightInstance(options, driver) {
   } = options;
 
   try {
-    return new RelayLight({
+    return new Relay({
       driver,
       useChannel
     });
