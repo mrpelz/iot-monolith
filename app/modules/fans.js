@@ -1,19 +1,19 @@
 const { HmiElement } = require('../../lib/hmi');
-const { SingleRelay } = require('../../lib/single-relay');
+const { SonoffBasic, Relay } = require('../../lib/relay');
 const { resolveAlways } = require('../../lib/utils/oop');
 const { parseString } = require('../../lib/utils/string');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 
 
-function createSingleRelayFan(fan) {
+function createSonoffBasic(options) {
   const {
     host,
     port
-  } = fan;
+  } = options;
 
   try {
-    return new SingleRelay({
+    return new SonoffBasic({
       host,
       port
     });
@@ -22,36 +22,86 @@ function createSingleRelayFan(fan) {
   }
 }
 
+function createRelayFanInstance(options, driver) {
+  const {
+    useChannel
+  } = options;
+
+  try {
+    return new Relay({
+      driver,
+      useChannel
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
+function createRelayFanSets(fansOpts, driver, host) {
+  return fansOpts.map((fanOpts) => {
+    const { name } = fanOpts;
+
+    const instance = createRelayFanInstance(fanOpts, driver);
+    if (!instance) return null;
+
+    instance.log.friendlyName(`${name} (HOST: ${host})`);
+
+    return Object.assign(fanOpts, {
+      instance
+    });
+  }).filter(Boolean);
+}
+
 function create(config, data) {
   const {
     fans: fansConfig
   } = config;
 
-  const fans = fansConfig.map((fan) => {
+  const fans = fansConfig.map((options) => {
     const {
-      disable = false,
+      disable: driverDisable = false,
       host,
-      name,
+      fans: f = [],
+      name: driverName,
       type
-    } = fan;
-    if (disable || !name || !type) return null;
+    } = options;
 
-    let instance;
+    if (driverDisable || !driverName || !type) return null;
+
+    const fansOpts = f.filter(({ disable = false, name }) => {
+      return name && !disable;
+    });
+    if (!fansOpts.length) return null;
+
+    let driver;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        instance = createSingleRelayFan(fan);
+      case 'SONOFF_BASIC':
+        driver = createSonoffBasic(options);
         break;
       default:
     }
 
-    if (!instance) return null;
+    if (!driver) return null;
 
-    instance.log.friendlyName(`${name} (HOST: ${host})`);
-    instance.connect();
+    driver.log.friendlyName(`${driverName} (HOST: ${host})`);
 
-    return Object.assign(fan, {
-      instance
+    let fanSets;
+
+    switch (type) {
+      case 'SONOFF_BASIC':
+        fanSets = createRelayFanSets(fansOpts, driver, host);
+        break;
+      default:
+    }
+
+    if (!fanSets || !fanSets.length) return null;
+
+    driver.connect();
+
+    return Object.assign(options, {
+      instance: driver,
+      fans: fanSets
     });
   }).filter(Boolean);
 
@@ -60,72 +110,94 @@ function create(config, data) {
   });
 }
 
+function manageRelayFan(options, httpHookServer) {
+  const {
+    instance: driver,
+    fans = [],
+    attributes: {
+      driver: {
+        enableButton = false
+      } = {}
+    } = {}
+  } = options;
 
-function manageSingleRelayFan(fan, httpHookServer) {
-  const { instance, name } = fan;
-
-  instance.on('reliableConnect', () => {
-    resolveAlways(instance.ledBlink(5, true));
+  driver.on('reliableConnect', () => {
+    resolveAlways(driver.indicatorBlink(5, true));
   });
 
-  instance.on('buttonShortpress', () => {
-    resolveAlways(instance.toggle());
-  });
-
-  httpHookServer.route(`/${name}`, (request) => {
+  fans.forEach((fan, index) => {
     const {
-      urlQuery: { on }
-    } = request;
+      instance,
+      name
+    } = fan;
 
-    const handleResult = (result) => {
-      return result ? 'on' : 'off';
-    };
+    if (index === 0) {
+      instance.on('change', () => {
+        resolveAlways(instance.driver.indicatorBlink(instance.power ? 2 : 1, true));
+      });
 
-    if (on === undefined) {
-      return {
-        handler: instance.toggle().then(handleResult)
-      };
+      if (enableButton) {
+        instance.driver.on('button0Shortpress', () => {
+          resolveAlways(instance.toggle());
+        });
+      }
     }
 
-    return {
-      handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
-    };
-  });
+    httpHookServer.route(`/${name}`, (request) => {
+      const {
+        urlQuery: { on }
+      } = request;
 
-  instance.on('change', () => {
-    resolveAlways(instance.ledBlink(instance.power ? 2 : 1, true));
+      const handleResult = (result) => {
+        return result ? 'on' : 'off';
+      };
+
+      if (on === undefined) {
+        return {
+          handler: instance.toggle().then(handleResult)
+        };
+      }
+
+      return {
+        handler: instance.setPower(Boolean(parseString(on) || false)).then(handleResult)
+      };
+    });
   });
 }
 
 function manageFans(fans, httpHookServer) {
-  fans.forEach((fan) => {
-    const { type } = fan;
+  fans.forEach((options) => {
+    const { type } = options;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        manageSingleRelayFan(fan, httpHookServer);
+      case 'SONOFF_BASIC':
+        manageRelayFan(options, httpHookServer);
         break;
       default:
     }
   });
 }
 
-function singleRelayFanToPrometheus(fan, prometheus) {
-  const { name, instance, type } = fan;
+function relayFanToPrometheus(options, prometheus) {
+  const { fans = [], type } = options;
 
-  const { push } = prometheus.pushMetric(
-    'power',
-    {
-      name,
-      type: 'fan',
-      subtype: type
-    }
-  );
+  fans.forEach((fan) => {
+    const { name, instance } = fan;
 
-  push(instance.power);
+    const { push } = prometheus.pushMetric(
+      'power',
+      {
+        name,
+        type: 'fan',
+        subtype: type
+      }
+    );
 
-  instance.on('change', () => {
     push(instance.power);
+
+    instance.on('change', () => {
+      push(instance.power);
+    });
   });
 }
 
@@ -134,48 +206,56 @@ function fansToPrometheus(fans, prometheus) {
     const { type } = fan;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayFanToPrometheus(fan, prometheus);
+      case 'SONOFF_BASIC':
+        relayFanToPrometheus(fan, prometheus);
         break;
       default:
     }
   });
 }
 
-function singleRelayFanHmi(fan, hmiServer) {
-  const {
-    name,
-    instance,
-    attributes: {
-      hmi: hmiAttributes
-    } = {}
-  } = fan;
+function relayFanHmi(options, hmiServer) {
+  const { fans = [] } = options;
 
-  setUpConnectionHmi(fan, 'single-relay fan', hmiServer);
+  setUpConnectionHmi(options, 'relay fan', hmiServer);
 
-  if (!hmiAttributes) return;
+  fans.forEach((fan) => {
+    const {
+      name,
+      instance,
+      attributes: {
+        hmi: hmiDefaults
+      } = {}
+    } = fan;
 
-  const hmi = new HmiElement({
-    name,
-    attributes: Object.assign({
+    if (!hmiDefaults) return;
+
+    const hmiAttributes = Object.assign({
       category: 'other',
       group: 'fan',
       setType: 'trigger',
       type: 'fan'
-    }, hmiAttributes),
-    server: hmiServer,
-    getter: () => {
-      return Promise.resolve(instance.power ? 'on' : 'off');
-    },
-    settable: true
-  });
+    }, hmiDefaults);
 
-  instance.on('change', () => {
-    hmi.update();
-  });
+    const hmi = new HmiElement({
+      name,
+      attributes: Object.assign({
+        subGroup: 'trigger'
+      }, hmiAttributes),
+      server: hmiServer,
+      getter: () => {
+        return Promise.resolve(instance.power ? 'on' : 'off');
+      },
+      settable: true
+    });
 
-  hmi.on('set', () => {
-    resolveAlways(instance.toggle());
+    instance.on('change', () => {
+      hmi.update();
+    });
+
+    hmi.on('set', () => {
+      resolveAlways(instance.toggle());
+    });
   });
 }
 
@@ -184,8 +264,8 @@ function fansHmi(fans, hmiServer) {
     const { type } = fan;
 
     switch (type) {
-      case 'SINGLE_RELAY':
-        singleRelayFanHmi(fan, hmiServer);
+      case 'SONOFF_BASIC':
+        relayFanHmi(fan, hmiServer);
         break;
       default:
     }
@@ -194,10 +274,9 @@ function fansHmi(fans, hmiServer) {
 
 function manage(_, data) {
   const {
-    // doorSensors,
-    fans,
     hmiServer,
     httpHookServer,
+    fans,
     prometheus
   } = data;
 

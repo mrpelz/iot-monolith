@@ -1,25 +1,47 @@
 [
   {
-    "name": "wohnzimmerFan",
+    "name": "wohnzimmerFanDriver",
     "host": "10.97.4.13",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "hmi": {
-        "section": "wohnzimmer"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "fans": [
+      {
+        "name": "wohnzimmerFan",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "section": "wohnzimmer"
+          }
+        }
+      }
+    ]
   },
   {
     "disable": true,
-    "name": "schlafzimmerFan",
+    "name": "schlafzimmerFanDriver",
     "host": "10.97.4.33",
     "port": 5045,
-    "type": "SINGLE_RELAY",
+    "type": "SONOFF_BASIC",
     "attributes": {
-      "hmi": {
-        "section": "schlafzimmer"
+      "driver": {
+        "enableButton": true
       }
-    }
+    },
+    "fans": [
+      {
+        "name": "schlafzimmerFan",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "section": "schlafzimmer"
+          }
+        }
+      }
+    ]
   }
 ]
