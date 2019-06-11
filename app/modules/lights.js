@@ -5,7 +5,7 @@ const { HmiElement } = require('../../lib/hmi');
 const { SonoffBasic, Relay } = require('../../lib/relay');
 const { get } = require('../../lib/http/client');
 const { resolveAlways } = require('../../lib/utils/oop');
-const { camel, parseString } = require('../../lib/utils/string');
+const { parseString } = require('../../lib/utils/string');
 const { getKey } = require('../../lib/utils/structures');
 const { Timer } = require('../../lib/utils/time');
 
@@ -16,7 +16,7 @@ const {
   coupleRfToggleToLight
 } = require('../utils/lights');
 
-const { setUpConnectionHmi } = require('../utils/hmi');
+const { setUpConnectionHmi, setUpLightTimerHmi } = require('../utils/hmi');
 
 
 function addPersistenceHandler(name, instance, lightDb, dbKey, instanceKey) {
@@ -685,43 +685,6 @@ function lightsToPrometheus(lights, prometheus) {
   });
 }
 
-function lightTimerHmi(timer, name, attributes, hmiServer) {
-  if (!timer) return null;
-
-  const hmiTimer = new HmiElement({
-    name: camel(name, 'timer'),
-    attributes: Object.assign({}, attributes, {
-      group: camel(attributes.group, 'timer'),
-      subGroup: 'timer'
-    }),
-    server: hmiServer,
-    getter: () => {
-      return Promise.resolve(timer.isRunning ? 'on' : 'off');
-    },
-    settable: true
-  });
-
-  hmiTimer.on('set', () => {
-    if (timer.isRunning) {
-      timer.stop();
-    } else {
-      timer.start();
-    }
-
-    hmiTimer.update();
-  });
-
-  const onTimerChange = () => {
-    hmiTimer.update();
-  };
-
-  timer.on('start', onTimerChange);
-  timer.on('aborted', onTimerChange);
-  timer.on('hit', onTimerChange);
-
-  return hmiTimer;
-}
-
 function relayLightHmi(options, hmiServer) {
   const { lights = [] } = options;
 
@@ -746,7 +709,7 @@ function relayLightHmi(options, hmiServer) {
       type: 'binary-light'
     }, hmiDefaults);
 
-    const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
+    const hmiTimer = setUpLightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
     const hmi = new HmiElement({
       name,
@@ -799,7 +762,7 @@ function ledDriverLightHmi(options, hmiServer) {
       type: 'led'
     }, hmiDefaults);
 
-    const hmiTimer = lightTimerHmi(timer, name, hmiAttributes, hmiServer);
+    const hmiTimer = setUpLightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
     const hmiValue = new HmiElement({
       name: `${name}Value`,

@@ -2,8 +2,10 @@ const { LightGroup } = require('../../lib/group');
 const { HmiElement } = require('../../lib/hmi');
 const { resolveAlways } = require('../../lib/utils/oop');
 const { parseString } = require('../../lib/utils/string');
+const { Timer } = require('../../lib/utils/time');
 
 const { coupleRfSwitchToLight } = require('../utils/lights');
+const { setUpLightTimerHmi } = require('../utils/hmi');
 
 
 function createLightGroup(group, lights) {
@@ -74,9 +76,40 @@ function create(config, data) {
 
 function manageLightGroup(group, httpHookServer) {
   const {
+    instance,
     name,
-    instance
+    attributes: {
+      light: {
+        timeout = 0
+      } = {}
+    } = {}
   } = group;
+
+  if (timeout) {
+    const timer = new Timer(timeout);
+
+    timer.on('hit', () => {
+      resolveAlways(instance.setPower(false));
+    });
+
+    instance.on('set', () => {
+      if (!timer.isRunning || !instance.power) return;
+      timer.start();
+    });
+
+    instance.on('change', () => {
+      if (instance.power) {
+        timer.start();
+        return;
+      }
+
+      timer.stop();
+    });
+
+    Object.assign(group, {
+      timer
+    });
+  }
 
   httpHookServer.route(`/${name}`, (request) => {
     const {
@@ -234,20 +267,27 @@ function lightGroupHmi(group, hmiServer) {
   const {
     name,
     instance,
+    timer,
     attributes: {
-      hmi: hmiAttributes
+      hmi: hmiDefaults
     } = {}
   } = group;
 
-  if (!hmiAttributes) return;
+  if (!hmiDefaults) return;
+
+  const hmiAttributes = Object.assign({
+    category: 'lamps',
+    groupLabel: hmiDefaults.group,
+    setType: 'trigger',
+    type: 'binary-light'
+  }, hmiDefaults);
+
+  const hmiTimer = setUpLightTimerHmi(timer, name, hmiAttributes, hmiServer);
 
   const hmi = new HmiElement({
     name,
     attributes: Object.assign({
-      category: 'lamps',
-      group: 'lamp',
-      setType: 'trigger',
-      type: 'binary-light'
+      subGroup: 'trigger'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
@@ -258,6 +298,10 @@ function lightGroupHmi(group, hmiServer) {
 
   instance.on('change', () => {
     hmi.update();
+
+    if (hmiTimer) {
+      hmiTimer.update();
+    }
   });
 
   hmi.on('set', () => {

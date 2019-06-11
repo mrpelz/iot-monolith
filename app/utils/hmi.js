@@ -77,7 +77,45 @@ function setUpHistoryTrendHmi(
   });
 }
 
+function setUpLightTimerHmi(timer, name, attributes, hmiServer) {
+  if (!timer) return null;
+
+  const hmiTimer = new HmiElement({
+    name: camel(name, 'timer'),
+    attributes: Object.assign({}, attributes, {
+      group: camel(attributes.group, 'timer'),
+      subGroup: 'timer'
+    }),
+    server: hmiServer,
+    getter: () => {
+      return Promise.resolve(timer.isRunning ? 'on' : 'off');
+    },
+    settable: true
+  });
+
+  hmiTimer.on('set', () => {
+    if (timer.isRunning) {
+      timer.stop();
+    } else {
+      timer.start();
+    }
+
+    hmiTimer.update();
+  });
+
+  const onTimerChange = () => {
+    hmiTimer.update();
+  };
+
+  timer.on('start', onTimerChange);
+  timer.on('aborted', onTimerChange);
+  timer.on('hit', onTimerChange);
+
+  return hmiTimer;
+}
+
 module.exports = {
   setUpConnectionHmi,
-  setUpHistoryTrendHmi
+  setUpHistoryTrendHmi,
+  setUpLightTimerHmi
 };
