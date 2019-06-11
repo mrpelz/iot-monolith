@@ -31,15 +31,15 @@
     }
   },
   {
-    "disable": true,
     "name": "kueche",
-    "host": "10.97.4.20",
-    "port": 3000,
+    "host": "10.97.0.228",
+    "port": 5045,
     "metrics": [
       "temperature",
       "pressure",
       "humidity",
-      "brightness"
+      "brightness",
+      "movement"
     ],
     "attributes": {
       "hmi": {
