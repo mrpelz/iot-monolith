@@ -65,13 +65,9 @@ function create(config, data) {
     lights
   } = data;
 
-  const singleLights = [].concat(...lights.map((light) => {
-    return light.lights;
-  }));
-
   Object.assign(data, {
-    lightGroups: createLightGroups(lightGroupsConfig, singleLights),
-    allLightsGroup: createAllLightsGroup(singleLights)
+    lightGroups: createLightGroups(lightGroupsConfig, lights),
+    allLightsGroup: createAllLightsGroup(lights)
   });
 }
 

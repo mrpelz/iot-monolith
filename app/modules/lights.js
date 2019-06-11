@@ -134,7 +134,7 @@ function createLedLightSets(lightsOpts, driver, host, lightDb) {
 
 function create(config, data) {
   const {
-    lights: lightsConfig
+    lights: driversConfig
   } = config;
 
   const {
@@ -143,21 +143,23 @@ function create(config, data) {
 
   const lightDb = getKey(db, 'lights');
 
-  const lights = lightsConfig.map((options) => {
+  const lights = [];
+
+  const lightDrivers = driversConfig.map((options) => {
     const {
       disable: driverDisable = false,
       host,
-      lights: l = [],
+      lights: lightsConfig = [],
       name: driverName,
       type
     } = options;
 
     if (driverDisable || !driverName || !type) return null;
 
-    const lightsOpts = l.filter(({ disable = false, name }) => {
+    const lightsConfigFiltered = lightsConfig.filter(({ disable = false, name }) => {
       return name && !disable;
     });
-    if (!lightsOpts.length) return null;
+    if (!lightsConfigFiltered.length) return null;
 
     let driver;
 
@@ -179,15 +181,17 @@ function create(config, data) {
 
     switch (type) {
       case 'SONOFF_BASIC':
-        lightSets = createRelayLightSets(lightsOpts, driver, host, lightDb);
+        lightSets = createRelayLightSets(lightsConfigFiltered, driver, host, lightDb);
         break;
       case 'LED_H801':
-        lightSets = createLedLightSets(lightsOpts, driver, host, lightDb);
+        lightSets = createLedLightSets(lightsConfigFiltered, driver, host, lightDb);
         break;
       default:
     }
 
     if (!lightSets || !lightSets.length) return null;
+
+    lights.push(...lightSets);
 
     driver.connect();
 
@@ -198,6 +202,7 @@ function create(config, data) {
   }).filter(Boolean);
 
   Object.assign(data, {
+    lightDrivers,
     lights
   });
 }
@@ -877,22 +882,19 @@ function manage(config, data) {
     doorSensors,
     hmiServer,
     httpHookServer,
+    lightDrivers,
     lights,
     prometheus,
     rfSwitches
   } = data;
 
-  manageLights(lights, httpHookServer);
-  lightsToPrometheus(lights, prometheus);
-  lightsHmi(lights, hmiServer);
+  manageLights(lightDrivers, httpHookServer);
+  lightsToPrometheus(lightDrivers, prometheus);
+  lightsHmi(lightDrivers, hmiServer);
 
-  const singleLights = [].concat(...lights.map((light) => {
-    return light.lights;
-  }));
-
-  lightWithRfSwitch(singleLights, rfSwitches, rfSwitchLongPressTimeout);
-  lightWithDoorSensor(singleLights, doorSensors);
-  arbeitszimmerDeckenlampeWithHttpHook(singleLights);
+  lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout);
+  lightWithDoorSensor(lights, doorSensors);
+  arbeitszimmerDeckenlampeWithHttpHook(lights);
 }
 
 
