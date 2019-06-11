@@ -13,7 +13,8 @@ const {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
-  coupleRfToggleToLight
+  coupleRfToggleToLight,
+  coupleRoomSensorToLight
 } = require('../utils/lights');
 
 const { setUpConnectionHmi, setUpLightTimerHmi } = require('../utils/hmi');
@@ -228,7 +229,8 @@ function manageRelayLight(options, httpHookServer) {
       name,
       attributes: {
         light: {
-          timeout = 0
+          timeout = 0,
+          initialTimer = false
         } = {}
       } = {}
     } = light;
@@ -258,7 +260,7 @@ function manageRelayLight(options, httpHookServer) {
       });
 
       instance.on('change', () => {
-        if (instance.power) {
+        if (instance.power && initialTimer) {
           timer.start();
           return;
         }
@@ -306,7 +308,8 @@ function manageLedLight(options, httpHookServer) {
       name,
       attributes: {
         light: {
-          timeout = 0
+          timeout = 0,
+          initialTimer = false
         } = {}
       } = {}
     } = light;
@@ -324,7 +327,7 @@ function manageLedLight(options, httpHookServer) {
       });
 
       instance.on('change', () => {
-        if (instance.power) {
+        if (instance.power && initialTimer) {
           timer.start();
           return;
         }
@@ -602,6 +605,29 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
   );
 }
 
+function lightWithRoomSensor(lights, roomSensors) {
+  coupleRoomSensorToLight(
+    lights,
+    roomSensors,
+    'abstellraumDeckenlampe',
+    'abstellraum'
+  );
+
+  coupleRoomSensorToLight(
+    lights,
+    roomSensors,
+    'arbeitszimmerDeckenlampe',
+    'arbeitszimmer'
+  );
+
+  coupleRoomSensorToLight(
+    lights,
+    roomSensors,
+    'schlafzimmerDeckenlampe',
+    'schlafzimmer'
+  );
+}
+
 function arbeitszimmerDeckenlampeWithHttpHook(lights) {
   const name = 'arbeitszimmerDeckenlampe';
   const lightMatch = lights.find(({ name: n }) => {
@@ -848,7 +874,8 @@ function manage(config, data) {
     lightDrivers,
     lights,
     prometheus,
-    rfSwitches
+    rfSwitches,
+    roomSensors
   } = data;
 
   manageLights(lightDrivers, httpHookServer);
@@ -857,6 +884,7 @@ function manage(config, data) {
 
   lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout);
   lightWithDoorSensor(lights, doorSensors);
+  lightWithRoomSensor(lights, roomSensors);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
 }
 

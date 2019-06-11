@@ -25,6 +25,9 @@
       "kuecheLedRight"
     ],
     "attributes": {
+      "light": {
+        "timeout": 30000
+      },
       "hmi": {
         "group": "led",
         "section": "kueche"

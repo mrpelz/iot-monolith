@@ -4,7 +4,7 @@ const { resolveAlways } = require('../../lib/utils/oop');
 const { parseString } = require('../../lib/utils/string');
 const { Timer } = require('../../lib/utils/time');
 
-const { coupleRfSwitchToLight } = require('../utils/lights');
+const { coupleRfSwitchToLight, coupleRoomSensorToLight } = require('../utils/lights');
 const { setUpLightTimerHmi } = require('../utils/hmi');
 
 
@@ -80,7 +80,8 @@ function manageLightGroup(group, httpHookServer) {
     name,
     attributes: {
       light: {
-        timeout = 0
+        timeout = 0,
+        initialTimer = false
       } = {}
     } = {}
   } = group;
@@ -98,7 +99,7 @@ function manageLightGroup(group, httpHookServer) {
     });
 
     instance.on('change', () => {
-      if (instance.power) {
+      if (instance.power && initialTimer) {
         timer.start();
         return;
       }
@@ -249,6 +250,15 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   );
 }
 
+function groupWithRoomSensor(lights, roomSensors) {
+  coupleRoomSensorToLight(
+    lights,
+    roomSensors,
+    'kuecheAmbience',
+    'kueche'
+  );
+}
+
 // function allLightsGroupWithRfSwitch(allLightsGroup, rfSwitches) {
 //   const rfSwitchMatch = rfSwitches.find(({ name }) => {
 //     return name === 'wohnzimmer_multi_1';
@@ -350,12 +360,14 @@ function manage(_, data) {
     hmiServer,
     httpHookServer,
     lightGroups,
-    rfSwitches
+    rfSwitches,
+    roomSensors
   } = data;
 
   manageLightGroups(lightGroups, httpHookServer);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithRfSwitch(lightGroups, rfSwitches);
+  groupWithRoomSensor(lightGroups, roomSensors);
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
 }

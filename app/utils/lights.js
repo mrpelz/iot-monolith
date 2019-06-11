@@ -144,9 +144,51 @@ function coupleRfToggleToLight(
   });
 }
 
+function coupleRoomSensorToLight(
+  lights,
+  roomSensors,
+  lightName,
+  roomName
+) {
+  const light = lights.find(({ name }) => {
+    return name === lightName;
+  });
+
+  const roomSensor = roomSensors.find(({ name }) => {
+    return name === roomName;
+  });
+
+  if (!light || !roomSensor) {
+    throw new Error('could not find light or room sensor instance');
+  }
+
+  if (!roomSensor.metrics.includes('movement')) {
+    throw new Error('room sensor has no movement metric');
+  }
+
+  const { instance: lightInstance, timer: lightTimer } = light;
+  const { instance: roomSensorInstance } = roomSensor;
+
+  if (!lightTimer) {
+    throw new Error('light does not have a timer/timeout');
+  }
+
+  roomSensorInstance.on('movement', () => {
+    if (!lightInstance.power) return;
+
+    if (roomSensorInstance.getState('movement')) {
+      lightTimer.stop();
+      return;
+    }
+
+    lightTimer.start();
+  });
+}
+
 module.exports = {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
-  coupleRfToggleToLight
+  coupleRfToggleToLight,
+  coupleRoomSensorToLight
 };

@@ -15,7 +15,7 @@
         "useChannel": 0,
         "attributes": {
           "light": {
-            "timeout": 180000
+            "timeout": 30000
           },
           "hmi": {
             "group": "ceiling-lamp",
@@ -40,6 +40,9 @@
         "name": "arbeitszimmerDeckenlampe",
         "useChannel": 0,
         "attributes": {
+          "light": {
+            "timeout": 30000
+          },
           "hmi": {
             "group": "ceiling-lamp",
             "section": "arbeitszimmer"
@@ -87,7 +90,8 @@
         "useChannel": 0,
         "attributes": {
           "light": {
-            "timeout": 900000
+            "timeout": 900000,
+            "initialTimer": true
           },
           "hmi": {
             "group": "ceiling-lamp",
@@ -290,6 +294,9 @@
         "name": "schlafzimmerDeckenlampe",
         "useChannel": 0,
         "attributes": {
+          "light": {
+            "timeout": 30000
+          },
           "hmi": {
             "group": "ceiling-lamp",
             "section": "schlafzimmer"
@@ -385,7 +392,8 @@
         "useChannel": 0,
         "attributes": {
           "light": {
-            "timeout": 900000
+            "timeout": 900000,
+            "initialTimer": true
           },
           "hmi": {
             "group": "ceiling-lamp",
