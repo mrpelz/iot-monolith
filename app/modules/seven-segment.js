@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 const { HmiElement } = require('../../lib/hmi');
 const { SevenSegment } = require('../../lib/seven-segment');
 const { resolveAlways, rebind } = require('../../lib/utils/oop');
-const { every, RecurringMoment } = require('../../lib/utils/time');
+const { every, RecurringMoment, Timer } = require('../../lib/utils/time');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 
@@ -93,8 +93,6 @@ async function createClock(scheduler, sevenSegment) {
         { scheduler },
         every.minute(1)
       ).on('hit', this._setTime);
-
-      this._setTime();
     }
 
     get active() {
@@ -125,10 +123,6 @@ async function createClock(scheduler, sevenSegment) {
 
       this.emit('change');
 
-      if (!this._active) {
-        resolveAlways(instance.clear());
-      }
-
       this._setTime();
     }
   })();
@@ -138,26 +132,40 @@ async function createClock(scheduler, sevenSegment) {
   });
 }
 
-function kuecheLedWithClockToggle(lightGroups, sevenSegment) {
-  const name = 'kuecheAmbience';
-  const lightMatch = lightGroups.find(({ name: n }) => {
-    return n === name;
-  });
-
-  const { instance: lightInstance } = lightMatch || {};
-
-  if (!lightMatch || !lightInstance) {
-    throw new Error('could not find light');
-  }
-
-  const { clock } = sevenSegment || {};
-
-  if (!sevenSegment || !clock) {
+function kuecheRoomSensorWithClockToggle(roomSensors, sevenSegment) {
+  if (!sevenSegment) {
     throw new Error('could not find sevenSegment');
   }
 
-  lightInstance.on('change', () => {
-    clock.toggle(lightInstance.power);
+  const roomSensor = roomSensors.find(({ name }) => {
+    return name === 'kueche';
+  });
+
+  if (!roomSensor) {
+    throw new Error('could not find room sensor instance');
+  }
+
+  if (!roomSensor.metrics.includes('movement')) {
+    throw new Error('room sensor has no movement metric');
+  }
+
+  const { clock } = sevenSegment;
+  const { instance: roomSensorInstance } = roomSensor;
+
+  const timer = new Timer(10000);
+
+  timer.on('hit', () => {
+    resolveAlways(clock.toggle(false));
+  });
+
+  roomSensorInstance.on('movement', () => {
+    if (roomSensorInstance.getState('movement')) {
+      timer.stop();
+      resolveAlways(clock.toggle(true));
+      return;
+    }
+
+    timer.start();
   });
 }
 
@@ -198,7 +206,7 @@ function manage(_, data) {
   const {
     hmiServer,
     httpHookServer,
-    lightGroups,
+    roomSensors,
     scheduler,
     sevenSegment
   } = data;
@@ -207,7 +215,7 @@ function manage(_, data) {
 
   manageSevenSegment(sevenSegment, httpHookServer);
   createClock(scheduler, sevenSegment);
-  kuecheLedWithClockToggle(lightGroups, sevenSegment);
+  kuecheRoomSensorWithClockToggle(roomSensors, sevenSegment);
   sevenSegmentHmi(sevenSegment, hmiServer);
 }
 
