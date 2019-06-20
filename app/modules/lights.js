@@ -555,6 +555,14 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     1,
     rfSwitchLongPressTimeout
   );
+  coupleRfToggleToLight(
+    lights,
+    rfSwitches,
+    'wannenbadDeckenlampe',
+    'wannenbadWallSink',
+    1,
+    rfSwitchLongPressTimeout
+  );
 
 
   // WOHNZIMMER
