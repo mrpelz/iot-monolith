@@ -329,11 +329,10 @@
     ]
   },
   {
-    "disable": true,
     "name": "schlafzimmerBedLedDriver",
-    "host": "10.97.4.52",
+    "host": "10.97.4.54",
     "port": 5045,
-    "type": "LED_H801",
+    "type": "LED_DMX",
     "lights": [
       {
         "name": "schlafzimmerBedLedRed",
@@ -371,6 +370,72 @@
             "section": "schlafzimmer",
             "sortGroup": "blue",
             "subGroup": "blue"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedWhite",
+        "useChannel": 3,
+        "attributes": {
+          "hmi": {
+            "group": "led-white",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "w-white",
+            "subGroup": "w-white"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedFloor",
+        "useChannel": 4,
+        "attributes": {
+          "hmi": {
+            "group": "led-floor",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "floor",
+            "subGroup": "floor"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedNightstandLeft",
+        "useChannel": 5,
+        "steps": [
+          0,
+          0.4,
+          0.6,
+          0.8,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "led-nightstand-left",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "left",
+            "subGroup": "§{nightstand} §{left}"
+          }
+        }
+      },
+      {
+        "name": "schlafzimmerBedLedNightstandRight",
+        "useChannel": 6,
+        "steps": [
+          0,
+          0.4,
+          0.6,
+          0.8,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "led-nightstand-right",
+            "groupLabel": "led",
+            "section": "schlafzimmer",
+            "sortGroup": "right",
+            "subGroup": "§{nightstand} §{right}"
           }
         }
       }

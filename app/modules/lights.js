@@ -1,6 +1,6 @@
 const { URL } = require('url');
 
-const { H801, LedLight } = require('../../lib/led');
+const { H801, LedDriver, LedLight } = require('../../lib/led');
 const { HmiElement } = require('../../lib/hmi');
 const { SonoffBasic, Relay } = require('../../lib/relay');
 const { get } = require('../../lib/http/client');
@@ -69,6 +69,24 @@ function createH801(options) {
   }
 }
 
+function createDmx(options) {
+  const {
+    host,
+    port,
+    lights = []
+  } = options;
+
+  try {
+    return new LedDriver({
+      host,
+      port,
+      channels: lights.length
+    });
+  } catch (e) {
+    return null;
+  }
+}
+
 function createRelayLightInstance(options, driver) {
   const {
     useChannel
@@ -86,12 +104,14 @@ function createRelayLightInstance(options, driver) {
 
 function createLedLightInstance(options, driver) {
   const {
+    steps,
     useChannel
   } = options;
 
   try {
     return new LedLight({
       driver,
+      steps,
       useChannel
     });
   } catch (e) {
@@ -171,6 +191,9 @@ function create(config, data) {
       case 'LED_H801':
         driver = createH801(options);
         break;
+      case 'LED_DMX':
+        driver = createDmx(options);
+        break;
       default:
     }
 
@@ -185,6 +208,7 @@ function create(config, data) {
         lightSets = createRelayLightSets(lightsConfigFiltered, driver, host, lightDb);
         break;
       case 'LED_H801':
+      case 'LED_DMX':
         lightSets = createLedLightSets(lightsConfigFiltered, driver, host, lightDb);
         break;
       default:
@@ -350,10 +374,12 @@ function manageLedLight(options, httpHookServer) {
       };
 
       const brightness = Number.parseFloat(br);
-      if (!Number.isNaN(brightness)) {
-        return {
-          handler: instance.setBrightness(brightness).then(handleResult)
-        };
+      if (brightness <= 1 && brightness >= 0) {
+        if (!Number.isNaN(brightness)) {
+          return {
+            handler: instance.setBrightness(brightness).then(handleResult)
+          };
+        }
       }
 
       if (on === undefined) {
@@ -378,6 +404,7 @@ function manageLights(lights, httpHookServer) {
         manageRelayLight(options, httpHookServer);
         break;
       case 'LED_H801':
+      case 'LED_DMX':
         manageLedLight(options, httpHookServer);
         break;
       default:
@@ -712,6 +739,7 @@ function lightsToPrometheus(lights, prometheus) {
         relayLightToPrometheus(light, prometheus);
         break;
       case 'LED_H801':
+      case 'LED_DMX':
         ledDriverLightToPrometheus(light, prometheus);
         break;
       default:
@@ -861,6 +889,7 @@ function lightsHmi(lights, hmiServer) {
         relayLightHmi(light, hmiServer);
         break;
       case 'LED_H801':
+      case 'LED_DMX':
         ledDriverLightHmi(light, hmiServer);
         break;
       default:
