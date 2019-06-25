@@ -559,14 +559,14 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'schlafzimmerSteinlampe',
+    'schlafzimmerBedLedNightstandLeft',
     'schlafzimmerButton1',
     4
   );
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'schlafzimmerSteinlampe',
+    'schlafzimmerBedLedNightstandRight',
     'schlafzimmerButton2',
     4
   );

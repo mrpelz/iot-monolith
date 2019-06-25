@@ -389,6 +389,14 @@
       {
         "name": "schlafzimmerBedLedFloor",
         "useChannel": 4,
+        "steps": [
+          0,
+          0.3,
+          0.4,
+          0.6,
+          0.8,
+          1
+        ],
         "attributes": {
           "hmi": {
             "group": "led-floor",
@@ -404,6 +412,7 @@
         "useChannel": 5,
         "steps": [
           0,
+          0.3,
           0.4,
           0.6,
           0.8,
@@ -424,6 +433,7 @@
         "useChannel": 6,
         "steps": [
           0,
+          0.3,
           0.4,
           0.6,
           0.8,
