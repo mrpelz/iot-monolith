@@ -829,10 +829,12 @@ function ledDriverLightHmi(options, hmiServer) {
     const hmiValue = new HmiElement({
       name: `${name}Value`,
       attributes: Object.assign({
+        setType: 'trigger',
         subType: 'read',
         unit: 'percent'
       }, hmiAttributes),
       server: hmiServer,
+      settable: true,
       getter: () => {
         return Promise.resolve(
           instance.brightnessPercentage
@@ -868,6 +870,10 @@ function ledDriverLightHmi(options, hmiServer) {
       if (hmiTimer) {
         hmiTimer.update();
       }
+    });
+
+    hmiValue.on('set', () => {
+      resolveAlways(instance.toggle());
     });
 
     hmiUp.on('set', () => {
