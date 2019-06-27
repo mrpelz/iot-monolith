@@ -388,13 +388,13 @@
       },
       {
         "name": "schlafzimmerBedLedFloor",
+        "gamma": 2.2,
         "useChannel": 4,
         "steps": [
           0,
           0.3,
           0.4,
           0.6,
-          0.8,
           1
         ],
         "attributes": {
@@ -409,13 +409,13 @@
       },
       {
         "name": "schlafzimmerBedLedNightstandLeft",
+        "gamma": 2.2,
         "useChannel": 5,
         "steps": [
           0,
           0.3,
           0.4,
           0.6,
-          0.8,
           1
         ],
         "attributes": {
@@ -430,13 +430,13 @@
       },
       {
         "name": "schlafzimmerBedLedNightstandRight",
+        "gamma": 2.2,
         "useChannel": 6,
         "steps": [
           0,
           0.3,
           0.4,
           0.6,
-          0.8,
           1
         ],
         "attributes": {

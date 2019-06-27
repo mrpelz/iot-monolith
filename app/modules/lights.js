@@ -13,6 +13,7 @@ const {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
+  coupleRfSwitchToLightIncrease,
   coupleRfToggleToLight,
   coupleRoomSensorToLight
 } = require('../utils/lights');
@@ -104,6 +105,8 @@ function createRelayLightInstance(options, driver) {
 
 function createLedLightInstance(options, driver) {
   const {
+    duration,
+    gamma,
     steps,
     useChannel
   } = options;
@@ -111,6 +114,8 @@ function createLedLightInstance(options, driver) {
   try {
     return new LedLight({
       driver,
+      duration,
+      gamma,
       steps,
       useChannel
     });
@@ -556,19 +561,21 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
   );
 
   //    buttons
-  coupleRfSwitchToLight(
+  coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandLeft',
     'schlafzimmerButton1',
-    4
+    4,
+    rfSwitchLongPressTimeout
   );
-  coupleRfSwitchToLight(
+  coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandRight',
     'schlafzimmerButton2',
-    4
+    4,
+    rfSwitchLongPressTimeout
   );
 
 

@@ -100,6 +100,42 @@ function coupleRfSwitchToLight(
   });
 }
 
+function coupleRfSwitchToLightIncrease(
+  lights,
+  rfSwitches,
+  lightName,
+  rfSwitchName,
+  rfSwitchState,
+  rfSwitchLongPressTimeout
+) {
+  const lightMatch = lights.find(({ name }) => {
+    return name === lightName;
+  });
+
+  const rfSwitchMatch = rfSwitches.find(({ name }) => {
+    return name === rfSwitchName;
+  });
+
+  if (!lightMatch || !rfSwitchMatch) {
+    throw new Error('could not find light or button instance');
+  }
+
+  const timer = new Timer(rfSwitchLongPressTimeout);
+
+  const { instance: lightInstance } = lightMatch;
+  const { instance: rfSwitchInstance } = rfSwitchMatch;
+
+  rfSwitchInstance.on(rfSwitchState, () => {
+    resolveAlways(
+      (!lightInstance.power || timer.isRunning)
+        ? lightInstance.increase(true)
+        : lightInstance.setPower(false)
+    );
+
+    timer.start();
+  });
+}
+
 function coupleRfToggleToLight(
   lights,
   rfSwitches,
@@ -189,6 +225,7 @@ module.exports = {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
+  coupleRfSwitchToLightIncrease,
   coupleRfToggleToLight,
   coupleRoomSensorToLight
 };
