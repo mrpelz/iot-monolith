@@ -337,6 +337,12 @@
       {
         "name": "schlafzimmerBedLedRed",
         "useChannel": 0,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
         "attributes": {
           "hmi": {
             "group": "led-red",
@@ -350,6 +356,12 @@
       {
         "name": "schlafzimmerBedLedGreen",
         "useChannel": 1,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
         "attributes": {
           "hmi": {
             "group": "led-green",
@@ -363,6 +375,12 @@
       {
         "name": "schlafzimmerBedLedBlue",
         "useChannel": 2,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
         "attributes": {
           "hmi": {
             "group": "led-blue",
@@ -376,6 +394,12 @@
       {
         "name": "schlafzimmerBedLedWhite",
         "useChannel": 3,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
         "attributes": {
           "hmi": {
             "group": "led-white",

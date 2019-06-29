@@ -16,6 +16,10 @@
     "id": 44306
   },
   {
+    "name": "duschbadButtonShower",
+    "id": 628217
+  },
+  {
     "name": "esszimmerButton1",
     "id": 823914
   },
@@ -53,11 +57,11 @@
   },
   {
     "name": "schlafzimmerButton1",
-    "id": 903326
+    "id": 822302
   },
   {
     "name": "schlafzimmerButton2",
-    "id": 1043626
+    "id": 714410
   },
   {
     "name": "schlafzimmerWallLeft",

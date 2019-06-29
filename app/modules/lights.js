@@ -482,6 +482,14 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     1,
     rfSwitchLongPressTimeout
   );
+  coupleRfToggleToLight(
+    lights,
+    rfSwitches,
+    'duschbadDeckenlampe',
+    'duschbadButtonShower',
+    4,
+    rfSwitchLongPressTimeout
+  );
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -566,13 +574,61 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitches,
     'schlafzimmerBedLedNightstandLeft',
     'schlafzimmerButton1',
-    4,
+    1,
     rfSwitchLongPressTimeout
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandRight',
+    'schlafzimmerButton1',
+    2,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedWhite',
+    'schlafzimmerButton1',
+    3,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedFloor',
+    'schlafzimmerButton1',
+    4,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedNightstandLeft',
+    'schlafzimmerButton2',
+    1,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedNightstandRight',
+    'schlafzimmerButton2',
+    2,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedWhite',
+    'schlafzimmerButton2',
+    3,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfSwitchToLightIncrease(
+    lights,
+    rfSwitches,
+    'schlafzimmerBedLedFloor',
     'schlafzimmerButton2',
     4,
     rfSwitchLongPressTimeout
