@@ -45,7 +45,12 @@ function addSchedule(metrics, instance, metricSchedule, scheduler) {
 }
 
 function addSecurity(name, instance, security) {
-  const trigger = security.addElement(name, 1);
+  // security element with
+  // $name
+  // level 1
+  // graceCount 3 (movement start, movement stop, movement start)
+  // graceTime of 15 seconds
+  const trigger = security.addElement(name, 1, 3, 15000);
 
   instance.on(securityMetric, () => {
     const value = instance.getState(securityMetric);
