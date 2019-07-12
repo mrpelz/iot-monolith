@@ -84,8 +84,13 @@ function manageVent(vent, httpHookServer) {
       };
     }
 
+    const set = () => {
+      instance.setTarget(parseString(target));
+      return instance.commitTarget();
+    };
+
     return {
-      handler: instance.setTarget(parseString(target)).then((value) => {
+      handler: set().then((value) => {
         return `${value}`;
       })
     };
@@ -129,7 +134,8 @@ async function createHysteresis(
   let message = null;
 
   hysteresis.on('inRange', () => {
-    resolveAlways(ventInstance.setTarget(ventInstance.maxTarget, true));
+    ventInstance.setTarget(ventInstance.maxTarget, 1);
+    resolveAlways(ventInstance.commitTarget());
 
     (async () => {
       if (message) {
@@ -142,7 +148,8 @@ async function createHysteresis(
   });
 
   hysteresis.on('outOfRange', () => {
-    resolveAlways(ventInstance.resetTarget());
+    ventInstance.unsetTarget(1);
+    resolveAlways(ventInstance.commitTarget());
 
     (async () => {
       if (message) {
@@ -296,7 +303,8 @@ function ventHmi(vent, hmiServer) {
       ? instance.minTarget
       : instance.target + 1;
 
-    resolveAlways(instance.setTarget(target));
+    instance.setTarget(target);
+    resolveAlways(instance.commitTarget());
   });
 
   hmiTargetDown.on('set', () => {
@@ -307,7 +315,8 @@ function ventHmi(vent, hmiServer) {
       ? instance.maxTarget
       : instance.target - 1;
 
-    resolveAlways(instance.setTarget(target));
+    instance.setTarget(target);
+    resolveAlways(instance.commitTarget());
   });
 }
 
