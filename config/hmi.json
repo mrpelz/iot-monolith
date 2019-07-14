@@ -25,6 +25,7 @@
         "pressure",
         "pm10",
         "pm025",
+        "co",
         "co2",
         "eco2",
         "tvoc",
@@ -92,6 +93,7 @@
       "ceiling-lamp": "Deckenlampe",
       "clock": "Uhr",
       "close": "zu",
+      "co": "CO",
       "co2": "CO₂",
       "connected": "verbunden",
       "connections": "Verbindungen",
@@ -176,6 +178,7 @@
   },
   "unitMap": {
     "brightness": "lux",
+    "co": "ppm",
     "co2": "ppm",
     "eco2": "ppm",
     "humidity": "percent-rh",
