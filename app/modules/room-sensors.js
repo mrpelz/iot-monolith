@@ -138,6 +138,7 @@ function roomSensorsToPrometheus(roomSensors, prometheus) {
       if (metric === 'movement') return;
       if (metric === 'pm025') return;
       if (metric === 'pm10') return;
+      if (metric === 'co') return;
 
       prometheus.metric(
         metric,
@@ -193,6 +194,7 @@ function roomSensorsSlowMetricsToPrometheus(roomSensors, prometheus) {
       if ((() => {
         if (metric === 'pm025') return false;
         if (metric === 'pm10') return false;
+        if (metric === 'co') return false;
         return true;
       })()) return;
 
