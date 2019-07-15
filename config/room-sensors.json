@@ -207,6 +207,7 @@
       "temperature",
       "pressure",
       "humidity",
+      "co",
       "co2",
       "pm025",
       "pm10",
