@@ -297,7 +297,7 @@ function lightGroupHmi(group, hmiServer) {
   const hmi = new HmiElement({
     name,
     attributes: Object.assign({
-      subGroup: 'trigger'
+      subGroup: 'power'
     }, hmiAttributes),
     server: hmiServer,
     getter: () => {
