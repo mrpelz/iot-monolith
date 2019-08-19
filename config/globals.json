@@ -46,13 +46,12 @@
   ],
   "rfSwitchLongPressTimeout": 5000,
   "sevenSegment": {
-    "disable": true,
     "name": "sevenSegment",
     "host": "10.97.0.227",
     "port": 5045
   },
   "ePaper": {
-    "enabled": true,
+    "disabled": true,
     "update": "every:1:minute",
     "updateOffset": -12000,
     "url": "http://localhost:8080/epaper/draw.php",

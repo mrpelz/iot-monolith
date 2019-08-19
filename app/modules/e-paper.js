@@ -4,7 +4,7 @@ function create(config, data) {
   const {
     globals: {
       ePaper: {
-        enabled = false,
+        disabled = false,
         meta,
         update,
         updateOffset,
@@ -18,7 +18,7 @@ function create(config, data) {
     scheduler
   } = data;
 
-  if (!enabled) return;
+  if (disabled) return;
 
   const ePaper = new EPaper({
     hmiServer,
