@@ -2,9 +2,9 @@
   "name": "iot-monolith",
   "version": "1.0.0",
   "description": "monolithic approach to Node.js-enabled home automation",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node test.js"
+    "deploy": "scripts/deploy.sh"
   },
   "repository": {
     "type": "git",

@@ -4,13 +4,22 @@ process.stdin.resume();
 const { telegramSend } = require('./lib/telegram/simple');
 const { parseString } = require('./lib/utils/string');
 
-(function populateGlobalVars() {
-  const { PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+const env = {};
+
+(function populateEnvVars() {
+  const { CONFIG_PATH, PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+
+  if (!CONFIG_PATH || !CONFIG_PATH.length) {
+    throw new Error('no path to configuration files provided');
+  }
+
+  const configPath = CONFIG_PATH;
   const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
   const logLevel = parseString(LOG_LEVEL);
   const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : false;
 
-  Object.assign(global, {
+  Object.assign(env, {
+    configPath,
     isProd,
     logLevel,
     logTelegram
@@ -18,7 +27,7 @@ const { parseString } = require('./lib/utils/string');
 }());
 
 function telegramRoot(title = '', message, stack) {
-  if (!global.logTelegram) {
+  if (!env.logTelegram) {
     return Promise.resolve(null);
   }
 
@@ -80,6 +89,6 @@ process.on('SIGTERM', exit);
 process.on('SIGUSR1', exit);
 process.on('SIGUSR2', exit);
 
-const app = require('./app');
+const app = require('./app/app');
 
-app();
+app(env);

@@ -1,11 +1,11 @@
-const { resolveAlways, rebind } = require('../../lib/utils/oop');
+const { resolveAlways, rebind } = require('../utils/oop');
 const {
   mean,
   median,
   minNumber,
   maxNumber
-} = require('../../lib/utils/math');
-const { sortTimes } = require('../../lib/utils/time');
+} = require('../utils/math');
+const { sortTimes } = require('../utils/time');
 
 class Aggregate {
   constructor(getters = [], timeGetters = [], type = 'mean') {

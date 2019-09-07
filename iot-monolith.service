@@ -6,9 +6,10 @@ Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
 Environment="PROD_ENV=1"
 Environment="LOG_TELEGRAM=1"
+Environment="CONFIG_PATH=/opt/iot-monolith/config"
 WorkingDirectory=/opt/iot-monolith/
 ExecStartPre=/bin/cp -f /var/cache/iot-monolith/iot-db.json /tmp/iot-db.json
-ExecStart=/usr/bin/node --use_strict index.js
+ExecStart=/usr/bin/node --use_strict src/index.js
 ExecStopPost=/bin/mkdir -p /var/cache/iot-monolith
 ExecStopPost=/bin/cp -f /tmp/iot-db.json /var/cache/iot-monolith/iot-db.json
 Restart=always

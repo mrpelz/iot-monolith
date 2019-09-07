@@ -1,4 +1,4 @@
-const readConfig = require('../config');
+const readConfig = require('./config');
 
 // create only
 const db = require('./modules/db');
@@ -72,9 +72,26 @@ function manage(config, data) {
   fridgeUtils.manage(config, data);
 }
 
-function app() {
+function app(env) {
+  const {
+    configPath,
+    isProd,
+    logLevel,
+    logTelegram
+  } = env;
+
   const data = {};
-  const config = readConfig();
+  const config = {
+    env,
+    ...readConfig(configPath)
+  };
+
+  // write config needed for logging to global object
+  Object.assign(global, {
+    isProd,
+    logLevel,
+    logTelegram
+  });
 
   create(config, data);
   manage(config, data);

@@ -9,11 +9,11 @@ const {
   extname
 } = require('path');
 
-function readConfig() {
+function readConfig(configPath) {
   const result = {};
 
-  readdir(__dirname).forEach((fileName) => {
-    const path = pathJoin(__dirname, fileName);
+  readdir(configPath).forEach((fileName) => {
+    const path = pathJoin(configPath, fileName);
     const stat = lstat(path);
 
     if (!stat.isFile()) return;
