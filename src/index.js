@@ -21,6 +21,10 @@ const env = {};
 
   Object.assign(env, {
     configPath,
+    telegramToken
+  });
+
+  Object.assign(global, {
     isProd,
     logLevel,
     logTelegram,
@@ -29,7 +33,7 @@ const env = {};
 }());
 
 function telegramRoot(title = '', message, stack) {
-  if (!env.logTelegram) {
+  if (!global.logTelegram) {
     return Promise.resolve(null);
   }
 

@@ -74,10 +74,7 @@ function manage(config, data) {
 
 function app(env) {
   const {
-    configPath,
-    isProd,
-    logLevel,
-    logTelegram
+    configPath
   } = env;
 
   const data = {};
@@ -85,13 +82,6 @@ function app(env) {
     env,
     ...readConfig(configPath)
   };
-
-  // write config needed for logging to global object
-  Object.assign(global, {
-    isProd,
-    logLevel,
-    logTelegram
-  });
 
   create(config, data);
   manage(config, data);
