@@ -7,7 +7,7 @@ const { parseString } = require('./lib/utils/string');
 const env = {};
 
 (function populateEnvVars() {
-  const { CONFIG_PATH, PROD_ENV, LOG_LEVEL, LOG_TELEGRAM } = process.env;
+  const { CONFIG_PATH, LOG_LEVEL, LOG_TELEGRAM, PROD_ENV, TELEGRAM_TOKEN } = process.env;
 
   if (!CONFIG_PATH || !CONFIG_PATH.length) {
     throw new Error('no path to configuration files provided');
@@ -17,12 +17,14 @@ const env = {};
   const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
   const logLevel = parseString(LOG_LEVEL);
   const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : false;
+  const telegramToken = TELEGRAM_TOKEN;
 
   Object.assign(env, {
     configPath,
     isProd,
     logLevel,
-    logTelegram
+    logTelegram,
+    telegramToken
   });
 }());
 

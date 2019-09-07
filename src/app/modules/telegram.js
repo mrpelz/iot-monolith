@@ -5,8 +5,10 @@ function create(config, data) {
   const {
     telegram: {
       host,
-      token,
       chatIds
+    },
+    env: {
+      telegramToken
     }
   } = config;
 
@@ -17,7 +19,7 @@ function create(config, data) {
 
   try {
     const telegramDb = getKey(db, 'telegram');
-    const client = createTelegramClient(scheduler, token, host, telegramDb);
+    const client = createTelegramClient(scheduler, telegramToken, host, telegramDb);
 
     client.then((instance) => {
       instance.start();
