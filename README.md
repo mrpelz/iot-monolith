@@ -38,7 +38,7 @@ Another thing to keep in mind is that HTTP and MQTT are Text-based protocols whi
 
 ### Raw TCP
 
-So, at last I moved to raw TCP-sockets. Those are low-level enough to implement trivial request/response mechanics while managing reliable delivery of all bytes in the correct order. Because the TCP-stack often lives on separate hardware (e.g. the W5500-module), I also send separate keep-alive messages that generate a response from the Arduino without side effects.
+So, at last I moved to raw TCP-sockets. Those are low-level enough to allow me to implement trivial request/response mechanics myself while managing reliable delivery of all bytes in the correct order. Because the TCP-stack often lives on separate hardware (e.g. the W5500-module), I also send separate keep-alive messages that generate a response from the Arduino without side effects.
 
 Most messages are only a few bytes long and fit easily into one UDP-packet (packet order becomes unimportant), so I might implement UDP messaging in the future.
 
