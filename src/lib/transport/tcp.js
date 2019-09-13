@@ -138,7 +138,7 @@ class TCPTransport extends Transport {
       isConnected,
       log,
       messageTimer,
-    } = this._reliableSocket;
+    } = this.state;
 
     if (!isConnected) return;
 
@@ -186,7 +186,7 @@ class TCPTransport extends Transport {
         attachment: humanPayload(payload)
       });
 
-      this._writeToDeviceInstances(null, payload);
+      this._ingestIntoDeviceInstances(null, payload);
 
       return true;
     }
@@ -239,7 +239,7 @@ class TCPTransport extends Transport {
       isConnected,
       socket,
       log
-    } = this._reliableSocket;
+    } = this.state;
 
     if (!isConnected) {
       throw new Error('socket is not connected!');
