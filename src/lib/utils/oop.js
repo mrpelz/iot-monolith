@@ -17,6 +17,12 @@ function isPromise(input) {
   return Promise.resolve(input) == input;
 }
 
+/**
+ * rebind class methods
+ * @param {any} context class context (this)
+ * @param  {...string} names method names
+ * @returns {void}
+ */
 function rebind(context, ...names) {
   names.forEach((name) => {
     context[name] = context[name].bind(context);

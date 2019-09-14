@@ -2,9 +2,23 @@ const { Logger } = require('../log');
 const { rebind } = require('../utils/oop');
 const { emptyBuffer } = require('../utils/data');
 
+/**
+ * @typedef Device
+ * @type {any} Device class is not yet implemented
+ */
+
+/**
+ * @type {string}
+ */
 const libName = 'transport';
 
 class TransportDevice {
+
+  /**
+   * create instance of TransportDevice
+   * @param {(Transport|AggregatedTransport)} transport Transport instance
+   * @param {Device} device Device instance
+   */
   constructor(transport, device) {
     const {
       devices,
@@ -29,7 +43,7 @@ class TransportDevice {
     devices.forEach((previousTransportDevice) => {
       const {
         identifier: previousDeviceIdentifier
-      } = previousTransportDevice.device.state;
+      } = previousTransportDevice.state.device.state;
 
       if (previousDeviceIdentifier.equals(deviceIdentifier)) {
         throw new Error(
@@ -44,6 +58,11 @@ class TransportDevice {
     };
   }
 
+  /**
+   * write data from Device instance to Transport instance
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   writeToTransport(payload) {
     const {
       transport,
@@ -62,6 +81,12 @@ class TransportDevice {
     transport.write(transportIdentifier.length ? deviceIdentifier : null, payload);
   }
 
+  /**
+   * write data from Transport instance to Device instance
+   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   ingestIntoDeviceInstances(identifier, payload) {
     const {
       transport: {
@@ -78,7 +103,7 @@ class TransportDevice {
     } = this.state;
 
     if (transportIdentifier.length) {
-      if (transportIdentifier.length !== identifier.length) {
+      if (!identifier || transportIdentifier.length !== identifier.length) {
         throw new Error('incoming message identifier has wrong length for device');
       }
 
@@ -88,6 +113,10 @@ class TransportDevice {
     device.ingest(payload);
   }
 
+  /**
+   * set device online status to true
+   * @returns {void}
+   */
   setOnline() {
     const {
       device
@@ -96,6 +125,10 @@ class TransportDevice {
     device.setOnline();
   }
 
+  /**
+   * set device online status to false
+   * @returns {void}
+   */
   setOffline() {
     const {
       device
@@ -105,21 +138,35 @@ class TransportDevice {
   }
 }
 
-class Transport {
-  constructor(options = {}) {
-    const {
-      devices = new Set(),
-      singleDevice = true,
-      identifier = emptyBuffer
-    } = options;
+/**
+  * @typedef TransportDevices
+  * @type {Set<TransportDevice>}
+  */
 
-    if (
-      devices === undefined
-      || singleDevice === undefined
-      || identifier === undefined
-    ) {
-      throw new Error('insufficient options provided');
-    }
+/**
+  * @typedef TransportOptions
+  * @type {{
+  *  devices?: TransportDevices,
+  *  identifier?: Buffer,
+  *  singleDevice?: boolean
+  * }}
+  */
+
+/**
+  * @class Transport
+  */
+class Transport {
+
+  /**
+   * create instance of Transport
+   * @param {TransportOptions} options configuration object
+   */
+  constructor(options) {
+    const {
+      devices = /** @type {TransportDevices} */ (new Set()),
+      identifier = emptyBuffer,
+      singleDevice = true
+    } = options;
 
     if (!singleDevice && !identifier.length) {
       throw new Error('identifier length is required for multi device transport');
@@ -143,6 +190,13 @@ class Transport {
     );
   }
 
+  /**
+   * ingest data from transport into TransportDevice instances
+   * @private
+   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   _ingestIntoDeviceInstances(identifier, payload) {
     const { devices } = this.state;
 
@@ -154,6 +208,10 @@ class Transport {
     });
   }
 
+  /**
+   * set the online status of all devices on this transport to true
+   * @returns {void}
+   */
   _setOnline() {
     const { devices } = this.state;
 
@@ -162,6 +220,10 @@ class Transport {
     });
   }
 
+  /**
+   * set the online status of all devices on this transport to false
+   * @returns {void}
+   */
   _setOffline() {
     const { devices } = this.state;
 
@@ -170,6 +232,11 @@ class Transport {
     });
   }
 
+  /**
+   * add an instance of Device to this transport
+   * @param {Device} device instance of Device
+   * @returns {TransportDevice} instance of TransportDevice
+   */
   addDevice(device) {
     const { devices, singleDevice } = this.state;
 
@@ -183,24 +250,42 @@ class Transport {
     return transportDevice;
   }
 
+  /**
+   * connect Transport instance – placeholder
+   * @returns {void}
+   */
   connect() {
     throw new Error(
       `no connect method defined in ${this}`
     );
   }
 
+  /**
+   * disconnect Transport instance – placeholder
+   * @returns {void}
+   */
   disconnect() {
     throw new Error(
       `no disconnect method defined in ${this}`
     );
   }
 
+  /**
+   * reconnect Transport instance – placeholder
+   * @returns {void}
+   */
   reconnect() {
     throw new Error(
       `no reconnect method defined in ${this}`
     );
   }
 
+  /**
+   * write from Transport instance to network – placeholder
+   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   write(identifier, payload) {
     throw new Error(
       `no write method defined in ${this} to process identifier "${identifier}" and payload "${payload}"`
@@ -208,7 +293,18 @@ class Transport {
   }
 }
 
+/**
+ * @class AggregatedTransport
+ */
 class AggregatedTransport {
+
+  /**
+   * create dataset of SubTransports
+   * @param {Object} SubTransport transport class to be instantiated
+   * @param {TransportOptions} parentOptions configuration object
+   * @param {Array<TransportOptions>} transportOptions array of configuration objects
+   * @returns {Array<Transport>} array of Transport instances
+   */
   static createSubTransports(SubTransport, parentOptions, transportOptions) {
     return transportOptions.map((transportOption) => {
       return new SubTransport({
@@ -218,9 +314,15 @@ class AggregatedTransport {
     });
   }
 
-  constructor(options = {}, SubTransport, ...transportOptions) {
+  /**
+   * create instance of AggregatedTransport
+   * @param {TransportOptions} options configuration object
+   * @param {Object} SubTransport transport class to be instantiated
+   * @param  {...TransportOptions} transportOptions transport configuration objects
+   */
+  constructor(options, SubTransport, ...transportOptions) {
     const {
-      devices = new Set(),
+      devices = /** @type {TransportDevices} */ (new Set()),
       identifier = emptyBuffer
     } = options;
 
@@ -258,6 +360,13 @@ class AggregatedTransport {
     );
   }
 
+  /**
+   * ingest data from any of the aggregated Transport instances into TransportDevice instances
+   * @private
+   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   _ingestIntoDeviceInstances(identifier, payload) {
     const { devices } = this.state;
 
@@ -266,6 +375,10 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * set the online status of all devices on this transport to true
+   * @returns {void}
+   */
   _setOnline() {
     const { devices } = this.state;
 
@@ -274,6 +387,10 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * set the online status of all devices on this transport to false
+   * @returns {void}
+   */
   _setOffline() {
     const { devices } = this.state;
 
@@ -282,6 +399,11 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * add an instance of Device to this transport
+   * @param {Device} device instance of Device
+   * @returns {TransportDevice} instance of TransportDevice
+   */
   addDevice(device) {
     const { devices } = this.state;
 
@@ -291,6 +413,10 @@ class AggregatedTransport {
     return transportDevice;
   }
 
+  /**
+   * connect all of the aggregated Transport instances
+   * @returns {void}
+   */
   connect() {
     const { transports } = this.state;
 
@@ -299,6 +425,10 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * disconnect all of the aggregated Transport instances
+   * @returns {void}
+   */
   disconnect() {
     const { transports } = this.state;
 
@@ -307,6 +437,10 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * reconnect all of the aggregated Transport instances
+   * @returns {void}
+   */
   reconnect() {
     const { transports } = this.state;
 
@@ -315,6 +449,12 @@ class AggregatedTransport {
     });
   }
 
+  /**
+   * write from AggregatedTransport instance to network (of all aggregated Transport instances)
+   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   write(identifier, payload) {
     const { transports } = this.state;
 

@@ -5,10 +5,31 @@ const { humanPayload, writeNumber, readNumber } = require('../utils/data');
 const { Timer } = require('../utils/time');
 const { rebind } = require('../utils/oop');
 
+/**
+ * @type {string}
+ */
 const libName = 'tcp transport';
 
+/**
+  * @typedef TCPTransportOptions
+  * @type {import('./index').TransportOptions & {
+    *  host: string,
+    *  port: number,
+    *  lengthPreamble?: number,
+    *  keepAlive?: number
+    * }}
+    */
+
+/**
+ * @class TCPTransport
+ */
 class TCPTransport extends Transport {
-  constructor(options = {}) {
+
+  /**
+   * create instance of Transport
+   * @param {TCPTransportOptions} options configuration object
+   */
+  constructor(options) {
     const {
       host,
       port,
@@ -16,7 +37,7 @@ class TCPTransport extends Transport {
       keepAlive = 2000
     } = options;
 
-    if (!host || !port || !lengthPreamble) {
+    if (!lengthPreamble) {
       throw new Error('insufficient options provided');
     }
 
@@ -24,10 +45,12 @@ class TCPTransport extends Transport {
 
     this.log.friendlyName(`${host}:${port}`);
 
-    Object.assign(this.state, {
+    this.state = {
+      ...super.state,
+
       connectionTime: 0,
       currentLength: 0,
-      isConnected: null,
+      isConnected: /** @type {(boolean|null)} */ (null),
       shouldBeConnected: false,
 
       host,
@@ -35,10 +58,10 @@ class TCPTransport extends Transport {
       lengthPreamble,
       log: this.log.withPrefix(libName),
       port,
-      socket: null,
+      socket: /** @type {(Socket|null)} */ (null),
 
       messageTimer: new Timer(keepAlive * 2)
-    });
+    };
 
     rebind(
       this,
@@ -54,6 +77,10 @@ class TCPTransport extends Transport {
     this.state.messageTimer.on('hit', this._onDisconnection);
   }
 
+  /**
+   * handle (dis)connection of socket
+   * @returns {void}
+   */
   _connect() {
     const {
       isConnected,
@@ -71,6 +98,10 @@ class TCPTransport extends Transport {
     }
   }
 
+  /**
+   * destroy old socket and remove listeners
+   * @returns {void}
+   */
   _nukeSocket() {
     const { socket } = this.state;
     if (!socket) return;
@@ -87,6 +118,10 @@ class TCPTransport extends Transport {
     this.state.socket = null;
   }
 
+  /**
+   * create new socket and set up listeners
+   * @returns {void}
+   */
   _setUpSocket() {
     const {
       host,
@@ -113,6 +148,10 @@ class TCPTransport extends Transport {
     this.state.socket = socket;
   }
 
+  /**
+   * handle socket connection
+   * @returns {void}
+   */
   _onConnection() {
     const {
       isConnected,
@@ -133,6 +172,10 @@ class TCPTransport extends Transport {
     this._setOnline();
   }
 
+  /**
+   * handle socket disconnection
+   * @returns {void}
+   */
   _onDisconnection() {
     const {
       isConnected,
@@ -157,6 +200,10 @@ class TCPTransport extends Transport {
     this._setOffline();
   }
 
+  /**
+   * handle readable (incoming) bytes from socket
+   * @returns {void}
+   */
   _handleReadable() {
     let remainder = true;
     while (remainder) {
@@ -164,6 +211,10 @@ class TCPTransport extends Transport {
     }
   }
 
+  /**
+   * read the right amount of bytes from socket
+   * @returns {boolean} if there are any bytes left to read
+   */
   _read() {
     const {
       currentLength,
@@ -207,7 +258,10 @@ class TCPTransport extends Transport {
     return true;
   }
 
-  // this overwrites Transport method
+  /**
+   * connect TCPTransport instance
+   * @returns {void}
+   */
   connect() {
     this.state.shouldBeConnected = true;
 
@@ -217,7 +271,10 @@ class TCPTransport extends Transport {
     });
   }
 
-  // this overwrites Transport method
+  /**
+   * disconnect TCPTransport instance
+   * @returns {void}
+   */
   disconnect() {
     this.state.shouldBeConnected = false;
 
@@ -227,12 +284,20 @@ class TCPTransport extends Transport {
     });
   }
 
-  // this overwrites Transport method
+  /**
+   * reconnect TCPTransport instance
+   * @returns {void}
+   */
   reconnect() {
     this._onDisconnection();
   }
 
-  // this overwrites Transport method
+  /**
+   * write from Transport instance to network – placeholder
+   * @param {null} _ identifier buffer (not needed on TCPTransport, so null)
+   * @param {Buffer} payload payload buffer
+   * @returns {void}
+   */
   write(_, payload) {
     const {
       lengthPreamble,
