@@ -5,6 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "deploy": "scripts/deploy.sh",
+    "push": "git push origin --force && git push github --force",
     "start": "echo \"use systemd with 'iot-monolith.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
     "start:dev": "CONFIG_PATH=./config LOG_LEVEL=0 LOG_TELEGRAM=false node --use_strict src/index.js"
   },
