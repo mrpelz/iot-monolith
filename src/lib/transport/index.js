@@ -4,7 +4,14 @@ const { emptyBuffer } = require('../utils/data');
 
 /**
  * @typedef Device
- * @type {any} Device class is not yet implemented
+ * @type {{
+ *  state: {
+ *    identifier: Buffer
+ *  },
+ *  ingest: (payload: Buffer) => void,
+ *  setOnline: () => void,
+ *  setOffline: () => void
+ * }} Device class is not yet implemented
  */
 
 /**
@@ -107,7 +114,7 @@ class TransportDevice {
         throw new Error('incoming message identifier has wrong length for device');
       }
 
-      if (!identifier.equals(deviceIdentifier.length)) return;
+      if (!identifier.equals(deviceIdentifier)) return;
     }
 
     device.ingest(payload);
