@@ -1,6 +1,5 @@
 const { Logger } = require('../log');
 const { rebind } = require('../utils/oop');
-const { emptyBuffer } = require('../utils/data');
 
 /**
  * @typedef Device
@@ -15,42 +14,98 @@ const { emptyBuffer } = require('../utils/data');
  */
 
 /**
+ * @typedef TransportDevices
+ * @type {Set<TransportDevice>}
+ */
+
+/**
+ * @typedef TransportOptions
+ * @type {{
+ *  devices?: TransportDevices,
+ *  identifier?: (Buffer|null),
+ *  singleDevice?: boolean
+ * }}
+ */
+
+/**
+ * @typedef I_TCPTransport
+ * @type {InstanceType<import('./tcp')['TCPTransport']>}
+ */
+
+/**
+ * @typedef I_TCPTransportOptions
+ * @type {import('./tcp').TCPTransportOptions}
+ */
+
+/**
+ * @typedef I_UDPTransport
+ * @type {InstanceType<import('./udp')['UDPTransport']>}
+ */
+
+/**
+ * @typedef I_UDPTransportOptions
+ * @type {import('./udp').UDPTransportOptions}
+ */
+
+/**
+ * @typedef AnyTransport
+ * @type {Transport|AggregatedTransport|I_TCPTransport|I_UDPTransport}
+ */
+
+ /**
+ * @typedef AnyTransportOptions
+ * @type {TransportOptions|I_TCPTransportOptions|I_UDPTransportOptions}
+ */
+
+/**
  * @type {string}
  */
 const libName = 'transport';
 
+/**
+ * @class TransportDevice
+ */
 class TransportDevice {
 
   /**
    * create instance of TransportDevice
-   * @param {(Transport|AggregatedTransport)} transport Transport instance
+   * @param {AnyTransport} transport Transport instance
    * @param {Device} device Device instance
    */
   constructor(transport, device) {
     const {
-      devices,
-      identifier: transportIdentifier
-    } = transport.state;
+      state: {
+        devices,
+        identifier: transportIdentifier
+      }
+    } = transport;
 
     const {
-      identifier: deviceIdentifier
-    } = device.state;
+      state: {
+        identifier: deviceIdentifier
+      }
+    } = device;
 
     if (
-      transportIdentifier.length
-      && transportIdentifier.length !== deviceIdentifier.length
+      transportIdentifier && transportIdentifier.length !== deviceIdentifier.length
     ) {
       throw new Error('device identifier has wrong length for transport');
     }
 
-    if (transportIdentifier.length && deviceIdentifier.equals(transportIdentifier)) {
+    if (transportIdentifier && deviceIdentifier.equals(transportIdentifier)) {
       throw new Error('cannot use same identifier on transport and device');
     }
 
     devices.forEach((previousTransportDevice) => {
       const {
-        identifier: previousDeviceIdentifier
-      } = previousTransportDevice.state.device.state;
+        state: {
+          device: {
+            state: {
+              identifier: previousDeviceIdentifier
+            }
+          }
+        }
+      } = previousTransportDevice;
 
       if (previousDeviceIdentifier.equals(deviceIdentifier)) {
         throw new Error(
@@ -85,12 +140,12 @@ class TransportDevice {
       }
     } = this.state;
 
-    transport.write(transportIdentifier.length ? deviceIdentifier : null, payload);
+    transport.write(transportIdentifier ? deviceIdentifier : null, payload);
   }
 
   /**
    * write data from Transport instance to Device instance
-   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer|null} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    * @returns {void}
    */
@@ -109,7 +164,7 @@ class TransportDevice {
       }
     } = this.state;
 
-    if (transportIdentifier.length) {
+    if (transportIdentifier) {
       if (!identifier || transportIdentifier.length !== identifier.length) {
         throw new Error('incoming message identifier has wrong length for device');
       }
@@ -146,20 +201,6 @@ class TransportDevice {
 }
 
 /**
-  * @typedef TransportDevices
-  * @type {Set<TransportDevice>}
-  */
-
-/**
-  * @typedef TransportOptions
-  * @type {{
-  *  devices?: TransportDevices,
-  *  identifier?: Buffer,
-  *  singleDevice?: boolean
-  * }}
-  */
-
-/**
   * @class Transport
   */
 class Transport {
@@ -171,12 +212,12 @@ class Transport {
   constructor(options) {
     const {
       devices = /** @type {TransportDevices} */ (new Set()),
-      identifier = emptyBuffer,
+      identifier,
       singleDevice = true
     } = options;
 
-    if (!singleDevice && !identifier.length) {
-      throw new Error('identifier length is required for multi device transport');
+    if (!singleDevice && !identifier) {
+      throw new Error('identifier is required for multi device transport');
     }
 
     this.log = new Logger();
@@ -199,8 +240,7 @@ class Transport {
 
   /**
    * ingest data from transport into TransportDevice instances
-   * @private
-   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer|null} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    * @returns {void}
    */
@@ -308,9 +348,9 @@ class AggregatedTransport {
   /**
    * create dataset of SubTransports
    * @param {Object} SubTransport transport class to be instantiated
-   * @param {TransportOptions} parentOptions configuration object
-   * @param {Array<TransportOptions>} transportOptions array of configuration objects
-   * @returns {Array<Transport>} array of Transport instances
+   * @param {AnyTransportOptions} parentOptions configuration object
+   * @param {Array<AnyTransportOptions>} transportOptions array of configuration objects
+   * @returns {Array<AnyTransport>} array of Transport instances
    */
   static createSubTransports(SubTransport, parentOptions, transportOptions) {
     return transportOptions.map((transportOption) => {
@@ -323,26 +363,26 @@ class AggregatedTransport {
 
   /**
    * create instance of AggregatedTransport
-   * @param {TransportOptions} options configuration object
+   * @param {AnyTransportOptions} options configuration object
    * @param {Object} SubTransport transport class to be instantiated
-   * @param  {...TransportOptions} transportOptions transport configuration objects
+   * @param  {...AnyTransportOptions} transportOptions transport configuration objects
    */
   constructor(options, SubTransport, ...transportOptions) {
     const {
       devices = /** @type {TransportDevices} */ (new Set()),
-      identifier = emptyBuffer
+      identifier
     } = options;
 
     if (
-      SubTransport === undefined
-      || devices === undefined
-      || identifier === undefined
+      !SubTransport
+      || !devices
+      || !identifier
     ) {
       throw new Error('insufficient options provided');
     }
 
-    if (!identifier.length) {
-      throw new Error('identifier length is required for aggregate transport');
+    if (!identifier) {
+      throw new Error('identifier is required for aggregate transport');
     }
 
     this.log = new Logger();
@@ -369,8 +409,7 @@ class AggregatedTransport {
 
   /**
    * ingest data from any of the aggregated Transport instances into TransportDevice instances
-   * @private
-   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer|null} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    * @returns {void}
    */
@@ -458,7 +497,7 @@ class AggregatedTransport {
 
   /**
    * write from AggregatedTransport instance to network (of all aggregated Transport instances)
-   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {Buffer|null} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    * @returns {void}
    */

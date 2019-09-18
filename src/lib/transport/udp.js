@@ -1,45 +1,43 @@
-const { Socket } = require('net');
+const { createSocket } = require('dgram');
 
 const { Transport } = require('./index');
-const { humanPayload, writeNumber, readNumber } = require('../utils/data');
-const { Timer } = require('../utils/time');
+const { humanPayload } = require('../utils/data');
 const { rebind } = require('../utils/oop');
+
+/**
+ * @typedef Socket
+ * @type {import('dgram').Socket}
+ */
 
 /**
  * @type {string}
  */
-const libName = 'tcp transport';
+const libName = 'udp transport';
 
 /**
-  * @typedef TCPTransportOptions
+  * @typedef UDPTransportOptions
   * @type {import('./index').TransportOptions & {
     *  host: string,
     *  port: number,
-    *  lengthPreamble?: number,
     *  keepAlive?: number
     * }}
     */
 
 /**
- * @class TCPTransport
+ * @class UDPTransport
  */
-class TCPTransport extends Transport {
+class UDPTransport extends Transport {
 
   /**
    * create instance of Transport
-   * @param {TCPTransportOptions} options configuration object
+   * @param {UDPTransportOptions} options configuration object
    */
   constructor(options) {
     const {
       host,
       port,
-      lengthPreamble = 1,
       keepAlive = 2000
     } = options;
-
-    if (!lengthPreamble) {
-      throw new Error('insufficient options provided');
-    }
 
     super(options);
 
@@ -48,33 +46,26 @@ class TCPTransport extends Transport {
     this.state = {
       ...super.state,
 
-      connectionTime: 0,
-      currentLength: 0,
       isConnected: /** @type {boolean|null} */ (null),
       shouldBeConnected: false,
 
       host,
       keepAlive,
-      lengthPreamble,
       log: this.log.withPrefix(libName),
       port,
-      socket: /** @type {Socket|null} */ (null),
-
-      messageTimer: new Timer(keepAlive * 2)
+      socket: /** @type {Socket|null} */ (null)
     };
 
     rebind(
       this,
       'write',
       '_connect',
-      '_handleReadable',
+      '_handleMessage',
       '_onConnection',
       '_onDisconnection'
     );
 
     setInterval(this._connect, Math.round(keepAlive / 2));
-
-    this.state.messageTimer.on('hit', this._onDisconnection);
   }
 
   /**
@@ -106,14 +97,12 @@ class TCPTransport extends Transport {
     const { socket } = this.state;
     if (!socket) return;
 
-    socket.removeListener('readable', this._handleReadable);
-    socket.removeListener('connect', this._onConnection);
-    socket.removeListener('end', this._onDisconnection);
-    socket.removeListener('timeout', this._onDisconnection);
+    socket.removeListener('message', this._handleMessage);
+    socket.removeListener('listening', this._onConnection);
+    socket.removeListener('close', this._onDisconnection);
     socket.removeListener('error', this._onDisconnection);
 
-    socket.end();
-    socket.destroy();
+    socket.close();
 
     this.state.socket = null;
   }
@@ -123,26 +112,11 @@ class TCPTransport extends Transport {
    * @returns {void}
    */
   _setUpSocket() {
-    const {
-      host,
-      keepAlive,
-      port
-    } = this.state;
+    const socket = createSocket('udp4');
 
-    const socket = new Socket();
-    socket.connect({ host, port });
-
-    socket.setNoDelay(true);
-
-    if (keepAlive) {
-      socket.setKeepAlive(true, keepAlive);
-      socket.setTimeout(keepAlive * 2);
-    }
-
-    socket.on('readable', this._handleReadable);
-    socket.on('connect', this._onConnection);
-    socket.on('end', this._onDisconnection);
-    socket.on('timeout', this._onDisconnection);
+    socket.on('message', this._handleMessage);
+    socket.on('listening', this._onConnection);
+    socket.on('close', this._onDisconnection);
     socket.on('error', this._onDisconnection);
 
     this.state.socket = socket;
@@ -159,8 +133,6 @@ class TCPTransport extends Transport {
     } = this.state;
 
     if (isConnected) return;
-
-    this.state.connectionTime = Date.now();
 
     this.state.isConnected = true;
 
@@ -179,17 +151,13 @@ class TCPTransport extends Transport {
   _onDisconnection() {
     const {
       isConnected,
-      log,
-      messageTimer,
+      log
     } = this.state;
 
     if (!isConnected) return;
 
-    messageTimer.stop();
-
     this._nukeSocket();
 
-    this.state.currentLength = 0;
     this.state.isConnected = false;
 
     log.info({
@@ -201,65 +169,29 @@ class TCPTransport extends Transport {
   }
 
   /**
-   * handle readable (incoming) bytes from socket
+   * handle incoming messages
+   * @param {Buffer} payload message payload
+   * @param {import('dgram').RemoteInfo} remoteInfo message rinfo
    * @returns {void}
    */
-  _handleReadable() {
-    let remainder = true;
-    while (remainder) {
-      remainder = this._read();
-    }
-  }
-
-  /**
-   * read the right amount of bytes from socket
-   * @returns {boolean} if there are any bytes left to read
-   */
-  _read() {
+  _handleMessage(payload, remoteInfo) {
     const {
-      currentLength,
-      lengthPreamble,
-      log,
-      messageTimer,
-      socket
+      host,
+      log
     } = this.state;
 
-    if (currentLength) {
-      const payload = socket.read(currentLength);
-      if (!payload) return false;
+    if (host !== remoteInfo.address || !remoteInfo.size) return;
 
-      this.state.currentLength = 0;
+    log.debug({
+      head: 'msg incoming',
+      attachment: humanPayload(payload)
+    });
 
-      messageTimer.stop();
-
-      log.debug({
-        head: 'msg incoming',
-        attachment: humanPayload(payload)
-      });
-
-      this._ingestIntoDeviceInstances(null, payload);
-
-      return true;
-    }
-
-    const length = socket.read(lengthPreamble);
-    if (!length) return false;
-
-    this.state.currentLength = readNumber(length, lengthPreamble);
-
-    messageTimer.start();
-
-    if (this.state.currentLength > 5) {
-      log.error(`unusual large message: ${this.state.currentLength} bytes`);
-    }
-
-    log.debug(`receive ${this.state.currentLength} byte payload`);
-
-    return true;
+    this._ingestIntoDeviceInstances(null, payload);
   }
 
   /**
-   * connect TCPTransport instance
+   * connect UDPTransport instance
    * @returns {void}
    */
   connect() {
@@ -272,7 +204,7 @@ class TCPTransport extends Transport {
   }
 
   /**
-   * disconnect TCPTransport instance
+   * disconnect UDPTransport instance
    * @returns {void}
    */
   disconnect() {
@@ -285,7 +217,7 @@ class TCPTransport extends Transport {
   }
 
   /**
-   * reconnect TCPTransport instance
+   * reconnect UDPTransport instance
    * @returns {void}
    */
   reconnect() {
@@ -294,16 +226,17 @@ class TCPTransport extends Transport {
 
   /**
    * write from Transport instance to network – placeholder
-   * @param {unknown} _ identifier buffer (not needed on TCPTransport)
+   * @param {unknown} _ identifier buffer (not needed on UDPTransport)
    * @param {Buffer} payload payload buffer
    * @returns {void}
    */
   write(_, payload) {
     const {
-      lengthPreamble,
+      host,
       isConnected,
-      socket,
-      log
+      log,
+      port,
+      socket
     } = this.state;
 
     if (!isConnected) {
@@ -317,13 +250,10 @@ class TCPTransport extends Transport {
       attachment: humanPayload(payload)
     });
 
-    socket.write(Buffer.concat([
-      writeNumber(payload.length, lengthPreamble),
-      payload
-    ]));
+    socket.send(payload, port, host);
   }
 }
 
 module.exports = {
-  TCPTransport
+  UDPTransport
 };
