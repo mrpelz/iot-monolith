@@ -21,7 +21,6 @@ function isPromise(input) {
  * rebind class methods
  * @param {any} context class context (this)
  * @param  {...string} names method names
- * @returns {void}
  */
 function rebind(context, ...names) {
   names.forEach((name) => {

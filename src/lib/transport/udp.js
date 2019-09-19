@@ -15,13 +15,14 @@ const { rebind } = require('../utils/oop');
 const libName = 'udp transport';
 
 /**
-  * @typedef UDPTransportOptions
-  * @type {import('./index').TransportOptions & {
-    *  host: string,
-    *  port: number,
-    *  keepAlive?: number
-    * }}
-    */
+ * @typedef UDPTransportOptions
+ * @type {import('./index').TransportOptions & {
+ *  host: string,
+ *  port: number,
+ *  keepAlive?: number,
+ *  sequenceHandling?: boolean
+ * }}
+ */
 
 /**
  * @class UDPTransport
@@ -36,7 +37,8 @@ class UDPTransport extends Transport {
     const {
       host,
       port,
-      keepAlive = 2000
+      keepAlive = 2000,
+      sequenceHandling = false
     } = options;
 
     super(options);
@@ -47,12 +49,15 @@ class UDPTransport extends Transport {
       ...super.state,
 
       isConnected: /** @type {boolean|null} */ (null),
+      messageIncomingSequence: 0,
+      messageOutgoingSequence: 0,
       shouldBeConnected: false,
 
       host,
       keepAlive,
       log: this.log.withPrefix(libName),
       port,
+      sequenceHandling,
       socket: /** @type {Socket|null} */ (null)
     };
 
@@ -69,8 +74,33 @@ class UDPTransport extends Transport {
   }
 
   /**
+   * manage sequence number to prepend to outgoing messages
+   * @returns {number} sequence number
+   */
+  _getOutgoingSequence() {
+    this.state.messageOutgoingSequence = this.state.messageOutgoingSequence === 0xff
+      ? 0
+      : (this.state.messageOutgoingSequence += 1);
+
+    return this.state.messageOutgoingSequence;
+  }
+
+  /**
+   * manage sequence number to check from incoming messages
+   * @param {number} sequence sequence number
+   * @returns {boolean} if message is valid
+   */
+  _checkIncomingSequence(sequence) {
+    if (this.state.messageIncomingSequence === 0xff && sequence !== 0) return false;
+    if (sequence < this.state.messageIncomingSequence) return false;
+
+    this.state.messageIncomingSequence = sequence;
+
+    return true;
+  }
+
+  /**
    * handle (dis)connection of socket
-   * @returns {void}
    */
   _connect() {
     const {
@@ -91,7 +121,6 @@ class UDPTransport extends Transport {
 
   /**
    * destroy old socket and remove listeners
-   * @returns {void}
    */
   _nukeSocket() {
     const { socket } = this.state;
@@ -109,7 +138,6 @@ class UDPTransport extends Transport {
 
   /**
    * create new socket and set up listeners
-   * @returns {void}
    */
   _setUpSocket() {
     const socket = createSocket('udp4');
@@ -124,7 +152,6 @@ class UDPTransport extends Transport {
 
   /**
    * handle socket connection
-   * @returns {void}
    */
   _onConnection() {
     const {
@@ -146,7 +173,6 @@ class UDPTransport extends Transport {
 
   /**
    * handle socket disconnection
-   * @returns {void}
    */
   _onDisconnection() {
     const {
@@ -170,17 +196,31 @@ class UDPTransport extends Transport {
 
   /**
    * handle incoming messages
-   * @param {Buffer} payload message payload
+   * @param {Buffer} message message
    * @param {import('dgram').RemoteInfo} remoteInfo message rinfo
-   * @returns {void}
    */
-  _handleMessage(payload, remoteInfo) {
+  _handleMessage(message, remoteInfo) {
     const {
       host,
-      log
+      log,
+      sequenceHandling
     } = this.state;
 
     if (host !== remoteInfo.address || !remoteInfo.size) return;
+
+    /**
+     * @type {Buffer}
+     */
+    let payload;
+
+    if (sequenceHandling) {
+      const sequence = message.subarray(0, 1);
+      payload = message.subarray(1);
+
+      if (!this._checkIncomingSequence(sequence.readUInt8(0))) return;
+    } else {
+      payload = message;
+    }
 
     log.debug({
       head: 'msg incoming',
@@ -192,10 +232,11 @@ class UDPTransport extends Transport {
 
   /**
    * connect UDPTransport instance
-   * @returns {void}
    */
   connect() {
     this.state.shouldBeConnected = true;
+
+    this._connect();
 
     this.state.log.info({
       head: 'set connect',
@@ -205,10 +246,11 @@ class UDPTransport extends Transport {
 
   /**
    * disconnect UDPTransport instance
-   * @returns {void}
    */
   disconnect() {
     this.state.shouldBeConnected = false;
+
+    this._connect();
 
     this.state.log.info({
       head: 'set connect',
@@ -218,7 +260,6 @@ class UDPTransport extends Transport {
 
   /**
    * reconnect UDPTransport instance
-   * @returns {void}
    */
   reconnect() {
     this._onDisconnection();
@@ -228,14 +269,14 @@ class UDPTransport extends Transport {
    * write from Transport instance to network – placeholder
    * @param {unknown} _ identifier buffer (not needed on UDPTransport)
    * @param {Buffer} payload payload buffer
-   * @returns {void}
    */
-  write(_, payload) {
+  writeToTransport(_, payload) {
     const {
       host,
       isConnected,
       log,
       port,
+      sequenceHandling,
       socket
     } = this.state;
 
@@ -250,7 +291,11 @@ class UDPTransport extends Transport {
       attachment: humanPayload(payload)
     });
 
-    socket.send(payload, port, host);
+    socket.send(
+      sequenceHandling ? Buffer.concat([Buffer.from([this._getOutgoingSequence()]), payload]) : payload,
+      port,
+      host
+    );
   }
 }
 

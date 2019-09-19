@@ -79,7 +79,6 @@ class TCPTransport extends Transport {
 
   /**
    * handle (dis)connection of socket
-   * @returns {void}
    */
   _connect() {
     const {
@@ -100,7 +99,6 @@ class TCPTransport extends Transport {
 
   /**
    * destroy old socket and remove listeners
-   * @returns {void}
    */
   _nukeSocket() {
     const { socket } = this.state;
@@ -120,7 +118,6 @@ class TCPTransport extends Transport {
 
   /**
    * create new socket and set up listeners
-   * @returns {void}
    */
   _setUpSocket() {
     const {
@@ -150,7 +147,6 @@ class TCPTransport extends Transport {
 
   /**
    * handle socket connection
-   * @returns {void}
    */
   _onConnection() {
     const {
@@ -174,7 +170,6 @@ class TCPTransport extends Transport {
 
   /**
    * handle socket disconnection
-   * @returns {void}
    */
   _onDisconnection() {
     const {
@@ -202,7 +197,6 @@ class TCPTransport extends Transport {
 
   /**
    * handle readable (incoming) bytes from socket
-   * @returns {void}
    */
   _handleReadable() {
     let remainder = true;
@@ -260,10 +254,11 @@ class TCPTransport extends Transport {
 
   /**
    * connect TCPTransport instance
-   * @returns {void}
    */
   connect() {
     this.state.shouldBeConnected = true;
+
+    this._connect();
 
     this.state.log.info({
       head: 'set connect',
@@ -273,10 +268,11 @@ class TCPTransport extends Transport {
 
   /**
    * disconnect TCPTransport instance
-   * @returns {void}
    */
   disconnect() {
     this.state.shouldBeConnected = false;
+
+    this._connect();
 
     this.state.log.info({
       head: 'set connect',
@@ -286,7 +282,6 @@ class TCPTransport extends Transport {
 
   /**
    * reconnect TCPTransport instance
-   * @returns {void}
    */
   reconnect() {
     this._onDisconnection();
@@ -296,9 +291,8 @@ class TCPTransport extends Transport {
    * write from Transport instance to network – placeholder
    * @param {unknown} _ identifier buffer (not needed on TCPTransport)
    * @param {Buffer} payload payload buffer
-   * @returns {void}
    */
-  write(_, payload) {
+  writeToTransport(_, payload) {
     const {
       lengthPreamble,
       isConnected,
