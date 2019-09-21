@@ -210,14 +210,14 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
-    'kuecheAmbience',
+    'kuecheLed',
     'kuecheWallLeft',
     1
   );
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
-    'kuecheAmbience',
+    'kuecheLed',
     'kuecheWallRight',
     1
   );
@@ -226,7 +226,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
-    'kuecheAmbience',
+    'kuecheLed',
     'kuecheButtonLeft',
     4
   );
@@ -254,7 +254,7 @@ function groupWithRoomSensor(lights, roomSensors) {
   coupleRoomSensorToLight(
     lights,
     roomSensors,
-    'kuecheAmbience',
+    'kuecheLed',
     'kueche'
   );
 }
@@ -279,7 +279,7 @@ function lightGroupHmi(group, hmiServer) {
     instance,
     timer,
     attributes: {
-      hmi: hmiDefaults
+      hmi: hmiDefaults = null
     } = {}
   } = group;
 

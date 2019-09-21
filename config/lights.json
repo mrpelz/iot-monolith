@@ -246,6 +246,7 @@
     ]
   },
   {
+    "disable": true,
     "name": "kuecheLedLeftDriver",
     "host": "10.97.4.31",
     "port": 5045,
@@ -263,6 +264,7 @@
     ]
   },
   {
+    "disable": true,
     "name": "kuecheLedRightDriver",
     "host": "10.97.4.37",
     "port": 5045,
@@ -276,6 +278,128 @@
       {
         "name": "kuecheLedRight",
         "useChannel": 0
+      }
+    ]
+  },
+  {
+    "name": "kuecheLedDriver",
+    "host": "10.97.4.55",
+    "port": 5045,
+    "type": "LED_DMX",
+    "lights": [
+      {
+        "name": "kuecheLedLeftUp",
+        "useChannel": 2,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedLeftUp",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "left",
+            "subGroup": "§{up} §{left}"
+          }
+        }
+      },
+      {
+        "name": "kuecheLedLeftWhite",
+        "useChannel": 1,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedLeftWhite",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "left",
+            "subGroup": "§{c-white} §{left}"
+          }
+        }
+      },
+      {
+        "name": "kuecheLedLeftWWhite",
+        "useChannel": 0,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedLeftWWhite",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "left",
+            "subGroup": "§{w-white} §{left}"
+          }
+        }
+      },
+      {
+        "name": "kuecheLedRightUp",
+        "useChannel": 5,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedRightUp",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "right",
+            "subGroup": "§{up} §{right}"
+          }
+        }
+      },
+      {
+        "name": "kuecheLedRightWhite",
+        "useChannel": 3,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedRightWhite",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "right",
+            "subGroup": "§{c-white} §{right}"
+          }
+        }
+      },
+      {
+        "name": "kuecheLedRightWWhite",
+        "useChannel": 4,
+        "steps": [
+          0,
+          0.3,
+          0.6,
+          1
+        ],
+        "attributes": {
+          "hmi": {
+            "group": "kuecheLedRightWWhite",
+            "groupLabel": "led",
+            "section": "kueche",
+            "sortGroup": "right",
+            "subGroup": "§{w-white} §{right}"
+          }
+        }
       }
     ]
   },

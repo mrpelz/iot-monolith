@@ -821,7 +821,7 @@ function relayLightHmi(options, hmiServer) {
       instance,
       timer,
       attributes: {
-        hmi: hmiDefaults
+        hmi: hmiDefaults = null
       } = {}
     } = light;
 
@@ -873,7 +873,7 @@ function ledDriverLightHmi(options, hmiServer) {
       instance,
       timer,
       attributes: {
-        hmi: hmiDefaults
+        hmi: hmiDefaults = null
       } = {}
     } = light;
 

@@ -19,10 +19,14 @@
     }
   },
   {
-    "name": "kuecheAmbience",
+    "name": "kuecheLed",
     "lights": [
-      "kuecheLedLeft",
-      "kuecheLedRight"
+      "kuecheLedLeftUp",
+      "kuecheLedLeftWhite",
+      "kuecheLedLeftWWhite",
+      "kuecheLedRightUp",
+      "kuecheLedRightWhite",
+      "kuecheLedRightWWhite"
     ],
     "attributes": {
       "light": {
@@ -30,6 +34,7 @@
       },
       "hmi": {
         "group": "led",
+        "sortGroup": "_top",
         "section": "kueche"
       }
     }
@@ -60,8 +65,12 @@
       "esszimmerStehlampe",
       "flurDeckenlampeBack",
       "flurDeckenlampeFront",
-      "kuecheLedLeft",
-      "kuecheLedRight",
+      "kuecheLedLeftUp",
+      "kuecheLedLeftWhite",
+      "kuecheLedLeftWWhite",
+      "kuecheLedRightUp",
+      "kuecheLedRightWhite",
+      "kuecheLedRightWWhite",
       "wohnzimmerDeckenlampe",
       "wohnzimmerKallaxLedBlue",
       "wohnzimmerKallaxLedGreen",
