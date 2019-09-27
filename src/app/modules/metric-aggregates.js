@@ -54,7 +54,13 @@ function create(config, data) {
         };
       });
 
-      const instance = new Aggregate(getters, timeGetters, type);
+      const stateGetters = instances.map((instance) => {
+        return () => {
+          return instance.getState(metric);
+        };
+      });
+
+      const instance = new Aggregate(getters, timeGetters, stateGetters, type);
 
       return {
         attributes,
@@ -109,7 +115,7 @@ function metricAggrgatesHmi(
       metric,
       type,
       attributes: {
-        hmi: hmiAttributes
+        hmi: hmiAttributes = null
       } = {}
     } = aggregate;
 

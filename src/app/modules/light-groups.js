@@ -79,7 +79,7 @@ function create(config, data) {
 }
 
 
-function manageLightGroup(group, httpHookServer) {
+function manageLightGroup(group, httpHookServer, lightGroupIntercepts, metricAggregates) {
   const {
     instance,
     name,
@@ -90,6 +90,42 @@ function manageLightGroup(group, httpHookServer) {
       } = {}
     } = {}
   } = group;
+
+  if (Object.keys(lightGroupIntercepts).includes(name)) {
+    const { [name]: intercept } = lightGroupIntercepts;
+    const globalMeanAggregateSensor = metricAggregates.find(({
+      group: aggregateGroup,
+      metric,
+      type
+    }) => {
+      return aggregateGroup === 'global'
+        && metric === 'brightness'
+        && type === 'median';
+    });
+
+    if (globalMeanAggregateSensor) {
+      instance.setInterceptor((on, instances) => {
+        if (!on) {
+          return instances.map((light) => {
+            return light.setPower(false);
+          });
+        }
+
+        const brightness = globalMeanAggregateSensor.instance.getState();
+
+        return instances.map((light, index) => {
+          const [from = null, to = null] = intercept[index] || [];
+
+          if (from === null && to === null) return light.setPower(true);
+          if (brightness >= from && to === null) return light.setPower(true);
+          if (from === null && brightness <= to) return light.setPower(true);
+          if (brightness >= from && brightness <= to) return light.setPower(true);
+
+          return light.setPower(false);
+        });
+      });
+    }
+  }
 
   if (timeout) {
     const timer = new Timer(timeout);
@@ -138,9 +174,9 @@ function manageLightGroup(group, httpHookServer) {
   });
 }
 
-function manageLightGroups(lightGroups, httpHookServer) {
+function manageLightGroups(lightGroups, httpHookServer, lightGroupIntercepts, metricAggregates) {
   lightGroups.forEach((group) => {
-    manageLightGroup(group, httpHookServer);
+    manageLightGroup(group, httpHookServer, lightGroupIntercepts, metricAggregates);
   });
 }
 
@@ -428,7 +464,8 @@ function allLightsGroupHmi(instance, hmiServer) {
 function manage(config, data) {
   const {
     globals: {
-      rfSwitchLongPressTimeout
+      rfSwitchLongPressTimeout,
+      lightGroupIntercepts
     }
   } = config;
 
@@ -438,11 +475,12 @@ function manage(config, data) {
     hmiServer,
     httpHookServer,
     lightGroups,
+    metricAggregates,
     rfSwitches,
     roomSensors
   } = data;
 
-  manageLightGroups(lightGroups, httpHookServer);
+  manageLightGroups(lightGroups, httpHookServer, lightGroupIntercepts, metricAggregates);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithRfSwitch(lightGroups, rfSwitches, rfSwitchLongPressTimeout);
   groupWithDoorSensor(lightGroups, doorSensors);

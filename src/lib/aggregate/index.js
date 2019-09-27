@@ -8,13 +8,14 @@ const {
 const { sortTimes } = require('../utils/time');
 
 class Aggregate {
-  constructor(getters = [], timeGetters = [], type = 'mean') {
+  constructor(getters = [], timeGetters = [], stateGetters = [], type = 'mean') {
     if (!type || !['mean', 'median', 'min', 'max'].includes(type)) {
       throw new Error('illegal type');
     }
 
     this.getters = getters;
     this.timeGetters = timeGetters;
+    this.stateGetters = stateGetters;
 
     this.aggregator = (() => {
       switch (type) {
@@ -59,6 +60,14 @@ class Aggregate {
 
     // get most recent time
     return sortTimes(...times).slice(-1)[0];
+  }
+
+  getState() {
+    const results = this.stateGetters.map((getter) => {
+      return getter();
+    });
+
+    return this.aggregator(results);
   }
 }
 

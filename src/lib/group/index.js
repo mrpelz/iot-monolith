@@ -87,6 +87,7 @@ class LightGroup extends EventEmitter {
 
     this._instances = instances;
     this._allOf = allOf;
+    this._interceptor = null;
   }
 
   get power() {
@@ -105,11 +106,13 @@ class LightGroup extends EventEmitter {
     });
   }
 
-  setPower(on) {
+  setPower(on, force = false) {
     this._isChanging = true;
-    const calls = this._instances.map((instance) => {
-      return instance.setPower(on);
-    });
+    const calls = (!force && this._interceptor)
+      ? this._interceptor(on, this._instances)
+      : this._instances.map((instance) => {
+        return instance.setPower(on);
+      });
 
     return Promise.all(calls).then((values) => {
       this.emit('change');
@@ -121,6 +124,11 @@ class LightGroup extends EventEmitter {
 
   toggle() {
     return this.setPower(!this.power);
+  }
+
+  setInterceptor(fn) {
+    if (typeof fn !== 'function') throw new Error('interceptor (fn) is not a function');
+    this._interceptor = fn;
   }
 }
 

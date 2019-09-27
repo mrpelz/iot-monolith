@@ -45,6 +45,10 @@
     }
   ],
   "rfSwitchLongPressTimeout": 5000,
+  "lightGroupIntercepts": {
+    "duschbadLamps": [[5, null], [1, 5], [null, 1]],
+    "wannenbadLamps": [[1, null], [null, 1]]
+  },
   "sevenSegment": {
     "name": "sevenSegment",
     "host": "10.97.0.227",

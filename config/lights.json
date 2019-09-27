@@ -52,29 +52,6 @@
     ]
   },
   {
-    "name": "arbeitszimmerTestDriver",
-    "host": "10.97.4.41",
-    "port": 5045,
-    "type": "SONOFF_BASIC",
-    "attributes": {
-      "driver": {
-        "enableButton": true
-      }
-    },
-    "lights": [
-      {
-        "name": "arbeitszimmerTest",
-        "useChannel": 0,
-        "attributes": {
-          "hmi": {
-            "group": "lamp",
-            "section": "arbeitszimmer"
-          }
-        }
-      }
-    ]
-  },
-  {
     "name": "duschbadDeckenlampeDriver",
     "host": "10.97.4.44",
     "port": 5045,
@@ -122,7 +99,7 @@
   },
   {
     "name": "duschbadLampeDriver",
-    "host": "10.97.4.31",
+    "host": "10.97.4.41",
     "port": 5045,
     "type": "SONOFF_BASIC",
     "attributes": {
@@ -604,7 +581,7 @@
   },
   {
     "name": "wannenbadLampeDriver",
-    "host": "10.97.4.37",
+    "host": "10.97.4.48",
     "port": 5045,
     "type": "SONOFF_BASIC",
     "attributes": {

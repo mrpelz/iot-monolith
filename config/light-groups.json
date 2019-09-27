@@ -3,8 +3,8 @@
     "name": "duschbadLamps",
     "lights": [
       "duschbadDeckenlampe",
-      "duschbadLampe",
-      "duschbadSpiegellampe"
+      "duschbadSpiegellampe",
+      "duschbadLampe"
     ],
     "attributes": {
       "light": {
