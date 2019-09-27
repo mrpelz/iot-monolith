@@ -1,5 +1,25 @@
 [
   {
+    "name": "duschbadLamps",
+    "lights": [
+      "duschbadDeckenlampe",
+      "duschbadLampe",
+      "duschbadSpiegellampe"
+    ],
+    "attributes": {
+      "light": {
+        "timeout": 900000,
+        "initialTimer": true
+      },
+      "hmi": {
+        "group": "lamp-group",
+        "groupLabel": "group",
+        "sortGroup": "_top",
+        "section": "duschbad"
+      }
+    }
+  },
+  {
     "name": "flurDeckenlampe",
     "lights": [
       "flurDeckenlampeFront",
@@ -36,6 +56,25 @@
         "group": "led",
         "sortGroup": "_top",
         "section": "kueche"
+      }
+    }
+  },
+  {
+    "name": "wannenbadLamps",
+    "lights": [
+      "wannenbadDeckenlampe",
+      "wannenbadLampe"
+    ],
+    "attributes": {
+      "light": {
+        "timeout": 900000,
+        "initialTimer": true
+      },
+      "hmi": {
+        "group": "lamp-group",
+        "groupLabel": "group",
+        "sortGroup": "_top",
+        "section": "wannenbad"
       }
     }
   },

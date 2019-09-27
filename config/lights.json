@@ -89,10 +89,6 @@
         "name": "duschbadDeckenlampe",
         "useChannel": 0,
         "attributes": {
-          "light": {
-            "timeout": 900000,
-            "initialTimer": true
-          },
           "hmi": {
             "group": "ceiling-lamp",
             "section": "duschbad"
@@ -118,6 +114,29 @@
         "attributes": {
           "hmi": {
             "group": "mirror-lamp",
+            "section": "duschbad"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "duschbadLampeDriver",
+    "host": "10.97.4.31",
+    "port": 5045,
+    "type": "SONOFF_BASIC",
+    "attributes": {
+      "driver": {
+        "enableButton": true
+      }
+    },
+    "lights": [
+      {
+        "name": "duschbadLampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "lamp",
             "section": "duschbad"
           }
         }
@@ -242,42 +261,6 @@
             "subGroup": "back"
           }
         }
-      }
-    ]
-  },
-  {
-    "disable": true,
-    "name": "kuecheLedLeftDriver",
-    "host": "10.97.4.31",
-    "port": 5045,
-    "type": "SONOFF_BASIC",
-    "attributes": {
-      "driver": {
-        "enableButton": true
-      }
-    },
-    "lights": [
-      {
-        "name": "kuecheLedLeft",
-        "useChannel": 0
-      }
-    ]
-  },
-  {
-    "disable": true,
-    "name": "kuecheLedRightDriver",
-    "host": "10.97.4.37",
-    "port": 5045,
-    "type": "SONOFF_BASIC",
-    "attributes": {
-      "driver": {
-        "enableButton": true
-      }
-    },
-    "lights": [
-      {
-        "name": "kuecheLedRight",
-        "useChannel": 0
       }
     ]
   },
@@ -611,12 +594,31 @@
         "name": "wannenbadDeckenlampe",
         "useChannel": 0,
         "attributes": {
-          "light": {
-            "timeout": 900000,
-            "initialTimer": true
-          },
           "hmi": {
             "group": "ceiling-lamp",
+            "section": "wannenbad"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "wannenbadLampeDriver",
+    "host": "10.97.4.37",
+    "port": 5045,
+    "type": "SONOFF_BASIC",
+    "attributes": {
+      "driver": {
+        "enableButton": true
+      }
+    },
+    "lights": [
+      {
+        "name": "wannenbadLampe",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "lamp",
             "section": "wannenbad"
           }
         }

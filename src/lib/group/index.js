@@ -79,6 +79,12 @@ class LightGroup extends EventEmitter {
       });
     });
 
+    instances.forEach((instance) => {
+      instance.on('set', () => {
+        this.emit('set');
+      });
+    });
+
     this._instances = instances;
     this._allOf = allOf;
   }

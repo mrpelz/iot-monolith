@@ -4,7 +4,12 @@ const { resolveAlways } = require('../../lib/utils/oop');
 const { parseString } = require('../../lib/utils/string');
 const { Timer } = require('../../lib/utils/time');
 
-const { coupleRfSwitchToLight, coupleRoomSensorToLight } = require('../utils/lights');
+const {
+  coupleDoorSensorToLight,
+  coupleRfSwitchToLight,
+  coupleRfToggleToLight,
+  coupleRoomSensorToLight
+} = require('../utils/lights');
 const { setUpLightTimerHmi } = require('../utils/hmi');
 
 
@@ -161,7 +166,53 @@ function manageAllLightsGroup(instance, httpHookServer) {
   });
 }
 
-function groupWithRfSwitch(lightGroups, rfSwitches) {
+function groupWithDoorSensor(lightGroups, doorSensors) {
+  coupleDoorSensorToLight(
+    lightGroups,
+    doorSensors,
+    'duschbadLamps',
+    'duschbadDoor'
+  );
+
+  coupleDoorSensorToLight(
+    lightGroups,
+    doorSensors,
+    'wannenbadLamps',
+    'wannenbadDoor'
+  );
+}
+
+function groupWithRfSwitch(lightGroups, rfSwitches, rfSwitchLongPressTimeout) {
+  //  DUSCHBAD
+  //    wall switches
+  coupleRfToggleToLight(
+    lightGroups,
+    rfSwitches,
+    'duschbadLamps',
+    'duschbadWallDoor',
+    1,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfToggleToLight(
+    lightGroups,
+    rfSwitches,
+    'duschbadLamps',
+    'duschbadWallSink',
+    1,
+    rfSwitchLongPressTimeout
+  );
+
+  //    buttons
+  coupleRfToggleToLight(
+    lightGroups,
+    rfSwitches,
+    'duschbadLamps',
+    'duschbadButtonShower',
+    4,
+    rfSwitchLongPressTimeout
+  );
+
+
   //  ESSZIMMER
   //    buttons
   coupleRfSwitchToLight(
@@ -229,6 +280,26 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'kuecheLed',
     'kuecheButtonLeft',
     4
+  );
+
+
+  //  WANNENBAD
+  //    wall switches
+  coupleRfToggleToLight(
+    lightGroups,
+    rfSwitches,
+    'wannenbadLamps',
+    'wannenbadWallDoor',
+    1,
+    rfSwitchLongPressTimeout
+  );
+  coupleRfToggleToLight(
+    lightGroups,
+    rfSwitches,
+    'wannenbadLamps',
+    'wannenbadWallSink',
+    1,
+    rfSwitchLongPressTimeout
   );
 
 
@@ -354,9 +425,16 @@ function allLightsGroupHmi(instance, hmiServer) {
   });
 }
 
-function manage(_, data) {
+function manage(config, data) {
+  const {
+    globals: {
+      rfSwitchLongPressTimeout
+    }
+  } = config;
+
   const {
     allLightsGroup,
+    doorSensors,
     hmiServer,
     httpHookServer,
     lightGroups,
@@ -366,7 +444,8 @@ function manage(_, data) {
 
   manageLightGroups(lightGroups, httpHookServer);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
-  groupWithRfSwitch(lightGroups, rfSwitches);
+  groupWithRfSwitch(lightGroups, rfSwitches, rfSwitchLongPressTimeout);
+  groupWithDoorSensor(lightGroups, doorSensors);
   groupWithRoomSensor(lightGroups, roomSensors);
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);

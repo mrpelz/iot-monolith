@@ -425,20 +425,6 @@ function lightWithDoorSensor(lights, doorSensors) {
     'abstellraumDoor'
   );
 
-  coupleDoorSensorToLight(
-    lights,
-    doorSensors,
-    'duschbadDeckenlampe',
-    'duschbadDoor'
-  );
-
-  coupleDoorSensorToLight(
-    lights,
-    doorSensors,
-    'wannenbadDeckenlampe',
-    'wannenbadDoor'
-  );
-
   coupleDoorSensorToLightTimeout(
     lights,
     doorSensors,
@@ -468,33 +454,6 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitches,
     'arbeitszimmerDeckenlampe',
     'arbeitszimmerWall',
-    1
-  );
-
-
-  //  DUSCHBAD
-  //    wall switches
-  coupleRfToggleToLight(
-    lights,
-    rfSwitches,
-    'duschbadDeckenlampe',
-    'duschbadWallDoor',
-    1,
-    rfSwitchLongPressTimeout
-  );
-  coupleRfToggleToLight(
-    lights,
-    rfSwitches,
-    'duschbadDeckenlampe',
-    'duschbadButtonShower',
-    4,
-    rfSwitchLongPressTimeout
-  );
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'duschbadSpiegellampe',
-    'duschbadWallSink',
     1
   );
 
@@ -631,26 +590,6 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     'schlafzimmerBedLedFloor',
     'schlafzimmerButton2',
     4,
-    rfSwitchLongPressTimeout
-  );
-
-
-  //  WANNENBAD
-  //    wall switches
-  coupleRfToggleToLight(
-    lights,
-    rfSwitches,
-    'wannenbadDeckenlampe',
-    'wannenbadWallDoor',
-    1,
-    rfSwitchLongPressTimeout
-  );
-  coupleRfToggleToLight(
-    lights,
-    rfSwitches,
-    'wannenbadDeckenlampe',
-    'wannenbadWallSink',
-    1,
     rfSwitchLongPressTimeout
   );
 
