@@ -486,7 +486,7 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'esszimmerStehlampe',
+    'wohnzimmerKallaxLedWWhite',
     'esszimmerMulti1',
     2
   );
@@ -496,7 +496,14 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     'esszimmerFloodlight',
     'esszimmerMulti1',
     3
-  );
+    );
+    coupleRfSwitchToLight(
+      lights,
+      rfSwitches,
+      'esszimmerStehlampe',
+      'esszimmerMulti1',
+      4
+    );
 
 
   //  KUECHE
@@ -629,7 +636,7 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'wohnzimmerStehlampe',
+    'wohnzimmerKallaxLedWWhite',
     'wohnzimmerMulti1',
     2
   );
@@ -639,6 +646,13 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     'esszimmerFloodlight',
     'wohnzimmerMulti1',
     3
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'wohnzimmerStehlampe',
+    'wohnzimmerMulti1',
+    4
   );
 }
 

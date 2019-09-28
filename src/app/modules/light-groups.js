@@ -258,13 +258,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches, rfSwitchLongPressTimeout) {
     'esszimmerButton1',
     4
   );
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'wohnzimmerLedAll',
-    'esszimmerMulti1',
-    4
-  );
 
 
   //  FLUR
@@ -346,13 +339,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitches,
     'wohnzimmerRelated',
     'wohnzimmerButton1',
-    4
-  );
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'wohnzimmerLedAll',
-    'wohnzimmerMulti1',
     4
   );
 }
