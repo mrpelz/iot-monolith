@@ -96,12 +96,17 @@ class Ev1527Device extends Base {
       throw new Error('insufficient options provided');
     }
 
-    const { match: globalMatch = {}, debounce: globalDebounce = 0 } = device;
+    const {
+      match: globalMatch = {},
+      debounce: globalDebounce = 0,
+      repeat: globalRepeat = 0
+    } = device;
 
     return Object.keys(states).map((state) => {
       const { [state]: stateOptions } = states;
-      const { match = {}, debounce = globalDebounce } = stateOptions;
+      const { match = {}, debounce = globalDebounce, repeat = globalRepeat } = stateOptions;
 
+      const repeater = throttle(repeat);
       const throttler = throttle(debounce);
       const combined = Object.assign({}, globalMatch, match);
 
@@ -118,7 +123,13 @@ class Ev1527Device extends Base {
       };
 
       const matcher = (input) => {
-        return matchFn(input) && throttler();
+        const matches = matchFn(input) && throttler();
+        const repeating = matches ? !repeater() : false;
+
+        return {
+          matches,
+          repeating
+        };
       };
 
       return {
@@ -158,8 +169,10 @@ class Ev1527Device extends Base {
     const { matchers } = this._ev1527Device;
 
     matchers.forEach(({ matcher, state }) => {
-      if (matcher(message)) {
-        this.emit(state);
+      const { matches, repeating } = matcher(message);
+
+      if (matches) {
+        this.emit(state, repeating);
       }
     });
   }

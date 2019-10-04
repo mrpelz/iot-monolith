@@ -11,7 +11,8 @@ function makeMatchOptions(id) {
         },
         id
       },
-      debounce: 500
+      debounce: 500,
+      repeat: 5000
     },
     states: {
       1: {

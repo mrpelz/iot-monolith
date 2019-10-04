@@ -125,9 +125,9 @@ function coupleRfSwitchToLightIncrease(
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
-  rfSwitchInstance.on(rfSwitchState, () => {
+  rfSwitchInstance.on(rfSwitchState, (repeated) => {
     resolveAlways(
-      (!lightInstance.power || timer.isRunning)
+      (!lightInstance.power || timer.isRunning || repeated)
         ? lightInstance.increase(true)
         : lightInstance.setPower(false)
     );
@@ -175,8 +175,8 @@ function coupleRfToggleToLight(
     timer.stop();
   });
 
-  rfSwitchInstance.on(rfSwitchState, () => {
-    resolveAlways(lightInstance.setPower(!timer.isRunning));
+  rfSwitchInstance.on(rfSwitchState, (repeated) => {
+    resolveAlways(lightInstance.setPower(!(timer.isRunning || repeated)));
   });
 }
 
