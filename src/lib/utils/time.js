@@ -457,12 +457,14 @@ class Timer extends EventEmitter {
 
     this._time = time;
     this._timeout = null;
+    this._enabled = true;
 
     rebind(this, '_handleFire');
   }
 
   _handleFire() {
     this.stop(true);
+    this.emit('change');
     this.emit('hit');
   }
 
@@ -472,22 +474,44 @@ class Timer extends EventEmitter {
       this._timeout = null;
 
       if (suppressEvent) return;
+      this.emit('change');
       this.emit('aborted');
     }
   }
 
   start(suppressEvent = false, restart = true) {
+    if (!this._enabled) return;
     if (this.isRunning && !restart) return;
 
     this.stop(true);
     this._timeout = setTimeout(this._handleFire, this._time);
 
     if (suppressEvent) return;
+    this.emit('change');
     this.emit('start');
+  }
+
+  enable() {
+    if (this._enabled) return;
+
+    this._enabled = true;
+    this.emit('change');
+  }
+
+  disable() {
+    if (!this._enabled) return;
+
+    this.stop(true);
+    this._enabled = false;
+    this.emit('change');
   }
 
   get isRunning() {
     return Boolean(this._timeout);
+  }
+
+  get isEnabled() {
+    return Boolean(this._enabled);
   }
 }
 

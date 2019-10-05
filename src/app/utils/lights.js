@@ -105,8 +105,7 @@ function coupleRfSwitchToLightIncrease(
   rfSwitches,
   lightName,
   rfSwitchName,
-  rfSwitchState,
-  rfSwitchLongPressTimeout
+  rfSwitchState
 ) {
   const lightMatch = lights.find(({ name }) => {
     return name === lightName;
@@ -120,19 +119,15 @@ function coupleRfSwitchToLightIncrease(
     throw new Error('could not find light or button instance');
   }
 
-  const timer = new Timer(rfSwitchLongPressTimeout);
-
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
   rfSwitchInstance.on(rfSwitchState, (repeated) => {
     resolveAlways(
-      (!lightInstance.power || timer.isRunning || repeated)
+      (!lightInstance.power || repeated)
         ? lightInstance.increase(true)
         : lightInstance.setPower(false)
     );
-
-    timer.start();
   });
 }
 
@@ -141,13 +136,8 @@ function coupleRfToggleToLight(
   rfSwitches,
   lightName,
   rfSwitchName,
-  rfSwitchState,
-  rfSwitchLongPressTimeout
+  rfSwitchState
 ) {
-  if (!rfSwitchLongPressTimeout) {
-    throw new Error('not timeout provided');
-  }
-
   const lightMatch = lights.find(({ name }) => {
     return name === lightName;
   });
@@ -160,23 +150,15 @@ function coupleRfToggleToLight(
     throw new Error('could not find light or button instance');
   }
 
-  const timer = new Timer(rfSwitchLongPressTimeout);
-
   const { instance: lightInstance } = lightMatch;
   const { instance: rfSwitchInstance } = rfSwitchMatch;
 
-  lightInstance.on('set', () => {
-    if (!lightInstance.power) return;
-    timer.start();
-  });
-
-  lightInstance.on('change', () => {
-    if (lightInstance.power) return;
-    timer.stop();
-  });
-
   rfSwitchInstance.on(rfSwitchState, (repeated) => {
-    resolveAlways(lightInstance.setPower(!(timer.isRunning || repeated)));
+    resolveAlways(
+      (repeated && lightInstance.power)
+        ? lightInstance.setPower(false)
+        : lightInstance.setPower(true)
+    );
   });
 }
 

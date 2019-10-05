@@ -434,7 +434,7 @@ function lightWithDoorSensor(lights, doorSensors) {
   );
 }
 
-function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
+function lightWithRfSwitch(lights, rfSwitches) {
   //  ABSTELLRAUM
   //    wall switches
   coupleRfToggleToLight(
@@ -442,8 +442,7 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitches,
     'abstellraumDeckenlampe',
     'abstellraumWall',
-    1,
-    rfSwitchLongPressTimeout
+    1
   );
 
 
@@ -540,64 +539,56 @@ function lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout) {
     rfSwitches,
     'schlafzimmerBedLedNightstandLeft',
     'schlafzimmerButton1',
-    1,
-    rfSwitchLongPressTimeout
+    1
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandRight',
     'schlafzimmerButton1',
-    2,
-    rfSwitchLongPressTimeout
+    2
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedWhite',
     'schlafzimmerButton1',
-    3,
-    rfSwitchLongPressTimeout
+    3
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedFloor',
     'schlafzimmerButton1',
-    4,
-    rfSwitchLongPressTimeout
+    4
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandLeft',
     'schlafzimmerButton2',
-    1,
-    rfSwitchLongPressTimeout
+    1
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedNightstandRight',
     'schlafzimmerButton2',
-    2,
-    rfSwitchLongPressTimeout
+    2
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedWhite',
     'schlafzimmerButton2',
-    3,
-    rfSwitchLongPressTimeout
+    3
   );
   coupleRfSwitchToLightIncrease(
     lights,
     rfSwitches,
     'schlafzimmerBedLedFloor',
     'schlafzimmerButton2',
-    4,
-    rfSwitchLongPressTimeout
+    4
   );
 
 
@@ -669,13 +660,6 @@ function lightWithRoomSensor(lights, roomSensors) {
     roomSensors,
     'arbeitszimmerDeckenlampe',
     'arbeitszimmer'
-  );
-
-  coupleRoomSensorToLight(
-    lights,
-    roomSensors,
-    'schlafzimmerDeckenlampe',
-    'schlafzimmer'
   );
 }
 
@@ -919,13 +903,7 @@ function lightsHmi(lights, hmiServer) {
   });
 }
 
-function manage(config, data) {
-  const {
-    globals: {
-      rfSwitchLongPressTimeout
-    }
-  } = config;
-
+function manage(_, data) {
   const {
     doorSensors,
     hmiServer,
@@ -941,7 +919,7 @@ function manage(config, data) {
   lightsToPrometheus(lightDrivers, prometheus);
   lightsHmi(lightDrivers, hmiServer);
 
-  lightWithRfSwitch(lights, rfSwitches, rfSwitchLongPressTimeout);
+  lightWithRfSwitch(lights, rfSwitches);
   lightWithDoorSensor(lights, doorSensors);
   lightWithRoomSensor(lights, roomSensors);
   arbeitszimmerDeckenlampeWithHttpHook(lights);

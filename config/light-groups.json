@@ -60,6 +60,29 @@
     }
   },
   {
+    "name": "schlafzimmerLamps",
+    "lights": [
+      "schlafzimmerDeckenlampe",
+      "schlafzimmerSteinlampe",
+      "schlafzimmerBedLedRed",
+      "schlafzimmerBedLedGreen",
+      "schlafzimmerBedLedBlue",
+      "schlafzimmerBedLedWhite",
+      "schlafzimmerBedLedFloor",
+      "schlafzimmerBedLedNightstandLeft",
+      "schlafzimmerBedLedNightstandRight"
+    ],
+    "attributes": {
+      "light": {
+        "timeout": 420000
+      },
+      "hmi": {
+        "group": "§{all} §{lamps}",
+        "section": "schlafzimmer"
+      }
+    }
+  },
+  {
     "name": "wannenbadLamps",
     "lights": [
       "wannenbadDeckenlampe",

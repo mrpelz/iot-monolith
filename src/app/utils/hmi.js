@@ -88,28 +88,26 @@ function setUpLightTimerHmi(timer, name, attributes, hmiServer) {
     }),
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(timer.isRunning ? 'on' : 'off');
+      return Promise.resolve((() => {
+        if (!timer.isEnabled) return 'inactive';
+        if (!timer.isRunning) return 'off';
+        return 'on';
+      })());
     },
     settable: true
   });
 
   hmiTimer.on('set', () => {
-    if (timer.isRunning) {
-      timer.stop();
+    if (timer.isEnabled) {
+      timer.disable();
     } else {
-      timer.start();
+      timer.enable();
     }
-
-    hmiTimer.update();
   });
 
-  const onTimerChange = () => {
+  timer.on('change', () => {
     hmiTimer.update();
-  };
-
-  timer.on('start', onTimerChange);
-  timer.on('aborted', onTimerChange);
-  timer.on('hit', onTimerChange);
+  });
 
   return hmiTimer;
 }
