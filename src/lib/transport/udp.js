@@ -63,7 +63,12 @@ class UDPTransport extends Transport {
 
     rebind(
       this,
-      'write',
+      'addDevice',
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToTransport',
       '_connect',
       '_handleMessage',
       '_onConnection',
@@ -120,6 +125,42 @@ class UDPTransport extends Transport {
   }
 
   /**
+   * handle incoming messages
+   * @param {Buffer} message message
+   * @param {import('dgram').RemoteInfo} remoteInfo message rinfo
+   */
+  _handleMessage(message, remoteInfo) {
+    const {
+      host,
+      log,
+      sequenceHandling
+    } = this.state;
+
+    if (host !== remoteInfo.address || !remoteInfo.size) return;
+
+    /**
+     * @type {Buffer}
+     */
+    let payload;
+
+    if (sequenceHandling) {
+      const sequence = message.subarray(0, 1);
+      payload = message.subarray(1);
+
+      if (!this._checkIncomingSequence(sequence.readUInt8(0))) return;
+    } else {
+      payload = message;
+    }
+
+    log.debug({
+      head: 'msg incoming',
+      attachment: humanPayload(payload)
+    });
+
+    this._ingestIntoDeviceInstances(null, payload);
+  }
+
+  /**
    * destroy old socket and remove listeners
    */
   _nukeSocket() {
@@ -134,20 +175,6 @@ class UDPTransport extends Transport {
     socket.close();
 
     this.state.socket = null;
-  }
-
-  /**
-   * create new socket and set up listeners
-   */
-  _setUpSocket() {
-    const socket = createSocket('udp4');
-
-    socket.on('message', this._handleMessage);
-    socket.on('listening', this._onConnection);
-    socket.on('close', this._onDisconnection);
-    socket.on('error', this._onDisconnection);
-
-    this.state.socket = socket;
   }
 
   /**
@@ -195,39 +222,17 @@ class UDPTransport extends Transport {
   }
 
   /**
-   * handle incoming messages
-   * @param {Buffer} message message
-   * @param {import('dgram').RemoteInfo} remoteInfo message rinfo
+   * create new socket and set up listeners
    */
-  _handleMessage(message, remoteInfo) {
-    const {
-      host,
-      log,
-      sequenceHandling
-    } = this.state;
+  _setUpSocket() {
+    const socket = createSocket('udp4');
 
-    if (host !== remoteInfo.address || !remoteInfo.size) return;
+    socket.on('message', this._handleMessage);
+    socket.on('listening', this._onConnection);
+    socket.on('close', this._onDisconnection);
+    socket.on('error', this._onDisconnection);
 
-    /**
-     * @type {Buffer}
-     */
-    let payload;
-
-    if (sequenceHandling) {
-      const sequence = message.subarray(0, 1);
-      payload = message.subarray(1);
-
-      if (!this._checkIncomingSequence(sequence.readUInt8(0))) return;
-    } else {
-      payload = message;
-    }
-
-    log.debug({
-      head: 'msg incoming',
-      attachment: humanPayload(payload)
-    });
-
-    this._ingestIntoDeviceInstances(null, payload);
+    this.state.socket = socket;
   }
 
   /**
@@ -270,7 +275,7 @@ class UDPTransport extends Transport {
    * @param {unknown} _ identifier buffer (not needed on UDPTransport)
    * @param {Buffer} payload payload buffer
    */
-  writeToTransport(_, payload) {
+  writeToNetwork(_, payload) {
     const {
       host,
       isConnected,

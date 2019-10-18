@@ -65,7 +65,12 @@ class TCPTransport extends Transport {
 
     rebind(
       this,
-      'write',
+      'addDevice',
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToTransport',
       '_connect',
       '_handleReadable',
       '_onConnection',
@@ -98,6 +103,16 @@ class TCPTransport extends Transport {
   }
 
   /**
+   * handle readable (incoming) bytes from socket
+   */
+  _handleReadable() {
+    let remainder = true;
+    while (remainder) {
+      remainder = this._read();
+    }
+  }
+
+  /**
    * destroy old socket and remove listeners
    */
   _nukeSocket() {
@@ -114,35 +129,6 @@ class TCPTransport extends Transport {
     socket.destroy();
 
     this.state.socket = null;
-  }
-
-  /**
-   * create new socket and set up listeners
-   */
-  _setUpSocket() {
-    const {
-      host,
-      keepAlive,
-      port
-    } = this.state;
-
-    const socket = new Socket();
-    socket.connect({ host, port });
-
-    socket.setNoDelay(true);
-
-    if (keepAlive) {
-      socket.setKeepAlive(true, keepAlive);
-      socket.setTimeout(keepAlive * 2);
-    }
-
-    socket.on('readable', this._handleReadable);
-    socket.on('connect', this._onConnection);
-    socket.on('end', this._onDisconnection);
-    socket.on('timeout', this._onDisconnection);
-    socket.on('error', this._onDisconnection);
-
-    this.state.socket = socket;
   }
 
   /**
@@ -196,16 +182,6 @@ class TCPTransport extends Transport {
   }
 
   /**
-   * handle readable (incoming) bytes from socket
-   */
-  _handleReadable() {
-    let remainder = true;
-    while (remainder) {
-      remainder = this._read();
-    }
-  }
-
-  /**
    * read the right amount of bytes from socket
    * @returns {boolean} if there are any bytes left to read
    */
@@ -253,6 +229,35 @@ class TCPTransport extends Transport {
   }
 
   /**
+   * create new socket and set up listeners
+   */
+  _setUpSocket() {
+    const {
+      host,
+      keepAlive,
+      port
+    } = this.state;
+
+    const socket = new Socket();
+    socket.connect({ host, port });
+
+    socket.setNoDelay(true);
+
+    if (keepAlive) {
+      socket.setKeepAlive(true, keepAlive);
+      socket.setTimeout(keepAlive * 2);
+    }
+
+    socket.on('readable', this._handleReadable);
+    socket.on('connect', this._onConnection);
+    socket.on('end', this._onDisconnection);
+    socket.on('timeout', this._onDisconnection);
+    socket.on('error', this._onDisconnection);
+
+    this.state.socket = socket;
+  }
+
+  /**
    * connect TCPTransport instance
    */
   connect() {
@@ -292,7 +297,7 @@ class TCPTransport extends Transport {
    * @param {unknown} _ identifier buffer (not needed on TCPTransport)
    * @param {Buffer} payload payload buffer
    */
-  writeToTransport(_, payload) {
+  writeToNetwork(_, payload) {
     const {
       lengthPreamble,
       isConnected,

@@ -7,20 +7,6 @@ const { rebind } = require('../utils/oop');
  */
 
 /**
- * @typedef TransportDevices
- * @type {Set<TransportDevice>}
- */
-
-/**
- * @typedef TransportOptions
- * @type {{
- *  devices?: TransportDevices,
- *  identifier?: (Buffer|null),
- *  singleDevice?: boolean
- * }}
- */
-
-/**
  * @typedef I_TCPTransport
  * @type {InstanceType<import('./tcp')['TCPTransport']>}
  */
@@ -43,6 +29,20 @@ const { rebind } = require('../utils/oop');
 /**
  * @typedef AnyTransport
  * @type {Transport|AggregatedTransport|I_TCPTransport|I_UDPTransport}
+ */
+
+/**
+ * @typedef TransportDevices
+ * @type {Set<TransportDevice>}
+ */
+
+/**
+ * @typedef TransportOptions
+ * @type {{
+ *  devices?: TransportDevices,
+ *  identifier?: (Buffer|null),
+ *  singleDevice?: boolean
+ * }}
  */
 
  /**
@@ -111,28 +111,14 @@ class TransportDevice {
       transport,
       device
     };
-  }
 
-  /**
-   * write data from Device instance to Transport instance
-   * @param {Buffer} payload payload buffer
-   */
-  writeToTransport(payload) {
-    const {
-      transport,
-      transport: {
-        state: {
-          identifier: transportIdentifier
-        }
-      },
-      device: {
-        state: {
-          identifier: deviceIdentifier
-        }
-      }
-    } = this.state;
-
-    transport.writeToTransport(transportIdentifier ? deviceIdentifier : null, payload);
+    rebind(
+      this,
+      'ingestIntoDeviceInstance',
+      'setOffline',
+      'setOnline',
+      'writeToTransport'
+    );
   }
 
   /**
@@ -163,7 +149,14 @@ class TransportDevice {
       if (!identifier.equals(deviceIdentifier)) return;
     }
 
-    device.ingestIntoDeviceInstance(payload);
+    device.ingestIntoServiceInstances(payload);
+  }
+
+  /**
+   * set device online status to false
+   */
+  setOffline() {
+    this.state.device.setOffline();
   }
 
   /**
@@ -174,10 +167,25 @@ class TransportDevice {
   }
 
   /**
-   * set device online status to false
+   * write data from Device instance to Transport instance
+   * @param {Buffer} payload payload buffer
    */
-  setOffline() {
-    this.state.device.setOffline();
+  writeToTransport(payload) {
+    const {
+      transport,
+      transport: {
+        state: {
+          identifier: transportIdentifier
+        }
+      },
+      device: {
+        state: {
+          identifier: deviceIdentifier
+        }
+      }
+    } = this.state;
+
+    transport.writeToNetwork(transportIdentifier ? deviceIdentifier : null, payload);
   }
 }
 
@@ -215,7 +223,11 @@ class Transport {
     rebind(
       this,
       'addDevice',
-      'write'
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToTransport'
     );
   }
 
@@ -231,20 +243,20 @@ class Transport {
   }
 
   /**
-   * set the online status of all devices on this transport to true
-   */
-  _setOnline() {
-    this.state.devices.forEach((device) => {
-      device.setOnline();
-    });
-  }
-
-  /**
    * set the online status of all devices on this transport to false
    */
   _setOffline() {
     this.state.devices.forEach((device) => {
       device.setOffline();
+    });
+  }
+
+  /**
+   * set the online status of all devices on this transport to true
+   */
+  _setOnline() {
+    this.state.devices.forEach((device) => {
+      device.setOnline();
     });
   }
 
@@ -294,11 +306,20 @@ class Transport {
   }
 
   /**
+   * remove an instance of TransportDevice from this transport
+   * @param {TransportDevice} transportDevice instance of TransportDevice
+   */
+  removeDevice(transportDevice) {
+    transportDevice.setOffline();
+    this.state.devices.delete(transportDevice);
+  }
+
+  /**
    * write from Transport instance to network – placeholder
    * @param {(Buffer|null)} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    */
-  writeToTransport(identifier, payload) {
+  writeToNetwork(identifier, payload) {
     throw new Error(
       `no write method defined in ${this} to process identifier "${identifier}" and payload "${payload}"`
     );
@@ -368,7 +389,11 @@ class AggregatedTransport {
     rebind(
       this,
       'addDevice',
-      'write'
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToTransport'
     );
   }
 
@@ -384,20 +409,20 @@ class AggregatedTransport {
   }
 
   /**
-   * set the online status of all devices on this transport to true
-   */
-  _setOnline() {
-    this.state.devices.forEach((device) => {
-      device.setOnline();
-    });
-  }
-
-  /**
    * set the online status of all devices on this transport to false
    */
   _setOffline() {
     this.state.devices.forEach((device) => {
       device.setOffline();
+    });
+  }
+
+  /**
+   * set the online status of all devices on this transport to true
+   */
+  _setOnline() {
+    this.state.devices.forEach((device) => {
+      device.setOnline();
     });
   }
 
@@ -441,13 +466,22 @@ class AggregatedTransport {
   }
 
   /**
+   * remove an instance of TransportDevice from this transport
+   * @param {TransportDevice} transportDevice instance of TransportDevice
+   */
+  removeDevice(transportDevice) {
+    transportDevice.setOffline();
+    this.state.devices.delete(transportDevice);
+  }
+
+  /**
    * write from AggregatedTransport instance to network (of all aggregated Transport instances)
    * @param {Buffer|null} identifier identifier buffer
    * @param {Buffer} payload payload buffer
    */
-  writeToTransport(identifier, payload) {
+  writeToNetwork(identifier, payload) {
     this.state.transports.forEach((transport) => {
-      transport.writeToTransport(identifier, payload);
+      transport.writeToNetwork(identifier, payload);
     });
   }
 }
