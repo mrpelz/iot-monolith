@@ -675,11 +675,11 @@ function arbeitszimmerDeckenlampeWithHttpHook(lights) {
 
   const { instance } = lightMatch;
   const url = new URL('https://hermes.net.wurstsalat.cloud/phonebutton.php');
-  url.searchParams.append('change', '1');
-  url.searchParams.append('symbn', name);
+  url.searchParams.set('change', '1');
+  url.searchParams.set('symbn', name);
 
   instance.on('change', () => {
-    url.searchParams.append('state', instance.power ? '1' : '0');
+    url.searchParams.set('state', instance.power ? '1' : '0');
     resolveAlways(get(url));
   });
 }
