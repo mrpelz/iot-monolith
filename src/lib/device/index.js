@@ -49,10 +49,47 @@ class DeviceService {
    * @param {AnyService} service Service instance
    */
   constructor(device, service) {
+    const {
+      state: {
+        services
+      }
+    } = device;
+
+    const {
+      state: {
+        identifier: serviceIdentifier
+      }
+    } = service;
+
+    services.forEach((previousTransportDevice) => {
+      const {
+        state: {
+          service: {
+            state: {
+              identifier: previousServiceIdentifier
+            }
+          }
+        }
+      } = previousTransportDevice;
+
+      if (previousServiceIdentifier.equals(serviceIdentifier)) {
+        throw new Error(
+          `cannot use the same identifier for multiple services (${serviceIdentifier})`
+        );
+      }
+    });
+
     this.state = {
       device,
       service
     };
+  }
+
+  /**
+   * get device online state
+   */
+  get online() {
+    return this.state.device.state.isOnline;
   }
 
   /**
@@ -68,7 +105,6 @@ class DeviceService {
    * @param {Buffer} payload payload buffer
    */
   ingestIntoServiceInstance(payload) {
-    // @todo: implement service
     this.state.service.ingest(payload);
   }
 }
