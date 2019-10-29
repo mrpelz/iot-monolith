@@ -74,6 +74,12 @@ function randomString(length = 2) {
   return randomFillSync(cache).toString('hex');
 }
 
+/**
+ *
+ * @param {Buffer} input input
+ * @param {number} bytes byte count
+ * @returns {number}
+ */
 function readNumber(input, bytes = 1) {
   if (input.length < bytes) {
     throw new Error('number cannot be represented');

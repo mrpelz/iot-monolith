@@ -1,7 +1,9 @@
 const EventEmitter = require('events');
 
 const { Logger } = require('../log');
+const { writeNumber, readNumber } = require('../utils/data');
 const { rebind } = require('../utils/oop');
+const { Timer } = require('../utils/time');
 
 /**
  * @typedef I_AnyTransport
@@ -19,6 +21,19 @@ const { rebind } = require('../utils/oop');
  * @type {unknown}
  */
 
+/**
+ * @typedef Request
+ * @type {Promise<Buffer>}
+ */
+
+ /**
+ * @typedef RequestResolver
+ * @type {{
+ *  resolver: (value: Buffer) => void,
+ *  timer: InstanceType<import('../utils/time')['Timer']>
+ * }}
+ */
+
  /**
  * @typedef DeviceOptions
  * @type {{
@@ -33,55 +48,53 @@ const { rebind } = require('../utils/oop');
  */
 const libName = 'device';
 
+const eventIdentifier = 0x00;
+
 const onlineState = {
   true: Symbol('deviceIsOnline'),
   false: Symbol('deviceIsOffline')
 };
 
+const eventSymbol = Symbol('event');
+
 /**
  * @class DeviceService
  */
-class DeviceService {
+class DeviceService extends EventEmitter {
 
   /**
    * create instance of DeviceService
+   * @param {Buffer} identifier service id
    * @param {Device} device Device instance
    * @param {AnyService} service Service instance
    */
-  constructor(device, service) {
+  constructor(identifier, device, service) {
     const {
       state: {
         services
       }
     } = device;
 
-    const {
-      state: {
-        identifier: serviceIdentifier
-      }
-    } = service;
-
     services.forEach((previousTransportDevice) => {
       const {
         state: {
-          service: {
-            state: {
-              identifier: previousServiceIdentifier
-            }
-          }
+          identifier: previousIdentifier
         }
       } = previousTransportDevice;
 
-      if (previousServiceIdentifier.equals(serviceIdentifier)) {
+      if (previousIdentifier.equals(identifier)) {
         throw new Error(
-          `cannot use the same identifier for multiple services (${serviceIdentifier})`
+          `cannot use the same identifier for multiple services (${identifier})`
         );
       }
     });
 
+    super();
+
     this.state = {
       device,
-      service
+      service,
+      identifier
     };
   }
 
@@ -93,19 +106,20 @@ class DeviceService {
   }
 
   /**
-   * write data from Service instance to Device instance
-   * @param {Buffer} payload payload buffer
+   * issue request on Device instance
+   * @param {Buffer} payload request payload
+   * @returns {Request}
    */
-  writeToDevice(payload) {
-    this.state.device.writeToTransport(payload);
+  request(payload) {
+    return this.state.device.request(this.state.identifier, payload);
   }
 
   /**
-   * write data from Device instance to Service instance
-   * @param {Buffer} payload payload buffer
+   * ingest event from Device instance
+   * @param {Buffer} payload event payload
    */
-  ingestIntoServiceInstance(payload) {
-    this.state.service.ingest(payload);
+  ingestEvent(payload) {
+    this.emit(eventSymbol, payload);
   }
 }
 
@@ -134,6 +148,7 @@ class Device extends EventEmitter {
     this.state = {
       isOnline: /** @type {boolean|null} */ (null),
       services: /** @type {DeviceServices} */ (new Set()),
+      requests: /** @type {Map<Number, RequestResolver>} */ (new Map()),
 
       identifier,
       keepAlive,
@@ -153,27 +168,97 @@ class Device extends EventEmitter {
   }
 
   /**
-   * add an instance of Service to this device
-   * @param {unknown} service instance of Service
-   * @returns {DeviceService} instance of DeviceService
+   * @returns {number} request id
    */
-  addService(service) {
+  get _requestId() {
+    return [1, ...this.state.requests.keys()].reduce((last, id) => {
+      if (id > last) return id;
+      return last;
+    }, 0);
+  }
+
+  /**
+   * @param {Buffer} message
+   */
+  _handleEvent(message) {
     const { services } = this.state;
 
-    const deviceService = new DeviceService(this, service);
+    const matchingService = [...services.values()].find((service) => (
+      message.indexOf(service.state.identifier) === 0)
+    );
+
+    if (!matchingService) return;
+
+    const payload = message.subarray(matchingService.state.identifier.length);
+
+    matchingService.ingestEvent(payload);
+  }
+
+  /**
+   * @param {number} identifier
+   * @param {Buffer} payload
+   */
+  _handleRequest(identifier, payload) {
+    const { requests } = this.state;
+
+    const request = requests.get(identifier);
+    if (!request) return;
+
+    const { resolver, timer } = request;
+
+    requests.delete(identifier);
+
+    timer.stop(true);
+    resolver(payload);
+  }
+
+  /**
+   * write from Device instance to Transport instance
+   * @param {Buffer} requestIdentifier request id
+   * @param {Buffer} serviceIdentifier service id
+   * @param {Buffer} payload payload buffer
+   */
+  _writeToTransport(requestIdentifier, serviceIdentifier, payload) {
+    this.state.transport.writeToTransport(
+      Buffer.concat([
+        requestIdentifier,
+        serviceIdentifier,
+        payload
+      ])
+    );
+  }
+
+  /**
+   * add an instance of Service to this device
+   * @param {Buffer} identifier service identifier
+   * @param {AnyService} service instance of Service
+   * @returns {DeviceService} instance of DeviceService
+   */
+  addService(identifier, service) {
+    const { services } = this.state;
+
+    const deviceService = new DeviceService(identifier, this, service);
     services.add(deviceService);
 
     return deviceService;
   }
 
   /**
-   * ingest data from device into DeviceService instances
-   * @param {Buffer} payload data
+   * match incoming data to running requests on this device instance
+   * @param {Buffer} message data
    */
-  ingestIntoServiceInstances(payload) {
-    this.state.services.forEach((service) => {
-      service.ingestIntoServiceInstance(payload);
-    });
+  matchDataToRequest(message) {
+    if (!message.length) return;
+
+    const requestIdentifier = readNumber(message.subarray(0, 1));
+    const payload = message.subarray(1);
+
+    if (requestIdentifier === eventIdentifier) {
+      this._handleEvent(payload);
+      return;
+    }
+
+    this._handleRequest(requestIdentifier, payload);
   }
 
   /**
@@ -182,6 +267,33 @@ class Device extends EventEmitter {
    */
   removeService(deviceService) {
     this.state.services.delete(deviceService);
+  }
+
+  /**
+   * issue request
+   * @param {Buffer} serviceIdentifier
+   * @param {Buffer} payload
+   * @return {Request}
+   */
+  request(serviceIdentifier, payload) {
+    const { requests, keepAlive } = this.state;
+    const id = this._requestId;
+
+    return new Promise((resolver, reject) => {
+      this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
+      const timer = new Timer(keepAlive);
+
+      timer.on('hit', () => {
+        reject(new Error('request timed out'));
+      });
+
+      timer.start();
+
+      requests.set(id, {
+        resolver,
+        timer
+      });
+    });
   }
 
   /**
@@ -201,17 +313,10 @@ class Device extends EventEmitter {
 
     this.emit(onlineState.true);
   }
-
-  /**
-   * write from Device instance to Transport instance
-   * @param {Buffer} payload payload buffer
-   */
-  writeToTransport(payload) {
-    this.state.transport.writeToTransport(payload);
-  }
 }
 
 module.exports = {
   Device,
-  onlineState
+  onlineState,
+  eventSymbol
 };
