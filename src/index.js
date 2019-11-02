@@ -1,3 +1,6 @@
+// eslint-disable-next-line spaced-comment
+/// <reference path="../types.d.ts" />
+
 Error.stackTraceLimit = 50;
 process.stdin.resume();
 
@@ -63,7 +66,11 @@ function quit(signal) {
   });
 }
 
-function exit(signal = 0) {
+/**
+ *
+ * @param {NodeJS.Signals} signal
+ */
+function exit(signal = 'SIGINT') {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
   process.removeListener('SIGUSR1', exit);
@@ -76,15 +83,15 @@ function exit(signal = 0) {
   });
 }
 
-process.on('uncaughtException', (error = {}) => {
+process.on('uncaughtException', (error) => {
   /* eslint-disable-next-line no-console */
   console.log(`<0>uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('uncaughtException', error.message, error.stack).then(() => {
-    exit(1);
+    exit();
   });
 });
 
-process.on('unhandledRejection', (error = {}) => {
+process.on('unhandledRejection', (error) => {
   /* eslint-disable-next-line no-console */
   console.log(`<0>unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
   telegramRoot('unhandledRejection', error.message, error.stack);
