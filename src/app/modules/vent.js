@@ -141,6 +141,7 @@ async function createHysteresis(
       if (message) {
         await resolveAlways(message.delete());
       }
+      // eslint-disable-next-line require-atomic-updates
       message = await resolveAlways(chat.addMessage({
         text: fullVentMessage
       }));
@@ -155,6 +156,7 @@ async function createHysteresis(
       if (message) {
         await resolveAlways(message.delete());
       }
+      // eslint-disable-next-line require-atomic-updates
       message = await resolveAlways(chat.addMessage({
         text: resetVentMessage
       }));
