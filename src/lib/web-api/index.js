@@ -99,8 +99,8 @@ function findShowSubGroup(elements) {
   elements.forEach((element) => {
     const {
       attributes: {
-        group: primary,
-        groupLabel: secondary
+        group: primary = null,
+        groupLabel: secondary = null
       } = {}
     } = element;
 
@@ -119,8 +119,8 @@ function findShowSubGroup(elements) {
     const {
       attributes,
       attributes: {
-        group: primary,
-        groupLabel: secondary
+        group: primary = null,
+        groupLabel: secondary = null
       } = {}
     } = element;
 
@@ -147,9 +147,9 @@ function filterElementAttributes(input) {
 function getHierarchy(
   elements = [],
   {
-    sections,
-    categories,
-    groups
+    sections = [],
+    categories = [],
+    groups = []
   } = {}
 ) {
   const sectionMap = sections.map((sectionGroup) => {
