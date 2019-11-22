@@ -50,7 +50,7 @@
     "wannenbadLamps": [[1, null], [null, 1]]
   },
   "sevenSegment": {
-    "disable": true,
+    "disable": false,
     "name": "sevenSegment",
     "host": "10.97.0.227",
     "port": 5045
