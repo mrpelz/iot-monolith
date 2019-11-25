@@ -100,7 +100,7 @@ async function createClock(scheduler, sevenSegment) {
     }
 
     _setTime() {
-      if (!this._active) {
+      if (!this._active || !instance._reliableSocket.state.isConnected) {
         return;
       }
 
