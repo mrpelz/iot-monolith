@@ -45,12 +45,9 @@ class TCPTransport extends Transport {
 
     this.log.friendlyName(`${host}:${port}`);
 
-    this.state = {
-      ...super.state,
-
+    this.tcpState = {
       connectionTime: 0,
       currentLength: 0,
-      isConnected: /** @type {boolean|null} */ (null),
       shouldBeConnected: false,
 
       host,
@@ -70,7 +67,7 @@ class TCPTransport extends Transport {
       'disconnect',
       'reconnect',
       'removeDevice',
-      'writeToTransport',
+      'writeToNetwork',
       '_connect',
       '_handleReadable',
       '_onConnection',
@@ -79,7 +76,7 @@ class TCPTransport extends Transport {
 
     setInterval(this._connect, Math.round(keepAlive / 2));
 
-    this.state.messageTimer.on('hit', this._onDisconnection);
+    this.tcpState.messageTimer.on('hit', this._onDisconnection);
   }
 
   /**
@@ -87,9 +84,12 @@ class TCPTransport extends Transport {
    */
   _connect() {
     const {
-      isConnected,
       log,
       shouldBeConnected
+    } = this.tcpState;
+
+    const {
+      isConnected
     } = this.state;
 
     log.debug('connection/disconnection handling');
@@ -116,7 +116,7 @@ class TCPTransport extends Transport {
    * destroy old socket and remove listeners
    */
   _nukeSocket() {
-    const { socket } = this.state;
+    const { socket } = this.tcpState;
     if (!socket) return;
 
     socket.removeListener('readable', this._handleReadable);
@@ -128,7 +128,7 @@ class TCPTransport extends Transport {
     socket.end();
     socket.destroy();
 
-    this.state.socket = null;
+    this.tcpState.socket = null;
   }
 
   /**
@@ -136,22 +136,23 @@ class TCPTransport extends Transport {
    */
   _onConnection() {
     const {
-      isConnected,
       log
+    } = this.tcpState;
+
+    const {
+      isConnected
     } = this.state;
 
     if (isConnected) return;
 
-    this.state.connectionTime = Date.now();
-
-    this.state.isConnected = true;
+    this.tcpState.connectionTime = Date.now();
 
     log.info({
       head: 'is connected',
       value: true
     });
 
-    this._setOnline();
+    this._setConnected(true);
   }
 
   /**
@@ -159,9 +160,12 @@ class TCPTransport extends Transport {
    */
   _onDisconnection() {
     const {
-      isConnected,
       log,
       messageTimer,
+    } = this.tcpState;
+
+    const {
+      isConnected
     } = this.state;
 
     if (!isConnected) return;
@@ -170,15 +174,14 @@ class TCPTransport extends Transport {
 
     this._nukeSocket();
 
-    this.state.currentLength = 0;
-    this.state.isConnected = false;
+    this.tcpState.currentLength = 0;
 
     log.info({
       head: 'is connected',
       value: false
     });
 
-    this._setOffline();
+    this._setConnected(false);
   }
 
   /**
@@ -192,13 +195,13 @@ class TCPTransport extends Transport {
       log,
       messageTimer,
       socket
-    } = this.state;
+    } = this.tcpState;
 
     if (currentLength) {
       const payload = socket.read(currentLength);
       if (!payload) return false;
 
-      this.state.currentLength = 0;
+      this.tcpState.currentLength = 0;
 
       messageTimer.stop();
 
@@ -215,15 +218,15 @@ class TCPTransport extends Transport {
     const length = socket.read(lengthPreamble);
     if (!length) return false;
 
-    this.state.currentLength = readNumber(length, lengthPreamble);
+    this.tcpState.currentLength = readNumber(length, lengthPreamble);
 
     messageTimer.start();
 
-    if (this.state.currentLength > 5) {
-      log.error(`unusual large message: ${this.state.currentLength} bytes`);
+    if (this.tcpState.currentLength > 5) {
+      log.error(`unusual large message: ${this.tcpState.currentLength} bytes`);
     }
 
-    log.debug(`receive ${this.state.currentLength} byte payload`);
+    log.debug(`receive ${this.tcpState.currentLength} byte payload`);
 
     return true;
   }
@@ -236,7 +239,7 @@ class TCPTransport extends Transport {
       host,
       keepAlive,
       port
-    } = this.state;
+    } = this.tcpState;
 
     const socket = new Socket();
     socket.connect({ host, port });
@@ -254,18 +257,18 @@ class TCPTransport extends Transport {
     socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
 
-    this.state.socket = socket;
+    this.tcpState.socket = socket;
   }
 
   /**
    * connect TCPTransport instance
    */
   connect() {
-    this.state.shouldBeConnected = true;
+    this.tcpState.shouldBeConnected = true;
 
     this._connect();
 
-    this.state.log.info({
+    this.tcpState.log.info({
       head: 'set connect',
       value: true
     });
@@ -275,11 +278,11 @@ class TCPTransport extends Transport {
    * disconnect TCPTransport instance
    */
   disconnect() {
-    this.state.shouldBeConnected = false;
+    this.tcpState.shouldBeConnected = false;
 
     this._connect();
 
-    this.state.log.info({
+    this.tcpState.log.info({
       head: 'set connect',
       value: false
     });
@@ -300,9 +303,12 @@ class TCPTransport extends Transport {
   writeToNetwork(_, payload) {
     const {
       lengthPreamble,
-      isConnected,
       socket,
       log
+    } = this.tcpState;
+
+    const {
+      isConnected
     } = this.state;
 
     if (!isConnected) {

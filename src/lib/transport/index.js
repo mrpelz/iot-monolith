@@ -115,8 +115,6 @@ class TransportDevice {
     rebind(
       this,
       'ingestIntoDeviceInstance',
-      'setOffline',
-      'setOnline',
       'writeToTransport'
     );
   }
@@ -150,20 +148,6 @@ class TransportDevice {
     }
 
     device.matchDataToRequest(payload);
-  }
-
-  /**
-   * set device online status to false
-   */
-  setOffline() {
-    this.state.device.setOffline();
-  }
-
-  /**
-   * set device online status to true
-   */
-  setOnline() {
-    this.state.device.setOnline();
   }
 
   /**
@@ -216,6 +200,7 @@ class Transport {
     this.state = {
       devices,
       identifier,
+      isConnected: /** @type {boolean|null} */ (null),
       log: this.log.withPrefix(libName),
       singleDevice: Boolean(singleDevice)
     };
@@ -227,7 +212,7 @@ class Transport {
       'disconnect',
       'reconnect',
       'removeDevice',
-      'writeToTransport'
+      'writeToNetwork'
     );
   }
 
@@ -243,20 +228,14 @@ class Transport {
   }
 
   /**
-   * set the online status of all devices on this transport to false
+   * set the online status of all devices on this transport
+   * @param {boolean} online
    */
-  _setOffline() {
-    this.state.devices.forEach((device) => {
-      device.setOffline();
-    });
-  }
+  _setConnected(online) {
+    this.state.isConnected = online;
 
-  /**
-   * set the online status of all devices on this transport to true
-   */
-  _setOnline() {
     this.state.devices.forEach((device) => {
-      device.setOnline();
+      device.state.device.onOnlineChange();
     });
   }
 
@@ -310,7 +289,7 @@ class Transport {
    * @param {TransportDevice} transportDevice instance of TransportDevice
    */
   removeDevice(transportDevice) {
-    transportDevice.setOffline();
+    transportDevice.state.device.transport = null;
     this.state.devices.delete(transportDevice);
   }
 
@@ -383,6 +362,7 @@ class AggregatedTransport {
       ),
       devices,
       identifier,
+      isConnected: /** @type {boolean|null} */ (null),
       log: this.log.withPrefix(libName)
     };
 
@@ -409,20 +389,14 @@ class AggregatedTransport {
   }
 
   /**
-   * set the online status of all devices on this transport to false
+   * set the online status of all devices on this transport
+   * @param {boolean} online
    */
-  _setOffline() {
-    this.state.devices.forEach((device) => {
-      device.setOffline();
-    });
-  }
+  _setOnline(online) {
+    this.state.isConnected = online;
 
-  /**
-   * set the online status of all devices on this transport to true
-   */
-  _setOnline() {
     this.state.devices.forEach((device) => {
-      device.setOnline();
+      device.state.device.onOnlineChange();
     });
   }
 
@@ -470,7 +444,7 @@ class AggregatedTransport {
    * @param {TransportDevice} transportDevice instance of TransportDevice
    */
   removeDevice(transportDevice) {
-    transportDevice.setOffline();
+    transportDevice.state.device.transport = null;
     this.state.devices.delete(transportDevice);
   }
 
@@ -488,5 +462,6 @@ class AggregatedTransport {
 
 module.exports = {
   AggregatedTransport,
-  Transport
+  Transport,
+  TransportDevice
 };

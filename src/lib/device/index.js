@@ -10,15 +10,14 @@ const { Timer } = require('../utils/time');
  * @type {import('../transport').AnyTransport}
  */
 
-/**
- * @typedef DeviceServices
- * @type {Set<DeviceService>}
+ /**
+ * @typedef I_TransportDevice
+ * @type {InstanceType<import('../transport')['TransportDevice']>}
  */
 
- // @todo: implement service
- /**
- * @typedef AnyService
- * @type {unknown}
+/**
+ * @typedef DeviceServices
+ * @type {Set<Service>}
  */
 
 /**
@@ -37,9 +36,9 @@ const { Timer } = require('../utils/time');
  /**
  * @typedef DeviceOptions
  * @type {{
- *   transport: I_AnyTransport,
- *   identifier?: (Buffer|null),
- *   keepAlive?: number
+ *  transport: I_AnyTransport,
+ *  identifier?: (Buffer|null),
+ *  keepAlive?: number
  * }}
  */
 
@@ -58,29 +57,28 @@ const onlineState = {
 const eventSymbol = Symbol('event');
 
 /**
- * @class DeviceService
+ * @class Service
  */
-class DeviceService extends EventEmitter {
+class Service extends EventEmitter {
 
   /**
-   * create instance of DeviceService
+   * create instance of Service
    * @param {Buffer} identifier service id
    * @param {Device} device Device instance
-   * @param {AnyService} service Service instance
    */
-  constructor(identifier, device, service) {
+  constructor(identifier, device) {
     const {
       state: {
         services
       }
     } = device;
 
-    services.forEach((previousTransportDevice) => {
+    services.forEach((previousDeviceService) => {
       const {
         state: {
           identifier: previousIdentifier
         }
-      } = previousTransportDevice;
+      } = previousDeviceService;
 
       if (previousIdentifier.equals(identifier)) {
         throw new Error(
@@ -93,7 +91,6 @@ class DeviceService extends EventEmitter {
 
     this.state = {
       device,
-      service,
       identifier
     };
   }
@@ -102,7 +99,20 @@ class DeviceService extends EventEmitter {
    * get device online state
    */
   get online() {
-    return this.state.device.state.isOnline;
+    return this.state.device.online;
+  }
+
+  /**
+   * ingest event from Device instance
+   * @param {Buffer} payload event payload
+   */
+  ingestEvent(payload) {
+    const serviceIdentifier = payload.subarray(0, this.state.identifier.length);
+    if (!serviceIdentifier.equals(this.state.identifier)) return;
+
+    const eventData = payload.subarray(this.state.identifier.length);
+
+    this.emit(eventSymbol, eventData);
   }
 
   /**
@@ -112,14 +122,6 @@ class DeviceService extends EventEmitter {
    */
   request(payload) {
     return this.state.device.request(this.state.identifier, payload);
-  }
-
-  /**
-   * ingest event from Device instance
-   * @param {Buffer} payload event payload
-   */
-  ingestEvent(payload) {
-    this.emit(eventSymbol, payload);
   }
 }
 
@@ -134,9 +136,9 @@ class Device extends EventEmitter {
    */
   constructor(options) {
     const {
+      transport,
       identifier,
-      keepAlive = 2000,
-      transport
+      keepAlive = 2000
     } = options;
 
     super();
@@ -146,24 +148,25 @@ class Device extends EventEmitter {
     this.log.friendlyName('base device');
 
     this.state = {
-      isOnline: /** @type {boolean|null} */ (null),
+      // for now, always online because device-level keep-alive messages are not yet implemented
+      isOnline: /** @type {boolean|null} */ (true),
       services: /** @type {DeviceServices} */ (new Set()),
       requests: /** @type {Map<Number, RequestResolver>} */ (new Map()),
 
       identifier,
       keepAlive,
-      log: this.log.withPrefix(libName),
-      transport: transport.addDevice(this)
+      log: this.log.withPrefix(libName)
     };
+
+    this.transport = /** @type {I_TransportDevice|null} */ (transport.addDevice(this));
 
     rebind(
       this,
-      'addService',
-      'ingestIntoServiceInstances',
+      'getService',
+      'matchDataToRequest',
+      'onOnlineChange',
       'removeService',
-      'setOffline',
-      'setOnline',
-      'writeToTransport'
+      'request'
     );
   }
 
@@ -177,21 +180,23 @@ class Device extends EventEmitter {
     }, 0);
   }
 
+  get online() {
+    return Boolean(
+      this.transport
+      && this.transport.state.transport.state.isConnected
+      && this.state.isOnline
+    );
+  }
+
   /**
-   * @param {Buffer} message
+   * @param {Buffer} payload
    */
-  _handleEvent(message) {
+  _handleEvent(payload) {
     const { services } = this.state;
 
-    const matchingService = [...services.values()].find((service) => (
-      message.indexOf(service.state.identifier) === 0)
-    );
-
-    if (!matchingService) return;
-
-    const payload = message.subarray(matchingService.state.identifier.length);
-
-    matchingService.ingestEvent(payload);
+    services.forEach((service) => {
+      service.ingestEvent(payload);
+    });
   }
 
   /**
@@ -219,7 +224,7 @@ class Device extends EventEmitter {
    * @param {Buffer} payload payload buffer
    */
   _writeToTransport(requestIdentifier, serviceIdentifier, payload) {
-    this.state.transport.writeToTransport(
+    this.transport.writeToTransport(
       Buffer.concat([
         requestIdentifier,
         serviceIdentifier,
@@ -231,16 +236,15 @@ class Device extends EventEmitter {
   /**
    * add an instance of Service to this device
    * @param {Buffer} identifier service identifier
-   * @param {AnyService} service instance of Service
-   * @returns {DeviceService} instance of DeviceService
+   * @returns {Service} instance of Service
    */
-  addService(identifier, service) {
+  getService(identifier) {
     const { services } = this.state;
 
-    const deviceService = new DeviceService(identifier, this, service);
-    services.add(deviceService);
+    const service = new Service(identifier, this);
+    services.add(service);
 
-    return deviceService;
+    return service;
   }
 
   /**
@@ -262,11 +266,18 @@ class Device extends EventEmitter {
   }
 
   /**
-   * remove an instance of Service from this device
-   * @param {DeviceService} deviceService instance of DeviceService
+   * handle change in Transport online state
    */
-  removeService(deviceService) {
-    this.state.services.delete(deviceService);
+  onOnlineChange() {
+    this.emit(this.online ? onlineState.true : onlineState.false);
+  }
+
+  /**
+   * remove an instance of Service from this device
+   * @param {Service} service instance of Service
+   */
+  removeService(service) {
+    this.state.services.delete(service);
   }
 
   /**
@@ -294,24 +305,6 @@ class Device extends EventEmitter {
         timer
       });
     });
-  }
-
-  /**
-   * set device online status to false
-   */
-  setOffline() {
-    this.state.isOnline = false;
-
-    this.emit(onlineState.false);
-  }
-
-  /**
-   * set device online status to true
-   */
-  setOnline() {
-    this.state.isOnline = true;
-
-    this.emit(onlineState.true);
   }
 }
 
