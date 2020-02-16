@@ -20,6 +20,10 @@
     "id": 628217
   },
   {
+    "name": "duschbadButtonToilet",
+    "id": 903546
+  },
+  {
     "name": "esszimmerButton1",
     "id": 823914
   },
@@ -78,6 +82,10 @@
   {
     "name": "wannenbadWallSink",
     "id": 25770
+  },
+  {
+    "name": "wannenbadButtonToilet",
+    "id": 1043626
   },
   {
     "name": "wohnzimmerButton1",

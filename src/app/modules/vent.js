@@ -3,7 +3,7 @@ const { Vent } = require('../../lib/vent');
 const { resolveAlways } = require('../../lib/utils/oop');
 const { Hysteresis } = require('../../lib/utils/logic');
 const { parseString } = require('../../lib/utils/string');
-const { every, RecurringMoment } = require('../../lib/utils/time');
+const { every, RecurringMoment, Timer } = require('../../lib/utils/time');
 
 const { setUpConnectionHmi } = require('../utils/hmi');
 
@@ -134,7 +134,7 @@ async function createHysteresis(
   let message = null;
 
   hysteresis.on('inRange', () => {
-    ventInstance.setTarget(ventInstance.maxTarget, 1);
+    ventInstance.setTarget(ventInstance.maxTarget, 2);
     resolveAlways(ventInstance.commitTarget());
 
     (async () => {
@@ -149,7 +149,7 @@ async function createHysteresis(
   });
 
   hysteresis.on('outOfRange', () => {
-    ventInstance.unsetTarget(1);
+    ventInstance.unsetTarget(2);
     resolveAlways(ventInstance.commitTarget());
 
     (async () => {
@@ -170,6 +170,72 @@ async function createHysteresis(
     resolveAlways(sensorInstance.getMetric(metric)).then((value) => {
       if (value === null) return;
       hysteresis.feed(value);
+    });
+  });
+}
+
+async function kackButtons(
+  vent,
+  rfSwitches,
+  telegram,
+  fullVentMessage,
+  resetVentMessage,
+  timeout
+) {
+  if (!vent) return;
+
+  const rfSwitchInstances = rfSwitches.filter(({ name }) => {
+    return [
+      'duschbadButtonToilet',
+      'wannenbadButtonToilet'
+    ].includes(name);
+  }).map(({ instance }) => {
+    return instance;
+  });
+
+  if (!rfSwitchInstances.length) return;
+
+  const timer = new Timer(timeout);
+
+  const { instance: ventInstance } = vent;
+
+  const { client: awaitingClient, chatIds } = telegram;
+  const client = await awaitingClient; // wait for bot instance is available
+  const chat = await client.addChat(chatIds.iot);
+
+  let message = null;
+
+  timer.on('hit', () => {
+    ventInstance.unsetTarget(1);
+    resolveAlways(ventInstance.commitTarget());
+
+    (async () => {
+      if (message) {
+        await resolveAlways(message.delete());
+      }
+      // eslint-disable-next-line require-atomic-updates
+      message = await resolveAlways(chat.addMessage({
+        text: resetVentMessage
+      }));
+    })();
+  });
+
+  rfSwitchInstances.forEach((rfSwitchInstance) => {
+    rfSwitchInstance.on(4, () => {
+      ventInstance.setTarget(ventInstance.maxTarget, 1);
+      resolveAlways(ventInstance.commitTarget());
+
+      (async () => {
+        if (message) {
+          await resolveAlways(message.delete());
+        }
+        // eslint-disable-next-line require-atomic-updates
+        message = await resolveAlways(chat.addMessage({
+          text: fullVentMessage
+        }));
+      })();
+
+      timer.start();
     });
   });
 }
@@ -325,11 +391,18 @@ function ventHmi(vent, hmiServer) {
 function manage(config, data) {
   const {
     vent: {
-      fullVentAboveHumidity,
-      fullVentMessage,
-      resetVentBelowHumidity,
-      resetVentMessage,
-      ventHumidityControlUpdate
+      humidityAutomation: {
+        fullVentAbove: humidityFullVentAbove,
+        fullVentMessage: humidityFullVentMessage,
+        resetVentBelow: humidityResetVentBelow,
+        resetVentMessage: humidityResetVentMessage,
+        ventControlUpdate: humidityVentControlUpdate
+      },
+      kackAutomation: {
+        fullVentMessage: kackFullVentMessage,
+        resetVentMessage: kackResetVentMessage,
+        timeout: kackTimeout
+      }
     }
   } = config;
 
@@ -337,6 +410,7 @@ function manage(config, data) {
     hmiServer,
     httpHookServer,
     prometheus,
+    rfSwitches,
     roomSensors,
     scheduler,
     telegram,
@@ -350,12 +424,20 @@ function manage(config, data) {
     scheduler,
     vent,
     roomSensors,
-    fullVentAboveHumidity,
-    resetVentBelowHumidity,
-    ventHumidityControlUpdate,
+    humidityFullVentAbove,
+    humidityResetVentBelow,
+    humidityVentControlUpdate,
     telegram,
-    fullVentMessage,
-    resetVentMessage
+    humidityFullVentMessage,
+    humidityResetVentMessage
+  );
+  kackButtons(
+    vent,
+    rfSwitches,
+    telegram,
+    kackFullVentMessage,
+    kackResetVentMessage,
+    kackTimeout
   );
   ventToPrometheus(vent, prometheus);
   ventHmi(vent, hmiServer);

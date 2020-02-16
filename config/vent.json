@@ -4,11 +4,18 @@
   "host": "10.97.0.225",
   "port": 5045,
   "setDefaultTimeout": 7200000,
-  "fullVentAboveHumidity": 40,
-  "resetVentBelowHumidity": 35,
-  "fullVentMessage": "Luftfeuchtigkeit zu hoch, Lüftung 100% 🚿",
-  "resetVentMessage": "Luftfeuchtigkeit gesunken, Lüftung reset 🚿",
-  "ventHumidityControlUpdate": "every:10:second",
+  "humidityAutomation": {
+    "fullVentAbove": 40,
+    "resetVentBelow": 35,
+    "fullVentMessage": "Luftfeuchtigkeit zu hoch, Lüftung 100% 🚿",
+    "resetVentMessage": "Luftfeuchtigkeit gesunken, Lüftung reset 🚿",
+    "ventControlUpdate": "every:10:second"
+  },
+  "kackAutomation": {
+    "fullVentMessage": "Kack-Button ausgelöst, Lüftung 100% 💩",
+    "resetVentMessage": "Kacke verflogen, Lüftung reset 💩",
+    "timeout": 1800000
+  },
   "attributes": {
     "hmi": {
       "section": "global"

@@ -13,7 +13,7 @@ const libName = 'vent';
 const minTarget = 0;
 const maxTarget = 7;
 
-const userPriority = 2;
+const userPriority = 3;
 
 const stateRemap = new Remap([{
   switch: [0, 1024],
@@ -155,6 +155,9 @@ class Vent extends MessageClient {
     resolveAlways(this.commitTarget());
   }
 
+  /**
+   * @param {'actualIn'| 'actualOut'} direction
+   */
   _getActual(direction) {
     const {
       log,
