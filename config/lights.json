@@ -14,9 +14,6 @@
         "name": "abstellraumDeckenlampe",
         "useChannel": 0,
         "attributes": {
-          "light": {
-            "timeout": 420000
-          },
           "hmi": {
             "group": "ceiling-lamp",
             "section": "abstellraum"
@@ -40,9 +37,6 @@
         "name": "arbeitszimmerDeckenlampe",
         "useChannel": 0,
         "attributes": {
-          "light": {
-            "timeout": 420000
-          },
           "hmi": {
             "group": "ceiling-lamp",
             "section": "arbeitszimmer"

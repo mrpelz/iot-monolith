@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 
 const { HmiElement } = require('../../lib/hmi');
 const { SevenSegment } = require('../../lib/seven-segment');
@@ -107,9 +107,9 @@ async function createClock(scheduler, sevenSegment) {
       const now = new Date();
       const timeString = `${
         now.getHours().toString().padStart(2, '0')
-      }${
+        }${
         now.getMinutes().toString().padStart(2, '0')
-      }`;
+        }`;
 
       resolveAlways(instance.setString(timeString));
     }

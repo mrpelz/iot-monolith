@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 
 const { Base } = require('../base');
 const { PersistentSocket } = require('../tcp');

@@ -86,6 +86,13 @@ async function entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMe
   });
 }
 
+function securityLightKill(security, allLightsGroup) {
+  security.on('change', () => {
+    if (!security.armed) return;
+    allLightsGroup.setPower(false);
+  });
+}
+
 function securityToPrometheus(security, prometheus) {
   prometheus.metric(
     'security_state',
@@ -110,7 +117,7 @@ function securityToPrometheus(security, prometheus) {
   );
 }
 
-function securityHmi(instance, hmiServer) {
+function securityHmi(security, hmiServer) {
   const addHmi = (level) => {
     const hmi = new HmiElement({
       name: `security${level}`,
@@ -126,10 +133,10 @@ function securityHmi(instance, hmiServer) {
       server: hmiServer,
       getter: () => {
         return Promise.resolve((() => {
-          if (instance.level === level) {
-            if (instance.armDelay) return 'delayed';
-            if (instance.triggered) return 'triggered';
-            if (instance.armed) return 'on';
+          if (security.level === level) {
+            if (security.armDelay) return 'delayed';
+            if (security.triggered) return 'triggered';
+            if (security.armed) return 'on';
           }
 
           return 'off';
@@ -138,12 +145,12 @@ function securityHmi(instance, hmiServer) {
       settable: true
     });
 
-    instance.on('change', () => {
+    security.on('change', () => {
       hmi.update();
     });
 
     hmi.on('set', () => {
-      instance.toggle(level);
+      security.toggle(level);
     });
   };
 
@@ -160,6 +167,7 @@ function manage(config, data) {
   } = config;
 
   const {
+    allLightsGroup,
     doorSensors,
     hmiServer,
     prometheus,
@@ -173,6 +181,7 @@ function manage(config, data) {
   if (!entryDoor) return;
 
   entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage);
+  securityLightKill(security, allLightsGroup);
   securityToPrometheus(security, prometheus);
   securityHmi(security, hmiServer);
 }

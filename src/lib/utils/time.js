@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { rebind } = require('./oop');
 const { remainder } = require('./math');
 const { isObject } = require('./structures');

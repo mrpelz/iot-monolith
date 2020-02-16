@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 
 const { rebind } = require('../utils/oop');
 const { calc, epochs } = require('../utils/time');

@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 
 const { Logger } = require('../log');
 const { writeNumber, readNumber } = require('../utils/data');
@@ -10,10 +10,10 @@ const { Timer } = require('../utils/time');
  * @type {import('../transport').AnyTransport}
  */
 
- /**
+/**
  * @typedef I_TransportDevice
  * @type {InstanceType<import('../transport')['TransportDevice']>}
- */
+*/
 
 /**
  * @typedef DeviceServices
@@ -25,22 +25,22 @@ const { Timer } = require('../utils/time');
  * @type {Promise<Buffer>}
  */
 
- /**
+/**
  * @typedef RequestResolver
  * @type {{
  *  resolver: (value: Buffer) => void,
  *  timer: InstanceType<import('../utils/time')['Timer']>
  * }}
- */
+*/
 
- /**
+/**
  * @typedef DeviceOptions
  * @type {{
  *  transport: I_AnyTransport,
  *  identifier?: (Buffer|null),
  *  keepAlive?: number
  * }}
- */
+*/
 
 /**
  * @type {string}

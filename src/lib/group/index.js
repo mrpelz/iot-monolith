@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { Relay } = require('../relay');
 const { LedLight } = require('../led');
 const { DoorSensor } = require('../door-sensor');

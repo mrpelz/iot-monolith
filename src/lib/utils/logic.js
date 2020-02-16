@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { rebind } = require('./oop');
 const { maxNumber } = require('./math');
 
@@ -74,10 +74,10 @@ class Hysteresis extends EventEmitter {
     if (typeof input !== 'number') return null;
 
     const inRange = input > this.inRangeAbove
-    || (
-      this.inRange
-      && input > this.outOfRangeBelow
-    );
+      || (
+        this.inRange
+        && input > this.outOfRangeBelow
+      );
 
     if (inRange === this.inRange) return this.inRange;
 

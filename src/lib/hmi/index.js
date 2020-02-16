@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { rebind, resolveAlways } = require('../utils/oop');
 const { Logger } = require('../log');
 

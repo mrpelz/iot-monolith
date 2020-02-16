@@ -6,9 +6,7 @@ const { Timer } = require('../../lib/utils/time');
 
 const {
   coupleDoorSensorToLight,
-  coupleRfSwitchToLight,
-  coupleRfToggleToLight,
-  coupleRoomSensorToLight
+  coupleRfSwitchToLight
 } = require('../utils/lights');
 const { setUpLightTimerHmi } = require('../utils/hmi');
 
@@ -221,14 +219,14 @@ function groupWithDoorSensor(lightGroups, doorSensors) {
 function groupWithRfSwitch(lightGroups, rfSwitches) {
   //  DUSCHBAD
   //    wall switches
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'duschbadLamps',
     'duschbadWallDoor',
     1
   );
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'duschbadLamps',
@@ -237,7 +235,7 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   );
 
   //    buttons
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'duschbadLamps',
@@ -311,14 +309,14 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
 
   //  WANNENBAD
   //    wall switches
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'wannenbadLamps',
     'wannenbadWallDoor',
     1
   );
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lightGroups,
     rfSwitches,
     'wannenbadLamps',
@@ -335,22 +333,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'wohnzimmerRelated',
     'wohnzimmerButton1',
     4
-  );
-}
-
-function groupWithRoomSensor(lightGroups, roomSensors) {
-  coupleRoomSensorToLight(
-    lightGroups,
-    roomSensors,
-    'kuecheLed',
-    'kueche'
-  );
-
-  coupleRoomSensorToLight(
-    lightGroups,
-    roomSensors,
-    'schlafzimmerLamps',
-    'schlafzimmer'
   );
 }
 
@@ -463,15 +445,13 @@ function manage(config, data) {
     httpHookServer,
     lightGroups,
     metricAggregates,
-    rfSwitches,
-    roomSensors
+    rfSwitches
   } = data;
 
   manageLightGroups(lightGroups, httpHookServer, lightGroupIntercepts, metricAggregates);
   manageAllLightsGroup(allLightsGroup, httpHookServer);
   groupWithRfSwitch(lightGroups, rfSwitches);
   groupWithDoorSensor(lightGroups, doorSensors);
-  groupWithRoomSensor(lightGroups, roomSensors);
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
 }

@@ -13,9 +13,7 @@ const {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
-  coupleRfSwitchToLightIncrease,
-  coupleRfToggleToLight,
-  coupleRoomSensorToLight
+  coupleRfSwitchToLightIncrease
 } = require('../utils/lights');
 
 const { setUpConnectionHmi, setUpLightTimerHmi } = require('../utils/hmi');
@@ -437,7 +435,7 @@ function lightWithDoorSensor(lights, doorSensors) {
 function lightWithRfSwitch(lights, rfSwitches) {
   //  ABSTELLRAUM
   //    wall switches
-  coupleRfToggleToLight(
+  coupleRfSwitchToLight(
     lights,
     rfSwitches,
     'abstellraumDeckenlampe',
@@ -495,14 +493,14 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'esszimmerFloodlight',
     'esszimmerMulti1',
     3
-    );
-    coupleRfSwitchToLight(
-      lights,
-      rfSwitches,
-      'esszimmerStehlampe',
-      'esszimmerMulti1',
-      4
-    );
+  );
+  coupleRfSwitchToLight(
+    lights,
+    rfSwitches,
+    'esszimmerStehlampe',
+    'esszimmerMulti1',
+    4
+  );
 
 
   //  KUECHE
@@ -627,14 +625,14 @@ function lightWithRfSwitch(lights, rfSwitches) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'wohnzimmerKallaxLedWWhite',
+    'esszimmerFloodlight',
     'wohnzimmerMulti1',
     2
   );
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'esszimmerFloodlight',
+    'wohnzimmerKallaxLedWWhite',
     'wohnzimmerMulti1',
     3
   );
@@ -644,22 +642,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'wohnzimmerStehlampe',
     'wohnzimmerMulti1',
     4
-  );
-}
-
-function lightWithRoomSensor(lights, roomSensors) {
-  coupleRoomSensorToLight(
-    lights,
-    roomSensors,
-    'abstellraumDeckenlampe',
-    'abstellraum'
-  );
-
-  coupleRoomSensorToLight(
-    lights,
-    roomSensors,
-    'arbeitszimmerDeckenlampe',
-    'arbeitszimmer'
   );
 }
 
@@ -911,8 +893,7 @@ function manage(_, data) {
     lightDrivers,
     lights,
     prometheus,
-    rfSwitches,
-    roomSensors
+    rfSwitches
   } = data;
 
   manageLights(lightDrivers, httpHookServer);
@@ -921,7 +902,6 @@ function manage(_, data) {
 
   lightWithRfSwitch(lights, rfSwitches);
   lightWithDoorSensor(lights, doorSensors);
-  lightWithRoomSensor(lights, roomSensors);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
 }
 

@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { Logger } = require('../log');
 const { Timer } = require('../utils/time');
 

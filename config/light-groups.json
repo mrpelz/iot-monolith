@@ -7,10 +7,6 @@
       "duschbadLampe"
     ],
     "attributes": {
-      "light": {
-        "timeout": 900000,
-        "initialTimer": true
-      },
       "hmi": {
         "group": "lamp-group",
         "groupLabel": "group",
@@ -49,9 +45,6 @@
       "kuecheLedRightWWhite"
     ],
     "attributes": {
-      "light": {
-        "timeout": 420000
-      },
       "hmi": {
         "group": "led",
         "sortGroup": "_top",
@@ -73,9 +66,6 @@
       "schlafzimmerBedLedNightstandRight"
     ],
     "attributes": {
-      "light": {
-        "timeout": 420000
-      },
       "hmi": {
         "group": "§{all} §{lamps}",
         "section": "schlafzimmer"
@@ -89,10 +79,6 @@
       "wannenbadLampe"
     ],
     "attributes": {
-      "light": {
-        "timeout": 900000,
-        "initialTimer": true
-      },
       "hmi": {
         "group": "lamp-group",
         "groupLabel": "group",
@@ -112,10 +98,10 @@
     "attributes": {
       "hmi": {
         "group": "led-all",
-          "groupLabel": "led",
-          "section": "wohnzimmer",
-          "sortGroup": "all",
-          "subGroup": "all"
+        "groupLabel": "led",
+        "section": "wohnzimmer",
+        "sortGroup": "all",
+        "subGroup": "all"
       }
     }
   },

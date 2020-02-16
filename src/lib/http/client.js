@@ -1,4 +1,4 @@
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 const { request: httpRequest } = require('http');
 const { request: httpsRequest } = require('https');
 const { URL } = require('url');

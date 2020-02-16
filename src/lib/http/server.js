@@ -1,6 +1,6 @@
 const { Server } = require('http');
 const { URL } = require('url');
-const EventEmitter = require('events');
+const { EventEmitter } = require('events');
 
 const { rebind } = require('../utils/oop');
 const { emptyBuffer } = require('../utils/data');
