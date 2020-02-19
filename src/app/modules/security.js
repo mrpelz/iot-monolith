@@ -20,13 +20,15 @@ function addPersistenceHandler(instance, securityDb) {
 
   const handleChange = () => {
     securityDb.armed = instance.armed;
+    securityDb.level = instance.level;
   };
 
   const {
-    armed = true
+    armed = true,
+    level = 0
   } = securityDb || {};
 
-  instance.arm(armed);
+  instance.arm(armed, level);
 
   instance.on('change', handleChange);
   handleChange();
