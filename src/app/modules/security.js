@@ -88,7 +88,7 @@ async function entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMe
 
 function securityLightKill(security, allLightsGroup) {
   security.on('change', () => {
-    if (!security.armed) return;
+    if (!security.armed || security.triggered) return;
     allLightsGroup.setPower(false);
   });
 }
