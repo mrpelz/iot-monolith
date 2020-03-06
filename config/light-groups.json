@@ -73,6 +73,19 @@
     }
   },
   {
+    "name": "schlafzimmerFuckLight",
+    "lights": [
+      "schlafzimmerBedLedRed",
+      "schlafzimmerBedLedFloor"
+    ],
+    "attributes": {
+      "hmi": {
+        "group": "🍆",
+        "section": "schlafzimmer"
+      }
+    }
+  },
+  {
     "name": "wannenbadLamps",
     "lights": [
       "wannenbadDeckenlampe",
