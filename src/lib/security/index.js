@@ -106,6 +106,7 @@ class Security extends EventEmitter {
     this.level = level;
 
     if (!active) {
+      this.timer.stop();
       this.triggered = false;
     }
 
@@ -146,7 +147,6 @@ class Security extends EventEmitter {
 
   toggle(level) {
     if (this.armed || this.armDelay) {
-      this.timer.stop();
       this.arm(false, level);
       return;
     }
