@@ -1,6 +1,7 @@
 const { HmiElement } = require('../../lib/hmi');
 const { Security } = require('../../lib/security');
 const { resolveAlways } = require('../../lib/utils/oop');
+const { parseString } = require('../../lib/utils/string');
 const { getKey } = require('../../lib/utils/structures');
 const { Timer } = require('../../lib/utils/time');
 
@@ -160,6 +161,35 @@ function securityHmi(security, hmiServer) {
   addHmi(0); // include levels <= 0 (e.g. alarm for when people are sleeping)
 }
 
+function securityHttpHooks(security, httpHookServer) {
+  httpHookServer.route(`/security`, (request) => {
+    const {
+      urlQuery: { on, lvl }
+    } = request;
+
+    const level = lvl === undefined ? undefined : Number.parseInt(lvl);
+    const arm = Boolean(parseString(on) || false);
+
+    if (on === undefined) {
+      security.toggle(level);
+    } else if (arm) {
+      security.delayedArm(level);
+    } else {
+      security.arm(false);
+    }
+
+    return {
+      handler: Promise.resolve((() => {
+        if (security.armDelay) return 'delayed';
+        if (security.triggered) return 'triggered';
+        if (security.armed) return 'on';
+
+        return 'off';
+      })())
+    };
+  });
+}
+
 function manage(config, data) {
   const {
     globals: {
@@ -172,6 +202,7 @@ function manage(config, data) {
     allLightsGroup,
     doorSensors,
     hmiServer,
+    httpHookServer,
     prometheus,
     security,
     telegram
@@ -186,6 +217,7 @@ function manage(config, data) {
   securityLightKill(security, allLightsGroup);
   securityToPrometheus(security, prometheus);
   securityHmi(security, hmiServer);
+  securityHttpHooks(security, httpHookServer);
 }
 
 
