@@ -5,7 +5,6 @@ const db = require('./modules/db');
 const ePaper = require('./modules/e-paper');
 const histories = require('./modules/histories');
 const hmiServer = require('./modules/hmi-server');
-const httpHooks = require('./modules/http-hooks');
 const prometheus = require('./modules/prometheus');
 const rfSwitches = require('./modules/rf-switches');
 const scheduler = require('./modules/scheduler');
@@ -16,6 +15,7 @@ const webApi = require('./modules/web-api');
 const doorSensors = require('./modules/door-sensors');
 const ev1527Server = require('./modules/ev1527-server');
 const fans = require('./modules/fans');
+const httpHooks = require('./modules/http-hooks');
 const lightGroups = require('./modules/light-groups');
 const lights = require('./modules/lights');
 const metricAggregates = require('./modules/metric-aggregates');
@@ -68,6 +68,7 @@ function manage(config, data) {
   security.manage(config, data);
   sevenSegment.manage(config, data);
   vent.manage(config, data);
+  httpHooks.manage(config, data);
 
   fridgeUtils.manage(config, data);
 }

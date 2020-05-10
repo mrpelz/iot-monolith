@@ -162,12 +162,12 @@ function securityHmi(security, hmiServer) {
 }
 
 function securityHttpHooks(security, httpHookServer) {
-  httpHookServer.route(`/security`, (request) => {
+  httpHookServer.route('/security', (request) => {
     const {
       urlQuery: { on, lvl }
     } = request;
 
-    const level = lvl === undefined ? undefined : Number.parseInt(lvl);
+    const level = lvl === undefined ? undefined : Number.parseInt(lvl, 10);
     const arm = Boolean(parseString(on) || false);
 
     if (on === undefined) {
