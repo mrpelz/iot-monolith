@@ -314,7 +314,8 @@ class TimeFloor {
   static week(input) {
     const result = new Date(input.getTime());
     result.setHours(0, 0, 0, 0);
-    result.setDate(result.getDate() - result.getDay() + 1);
+    const day = result.getDay();
+    result.setDate(result.getDate() - (day < 1 ? 6 : day - 1));
     return result;
   }
 
