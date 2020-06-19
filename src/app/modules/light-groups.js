@@ -307,6 +307,17 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   );
 
 
+  //  SCHLAFZIMMER
+  //    wall switches
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'schlafzimmerLamps',
+    'schlafzimmerWallLeft',
+    1
+  );
+
+
   //  WANNENBAD
   //    wall switches
   coupleRfSwitchToLight(

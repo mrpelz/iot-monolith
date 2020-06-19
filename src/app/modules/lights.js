@@ -520,13 +520,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
     lights,
     rfSwitches,
     'schlafzimmerDeckenlampe',
-    'schlafzimmerWallLeft',
-    1
-  );
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'schlafzimmerDeckenlampe',
     'schlafzimmerWallRight',
     1
   );
