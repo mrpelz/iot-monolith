@@ -1,9 +1,8 @@
-const { Socket } = require('net');
-
-const { Transport } = require('./index');
-const { humanPayload, writeNumber, readNumber } = require('../utils/data');
-const { Timer } = require('../utils/time');
-const { rebind } = require('../utils/oop');
+import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
+import { Socket } from 'net';
+import { Timer } from '../utils/time.js';
+import { Transport } from './index.js';
+import { rebind } from '../utils/oop.js';
 
 /**
  * @type {string}
@@ -23,7 +22,7 @@ const libName = 'tcp transport';
 /**
  * @class TCPTransport
  */
-class TCPTransport extends Transport {
+export class TCPTransport extends Transport {
 
   /**
    * create instance of Transport
@@ -328,7 +327,3 @@ class TCPTransport extends Transport {
     ]));
   }
 }
-
-module.exports = {
-  TCPTransport
-};

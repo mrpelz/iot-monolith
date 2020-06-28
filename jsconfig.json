@@ -2,8 +2,11 @@
   "compilerOptions": {
     "alwaysStrict": true,
     "checkJs": true,
-    "lib": ["esnext", "dom"],
-    "module": "commonjs",
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
     "target": "esnext"

@@ -1,9 +1,9 @@
-const { HmiElement } = require('../../lib/hmi');
-const { Security } = require('../../lib/security');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { parseString } = require('../../lib/utils/string');
-const { getKey } = require('../../lib/utils/structures');
-const { Timer } = require('../../lib/utils/time');
+import { HmiElement } from '../../lib/hmi/index.js';
+import { Security } from '../../lib/security/index.js';
+import { Timer } from '../../lib/utils/time.js';
+import { getKey } from '../../lib/utils/structures.js';
+import { parseString } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
 
 function createSecurity(telegram) {
@@ -35,7 +35,7 @@ function addPersistenceHandler(instance, securityDb) {
   handleChange();
 }
 
-function create(_, data) {
+export function create(_, data) {
   const {
     db,
     telegram
@@ -190,7 +190,7 @@ function securityHttpHooks(security, httpHookServer) {
   });
 }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     globals: {
       entryDoorTimeout,
@@ -219,9 +219,3 @@ function manage(config, data) {
   securityHmi(security, hmiServer);
   securityHttpHooks(security, httpHookServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { findFlattenedDiff, flattenData } = require('../structures');
+import { findFlattenedDiff, flattenData } from '../structures.js';
 
 const test1 = [
   {

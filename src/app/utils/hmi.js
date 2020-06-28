@@ -1,8 +1,8 @@
-const { HmiElement } = require('../../lib/hmi');
-const { camel } = require('../../lib/utils/string');
-const { excludeKeys } = require('../../lib/utils/structures');
+import { HmiElement } from '../../lib/hmi/index.js';
+import { camel } from '../../lib/utils/string.js';
+import { excludeKeys } from '../../lib/utils/structures.js';
 
-function setUpConnectionHmi(element, subGroup, hmiServer) {
+export function setUpConnectionHmi(element, subGroup, hmiServer) {
   const {
     name,
     instance
@@ -42,7 +42,7 @@ function setUpConnectionHmi(element, subGroup, hmiServer) {
   });
 }
 
-function setUpHistoryTrendHmi(
+export function setUpHistoryTrendHmi(
   histories,
   hmiName,
   attributes,
@@ -77,7 +77,7 @@ function setUpHistoryTrendHmi(
   });
 }
 
-function setUpLightTimerHmi(timer, name, attributes, hmiServer) {
+export function setUpLightTimerHmi(timer, name, attributes, hmiServer) {
   if (!timer) return null;
 
   const hmiTimer = new HmiElement({
@@ -111,9 +111,3 @@ function setUpLightTimerHmi(timer, name, attributes, hmiServer) {
 
   return hmiTimer;
 }
-
-module.exports = {
-  setUpConnectionHmi,
-  setUpHistoryTrendHmi,
-  setUpLightTimerHmi
-};

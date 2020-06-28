@@ -1,10 +1,10 @@
-const { EventEmitter } = require('events');
-const { Relay } = require('../relay');
-const { LedLight } = require('../led');
-const { DoorSensor } = require('../door-sensor');
-const { RoomSensor } = require('../room-sensor');
+import { DoorSensor } from '../door-sensor/index.js';
+import { EventEmitter } from 'events';
+import { LedLight } from '../led/index.js';
+import { Relay } from '../relay/index.js';
+import { RoomSensor } from '../room-sensor/index.js';
 
-class DoorSensorGroup extends EventEmitter {
+export class DoorSensorGroup extends EventEmitter {
   constructor(instances = []) {
     instances.forEach((instance) => {
       if (instance instanceof DoorSensor) return;
@@ -30,7 +30,7 @@ class DoorSensorGroup extends EventEmitter {
   }
 }
 
-class PushMetricGroup extends EventEmitter {
+export class PushMetricGroup extends EventEmitter {
   constructor(metric, instances = []) {
     instances.forEach((instance) => {
       if (instance instanceof RoomSensor) return;
@@ -57,7 +57,7 @@ class PushMetricGroup extends EventEmitter {
   }
 }
 
-class LightGroup extends EventEmitter {
+export class LightGroup extends EventEmitter {
   constructor(instances = [], allOf = false) {
     instances.forEach((instance) => {
       if (
@@ -131,9 +131,3 @@ class LightGroup extends EventEmitter {
     this._interceptor = fn;
   }
 }
-
-module.exports = {
-  DoorSensorGroup,
-  PushMetricGroup,
-  LightGroup
-};

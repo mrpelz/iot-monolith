@@ -1,15 +1,14 @@
-const { Socket } = require('net');
-
-const { Base } = require('../base');
-const { rebind } = require('../utils/oop');
-const { humanPayload, writeNumber, readNumber } = require('../utils/data');
-const { Timer } = require('../utils/time');
+import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
+import { Base } from '../base/index.js';
+import { Socket } from 'net';
+import { Timer } from '../utils/time.js';
+import { rebind } from '../utils/oop.js';
 
 const libName = 'tcp';
 
 const reconnectionDebounce = 20000;
 
-class PersistentSocket extends Base {
+export class PersistentSocket extends Base {
   constructor(options = {}) {
     super();
 
@@ -317,9 +316,9 @@ class PersistentSocket extends Base {
       writeNumber(input.length, lengthPreamble),
       input
     ] : [
-      input,
-      Buffer.from([delimiter])
-    ]));
+        input,
+        Buffer.from([delimiter])
+      ]));
   }
 
   connect() {
@@ -390,7 +389,7 @@ class PersistentSocket extends Base {
   // write
 }
 
-class ReliableSocket extends Base {
+export class ReliableSocket extends Base {
   constructor(options = {}) {
     super();
 
@@ -721,8 +720,3 @@ class ReliableSocket extends Base {
     ]));
   }
 }
-
-module.exports = {
-  PersistentSocket,
-  ReliableSocket
-};

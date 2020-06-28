@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const { createTelegramClient, createInlineKeyboard } = require('../index');
-const { Scheduler } = require('../../utils/time');
+import { createInlineKeyboard, createTelegramClient } from '../index.js';
+
+import { Scheduler } from '../../utils/time.js';
 
 const host = 'api.telegram.org';
 const token = 'SECRET'; // Test-Bot

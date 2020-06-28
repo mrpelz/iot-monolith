@@ -1,16 +1,16 @@
-const { EventEmitter } = require('events');
-const { rebind } = require('./oop');
-const { remainder } = require('./math');
-const { isObject } = require('./structures');
+import { EventEmitter } from 'events';
+import { isObject } from './structures.js';
+import { rebind } from './oop.js';
+import { remainder } from './math.js';
 
-function sortTimes(...input) {
+export function sortTimes(...input) {
   return input.sort((a, b) => {
     return a.getTime() - b.getTime();
   });
 }
 
 // https://jsfiddle.net/jonathansampson/m7G64/
-function throttle(limit = 500) {
+export function throttle(limit = 500) {
   let run = true;
   return () => {
     if (run) {
@@ -26,11 +26,11 @@ function throttle(limit = 500) {
   };
 }
 
-function daysInMonth(month, year) {
+export function daysInMonth(month, year) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-function isLeapYear(year) {
+export function isLeapYear(year) {
   /* eslint-disable-next-line no-bitwise */
   return !((year & 3 || !(year % 25)) && year & 15);
 }
@@ -49,7 +49,7 @@ function everyTime(type, count = 1) {
   };
 }
 
-const every = {
+export const every = {
   second: (input) => {
     return everyTime('second', input);
   },
@@ -106,7 +106,7 @@ const every = {
   }
 };
 
-const epochs = (() => {
+export const epochs = (() => {
   const second = 1000;
   const minute = 60 * second;
   const hour = 60 * minute;
@@ -145,7 +145,7 @@ const epochs = (() => {
   };
 })();
 
-function calc(type, count = 1, ref) {
+export function calc(type, count = 1, ref) {
   const date = ref
     ? new Date(ref.getTime())
     : new Date();
@@ -178,14 +178,14 @@ function calc(type, count = 1, ref) {
   return date;
 }
 
-function getWeekNumber(input) {
+export function getWeekNumber(input) {
   const date = new Date(input.getTime());
   date.setDate(date.getDate() + 4 - (date.getDay() || 7));
   const yearStart = new Date(date.getFullYear(), 0, 1);
   return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-function recurring(options, offset) {
+export function recurring(options, offset) {
   if (!isObject(options)) {
     throw new Error('insufficient options provided');
   }
@@ -250,7 +250,7 @@ function recurring(options, offset) {
   };
 }
 
-function recurringToDate(input) {
+export function recurringToDate(input) {
   const date = new Date();
   date.setHours(
     input.hour || 0,
@@ -265,7 +265,7 @@ function recurringToDate(input) {
   return date;
 }
 
-function sleep(time, data) {
+export function sleep(time, data) {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(data);
@@ -273,7 +273,7 @@ function sleep(time, data) {
   });
 }
 
-class CallTiming {
+export class CallTiming {
   hit() {
     this._callTime = Date.now();
   }
@@ -283,7 +283,7 @@ class CallTiming {
   }
 }
 
-class TimeFloor {
+export class TimeFloor {
   static second(input) {
     const result = new Date(input.getTime());
     result.setMilliseconds(0);
@@ -335,7 +335,7 @@ class TimeFloor {
   }
 }
 
-class Moment extends EventEmitter {
+export class Moment extends EventEmitter {
   static prepare(input) {
     const now = TimeFloor.second(new Date()).getTime();
 
@@ -387,7 +387,7 @@ class Moment extends EventEmitter {
   }
 }
 
-class RecurringMoment extends EventEmitter {
+export class RecurringMoment extends EventEmitter {
   static prepare(input, offset) {
     return input.map((moment) => {
       return recurring(moment, offset);
@@ -435,7 +435,7 @@ class RecurringMoment extends EventEmitter {
   }
 }
 
-class Scheduler extends EventEmitter {
+export class Scheduler extends EventEmitter {
   constructor(precision = 125) {
     super();
 
@@ -452,7 +452,7 @@ class Scheduler extends EventEmitter {
   }
 }
 
-class Timer extends EventEmitter {
+export class Timer extends EventEmitter {
   constructor(time = 0) {
     super();
 
@@ -516,7 +516,7 @@ class Timer extends EventEmitter {
   }
 }
 
-class TimeRange extends EventEmitter {
+export class TimeRange extends EventEmitter {
   static prepare(input) {
     const now = TimeFloor.second(new Date()).getTime();
     let lastTo = 0;
@@ -594,7 +594,7 @@ class TimeRange extends EventEmitter {
   }
 }
 
-class RecurringTimeRange extends EventEmitter {
+export class RecurringTimeRange extends EventEmitter {
   static prepare(input, offset) {
     return input.map((range) => {
       return {
@@ -654,25 +654,3 @@ class RecurringTimeRange extends EventEmitter {
     this._scheduler.removeListener('tick', this._hit);
   }
 }
-
-module.exports = {
-  CallTiming,
-  Moment,
-  RecurringMoment,
-  Scheduler,
-  Timer,
-  TimeRange,
-  RecurringTimeRange,
-  TimeFloor,
-  calc,
-  daysInMonth,
-  every,
-  epochs,
-  getWeekNumber,
-  isLeapYear,
-  recurring,
-  recurringToDate,
-  sleep,
-  sortTimes,
-  throttle
-};

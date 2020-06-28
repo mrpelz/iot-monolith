@@ -1,15 +1,7 @@
-const {
-  lstatSync: lstat,
-  readdirSync: readdir,
-  readFileSync: readFile
-} = require('fs');
-const {
-  join: pathJoin,
-  basename,
-  extname
-} = require('path');
+import { basename, extname, join as pathJoin } from 'path';
+import { lstatSync as lstat, readFileSync as readFile, readdirSync as readdir } from 'fs';
 
-function readConfig(configPath) {
+export function readConfig(configPath) {
   const result = {};
 
   readdir(configPath).forEach((fileName) => {
@@ -34,5 +26,3 @@ function readConfig(configPath) {
 
   return result;
 }
-
-module.exports = readConfig;

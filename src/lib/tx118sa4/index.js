@@ -1,4 +1,4 @@
-const { Ev1527Device } = require('../ev1527');
+import { Ev1527Device } from '../ev1527/index.js';
 
 const libName = 'tx118sa4';
 
@@ -47,7 +47,7 @@ function makeMatchOptions(id) {
   };
 }
 
-class Tx118sa4 extends Ev1527Device {
+export class Tx118sa4 extends Ev1527Device {
   constructor(options = {}) {
     const {
       id = null,
@@ -70,7 +70,3 @@ class Tx118sa4 extends Ev1527Device {
     this._tx118sa4.log = this.log.withPrefix(libName);
   }
 }
-
-module.exports = {
-  Tx118sa4
-};

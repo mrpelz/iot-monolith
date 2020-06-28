@@ -1,9 +1,9 @@
-const { HttpServer } = require('../http/server');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { every, RecurringMoment } = require('../utils/time');
-const { camel, parseString } = require('../utils/string');
-const { includeKeys } = require('../utils/structures');
-const { Logger } = require('../log');
+import { RecurringMoment, every } from '../utils/time.js';
+import { camel, parseString } from '../utils/string.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { HttpServer } from '../http/server.js';
+import { Logger } from '../log/index.js';
+import { includeKeys } from '../utils/structures.js';
 
 const libName = 'web-api';
 
@@ -212,7 +212,7 @@ function getHierarchy(
   };
 }
 
-class WebApi {
+export class WebApi {
   constructor(options = {}) {
     const {
       host = undefined,
@@ -323,7 +323,7 @@ class WebApi {
           sort
         )
       }, null, null);
-    }).catch(() => {}).then((result) => {
+    }).catch(() => { }).then((result) => {
       if (!result) return;
 
       this._webApi.list = result;
@@ -480,7 +480,3 @@ class WebApi {
     }
   }
 }
-
-module.exports = {
-  WebApi
-};

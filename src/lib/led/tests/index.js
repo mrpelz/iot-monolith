@@ -1,7 +1,8 @@
 /* eslint-disable no-console */
-const { LedDriver, RGBLed } = require('../index');
-const { resolveAlways } = require('../../utils/oop');
-const { sleep } = require('../../utils/time');
+import { LedDriver, RGBLed } from '../index.js';
+
+import { resolveAlways } from '../../utils/oop.js';
+import { sleep } from '../../utils/time.js';
 
 const rgb = new RGBLed({
   driver: new LedDriver({

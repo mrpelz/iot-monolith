@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { get, post } = require('../client');
+import { get, post } from '../client.js';
 
 (async function clientTest() {
   try {

@@ -1,11 +1,10 @@
-const { Server } = require('http');
-const { URL } = require('url');
-const { EventEmitter } = require('events');
-
-const { rebind } = require('../utils/oop');
-const { emptyBuffer } = require('../utils/data');
-const { arraysToObject } = require('../utils/structures');
-const { Logger } = require('../log');
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
+import { Server } from 'http';
+import { URL } from 'url';
+import { arraysToObject } from '../utils/structures.js';
+import { emptyBuffer } from '../utils/data.js';
+import { rebind } from '../utils/oop.js';
 
 const libName = 'http-server';
 
@@ -14,7 +13,7 @@ const allowedMethods = [
   'POST'
 ];
 
-class HttpServer extends EventEmitter {
+export class HttpServer extends EventEmitter {
   static do404() {
     return {
       handler: Promise.reject(new Error('Not found.')),
@@ -249,7 +248,3 @@ class HttpServer extends EventEmitter {
     server.close();
   }
 }
-
-module.exports = {
-  HttpServer
-};

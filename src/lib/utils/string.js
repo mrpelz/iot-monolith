@@ -1,4 +1,4 @@
-function camel(...input) {
+export function camel(...input) {
   return input.map((word, index) => {
     const tile = word.toString();
 
@@ -12,7 +12,7 @@ function camel(...input) {
   }).join('');
 }
 
-function pascal(...input) {
+export function pascal(...input) {
   return input.map((word) => {
     const tile = word.toString();
 
@@ -22,15 +22,15 @@ function pascal(...input) {
   }).join('');
 }
 
-function scope(...input) {
+export function scope(...input) {
   return input.join('.');
 }
 
-function words(input) {
+export function words(input) {
   return input.trim().split(/\s+/);
 }
 
-function parseString(input) {
+export function parseString(input) {
   if (input === 'true') return true;
   if (input === 'false') return false;
 
@@ -39,11 +39,3 @@ function parseString(input) {
 
   return input;
 }
-
-module.exports = {
-  camel,
-  pascal,
-  scope,
-  words,
-  parseString
-};

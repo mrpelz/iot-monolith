@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
 
-function gammaCorrect(input, range, gamma) {
+export function gammaCorrect(input, range, gamma) {
   // return input;
   if (input === 0) return 0;
   if (input === range) return range;
@@ -8,7 +8,7 @@ function gammaCorrect(input, range, gamma) {
   return ((input / range) ** gamma) * range;
 }
 
-function maxNumber(numbers) {
+export function maxNumber(numbers) {
   if (!numbers.length) return null;
 
   return numbers.reduce((aggregator, current) => {
@@ -18,17 +18,17 @@ function maxNumber(numbers) {
 }
 
 // http://www.jstips.co/en/javascript/array-average-and-median/
-function mean(numbers) {
+export function mean(numbers) {
   return numbers.reduce((a, b) => { return a + b; }, 0) / numbers.length;
 }
 
-function median(input) {
+export function median(input) {
   const numbers = input.slice(0);
   numbers.sort((a, b) => { return a - b; });
   return (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2;
 }
 
-function minNumber(numbers) {
+export function minNumber(numbers) {
   if (!numbers.length) return null;
 
   return numbers.reduce((aggregator, current) => {
@@ -37,20 +37,20 @@ function minNumber(numbers) {
   }, Number.POSITIVE_INFINITY);
 }
 
-function quotient(dividend, divisor) {
+export function quotient(dividend, divisor) {
   return Math.floor(dividend, divisor);
 }
 
-function remainder(dividend, divisor) {
+export function remainder(dividend, divisor) {
   return dividend % divisor;
 }
 
-function trimDecimals(input, decimals = 2) {
+export function trimDecimals(input, decimals = 2) {
   const trimmer = 10 ** decimals;
   return Math.round(input * trimmer) / trimmer;
 }
 
-function sanity(input, options) {
+export function sanity(input, options) {
   if (input === null) return null;
 
   const {
@@ -83,7 +83,7 @@ function sanity(input, options) {
   return value;
 }
 
-const transitions = {
+export const transitions = {
   linear: (t) => { return t; },
   // accelerating from zero velocity
   easeInQuad: (t) => { return t * t; },
@@ -138,7 +138,7 @@ const transitions = {
   }
 };
 
-function ledCalc(
+export function ledCalc(
   fromP,
   toP,
   duration = 3000,
@@ -206,17 +206,3 @@ function ledCalc(
 
   return result;
 }
-
-module.exports = {
-  gammaCorrect,
-  ledCalc,
-  maxNumber,
-  mean,
-  median,
-  minNumber,
-  quotient,
-  remainder,
-  sanity,
-  transitions,
-  trimDecimals
-};

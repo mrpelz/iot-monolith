@@ -1,5 +1,5 @@
-const { PersistentSocket } = require('../tcp');
-const { rebind } = require('../utils/oop');
+import { PersistentSocket } from '../tcp/index.js';
+import { rebind } from '../utils/oop.js';
 
 const libName = 'denon-avr';
 
@@ -13,7 +13,7 @@ function findMatchingCall(calls, input) {
   });
 }
 
-class DenonAvr extends PersistentSocket {
+export class DenonAvr extends PersistentSocket {
   constructor(options = {}) {
     const {
       host = null,
@@ -97,7 +97,3 @@ class DenonAvr extends PersistentSocket {
   // disconnect
   // request
 }
-
-module.exports = {
-  DenonAvr
-};

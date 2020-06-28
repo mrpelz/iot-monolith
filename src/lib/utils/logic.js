@@ -1,8 +1,8 @@
-const { EventEmitter } = require('events');
-const { rebind } = require('./oop');
-const { maxNumber } = require('./math');
+import { EventEmitter } from 'events';
+import { maxNumber } from './math.js';
+import { rebind } from './oop.js';
 
-class Latch extends EventEmitter {
+export class Latch extends EventEmitter {
   constructor(options = {}) {
     const {
       states: stateCount = 2,
@@ -52,7 +52,7 @@ class Latch extends EventEmitter {
   }
 }
 
-class Hysteresis extends EventEmitter {
+export class Hysteresis extends EventEmitter {
   constructor(options = {}) {
     const {
       inRangeAbove = 0,
@@ -90,7 +90,7 @@ class Hysteresis extends EventEmitter {
   }
 }
 
-class PriorityValue {
+export class PriorityValue {
   constructor(initial) {
     this._values = new Map();
     this._initial = initial;
@@ -140,7 +140,7 @@ class PriorityValue {
   }
 }
 
-class Remap {
+export class Remap {
   constructor(ranges = []) {
     this._ranges = ranges;
   }
@@ -180,10 +180,3 @@ class Remap {
     return this.convert('b', 'a', input);
   }
 }
-
-module.exports = {
-  Latch,
-  Hysteresis,
-  PriorityValue,
-  Remap
-};

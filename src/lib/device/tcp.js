@@ -1,12 +1,12 @@
-const { Device } = require('./index');
-const { TCPTransport } = require('../transport/tcp');
+import { Device } from './index.js';
+import { TCPTransport } from '../transport/tcp.js';
 
- /**
-  * @typedef I_TCPTransportOptions
-  * @type {import('../transport/tcp').TCPTransportOptions}
-  */
+/**
+ * @typedef I_TCPTransportOptions
+ * @type {import('../transport/tcp').TCPTransportOptions}
+ */
 
-class TCPDevice extends Device {
+export class TCPDevice extends Device {
 
   /**
    * create instance of Device
@@ -23,7 +23,3 @@ class TCPDevice extends Device {
     transport.connect();
   }
 }
-
-module.exports = {
-  TCPDevice
-};

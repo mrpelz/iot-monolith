@@ -1,18 +1,16 @@
 /* eslint-disable no-console */
-const {
+import {
   Moment,
   RecurringMoment,
+  RecurringTimeRange,
   Scheduler,
   TimeRange,
-  RecurringTimeRange,
   calc,
   every,
-  sleep
-} = require('../time');
+  sleep,
+} from '../time.js';
 
-const {
-  remainder
-} = require('../math');
+import { remainder } from '../math.js';
 
 (async function test() {
   console.log(await sleep(3000, 'console.log after sleeping 3000ms'));

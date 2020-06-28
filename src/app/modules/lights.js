@@ -1,22 +1,19 @@
-const { URL } = require('url');
-
-const { H801, LedDriver, LedLight } = require('../../lib/led');
-const { HmiElement } = require('../../lib/hmi');
-const { SonoffBasic, Relay } = require('../../lib/relay');
-const { get } = require('../../lib/http/client');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { parseString } = require('../../lib/utils/string');
-const { getKey } = require('../../lib/utils/structures');
-const { Timer } = require('../../lib/utils/time');
-
-const {
+import { H801, LedDriver, LedLight } from '../../lib/led/index.js';
+import { Relay, SonoffBasic } from '../../lib/relay/index.js';
+import {
   coupleDoorSensorToLight,
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
-  coupleRfSwitchToLightIncrease
-} = require('../utils/lights');
-
-const { setUpConnectionHmi, setUpLightTimerHmi } = require('../utils/hmi');
+  coupleRfSwitchToLightIncrease,
+} from '../utils/lights.js';
+import { setUpConnectionHmi, setUpLightTimerHmi } from '../utils/hmi.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { Timer } from '../../lib/utils/time.js';
+import { URL } from 'url';
+import { get } from '../../lib/http/client.js';
+import { getKey } from '../../lib/utils/structures.js';
+import { parseString } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
 
 function addPersistenceHandler(name, instance, lightDb, dbKey, instanceKey) {
@@ -156,7 +153,7 @@ function createLedLightSets(lightsOpts, driver, host, lightDb) {
   }).filter(Boolean);
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     lights: driversConfig
   } = config;
@@ -878,7 +875,7 @@ function lightsHmi(lights, hmiServer) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const {
     doorSensors,
     hmiServer,
@@ -897,9 +894,3 @@ function manage(_, data) {
   lightWithDoorSensor(lights, doorSensors);
   arbeitszimmerDeckenlampeWithHttpHook(lights);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

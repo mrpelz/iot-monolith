@@ -1,4 +1,4 @@
-const { post } = require('../http/client');
+import { post } from '../http/client.js';
 
 const host = 'api.telegram.org';
 const chatId = -274728913;
@@ -14,7 +14,7 @@ const telegramMessageOptions = {
   disable_web_page_preview: true
 };
 
-function telegramSend(message) {
+export function telegramSend(message) {
   const {
     telegramToken
   } = global;
@@ -37,7 +37,3 @@ function telegramSend(message) {
     console.log(`<3>error logging to telegram: "${error}"`);
   });
 }
-
-module.exports = {
-  telegramSend
-};

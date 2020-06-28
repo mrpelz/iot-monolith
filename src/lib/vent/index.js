@@ -1,12 +1,9 @@
-const { MessageClient } = require('../messaging');
-const { CachePromise } = require('../cache');
-const {
-  readNumber,
-  writeNumber
-} = require('../utils/data');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { PriorityValue, Remap } = require('../utils/logic');
-const { Timer, sleep } = require('../utils/time');
+import { PriorityValue, Remap } from '../utils/logic.js';
+import { Timer, sleep } from '../utils/time.js';
+import { readNumber, writeNumber } from '../utils/data.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { CachePromise } from '../cache/index.js';
+import { MessageClient } from '../messaging/index.js';
 
 const libName = 'vent';
 
@@ -63,7 +60,7 @@ const messageTypes = [
   }
 ];
 
-class Vent extends MessageClient {
+export class Vent extends MessageClient {
   constructor(options = {}) {
     const {
       host = null,
@@ -246,7 +243,3 @@ class Vent extends MessageClient {
     });
   }
 }
-
-module.exports = {
-  Vent
-};

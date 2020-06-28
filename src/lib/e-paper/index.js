@@ -1,11 +1,11 @@
-const { post } = require('../http/client');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { every, RecurringMoment } = require('../utils/time');
-const { Logger } = require('../log');
+import { RecurringMoment, every } from '../utils/time.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { Logger } from '../log/index.js';
+import { post } from '../http/client.js';
 
 const libName = 'e-paper';
 
-class EPaper {
+export class EPaper {
   constructor(options = {}) {
     const {
       hmiServer = null,
@@ -97,7 +97,3 @@ class EPaper {
     }
   }
 }
-
-module.exports = {
-  EPaper
-};

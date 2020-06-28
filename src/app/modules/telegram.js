@@ -1,7 +1,7 @@
-const { createTelegramClient } = require('../../lib/telegram');
-const { getKey } = require('../../lib/utils/structures');
+import { createTelegramClient } from '../../lib/telegram/index.js';
+import { getKey } from '../../lib/utils/structures.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     telegram: {
       host,
@@ -32,10 +32,6 @@ function create(config, data) {
       }
     });
   } catch (error) {
-    throw new Error('could not create telegram instance');
+    throw new Error(`could not create telegram instance: ${error}`);
   }
 }
-
-module.exports = {
-  create
-};

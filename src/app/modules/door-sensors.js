@@ -1,7 +1,7 @@
-const { DoorSensor } = require('../../lib/door-sensor');
-const { DoorSensorGroup } = require('../../lib/group');
-const { HmiElement } = require('../../lib/hmi');
-const { getKey } = require('../../lib/utils/structures');
+import { DoorSensor } from '../../lib/door-sensor/index.js';
+import { DoorSensorGroup } from '../../lib/group/index.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { getKey } from '../../lib/utils/structures.js';
 
 
 function createSensor(sensor, server) {
@@ -110,7 +110,7 @@ function createOutwardsDoorSensorsGroup(allDoorSensors) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     'door-sensors': doorSensorsConfig
   } = config;
@@ -158,7 +158,7 @@ function doorSensorsHmi(doorSensors, hmiServer) {
       name,
       instance,
       attributes: {
-        hmi: hmiAttributes
+        hmi: hmiAttributes = null
       } = {}
     } = doorSensor;
 
@@ -215,7 +215,7 @@ function outwardsDoorSensorsGroupHmi(instance, hmiServer) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const {
     doorSensors,
     hmiServer,
@@ -227,9 +227,3 @@ function manage(_, data) {
   doorSensorsHmi(doorSensors, hmiServer);
   outwardsDoorSensorsGroupHmi(outwardsDoorSensorsGroup, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

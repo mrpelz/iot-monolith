@@ -1,20 +1,19 @@
-const { EventEmitter } = require('events');
-const {
-  existsSync: exists,
-  ftruncate: truncate,
-  ftruncateSync: truncateSync,
-  openSync: open,
-  readFile: read,
-  readFileSync: readSync,
+import {
+  existsSync as exists,
+  openSync as open,
+  readFile as read,
+  readFileSync as readSync,
+  ftruncate as truncate,
+  ftruncateSync as truncateSync,
   watch,
-  writeFile: write,
-  writeFileSync: writeSync
-} = require('fs');
-const { join } = require('path');
-const { tmpdir } = require('os');
-
-const { Logger } = require('../log');
-const { rebind } = require('../utils/oop');
+  writeFile as write,
+  writeFileSync as writeSync,
+} from 'fs';
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
+import { join } from 'path';
+import { rebind } from '../utils/oop.js';
+import { tmpdir } from 'os';
 
 const libName = 'state-files';
 
@@ -24,7 +23,7 @@ function makePath(name) {
   return join(tmp, `iot-state-[${name}].json`);
 }
 
-class StateFile extends EventEmitter {
+export class StateFile extends EventEmitter {
   constructor(name) {
     if (!name) {
       throw new Error('name not defined!');
@@ -187,7 +186,3 @@ class StateFile extends EventEmitter {
     return payload;
   }
 }
-
-module.exports = {
-  StateFile
-};

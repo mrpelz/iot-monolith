@@ -1,6 +1,6 @@
-const { Base } = require('../base');
-const { Ev1527Device } = require('../ev1527');
-const { rebind } = require('../utils/oop');
+import { Base } from '../base/index.js';
+import { Ev1527Device } from '../ev1527/index.js';
+import { rebind } from '../utils/oop.js';
 
 const libName = 'door-sensor';
 
@@ -34,7 +34,7 @@ function makeMatchOptions(id) {
   };
 }
 
-class DoorSensor extends Base {
+export class DoorSensor extends Base {
   constructor(options = {}) {
     const {
       id = null,
@@ -94,7 +94,3 @@ class DoorSensor extends Base {
     this.emit('tamper');
   }
 }
-
-module.exports = {
-  DoorSensor
-};

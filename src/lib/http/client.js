@@ -1,11 +1,10 @@
-const { EventEmitter } = require('events');
-const { request: httpRequest } = require('http');
-const { request: httpsRequest } = require('https');
-const { URL } = require('url');
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { EventEmitter } from 'events';
+import { URL } from 'url';
+import { request as httpRequest } from 'http';
+import { request as httpsRequest } from 'https';
 
-const { rebind, resolveAlways } = require('../utils/oop');
-
-function httpClient(method, url = {}, options = {}, data) {
+export function httpClient(method, url = {}, options = {}, data) {
   const {
     auth,
     hostname,
@@ -88,15 +87,15 @@ function httpClient(method, url = {}, options = {}, data) {
   });
 }
 
-function get(url, options) {
+export function get(url, options) {
   return httpClient('GET', url, options);
 }
 
-function post(url, data, options) {
+export function post(url, data, options) {
   return httpClient('POST', url, options, data);
 }
 
-class LongPollClient extends EventEmitter {
+export class LongPollClient extends EventEmitter {
   constructor(scheduler, caller) {
     if (!scheduler || !caller) {
       throw new Error('insufficient options provided!');
@@ -134,10 +133,3 @@ class LongPollClient extends EventEmitter {
     this._scheduler.removeListener('tick', this._poll);
   }
 }
-
-module.exports = {
-  get,
-  post,
-  httpClient,
-  LongPollClient
-};

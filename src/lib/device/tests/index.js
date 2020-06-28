@@ -1,5 +1,5 @@
-const { onlineState, eventSymbol } = require('../index');
-const { UDPDevice } = require('../udp');
+import { eventSymbol, onlineState } from '../index.js';
+import { UDPDevice } from '../udp.js';
 
 const device = new UDPDevice({
   host: '127.0.0.1',

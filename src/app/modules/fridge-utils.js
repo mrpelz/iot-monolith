@@ -1,7 +1,7 @@
 // const { epochs } = require('../../lib/utils/time');
 // const { post } = require('../../lib/http/client');
-const { Timer } = require('../../lib/utils/time');
-const { resolveAlways } = require('../../lib/utils/oop');
+import { Timer } from '../../lib/utils/time.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
 async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
   const { client: awaitingClient, chatIds } = telegram;
@@ -64,7 +64,7 @@ async function fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage) {
 //   });
 // }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     globals: {
       fridgeTimeout,
@@ -85,7 +85,3 @@ function manage(config, data) {
   fridgeTimer(telegram, fridge, fridgeTimeout, fridgeMessage);
   // fridgeTwitter(fridge);
 }
-
-module.exports = {
-  manage
-};

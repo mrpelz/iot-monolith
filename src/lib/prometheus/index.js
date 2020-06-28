@@ -1,7 +1,7 @@
-const { HttpServer } = require('../http/server');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { trimDecimals } = require('../utils/math');
-const { Logger } = require('../log');
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { HttpServer } from '../http/server.js';
+import { Logger } from '../log/index.js';
+import { trimDecimals } from '../utils/math.js';
 
 const libName = 'prometheus';
 
@@ -34,7 +34,7 @@ function isLegalMetricName(name) {
   }
 }
 
-class Prometheus {
+export class Prometheus {
   constructor(options = {}) {
     const {
       port,
@@ -229,7 +229,3 @@ class Prometheus {
     });
   }
 }
-
-module.exports = {
-  Prometheus
-};

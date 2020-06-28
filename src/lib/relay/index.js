@@ -1,13 +1,8 @@
-const { Base } = require('../base');
-const { MessageClient } = require('../messaging');
-const {
-  booleanToBuffer,
-  bufferToBoolean,
-  readNumber,
-  writeNumber
-} = require('../utils/data');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { camel } = require('../utils/string');
+import { booleanToBuffer, bufferToBoolean, readNumber, writeNumber } from '../utils/data.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { Base } from '../base/index.js';
+import { MessageClient } from '../messaging/index.js';
+import { camel } from '../utils/string.js';
 
 const libName = 'relay';
 
@@ -55,7 +50,7 @@ function getMessageTypes(channels, buttons) {
   ];
 }
 
-class RelayDriver extends MessageClient {
+export class RelayDriver extends MessageClient {
   constructor(options = {}) {
     const {
       host = null,
@@ -186,7 +181,7 @@ class RelayDriver extends MessageClient {
   // getChannel
 }
 
-class SonoffBasic extends RelayDriver {
+export class SonoffBasic extends RelayDriver {
   constructor(options) {
     super(Object.assign({}, {
       channels: 1,
@@ -195,7 +190,7 @@ class SonoffBasic extends RelayDriver {
   }
 }
 
-class Relay extends Base {
+export class Relay extends Base {
   constructor(options = {}) {
     super();
 
@@ -277,9 +272,3 @@ class Relay extends Base {
   // powerSetpoint
   // power
 }
-
-module.exports = {
-  Relay,
-  RelayDriver,
-  SonoffBasic
-};

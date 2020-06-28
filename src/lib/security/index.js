@@ -1,6 +1,6 @@
-const { EventEmitter } = require('events');
-const { Logger } = require('../log');
-const { Timer } = require('../utils/time');
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
+import { Timer } from '../utils/time.js';
 
 const libName = 'security';
 
@@ -8,7 +8,7 @@ const armDelay = 30000;
 const defaultLevel = 1;
 const allowedLevels = [0, 1];
 
-class Security extends EventEmitter {
+export class Security extends EventEmitter {
   constructor(options = {}) {
     const {
       telegram
@@ -154,7 +154,3 @@ class Security extends EventEmitter {
     this.delayedArm(level);
   }
 }
-
-module.exports = {
-  Security
-};

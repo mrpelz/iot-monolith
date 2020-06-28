@@ -1,4 +1,4 @@
-const { Tx118sa4 } = require('../../lib/tx118sa4');
+import { Tx118sa4 } from '../../lib/tx118sa4/index.js';
 
 function createWallSwitch(rfSwitch, server) {
   const {
@@ -28,7 +28,7 @@ function addSecurity(name, instance, security) {
   instance.on(4, onSwitch);
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     'rf-switches': rfSwitchesConfig
   } = config;
@@ -58,7 +58,3 @@ function create(config, data) {
     rfSwitches
   });
 }
-
-module.exports = {
-  create
-};

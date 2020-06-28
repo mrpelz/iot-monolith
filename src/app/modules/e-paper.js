@@ -1,6 +1,6 @@
-const { EPaper } = require('../../lib/e-paper');
+import { EPaper } from '../../lib/e-paper/index.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       ePaper: {
@@ -35,7 +35,3 @@ function create(config, data) {
     ePaper
   });
 }
-
-module.exports = {
-  create
-};

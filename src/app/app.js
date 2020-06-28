@@ -1,31 +1,34 @@
-const readConfig = require('./config');
+/* eslint-disable sort-imports */
+import { readConfig } from './config.js';
 
 // create only
-const db = require('./modules/db');
-const ePaper = require('./modules/e-paper');
-const histories = require('./modules/histories');
-const hmiServer = require('./modules/hmi-server');
-const prometheus = require('./modules/prometheus');
-const rfSwitches = require('./modules/rf-switches');
-const scheduler = require('./modules/scheduler');
-const telegram = require('./modules/telegram');
-const webApi = require('./modules/web-api');
+import * as db from './modules/db.js';
+
+import * as ePaper from './modules/e-paper.js';
+import * as histories from './modules/histories.js';
+import * as hmiServer from './modules/hmi-server.js';
+import * as prometheus from './modules/prometheus.js';
+import * as rfSwitches from './modules/rf-switches.js';
+import * as scheduler from './modules/scheduler.js';
+import * as telegram from './modules/telegram.js';
+import * as webApi from './modules/web-api.js';
 
 // create and manage
-const doorSensors = require('./modules/door-sensors');
-const ev1527Server = require('./modules/ev1527-server');
-const fans = require('./modules/fans');
-const httpHooks = require('./modules/http-hooks');
-const lightGroups = require('./modules/light-groups');
-const lights = require('./modules/lights');
-const metricAggregates = require('./modules/metric-aggregates');
-const roomSensors = require('./modules/room-sensors');
-const security = require('./modules/security');
-const sevenSegment = require('./modules/seven-segment');
-const vent = require('./modules/vent');
+import * as doorSensors from './modules/door-sensors.js';
+
+import * as ev1527Server from './modules/ev1527-server.js';
+import * as fans from './modules/fans.js';
+import * as httpHooks from './modules/http-hooks.js';
+import * as lightGroups from './modules/light-groups.js';
+import * as lights from './modules/lights.js';
+import * as metricAggregates from './modules/metric-aggregates.js';
+import * as roomSensors from './modules/room-sensors.js';
+import * as security from './modules/security.js';
+import * as sevenSegment from './modules/seven-segment.js';
+import * as vent from './modules/vent.js';
 
 // manage only
-const fridgeUtils = require('./modules/fridge-utils');
+import * as fridgeUtils from './modules/fridge-utils.js';
 
 
 function create(config, data) {
@@ -73,7 +76,7 @@ function manage(config, data) {
   fridgeUtils.manage(config, data);
 }
 
-function app(env) {
+export function app(env) {
   const {
     configPath
   } = env;
@@ -87,6 +90,3 @@ function app(env) {
   create(config, data);
   manage(config, data);
 }
-
-
-module.exports = app;

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { Logger } = require('../index');
+import { Logger } from '../index.js';
 
 const globalLog = new Logger();
 globalLog.friendlyName('log-test');

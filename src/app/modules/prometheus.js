@@ -1,6 +1,6 @@
-const { Prometheus } = require('../../lib/prometheus');
+import { Prometheus } from '../../lib/prometheus/index.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       prometheusPort
@@ -17,7 +17,3 @@ function create(config, data) {
     prometheus
   });
 }
-
-module.exports = {
-  create
-};

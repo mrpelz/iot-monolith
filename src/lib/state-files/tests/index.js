@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { StateFile } = require('../index');
+import { StateFile } from '../index.js';
 
 const testFileName = 'penis';
 

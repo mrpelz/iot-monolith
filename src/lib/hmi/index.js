@@ -1,10 +1,10 @@
-const { EventEmitter } = require('events');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { Logger } = require('../log');
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
 
 const libName = 'hmi';
 
-class HmiServer {
+export class HmiServer {
   constructor() {
     this._hmi = {
       elements: {},
@@ -185,7 +185,7 @@ class HmiServer {
   // addService
 }
 
-class HmiElement extends EventEmitter {
+export class HmiElement extends EventEmitter {
   constructor(options = {}) {
     const {
       attributes = {},
@@ -296,8 +296,3 @@ class HmiElement extends EventEmitter {
   // Public methods:
   // update
 }
-
-module.exports = {
-  HmiServer,
-  HmiElement
-};

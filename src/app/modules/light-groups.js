@@ -1,14 +1,10 @@
-const { LightGroup } = require('../../lib/group');
-const { HmiElement } = require('../../lib/hmi');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { parseString } = require('../../lib/utils/string');
-const { Timer } = require('../../lib/utils/time');
-
-const {
-  coupleDoorSensorToLight,
-  coupleRfSwitchToLight
-} = require('../utils/lights');
-const { setUpLightTimerHmi } = require('../utils/hmi');
+import { coupleDoorSensorToLight, coupleRfSwitchToLight } from '../utils/lights.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { LightGroup } from '../../lib/group/index.js';
+import { Timer } from '../../lib/utils/time.js';
+import { parseString } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
+import { setUpLightTimerHmi } from '../utils/hmi.js';
 
 
 function createLightGroup(group, lights) {
@@ -61,7 +57,7 @@ function createAllLightsGroup(lights) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     'light-groups': lightGroupsConfig
   } = config;
@@ -442,7 +438,7 @@ function allLightsGroupHmi(instance, hmiServer) {
   });
 }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     globals: {
       lightGroupIntercepts
@@ -466,9 +462,3 @@ function manage(config, data) {
   allLightsGroupHmi(allLightsGroup, hmiServer);
   lightGroupsHmi(lightGroups, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

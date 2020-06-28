@@ -1,9 +1,8 @@
-const { HmiElement } = require('../../lib/hmi');
-const { SonoffBasic, Relay } = require('../../lib/relay');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { parseString } = require('../../lib/utils/string');
-
-const { setUpConnectionHmi } = require('../utils/hmi');
+import { Relay, SonoffBasic } from '../../lib/relay/index.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { parseString } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
+import { setUpConnectionHmi } from '../utils/hmi.js';
 
 
 function createSonoffBasic(options) {
@@ -52,7 +51,7 @@ function createRelayFanSets(fansOpts, driver, host) {
   }).filter(Boolean);
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     fans: fansConfig
   } = config;
@@ -224,7 +223,7 @@ function relayFanHmi(options, hmiServer) {
       name,
       instance,
       attributes: {
-        hmi: hmiDefaults
+        hmi: hmiDefaults = null
       } = {}
     } = fan;
 
@@ -272,7 +271,7 @@ function fansHmi(fans, hmiServer) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const {
     hmiServer,
     httpHookServer,
@@ -284,9 +283,3 @@ function manage(_, data) {
   fansToPrometheus(fans, prometheus);
   fansHmi(fans, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

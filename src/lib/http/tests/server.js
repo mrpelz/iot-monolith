@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { HttpServer } = require('../server');
+import { HttpServer } from '../server.js';
 
 function globalHandler(request) {
   return {

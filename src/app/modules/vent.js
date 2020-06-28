@@ -1,11 +1,10 @@
-const { HmiElement } = require('../../lib/hmi');
-const { Vent } = require('../../lib/vent');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { Hysteresis } = require('../../lib/utils/logic');
-const { parseString } = require('../../lib/utils/string');
-const { every, RecurringMoment, Timer } = require('../../lib/utils/time');
-
-const { setUpConnectionHmi } = require('../utils/hmi');
+import { RecurringMoment, Timer, every } from '../../lib/utils/time.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { Hysteresis } from '../../lib/utils/logic.js';
+import { Vent } from '../../lib/vent/index.js';
+import { parseString } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
+import { setUpConnectionHmi } from '../utils/hmi.js';
 
 
 function createVent(ventConfig) {
@@ -26,7 +25,7 @@ function createVent(ventConfig) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     vent: ventConfig
   } = config;
@@ -388,7 +387,7 @@ function ventHmi(vent, hmiServer) {
   });
 }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     vent: {
       humidityAutomation: {
@@ -442,9 +441,3 @@ function manage(config, data) {
   ventToPrometheus(vent, prometheus);
   ventHmi(vent, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

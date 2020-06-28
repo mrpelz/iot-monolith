@@ -1,5 +1,5 @@
-const { Logger } = require('../log');
-const { rebind } = require('../utils/oop');
+import { Logger } from '../log/index.js';
+import { rebind } from '../utils/oop.js';
 
 /**
  * @typedef I_Device
@@ -45,7 +45,7 @@ const { rebind } = require('../utils/oop');
  * }}
  */
 
- /**
+/**
  * @typedef AnyTransportOptions
  * @type {TransportOptions|I_TCPTransportOptions|I_UDPTransportOptions}
  */
@@ -58,7 +58,7 @@ const libName = 'transport';
 /**
  * @class TransportDevice
  */
-class TransportDevice {
+export class TransportDevice {
 
   /**
    * create instance of TransportDevice
@@ -176,7 +176,7 @@ class TransportDevice {
 /**
   * @class Transport
   */
-class Transport {
+export class Transport {
 
   /**
    * create instance of Transport
@@ -308,7 +308,7 @@ class Transport {
 /**
  * @class AggregatedTransport
  */
-class AggregatedTransport {
+export class AggregatedTransport {
 
   /**
    * create dataset of SubTransports
@@ -459,9 +459,3 @@ class AggregatedTransport {
     });
   }
 }
-
-module.exports = {
-  AggregatedTransport,
-  Transport,
-  TransportDevice
-};

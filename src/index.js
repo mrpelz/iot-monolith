@@ -4,8 +4,9 @@
 Error.stackTraceLimit = 50;
 process.stdin.resume();
 
-const { telegramSend } = require('./lib/telegram/simple');
-const { parseString } = require('./lib/utils/string');
+import { app } from './app/app.js';
+import { parseString } from './lib/utils/string.js';
+import { telegramSend } from './lib/telegram/simple.js';
 
 const env = {};
 
@@ -101,7 +102,5 @@ process.on('SIGINT', exit);
 process.on('SIGTERM', exit);
 process.on('SIGUSR1', exit);
 process.on('SIGUSR2', exit);
-
-const app = require('./app/app');
 
 app(env);

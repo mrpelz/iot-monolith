@@ -1,8 +1,7 @@
-const { createSocket } = require('dgram');
-
-const { Transport } = require('./index');
-const { humanPayload } = require('../utils/data');
-const { rebind } = require('../utils/oop');
+import { Transport } from './index.js';
+import { createSocket } from 'dgram';
+import { humanPayload } from '../utils/data.js';
+import { rebind } from '../utils/oop.js';
 
 /**
  * @typedef Socket
@@ -27,7 +26,7 @@ const libName = 'udp transport';
 /**
  * @class UDPTransport
  */
-class UDPTransport extends Transport {
+export class UDPTransport extends Transport {
 
   /**
    * create instance of Transport
@@ -310,7 +309,3 @@ class UDPTransport extends Transport {
     );
   }
 }
-
-module.exports = {
-  UDPTransport
-};

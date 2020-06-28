@@ -1,8 +1,8 @@
-const { History, Trend } = require('../../lib/history');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { flattenArrays, getKey } = require('../../lib/utils/structures');
-const { RecurringMoment, every } = require('../../lib/utils/time');
-const { camel } = require('../../lib/utils/string');
+import { History, Trend } from '../../lib/history/index.js';
+import { RecurringMoment, every } from '../../lib/utils/time.js';
+import { flattenArrays, getKey } from '../../lib/utils/structures.js';
+import { camel } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
 function createHistory(name, retainHours, max, min, historyDb) {
   const history = new History({ retainHours });
@@ -155,7 +155,7 @@ function metricAggregatesHistory(
   });
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       historyRetainHours: retainHours,
@@ -207,7 +207,3 @@ function create(config, data) {
     histories
   });
 }
-
-module.exports = {
-  create
-};

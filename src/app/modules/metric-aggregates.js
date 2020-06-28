@@ -1,13 +1,12 @@
-const { Aggregate } = require('../../lib/aggregate');
-const { HmiElement } = require('../../lib/hmi');
-const { sanity } = require('../../lib/utils/math');
-const { camel } = require('../../lib/utils/string');
-const { flattenArrays } = require('../../lib/utils/structures');
+import { Aggregate } from '../../lib/aggregate/index.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { camel } from '../../lib/utils/string.js';
+import { flattenArrays } from '../../lib/utils/structures.js';
+import { sanity } from '../../lib/utils/math.js';
+import { setUpHistoryTrendHmi } from '../utils/hmi.js';
 
-const { setUpHistoryTrendHmi } = require('../utils/hmi');
 
-
-function create(config, data) {
+export function create(config, data) {
   const {
     'metric-aggregates': metricAggregatesConfig
   } = config;
@@ -156,7 +155,7 @@ function metricAggrgatesHmi(
   });
 }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     hmi: {
       trendFactorThreshold,
@@ -182,9 +181,3 @@ function manage(config, data) {
     trendFactorThreshold
   );
 }
-
-
-module.exports = {
-  create,
-  manage
-};

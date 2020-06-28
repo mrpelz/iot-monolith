@@ -1,10 +1,10 @@
-const { randomFillSync } = require('crypto');
+import { randomFillSync } from 'crypto';
 
-const emptyBuffer = Buffer.from([]);
-const falseBuffer = Buffer.from([0]);
-const trueBuffer = Buffer.from([1]);
+export const emptyBuffer = Buffer.from([]);
+export const falseBuffer = Buffer.from([0]);
+export const trueBuffer = Buffer.from([1]);
 
-function arrayPadLeft(input, length, value = null) {
+export function arrayPadLeft(input, length, value = null) {
   if (typeof input !== 'object' || !Array.isArray(input)) {
     throw new Error('input is not an array');
   }
@@ -16,7 +16,7 @@ function arrayPadLeft(input, length, value = null) {
   return input;
 }
 
-function arrayPadRight(input, length, value = null) {
+export function arrayPadRight(input, length, value = null) {
   if (typeof input !== 'object' || !Array.isArray(input)) {
     throw new Error('input is not an array');
   }
@@ -28,13 +28,13 @@ function arrayPadRight(input, length, value = null) {
   return input;
 }
 
-function concatBytes(input) {
+export function concatBytes(input) {
   return Buffer.concat(input.map((byte) => {
     return Buffer.from([byte]);
   }));
 }
 
-function humanPayload(input) {
+export function humanPayload(input) {
   const payload = [...input];
 
   return [
@@ -53,7 +53,7 @@ function humanPayload(input) {
   ].join('\n');
 }
 
-function numberToDigits(input, pad = 0, radix = 10) {
+export function numberToDigits(input, pad = 0, radix = 10) {
   if (typeof input !== 'number') {
     throw new Error('input not a number');
   }
@@ -69,7 +69,7 @@ function numberToDigits(input, pad = 0, radix = 10) {
   });
 }
 
-function randomString(length = 2) {
+export function randomString(length = 2) {
   const cache = Buffer.alloc(Math.max(1, length / 2));
   return randomFillSync(cache).toString('hex');
 }
@@ -80,7 +80,7 @@ function randomString(length = 2) {
  * @param {number} bytes byte count
  * @returns {number}
  */
-function readNumber(input, bytes = 1) {
+export function readNumber(input, bytes = 1) {
   if (input.length < bytes) {
     throw new Error('number cannot be represented');
   }
@@ -97,15 +97,15 @@ function readNumber(input, bytes = 1) {
   }
 }
 
-function booleanToBuffer(input) {
+export function booleanToBuffer(input) {
   return input ? trueBuffer : falseBuffer;
 }
 
-function bufferToBoolean(input) {
+export function bufferToBoolean(input) {
   return Boolean(readNumber(input, 1));
 }
 
-function swapByte(input) {
+export function swapByte(input) {
   let byte = input;
   /* eslint-disable no-bitwise */
   byte = ((byte & 0b11110000) >> 4) | ((byte & 0b1111) << 4);
@@ -115,7 +115,7 @@ function swapByte(input) {
   return byte;
 }
 
-function writeNumber(input, bytes = 1) {
+export function writeNumber(input, bytes = 1) {
   if ((input < 0) || (input >= 2 ** (bytes * 8))) {
     throw new Error('number cannot be represented');
   }
@@ -137,20 +137,3 @@ function writeNumber(input, bytes = 1) {
   }
   return cache;
 }
-
-module.exports = {
-  booleanToBuffer,
-  bufferToBoolean,
-  emptyBuffer,
-  falseBuffer,
-  arrayPadLeft,
-  arrayPadRight,
-  concatBytes,
-  humanPayload,
-  numberToDigits,
-  randomString,
-  readNumber,
-  swapByte,
-  trueBuffer,
-  writeNumber
-};

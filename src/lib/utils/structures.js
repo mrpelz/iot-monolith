@@ -1,10 +1,10 @@
-function arrayRandom(input) {
+export function arrayRandom(input) {
   return input[
     Math.floor(Math.random() * input.length)
   ];
 }
 
-function arraysToObject(keyArray, valueArray) {
+export function arraysToObject(keyArray, valueArray) {
   if (!Array.isArray(keyArray) || !Array.isArray(valueArray)) {
     throw new Error('inputs are not arrays');
   }
@@ -21,7 +21,7 @@ function arraysToObject(keyArray, valueArray) {
   return result;
 }
 
-function flattenArrays(input, result = []) {
+export function flattenArrays(input, result = []) {
   for (let i = 0; i < input.length; i += 1) {
     const value = input[i];
     if (Array.isArray(value)) {
@@ -33,7 +33,7 @@ function flattenArrays(input, result = []) {
   return result;
 }
 
-function flattenData(input, parentKey = null) {
+export function flattenData(input, parentKey = null) {
   if (
     !input
     || typeof input !== 'object'
@@ -63,7 +63,7 @@ function flattenData(input, parentKey = null) {
   return result;
 }
 
-function getKey(object, key) {
+export function getKey(object, key) {
   if (!object[key]) {
     object[key] = {};
   }
@@ -71,7 +71,7 @@ function getKey(object, key) {
   return object[key];
 }
 
-function isObject(input) {
+export function isObject(input) {
   return (
     input !== null
     && typeof input === 'object'
@@ -79,7 +79,7 @@ function isObject(input) {
   );
 }
 
-function includeKeys(object, ...keys) {
+export function includeKeys(object, ...keys) {
   if (!isObject(object)) throw new Error('input is not an object');
 
   const result = {};
@@ -94,7 +94,7 @@ function includeKeys(object, ...keys) {
   return result;
 }
 
-function excludeKeys(object, ...keys) {
+export function excludeKeys(object, ...keys) {
   if (!isObject(object)) throw new Error('input is not an object');
 
   const result = {};
@@ -111,7 +111,7 @@ function excludeKeys(object, ...keys) {
   return result;
 }
 
-function findFlattenedDiff(old, current) {
+export function findFlattenedDiff(old, current) {
   if (!isObject(old)) {
     throw new Error('input "a" is not an object');
   }
@@ -151,18 +151,18 @@ function findFlattenedDiff(old, current) {
   return result;
 }
 
-function compareObjects(a, b) {
+export function compareObjects(a, b) {
   return findFlattenedDiff(
     flattenData(a),
     flattenData(b)
   );
 }
 
-function isPrimitive(input) {
+export function isPrimitive(input) {
   return Object(input) !== input;
 }
 
-function objectFrom(value, ...keys) {
+export function objectFrom(value, ...keys) {
   const result = {};
 
   keys.forEach((key) => {
@@ -171,18 +171,3 @@ function objectFrom(value, ...keys) {
 
   return result;
 }
-
-module.exports = {
-  arrayRandom,
-  arraysToObject,
-  compareObjects,
-  excludeKeys,
-  findFlattenedDiff,
-  flattenArrays,
-  flattenData,
-  isPrimitive,
-  getKey,
-  includeKeys,
-  isObject,
-  objectFrom
-};

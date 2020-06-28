@@ -1,7 +1,7 @@
-const { resolveAlways } = require('../../lib/utils/oop');
-const { Timer } = require('../../lib/utils/time');
+import { Timer } from '../../lib/utils/time.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
-function coupleDoorSensorToLight(
+export function coupleDoorSensorToLight(
   lights,
   doorSensors,
   lightName,
@@ -29,7 +29,7 @@ function coupleDoorSensorToLight(
   });
 }
 
-function coupleDoorSensorToLightTimeout(
+export function coupleDoorSensorToLightTimeout(
   lights,
   doorSensors,
   lightName,
@@ -73,7 +73,7 @@ function coupleDoorSensorToLightTimeout(
   });
 }
 
-function coupleRfSwitchToLight(
+export function coupleRfSwitchToLight(
   lights,
   rfSwitches,
   lightName,
@@ -100,7 +100,7 @@ function coupleRfSwitchToLight(
   });
 }
 
-function coupleRfSwitchToLightIncrease(
+export function coupleRfSwitchToLightIncrease(
   lights,
   rfSwitches,
   lightName,
@@ -131,7 +131,7 @@ function coupleRfSwitchToLightIncrease(
   });
 }
 
-function coupleRfToggleToLight(
+export function coupleRfToggleToLight(
   lights,
   rfSwitches,
   lightName,
@@ -162,7 +162,7 @@ function coupleRfToggleToLight(
   });
 }
 
-function coupleRoomSensorToLight(
+export function coupleRoomSensorToLight(
   lights,
   roomSensors,
   lightName,
@@ -202,12 +202,3 @@ function coupleRoomSensorToLight(
     lightTimer.start();
   });
 }
-
-module.exports = {
-  coupleDoorSensorToLight,
-  coupleDoorSensorToLightTimeout,
-  coupleRfSwitchToLight,
-  coupleRfSwitchToLightIncrease,
-  coupleRfToggleToLight,
-  coupleRoomSensorToLight
-};

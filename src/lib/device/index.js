@@ -1,9 +1,8 @@
-const { EventEmitter } = require('events');
-
-const { Logger } = require('../log');
-const { writeNumber, readNumber } = require('../utils/data');
-const { rebind } = require('../utils/oop');
-const { Timer } = require('../utils/time');
+import { readNumber, writeNumber } from '../utils/data.js';
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
+import { Timer } from '../utils/time.js';
+import { rebind } from '../utils/oop.js';
 
 /**
  * @typedef I_AnyTransport
@@ -49,12 +48,12 @@ const libName = 'device';
 
 const eventIdentifier = 0x00;
 
-const onlineState = {
+export const onlineState = {
   true: Symbol('deviceIsOnline'),
   false: Symbol('deviceIsOffline')
 };
 
-const eventSymbol = Symbol('event');
+export const eventSymbol = Symbol('event');
 
 /**
  * @class Service
@@ -128,7 +127,7 @@ class Service extends EventEmitter {
 /**
  * @class Device
  */
-class Device extends EventEmitter {
+export class Device extends EventEmitter {
 
   /**
    * create instance of Device
@@ -307,9 +306,3 @@ class Device extends EventEmitter {
     });
   }
 }
-
-module.exports = {
-  Device,
-  onlineState,
-  eventSymbol
-};

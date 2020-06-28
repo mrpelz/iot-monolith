@@ -1,6 +1,6 @@
-const { Scheduler } = require('../../lib/utils/time');
+import { Scheduler } from '../../lib/utils/time.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       schedulerPrecision
@@ -11,7 +11,3 @@ function create(config, data) {
     scheduler: new Scheduler(schedulerPrecision)
   });
 }
-
-module.exports = {
-  create
-};

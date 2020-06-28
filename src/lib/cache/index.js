@@ -1,6 +1,6 @@
-const { isPromise, rebind } = require('../utils/oop');
+import { isPromise, rebind } from '../utils/oop.js';
 
-class Cache {
+export class Cache {
   constructor(timeout = 0) {
     this.time = null;
     this.timeout = timeout;
@@ -22,7 +22,7 @@ class Cache {
   }
 }
 
-class CachePromise {
+export class CachePromise {
   constructor(timeout = 0) {
     this._deferred = [];
     this._fulfilled = false;
@@ -125,8 +125,3 @@ class CachePromise {
     return result;
   }
 }
-
-module.exports = {
-  Cache,
-  CachePromise
-};

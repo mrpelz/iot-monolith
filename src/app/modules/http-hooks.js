@@ -1,9 +1,9 @@
-const { HmiElement } = require('../../lib/hmi');
-const { HttpServer } = require('../../lib/http/server');
-const { post } = require('../../lib/http/client');
-const { resolveAlways } = require('../../lib/utils/oop');
+import { HmiElement } from '../../lib/hmi/index.js';
+import { HttpServer } from '../../lib/http/server.js';
+import { post } from '../../lib/http/client.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       httpHooksPort: port
@@ -25,7 +25,7 @@ function create(config, data) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const { hmiServer } = data;
 
   let active = false;
@@ -57,8 +57,3 @@ function manage(_, data) {
     });
   });
 }
-
-module.exports = {
-  create,
-  manage
-};

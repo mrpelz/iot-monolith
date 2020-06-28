@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { telegramSend } = require('../telegram/simple');
+import { telegramSend } from '../telegram/simple.js';
 
 const {
   isProd = false,
@@ -41,7 +41,7 @@ function indent(input) {
   }).join('\n');
 }
 
-class Logger {
+export class Logger {
   constructor(name = null) {
     this._name = name;
     this._prefixes = [];
@@ -188,7 +188,3 @@ class Logger {
     this._log(options(0, opts), prefix);
   }
 }
-
-module.exports = {
-  Logger
-};

@@ -1,6 +1,6 @@
-const { WebApi } = require('../../lib/web-api');
+import { WebApi } from '../../lib/web-api/index.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       webApiPort,
@@ -30,7 +30,3 @@ function create(config, data) {
     webApi
   });
 }
-
-module.exports = {
-  create
-};

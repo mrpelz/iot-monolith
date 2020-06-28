@@ -1,3 +1,3 @@
-require('./logic');
-require('./structures');
-require('./time');
+import './logic';
+import './structures';
+import './time';

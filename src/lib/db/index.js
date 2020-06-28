@@ -1,22 +1,21 @@
-const {
-  existsSync: exists,
-  ftruncateSync: truncate,
-  openSync: open,
-  readFileSync: read,
-  writeFileSync: write
-} = require('fs');
-const { join } = require('path');
-const { tmpdir } = require('os');
-
-const { Logger } = require('../log');
-const { rebind } = require('../utils/oop');
-const { every, RecurringMoment } = require('../utils/time');
+import { RecurringMoment, every } from '../utils/time.js';
+import {
+  existsSync as exists,
+  openSync as open,
+  readFileSync as read,
+  ftruncateSync as truncate,
+  writeFileSync as write,
+} from 'fs';
+import { Logger } from '../log/index.js';
+import { join } from 'path';
+import { rebind } from '../utils/oop.js';
+import { tmpdir } from 'os';
 
 const libName = 'db';
 
 const path = join(tmpdir(), 'iot-db.json');
 
-class Db {
+export class Db {
   constructor(options = {}) {
     const {
       saveInterval = null,
@@ -106,7 +105,3 @@ class Db {
     this._onSave();
   }
 }
-
-module.exports = {
-  Db
-};

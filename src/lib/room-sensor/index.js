@@ -1,10 +1,10 @@
-const { MessageClient } = require('../messaging');
-const { CachePromise } = require('../cache');
-const { readNumber, bufferToBoolean } = require('../utils/data');
-const { arraysToObject } = require('../utils/structures');
-const { resolveAlways } = require('../utils/oop');
-const { sanity } = require('../utils/math');
-const { sleep } = require('../utils/time');
+import { bufferToBoolean, readNumber } from '../utils/data.js';
+import { CachePromise } from '../cache/index.js';
+import { MessageClient } from '../messaging/index.js';
+import { arraysToObject } from '../utils/structures.js';
+import { resolveAlways } from '../utils/oop.js';
+import { sanity } from '../utils/math.js';
+import { sleep } from '../utils/time.js';
 
 const libName = 'room-sensor';
 
@@ -196,7 +196,7 @@ function getCaches(metrics) {
   );
 }
 
-class RoomSensor extends MessageClient {
+export class RoomSensor extends MessageClient {
   constructor(options = {}) {
     const {
       host = null,
@@ -441,7 +441,3 @@ class RoomSensor extends MessageClient {
   // getCo2
   // getMovement
 }
-
-module.exports = {
-  RoomSensor
-};

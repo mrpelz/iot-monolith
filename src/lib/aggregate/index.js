@@ -1,13 +1,8 @@
-const { resolveAlways, rebind } = require('../utils/oop');
-const {
-  mean,
-  median,
-  minNumber,
-  maxNumber
-} = require('../utils/math');
-const { sortTimes } = require('../utils/time');
+import { maxNumber, mean, median, minNumber } from '../utils/math.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { sortTimes } from '../utils/time.js';
 
-class Aggregate {
+export class Aggregate {
   constructor(getters = [], timeGetters = [], stateGetters = [], type = 'mean') {
     if (!type || !['mean', 'median', 'min', 'max'].includes(type)) {
       throw new Error('illegal type');
@@ -70,7 +65,3 @@ class Aggregate {
     return this.aggregator(results);
   }
 }
-
-module.exports = {
-  Aggregate
-};

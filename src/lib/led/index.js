@@ -1,14 +1,9 @@
-const { Base } = require('../base');
-const { MessageClient } = require('../messaging');
-const {
-  booleanToBuffer,
-  bufferToBoolean,
-  readNumber,
-  writeNumber
-} = require('../utils/data');
-const { ledCalc, transitions } = require('../utils/math');
-const { Remap } = require('../utils/logic');
-const { rebind, resolveAlways } = require('../utils/oop');
+import { booleanToBuffer, bufferToBoolean, readNumber, writeNumber } from '../utils/data.js';
+import { ledCalc, transitions } from '../utils/math.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { Base } from '../base/index.js';
+import { MessageClient } from '../messaging/index.js';
+import { Remap } from '../utils/logic.js';
 
 const libName = 'led';
 
@@ -95,7 +90,7 @@ function getMessageTypes(channels) {
   ];
 }
 
-class LedDriver extends MessageClient {
+export class LedDriver extends MessageClient {
   constructor(options = {}) {
     const {
       host = null,
@@ -226,7 +221,7 @@ class LedDriver extends MessageClient {
   // getChannel
 }
 
-class H801 extends LedDriver {
+export class H801 extends LedDriver {
   constructor(options) {
     super(Object.assign({}, {
       channels: 5
@@ -234,7 +229,7 @@ class H801 extends LedDriver {
   }
 }
 
-class LedLight extends Base {
+export class LedLight extends Base {
   constructor(options = {}) {
     super();
 
@@ -409,7 +404,7 @@ class LedLight extends Base {
   // power
 }
 
-class RGBLed {
+export class RGBLed {
   constructor(options = {}) {
     const {
       driver = null,
@@ -483,10 +478,3 @@ class RGBLed {
     return this.setColor(r, g, b, duration);
   }
 }
-
-module.exports = {
-  H801,
-  LedDriver,
-  LedLight,
-  RGBLed
-};

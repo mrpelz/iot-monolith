@@ -1,6 +1,6 @@
-const { Db } = require('../../lib/db');
+import { Db } from '../../lib/db/index.js';
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       dbWriteInterval: saveInterval
@@ -18,7 +18,3 @@ function create(config, data) {
     })
   });
 }
-
-module.exports = {
-  create
-};

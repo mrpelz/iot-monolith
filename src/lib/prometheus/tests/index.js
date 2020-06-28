@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const { Prometheus } = require('../index');
-const { RoomSensor } = require('../../room-sensor');
+import { Prometheus } from '../index.js';
+
+import { RoomSensor } from '../../room-sensor/index.js';
 
 const prometheus = new Prometheus({
   port: 5555

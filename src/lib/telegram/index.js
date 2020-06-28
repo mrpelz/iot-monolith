@@ -1,8 +1,8 @@
-const { post, LongPollClient } = require('../http/client');
-const { Logger } = require('../log');
-const { randomString } = require('../utils/data');
-const { rebind, resolveAlways } = require('../utils/oop');
-const { excludeKeys, flattenArrays, getKey } = require('../utils/structures');
+import { LongPollClient, post } from '../http/client.js';
+import { excludeKeys, flattenArrays, getKey } from '../utils/structures.js';
+import { rebind, resolveAlways } from '../utils/oop.js';
+import { Logger } from '../log/index.js';
+import { randomString } from '../utils/data.js';
 
 const libName = 'telegram';
 
@@ -186,7 +186,7 @@ class Message {
       const {
         date,
         from: {
-          id: fromId
+          id: fromId = null
         } = {},
         message_id: messageId,
         text
@@ -637,19 +637,14 @@ class Client {
   }
 }
 
-function createTelegramClient(scheduler, token, host, db) {
+export function createTelegramClient(scheduler, token, host, db) {
   return Client.create(scheduler, token, host, db);
 }
 
-function createInlineKeyboard(layout = []) {
+export function createInlineKeyboard(layout = []) {
   return new InlineKeyboard(layout.map((row) => {
     return new InlineKeyboardRow(row.map((button) => {
       return new InlineKeyboardButton(button);
     }));
   }));
 }
-
-module.exports = {
-  createInlineKeyboard,
-  createTelegramClient
-};

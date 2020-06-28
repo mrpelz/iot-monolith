@@ -1,11 +1,7 @@
-const { HmiServer } = require('../../lib/hmi');
+import { HmiServer } from '../../lib/hmi/index.js';
 
-function create(_, data) {
+export function create(_, data) {
   Object.assign(data, {
     hmiServer: new HmiServer()
   });
 }
-
-module.exports = {
-  create
-};

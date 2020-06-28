@@ -1,13 +1,9 @@
-const { EventEmitter } = require('events');
-const { Logger } = require('../log');
+import { EventEmitter } from 'events';
+import { Logger } from '../log/index.js';
 
-class Base extends EventEmitter {
+export class Base extends EventEmitter {
   constructor() {
     super();
     this.log = new Logger();
   }
 }
-
-module.exports = {
-  Base
-};

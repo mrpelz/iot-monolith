@@ -1,11 +1,9 @@
-const { EventEmitter } = require('events');
-
-const { HmiElement } = require('../../lib/hmi');
-const { SevenSegment } = require('../../lib/seven-segment');
-const { resolveAlways, rebind } = require('../../lib/utils/oop');
-const { every, RecurringMoment, Timer } = require('../../lib/utils/time');
-
-const { setUpConnectionHmi } = require('../utils/hmi');
+import { RecurringMoment, Timer, every } from '../../lib/utils/time.js';
+import { rebind, resolveAlways } from '../../lib/utils/oop.js';
+import { EventEmitter } from 'events';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { SevenSegment } from '../../lib/seven-segment/index.js';
+import { setUpConnectionHmi } from '../utils/hmi.js';
 
 
 function createSevenSegment(sevenSegment) {
@@ -24,7 +22,7 @@ function createSevenSegment(sevenSegment) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       sevenSegment: sevenSegmentConfig
@@ -202,7 +200,7 @@ function sevenSegmentHmi(sevenSegment, hmiServer) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const {
     hmiServer,
     httpHookServer,
@@ -218,9 +216,3 @@ function manage(_, data) {
   kuecheRoomSensorWithClockToggle(roomSensors, sevenSegment);
   sevenSegmentHmi(sevenSegment, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

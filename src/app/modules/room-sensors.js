@@ -1,12 +1,11 @@
-const { RoomSensor } = require('../../lib/room-sensor');
-const { PushMetricGroup } = require('../../lib/group');
-const { HmiElement } = require('../../lib/hmi');
-const { sanity } = require('../../lib/utils/math');
-const { resolveAlways } = require('../../lib/utils/oop');
-const { camel } = require('../../lib/utils/string');
-const { every, CallTiming, RecurringMoment } = require('../../lib/utils/time');
-
-const { setUpConnectionHmi, setUpHistoryTrendHmi } = require('../utils/hmi');
+import { CallTiming, RecurringMoment, every } from '../../lib/utils/time.js';
+import { setUpConnectionHmi, setUpHistoryTrendHmi } from '../utils/hmi.js';
+import { HmiElement } from '../../lib/hmi/index.js';
+import { PushMetricGroup } from '../../lib/group/index.js';
+import { RoomSensor } from '../../lib/room-sensor/index.js';
+import { camel } from '../../lib/utils/string.js';
+import { resolveAlways } from '../../lib/utils/oop.js';
+import { sanity } from '../../lib/utils/math.js';
 
 
 const securityMetric = 'movement';
@@ -107,7 +106,7 @@ function createAllMovementGroup(allRoomSensors) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       metricSchedule
@@ -226,7 +225,7 @@ function roomSensorsHmi(
       instance,
       metrics,
       attributes: {
-        hmi: hmiAttributes
+        hmi: hmiAttributes = null
       } = {}
     } = sensor;
 
@@ -308,7 +307,7 @@ function allMovementGroupHmi(instance, hmiServer) {
   });
 }
 
-function manage(config, data) {
+export function manage(config, data) {
   const {
     hmi: {
       trendFactorThreshold,
@@ -338,9 +337,3 @@ function manage(config, data) {
   );
   allMovementGroupHmi(allMovementGroup, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

@@ -1,6 +1,5 @@
-const { Ev1527Server, Ev1527ServerAggregator } = require('../../lib/ev1527');
-
-const { setUpConnectionHmi } = require('../utils/hmi');
+import { Ev1527Server, Ev1527ServerAggregator } from '../../lib/ev1527/index.js';
+import { setUpConnectionHmi } from '../utils/hmi.js';
 
 
 function createEv1527Server(server) {
@@ -19,7 +18,7 @@ function createEv1527Server(server) {
   }
 }
 
-function create(config, data) {
+export function create(config, data) {
   const {
     globals: {
       ev1527
@@ -61,7 +60,7 @@ function ev1527SingleServerHmi(ev1527SingleServers, hmiServer) {
   });
 }
 
-function manage(_, data) {
+export function manage(_, data) {
   const {
     ev1527SingleServers,
     hmiServer
@@ -69,9 +68,3 @@ function manage(_, data) {
 
   ev1527SingleServerHmi(ev1527SingleServers, hmiServer);
 }
-
-
-module.exports = {
-  create,
-  manage
-};

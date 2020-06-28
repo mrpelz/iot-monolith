@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { PriorityValue } = require('../logic');
+import { PriorityValue } from '../logic.js';
 
 console.log('→ creating instance with initial value on priority 0');
 const value = new PriorityValue('initial');

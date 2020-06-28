@@ -1,15 +1,15 @@
-const { MessageClient } = require('../messaging');
-const {
+import {
   arrayPadLeft,
-  concatBytes,
   bufferToBoolean,
+  concatBytes,
   numberToDigits,
   swapByte
-} = require('../utils/data');
-const { rebind } = require('../utils/oop');
-const { words } = require('../utils/string');
-const { sleep } = require('../utils/time');
-const { sanity } = require('../utils/math');
+} from '../utils/data.js';
+import { MessageClient } from '../messaging/index.js';
+import { rebind } from '../utils/oop.js';
+import { sanity } from '../utils/math.js';
+import { sleep } from '../utils/time.js';
+import { words } from '../utils/string.js';
 
 const libName = 'seven-segment';
 
@@ -187,7 +187,7 @@ function stringCrawl(input) {
   return result;
 }
 
-class SevenSegment extends MessageClient {
+export class SevenSegment extends MessageClient {
   constructor(options = {}) {
     const {
       host = null,
@@ -384,7 +384,3 @@ class SevenSegment extends MessageClient {
   // Public properties:
   // display
 }
-
-module.exports = {
-  SevenSegment
-};

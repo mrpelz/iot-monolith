@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-const { MessageClient } = require('../index');
-const { emptyBuffer } = require('../../utils/data');
+import { MessageClient } from '../index.js';
+
+import { emptyBuffer } from '../../utils/data.js';
 
 // MESSAGE TEST
 const client = new MessageClient({

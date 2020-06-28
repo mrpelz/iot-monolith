@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-const { Ev1527Server } = require('../index');
-const { DoorSensor } = require('../../door-sensor');
-const { Tx118sa4 } = require('../../tx118sa4');
+import { DoorSensor } from '../../door-sensor/index.js';
+import { Ev1527Server } from '../index.js';
+import { Tx118sa4 } from '../../tx118sa4/index.js';
 
 const server = new Ev1527Server({
   host: 'flexo.net.wurstsalat.cloud',

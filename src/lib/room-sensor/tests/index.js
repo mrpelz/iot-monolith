@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-const { RoomSensor } = require('../index');
+import { RoomSensor } from '../index.js';
 
 const roomSensor = new RoomSensor({
   host: '10.97.0.223',

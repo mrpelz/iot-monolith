@@ -1,7 +1,7 @@
-const { ReliableSocket } = require('../tcp');
-const { emptyBuffer, readNumber } = require('../utils/data');
-const { rebind } = require('../utils/oop');
-const { sleep } = require('../utils/time');
+import { emptyBuffer, readNumber } from '../utils/data.js';
+import { ReliableSocket } from '../tcp/index.js';
+import { rebind } from '../utils/oop.js';
+import { sleep } from '../utils/time.js';
 
 const libName = 'messaging';
 
@@ -85,7 +85,7 @@ function callId(state) {
   return id;
 }
 
-class MessageClient extends ReliableSocket {
+export class MessageClient extends ReliableSocket {
   constructor(options = {}) {
     const {
       host = null,
@@ -264,7 +264,3 @@ class MessageClient extends ReliableSocket {
   // disconnect
   // request
 }
-
-module.exports = {
-  MessageClient
-};

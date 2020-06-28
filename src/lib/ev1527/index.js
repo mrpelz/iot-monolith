@@ -1,16 +1,15 @@
-const { EventEmitter } = require('events');
-
-const { Base } = require('../base');
-const { PersistentSocket } = require('../tcp');
-const { rebind } = require('../utils/oop');
-const { throttle } = require('../utils/time');
+import { Base } from '../base/index.js';
+import { EventEmitter } from 'events';
+import { PersistentSocket } from '../tcp/index.js';
+import { rebind } from '../utils/oop.js';
+import { throttle } from '../utils/time.js';
 
 const libName = 'ev1527';
 
 const apiDelimiter = 0x0a;
 const apiEncoding = 'utf8';
 
-class Ev1527Server extends PersistentSocket {
+export class Ev1527Server extends PersistentSocket {
   constructor(options = {}) {
     const {
       host = null,
@@ -72,7 +71,7 @@ class Ev1527Server extends PersistentSocket {
   // disconnect
 }
 
-class Ev1527ServerAggregator extends EventEmitter {
+export class Ev1527ServerAggregator extends EventEmitter {
   constructor(...servers) {
     super();
 
@@ -88,7 +87,7 @@ class Ev1527ServerAggregator extends EventEmitter {
   }
 }
 
-class Ev1527Device extends Base {
+export class Ev1527Device extends Base {
   static prepareMatchers(matchSet) {
     const { device, states } = matchSet;
 
@@ -177,9 +176,3 @@ class Ev1527Device extends Base {
     });
   }
 }
-
-module.exports = {
-  Ev1527Server,
-  Ev1527ServerAggregator,
-  Ev1527Device
-};

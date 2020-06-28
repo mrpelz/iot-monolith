@@ -1,10 +1,9 @@
-const { EventEmitter } = require('events');
+import { calc, epochs } from '../utils/time.js';
+import { EventEmitter } from 'events';
+import { mean } from '../utils/math.js';
+import { rebind } from '../utils/oop.js';
 
-const { rebind } = require('../utils/oop');
-const { calc, epochs } = require('../utils/time');
-const { mean } = require('../utils/math');
-
-class History extends EventEmitter {
+export class History extends EventEmitter {
   static lastItems(values, n = 1) {
     return values.slice(n * -1);
   }
@@ -60,7 +59,7 @@ class History extends EventEmitter {
   }
 }
 
-class Trend {
+export class Trend {
   constructor(options = {}) {
     const {
       history,
@@ -132,8 +131,3 @@ class Trend {
     };
   }
 }
-
-module.exports = {
-  History,
-  Trend
-};

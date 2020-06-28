@@ -1,12 +1,12 @@
-const { Device } = require('./index');
-const { UDPTransport } = require('../transport/udp');
+import { Device } from './index.js';
+import { UDPTransport } from '../transport/udp.js';
 
- /**
-  * @typedef I_UDPTransportOptions
-  * @type {import('../transport/udp').UDPTransportOptions}
-  */
+/**
+ * @typedef I_UDPTransportOptions
+ * @type {import('../transport/udp').UDPTransportOptions}
+ */
 
-class UDPDevice extends Device {
+export class UDPDevice extends Device {
 
   /**
    * create instance of Device
@@ -23,7 +23,3 @@ class UDPDevice extends Device {
     transport.connect();
   }
 }
-
-module.exports = {
-  UDPDevice
-};
