@@ -1,9 +1,6 @@
 import { RecurringMoment, every } from '../utils/time.js';
 import {
-  existsSync as exists,
-  openSync as open,
   readFileSync as read,
-  ftruncateSync as truncate,
   writeFileSync as write,
 } from 'fs';
 import { Logger } from '../log/index.js';
@@ -25,8 +22,6 @@ export class Db {
     if (!saveInterval || !scheduler) {
       throw new Error('insufficient options provided');
     }
-
-    this._descriptor = open(path, exists(path) ? 'r+' : 'w+');
 
     rebind(this, '_onSave');
 
@@ -50,18 +45,18 @@ export class Db {
     let payload;
 
     try {
-      data = read(this._descriptor);
-    } catch (readError) {
+      data = read(path);
+    } catch (_) {
       this.log.error('error reading db-file');
-      throw readError;
+      return null;
     }
 
     try {
       const json = data.toString();
       payload = json.length ? JSON.parse(json) : null;
-    } catch (parseError) {
+    } catch (_) {
       this.log.error('error parsing content of db-file');
-      throw parseError;
+      return null;
     }
 
     this.log.info('read db-file');
@@ -80,22 +75,16 @@ export class Db {
 
     try {
       json = JSON.stringify(data, null, null);
-    } catch (error) {
-      throw new Error('could not JSON-stringify db-data!');
+    } catch (_) {
+      this.log.error('could not JSON-stringify db-data!');
     }
 
     try {
-      truncate(this._descriptor);
-    } catch (truncateError) {
-      this.log.error('error emptying db-file');
-      throw truncateError;
-    }
-
-    try {
-      write(this._descriptor, Buffer.from(json));
-    } catch (writeError) {
+      write(path, Buffer.from(json), {
+        flag: 'w'
+      });
+    } catch (_) {
       this.log.error('error writing db-file');
-      throw writeError;
     }
 
     this.log.info('written db-file');
