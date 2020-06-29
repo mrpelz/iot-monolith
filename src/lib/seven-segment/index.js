@@ -205,7 +205,7 @@ export class SevenSegment extends MessageClient {
         {
           name: 'display',
           generator: (input) => {
-            return concatBytes(input.map((byte) => {
+            return concatBytes([...input].map((byte) => {
               return swapByte(byte);
             }));
           },

@@ -7,7 +7,7 @@ PIDFile=/run/iot-monolith/iot-monolith.pid
 Environment="CONFIG_PATH=./config"
 Environment="LOG_TELEGRAM=1"
 Environment="PROD_ENV=1"
-Environment="TELEGRAM_TOKEN=SECRET"
+# Environment="TELEGRAM_TOKEN=SECRET"
 WorkingDirectory=/opt/iot-monolith/
 ExecStartPre=/bin/cp -f /var/cache/iot-monolith/iot-db.json /tmp/iot-db.json
 ExecStart=/usr/bin/node --use_strict --experimental-modules src/index.js
