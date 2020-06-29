@@ -267,19 +267,18 @@ class Message {
       return this._client.request(method, Object.assign({
         message_id: this.id,
         [key]: value
-      }, excludeKeys(Message.createPayload(this._chat, options), ...editKeys)));
+      }, excludeKeys(
+        Message.createPayload(this._chat, options), ...editKeys
+      )
+      )).then((payload = {}) => {
+        const {
+          edit_date: editDate
+        } = payload;
+        this.editDate = new Date(editDate);
+      });
     });
 
-    return Promise.all(calls).then((payload = {}) => {
-      const {
-        edit_date: editDate
-      } = payload;
-      this.editDate = new Date(editDate);
-
-      return true;
-    }).catch(() => {
-      return false;
-    });
+    return Promise.all(calls).then(() => true).catch(() => false);
   }
 
   delete() {
@@ -401,7 +400,7 @@ class Chat {
     const {
       date,
       from: {
-        id: fromId
+        id: fromId = null
       } = {},
       message_id: messageId,
       text
@@ -437,11 +436,11 @@ class Chat {
     const {
       data,
       from: {
-        id: fromId
+        id: fromId = null
       } = {},
       id,
       message: {
-        message_id: messageId
+        message_id: messageId = null
       } = {},
     } = payload;
 
@@ -590,11 +589,11 @@ class Client {
         [type]: payload,
         [type]: {
           chat: {
-            id: chatIdA
+            id: chatIdA = null
           } = {},
           message: {
             chat: {
-              id: chatIdB
+              id: chatIdB = null
             } = {}
           } = {}
         } = {}

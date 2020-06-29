@@ -36,7 +36,7 @@ export class EPaper {
   }
 
   _setUpHmiService(hmiServer, scheduler, update, updateOffset) {
-    const hmiService = hmiServer.addService(this._handleIngest);
+    const hmiService = hmiServer.addService();
     this._ePaper.hmiService = hmiService;
 
     new RecurringMoment(

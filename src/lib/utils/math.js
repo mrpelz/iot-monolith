@@ -38,7 +38,7 @@ export function minNumber(numbers) {
 }
 
 export function quotient(dividend, divisor) {
-  return Math.floor(dividend, divisor);
+  return Math.floor(dividend / divisor);
 }
 
 export function remainder(dividend, divisor) {

@@ -256,7 +256,7 @@ export class SevenSegment extends MessageClient {
     // console.log(display.map((x) => {
     //   return x.toString(2);
     // }));
-    return this.request('display', display).catch((reason) => {
+    return this.request('display', Buffer.from(display)).catch((reason) => {
       log.error({
         head: 'display error',
         attachment: reason

@@ -133,6 +133,9 @@ export class Logger {
 
     class LocalLogger extends Logger {
       constructor() {
+        super();
+
+        // @ts-ignore
         return {
           telegram: (opts) => { self.telegram(opts, prefix); },
           debug: (opts) => { self.debug(opts, prefix); },

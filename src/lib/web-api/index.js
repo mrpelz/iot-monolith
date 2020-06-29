@@ -63,7 +63,7 @@ function elementNames(elements, key = 'name') {
   const result = new Set();
 
   elements.forEach(({
-    attributes: { [key]: value = null } = {}
+    attributes: { [key]: value = null } = /** @type {{ [key: string]: any }} */ ({})
   }) => {
     result.add(value);
   });
@@ -73,7 +73,7 @@ function elementNames(elements, key = 'name') {
 
 function elementsInHierarchy(elements, value, key = 'name') {
   return elements.filter(({
-    attributes: { [key]: is = null } = {}
+    attributes: { [key]: is = null } = /** @type {{ [key: string]: any }} */ ({})
   }) => {
     return is === value || (
       (value === undefined || value === null)

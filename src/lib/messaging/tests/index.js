@@ -33,13 +33,13 @@ client.on('data', (input) => {
 client.on('connect', () => {
   console.log('connected');
 
-  client.request('test1', 'test1').then((value) => {
+  client.request('test1', Buffer.from('test1')).then((value) => {
     console.log(value);
   }, (error) => {
     console.error(error);
   });
 
-  client.request('test2', 'test2').then((value) => {
+  client.request('test2', Buffer.from('test2')).then((value) => {
     console.log(value);
   }, (error) => {
     console.error(error);
