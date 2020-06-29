@@ -61,6 +61,8 @@ function create(config, data) {
 }
 
 function manage(config, data) {
+  httpHooks.manage(config, data);
+
   doorSensors.manage(config, data);
   ev1527Server.manage(config, data);
   fans.manage(config, data);
@@ -71,7 +73,6 @@ function manage(config, data) {
   security.manage(config, data);
   sevenSegment.manage(config, data);
   vent.manage(config, data);
-  httpHooks.manage(config, data);
 
   fridgeUtils.manage(config, data);
 }

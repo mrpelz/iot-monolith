@@ -28,7 +28,9 @@ export function create(config, data) {
 export function manage(_, data) {
   const { hmiServer } = data;
 
-  let active = false;
+  const state = {
+    active: false
+  };
 
   const hmi = new HmiElement({
     name: 'ufiClock',
@@ -42,18 +44,26 @@ export function manage(_, data) {
     },
     server: hmiServer,
     getter: () => {
-      return Promise.resolve(active ? 'on' : 'off');
+      return Promise.resolve(state.active ? 'on' : 'off');
     },
     settable: true
   });
 
-  hmi.on('set', () => {
-    active = !active;
+  state.toggle = (on) => {
+    if (on === undefined) {
+      state.active = !state.active;
+    } else {
+      state.active = on;
+    }
 
     resolveAlways(
-      post(`http://ufi.mom.net.wurstsalat.cloud:1338/${active ? 'on' : 'off'}`)
+      post(`http://ufi.mom.net.wurstsalat.cloud:1338/${state.active ? 'on' : 'off'}`)
     ).then(() => {
       hmi.update();
     });
-  });
+  };
+
+  hmi.on('set', () => state.toggle());
+
+  data.ufiDisplay = state;
 }

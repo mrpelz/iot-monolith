@@ -96,6 +96,13 @@ function securityLightKill(security, allLightsGroup) {
   });
 }
 
+function securityDisplayKill(security, ufiDisplay) {
+  security.on('change', () => {
+    if (!security.armed || security.triggered) return;
+    ufiDisplay.toggle(false);
+  });
+}
+
 function securityToPrometheus(security, prometheus) {
   prometheus.metric(
     'security_state',
@@ -205,7 +212,8 @@ export function manage(config, data) {
     httpHookServer,
     prometheus,
     security,
-    telegram
+    telegram,
+    ufiDisplay
   } = data;
 
   const entryDoor = doorSensors.find(({ name }) => {
@@ -215,6 +223,7 @@ export function manage(config, data) {
 
   entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage);
   securityLightKill(security, allLightsGroup);
+  securityDisplayKill(security, ufiDisplay);
   securityToPrometheus(security, prometheus);
   securityHmi(security, hmiServer);
   securityHttpHooks(security, httpHookServer);
