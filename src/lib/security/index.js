@@ -115,15 +115,13 @@ export class Security extends EventEmitter {
       value: active
     });
 
-    this._telegram(`${active ? 'aktiv' : 'inaktiv'}`);
+    this._telegram(`${active ? `aktiv (Level ${level})` : 'inaktiv'}`);
 
     if (active) {
       this._log.info({
         head: 'level',
         value: this.level
       });
-
-      this._telegram(`level ${level}`);
     }
 
     this.emit('change');
@@ -138,7 +136,6 @@ export class Security extends EventEmitter {
     this.level = level;
 
     this._log.info('delayed activation');
-    this._telegram(`Aktivierung in ${armDelay / 1000} Sekunden`);
 
     this.timer.start();
 
