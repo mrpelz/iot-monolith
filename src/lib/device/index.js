@@ -6,12 +6,12 @@ import { rebind } from '../utils/oop.js';
 
 /**
  * @typedef I_AnyTransport
- * @type {import('../transport').AnyTransport}
+ * @type {import('../transport/index.js').AnyTransport}
  */
 
 /**
  * @typedef I_TransportDevice
- * @type {InstanceType<import('../transport')['TransportDevice']>}
+ * @type {InstanceType<import('../transport/index.js')['TransportDevice']>}
 */
 
 /**
@@ -28,7 +28,7 @@ import { rebind } from '../utils/oop.js';
  * @typedef RequestResolver
  * @type {{
  *  resolver: (value: Buffer) => void,
- *  timer: InstanceType<import('../utils/time')['Timer']>
+ *  timer: InstanceType<import('../utils/time.js')['Timer']>
  * }}
 */
 

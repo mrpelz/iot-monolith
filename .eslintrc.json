@@ -5,7 +5,12 @@
     "es6": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
+  ],
   "globals": {
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly"
@@ -111,6 +116,11 @@
     "id-length": "off",
     "id-match": "error",
     "implicit-arrow-linebreak": "error",
+    "import/extensions": [
+      "error",
+      "always"
+    ],
+    "import/no-commonjs": "error",
     "indent": "off",
     "indent-legacy": "off",
     "init-declarations": "off",

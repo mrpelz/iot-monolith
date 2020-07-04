@@ -3,7 +3,7 @@ import { UDPTransport } from '../transport/udp.js';
 
 /**
  * @typedef I_UDPTransportOptions
- * @type {import('../transport/udp').UDPTransportOptions}
+ * @type {import('../transport/udp.js').UDPTransportOptions}
  */
 
 export class UDPDevice extends Device {

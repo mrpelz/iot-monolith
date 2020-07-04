@@ -3,27 +3,27 @@ import { rebind } from '../utils/oop.js';
 
 /**
  * @typedef I_Device
- * @type {InstanceType<import('../device')['Device']>}
+ * @type {InstanceType<import('../device/index.js')['Device']>}
  */
 
 /**
  * @typedef I_TCPTransport
- * @type {InstanceType<import('./tcp')['TCPTransport']>}
+ * @type {InstanceType<import('./tcp.js')['TCPTransport']>}
  */
 
 /**
  * @typedef I_TCPTransportOptions
- * @type {import('./tcp').TCPTransportOptions}
+ * @type {import('./tcp.js').TCPTransportOptions}
  */
 
 /**
  * @typedef I_UDPTransport
- * @type {InstanceType<import('./udp')['UDPTransport']>}
+ * @type {InstanceType<import('./udp.js')['UDPTransport']>}
  */
 
 /**
  * @typedef I_UDPTransportOptions
- * @type {import('./udp').UDPTransportOptions}
+ * @type {import('./udp.js').UDPTransportOptions}
  */
 
 /**

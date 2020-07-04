@@ -11,7 +11,7 @@ const libName = 'tcp transport';
 
 /**
   * @typedef TCPTransportOptions
-  * @type {import('./index').TransportOptions & {
+  * @type {import('./index.js').TransportOptions & {
     *  host: string,
     *  port: number,
     *  lengthPreamble?: number,

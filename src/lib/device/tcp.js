@@ -3,7 +3,7 @@ import { TCPTransport } from '../transport/tcp.js';
 
 /**
  * @typedef I_TCPTransportOptions
- * @type {import('../transport/tcp').TCPTransportOptions}
+ * @type {import('../transport/tcp.js').TCPTransportOptions}
  */
 
 export class TCPDevice extends Device {

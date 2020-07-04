@@ -15,7 +15,7 @@ const libName = 'udp transport';
 
 /**
  * @typedef UDPTransportOptions
- * @type {import('./index').TransportOptions & {
+ * @type {import('./index.js').TransportOptions & {
  *  host: string,
  *  port: number,
  *  keepAlive?: number,

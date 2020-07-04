@@ -3,7 +3,7 @@
 
 /**
  * @typedef I_AnyTransport
- * @type {import('../index').AnyTransport}
+ * @type {import('../index.js').AnyTransport}
  */
 
 /**
