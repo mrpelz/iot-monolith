@@ -4,6 +4,27 @@ import { Timer } from '../utils/time.js';
 import { Transport } from './index.js';
 import { rebind } from '../utils/oop.js';
 
+// PACKET FORMAT
+//
+// request (to device):
+// |                                |                      |                                    |                    |
+// | length (1–n octets, default 1) | request id (1 octet) | service id (1–n octets, default 1) | payload (n octets) |
+// |  packet length (incl. headers) |            0x01–0xFF |                          0x00–0xFF |                    |
+// |                                |                      |                                    |                    |
+//
+// response (from device):
+// |                                |                      |                    |
+// | length (1–n octets, default 1) | request id (1 octet) | payload (n octets) |
+// |  packet length (incl. headers) |            0x01–0xFF |                    |
+// |                                |                      |                    |
+//
+// event (from device):
+// |                                |                      |                                  |                    |
+// | length (1–n octets, default 1) | request id (1 octet) | event id (1–n octets, default 1) | payload (n octets) |
+// |  packet length (incl. headers) |          always 0x00 |                        0x00–0xFF |                    |
+// |                                |                      |                                  |                    |
+//
+
 /**
  * @type {string}
  */

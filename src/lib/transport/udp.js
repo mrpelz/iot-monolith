@@ -3,6 +3,45 @@ import { createSocket } from 'dgram';
 import { humanPayload } from '../utils/data.js';
 import { rebind } from '../utils/oop.js';
 
+// PACKET FORMAT
+//
+// request, without sequence number (default, to device):
+// |                      |                                    |                    |
+// | request id (1 octet) | service id (1–n octets, default 1) | payload (n octets) |
+// |            0x01–0xFF |                          0x00–0xFF |                    |
+// |                      |                                    |                    |
+//
+// response, without sequence number (default, from device):
+// |                      |                    |
+// | request id (1 octet) | payload (n octets) |
+// |            0x01–0xFF |                    |
+// |                      |                    |
+//
+// event, without sequence number (default, from device):
+// |                      |                                  |                    |
+// | request id (1 octet) | event id (1–n octets, default 1) | payload (n octets) |
+// |          always 0x00 |                        0x00–0xFF |                    |
+// |                      |                                  |                    |
+//
+// request, with sequence number (to device):
+// |                           |                      |                                    |                    |
+// | sequence number (1 octet) | request id (1 octet) | service id (1–n octets, default 1) | payload (n octets) |
+// |                 0x00–0xFF |            0x01–0xFF |                          0x00–0xFF |                    |
+// |                           |                      |                                    |                    |
+//
+// response, with sequence number (from device):
+// |                           |                      |                    |
+// | sequence number (1 octet) | request id (1 octet) | payload (n octets) |
+// |                 0x00–0xFF |            0x01–0xFF |                    |
+// |                           |                      |                    |
+//
+// event, with sequence number (from device):
+// |                           |                      |                                  |                    |
+// | sequence number (1 octet) | request id (1 octet) | event id (1–n octets, default 1) | payload (n octets) |
+// |                 0x00–0xFF |          always 0x00 |                        0x00–0xFF |                    |
+// |                           |                      |                                  |                    |
+//
+
 /**
  * @typedef Socket
  * @type {import('dgram').Socket}
