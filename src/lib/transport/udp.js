@@ -6,40 +6,40 @@ import { rebind } from '../utils/oop.js';
 // PACKET FORMAT
 //
 // request, without sequence number (default, to device):
-// |                      |                                    |                    |
-// | request id (1 octet) | service id (1–n octets, default 1) | payload (n octets) |
-// |            0x01–0xFF |                          0x00–0xFF |                    |
-// |                      |                                    |                    |
+// |                      |                                    |                      |
+// | request id (1 octet) | service id (1–n octets, default 1) | payload (0–n octets) |
+// |            0x01–0xFF |                          0x00–0xFF |                      |
+// |                      |                                    |                      |
 //
 // response, without sequence number (default, from device):
-// |                      |                    |
-// | request id (1 octet) | payload (n octets) |
-// |            0x01–0xFF |                    |
-// |                      |                    |
+// |                      |                      |
+// | request id (1 octet) | payload (0–n octets) |
+// |            0x01–0xFF |                      |
+// |                      |                      |
 //
 // event, without sequence number (default, from device):
-// |                      |                                  |                    |
-// | request id (1 octet) | event id (1–n octets, default 1) | payload (n octets) |
-// |          always 0x00 |                        0x00–0xFF |                    |
-// |                      |                                  |                    |
+// |                      |                                  |                      |
+// | request id (1 octet) | event id (1–n octets, default 1) | payload (0–n octets) |
+// |          always 0x00 |                        0x00–0xFF |                      |
+// |                      |                                  |                      |
 //
 // request, with sequence number (to device):
-// |                           |                      |                                    |                    |
-// | sequence number (1 octet) | request id (1 octet) | service id (1–n octets, default 1) | payload (n octets) |
-// |                 0x00–0xFF |            0x01–0xFF |                          0x00–0xFF |                    |
-// |                           |                      |                                    |                    |
+// |                           |                      |                                    |                      |
+// | sequence number (1 octet) | request id (1 octet) | service id (1–n octets, default 1) | payload (0–n octets) |
+// |                 0x00–0xFF |            0x01–0xFF |                          0x00–0xFF |                      |
+// |                           |                      |                                    |                      |
 //
 // response, with sequence number (from device):
-// |                           |                      |                    |
-// | sequence number (1 octet) | request id (1 octet) | payload (n octets) |
-// |                 0x00–0xFF |            0x01–0xFF |                    |
-// |                           |                      |                    |
+// |                           |                      |                      |
+// | sequence number (1 octet) | request id (1 octet) | payload (0–n octets) |
+// |                 0x00–0xFF |            0x01–0xFF |                      |
+// |                           |                      |                      |
 //
 // event, with sequence number (from device):
-// |                           |                      |                                  |                    |
-// | sequence number (1 octet) | request id (1 octet) | event id (1–n octets, default 1) | payload (n octets) |
-// |                 0x00–0xFF |          always 0x00 |                        0x00–0xFF |                    |
-// |                           |                      |                                  |                    |
+// |                           |                      |                                  |                      |
+// | sequence number (1 octet) | request id (1 octet) | event id (1–n octets, default 1) | payload (0–n octets) |
+// |                 0x00–0xFF |          always 0x00 |                        0x00–0xFF |                      |
+// |                           |                      |                                  |                      |
 //
 
 /**
@@ -51,6 +51,11 @@ import { rebind } from '../utils/oop.js';
  * @type {string}
  */
 const libName = 'udp transport';
+
+/**
+ * @type {number}
+ */
+const sequenceRepeatOutgoing = 5;
 
 /**
  * @typedef UDPTransportOptions
@@ -314,7 +319,7 @@ export class UDPTransport extends Transport {
 
   /**
    * write from Transport instance to network – placeholder
-   * @param {unknown} _ identifier buffer (not needed on UDPTransport)
+   * @param {unknown} _ device identifier buffer (not needed on UDPTransport)
    * @param {Buffer} payload payload buffer
    */
   writeToNetwork(_, payload) {
@@ -341,8 +346,23 @@ export class UDPTransport extends Transport {
       attachment: humanPayload(payload)
     });
 
+    if (sequenceHandling) {
+      for (let index = 0; index < sequenceRepeatOutgoing; index += 1) {
+        socket.send(
+          Buffer.concat([
+            Buffer.from([this._getOutgoingSequence()]),
+            payload
+          ]),
+          port,
+          host
+        );
+      }
+
+      return;
+    }
+
     socket.send(
-      sequenceHandling ? Buffer.concat([Buffer.from([this._getOutgoingSequence()]), payload]) : payload,
+      payload,
       port,
       host
     );

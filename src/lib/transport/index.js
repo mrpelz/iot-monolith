@@ -295,12 +295,12 @@ export class Transport {
 
   /**
    * write from Transport instance to network – placeholder
-   * @param {(Buffer|null)} identifier identifier buffer
+   * @param {(Buffer|null)} deviceIdentifier device identifier buffer
    * @param {Buffer} payload payload buffer
    */
-  writeToNetwork(identifier, payload) {
+  writeToNetwork(deviceIdentifier, payload) {
     throw new Error(
-      `no write method defined in ${this} to process identifier "${identifier}" and payload "${payload}"`
+      `no write method defined in ${this} to process identifier "${deviceIdentifier}" and payload "${payload}"`
     );
   }
 }
@@ -450,12 +450,12 @@ export class AggregatedTransport {
 
   /**
    * write from AggregatedTransport instance to network (of all aggregated Transport instances)
-   * @param {Buffer|null} identifier identifier buffer
+   * @param {Buffer|null} deviceIdentifier device identifier buffer
    * @param {Buffer} payload payload buffer
    */
-  writeToNetwork(identifier, payload) {
+  writeToNetwork(deviceIdentifier, payload) {
     this.state.transports.forEach((transport) => {
-      transport.writeToNetwork(identifier, payload);
+      transport.writeToNetwork(deviceIdentifier, payload);
     });
   }
 }

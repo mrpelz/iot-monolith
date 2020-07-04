@@ -116,10 +116,10 @@ class Service extends EventEmitter {
 
   /**
    * issue request on Device instance
-   * @param {Buffer} payload request payload
+   * @param {Buffer | null} payload request payload
    * @returns {Request}
    */
-  request(payload) {
+  request(payload = null) {
     return this.state.device.request(this.state.identifier, payload);
   }
 }
@@ -220,14 +220,14 @@ export class Device extends EventEmitter {
    * write from Device instance to Transport instance
    * @param {Buffer} requestIdentifier request id
    * @param {Buffer} serviceIdentifier service id
-   * @param {Buffer} payload payload buffer
+   * @param {Buffer | null} payload payload buffer
    */
-  _writeToTransport(requestIdentifier, serviceIdentifier, payload) {
+  _writeToTransport(requestIdentifier, serviceIdentifier, payload = null) {
     this.transport.writeToTransport(
       Buffer.concat([
         requestIdentifier,
         serviceIdentifier,
-        payload
+        ...(payload ? [payload] : [])
       ])
     );
   }
@@ -282,10 +282,10 @@ export class Device extends EventEmitter {
   /**
    * issue request
    * @param {Buffer} serviceIdentifier
-   * @param {Buffer} payload
+   * @param {Buffer | null} payload
    * @return {Request}
    */
-  request(serviceIdentifier, payload) {
+  request(serviceIdentifier, payload = null) {
     const { requests, keepAlive } = this.state;
     const id = this._requestId;
 
