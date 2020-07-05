@@ -202,3 +202,64 @@ export function coupleRoomSensorToLight(
     lightTimer.start();
   });
 }
+
+export function coupleRfSwitchesToLightPermutations(
+  lights = [],
+  rfSwitches = [],
+  lightsAll = [],
+  rfSwitchesAll = [],
+  lightsSet = []
+) {
+  const initialState = -1;
+  let state = initialState;
+
+  const timer = new Timer(10000);
+  timer.on('hit', () => {
+    state = initialState;
+  });
+
+  const lightsAllMatches = lights.filter(({ name }) => {
+    return lightsAll.includes(name);
+  });
+
+  const callback = () => {
+    if (!timer.isRunning) {
+      timer.start();
+
+      const on = lightsAllMatches.filter(({ instance }) => instance.power);
+
+      if (on.length) {
+        on.forEach(({ instance }) => {
+          resolveAlways(instance.setPower(false));
+        });
+
+        return;
+      }
+
+      callback();
+      return;
+    }
+
+    timer.start();
+
+    state = state === (lightsSet.length - 1)
+      ? initialState
+      : state + 1;
+
+    const matchingLightsSet = lightsSet[state] || [];
+
+    lightsAllMatches.forEach(({ name, instance }) => {
+      resolveAlways(matchingLightsSet.includes(name)
+        ? instance.setPower(true)
+        : instance.setPower(false)
+      );
+    });
+  };
+
+  rfSwitchesAll.forEach(([switchName, switchState]) => {
+    const rfSwitch = rfSwitches.find(({ name }) => name === switchName);
+    if (!rfSwitch) return;
+
+    rfSwitch.instance.on(switchState, callback);
+  });
+}

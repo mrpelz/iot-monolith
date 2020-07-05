@@ -59,7 +59,7 @@
     "callback-return": "error",
     "capitalized-comments": "off",
     "class-methods-use-this": "error",
-    "comma-dangle": "off",
+    "comma-dangle": "error",
     "comma-spacing": [
       "error",
       {

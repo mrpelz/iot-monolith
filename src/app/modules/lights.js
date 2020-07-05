@@ -5,6 +5,7 @@ import {
   coupleDoorSensorToLightTimeout,
   coupleRfSwitchToLight,
   coupleRfSwitchToLightIncrease,
+  coupleRfSwitchesToLightPermutations
 } from '../utils/lights.js';
 import { setUpConnectionHmi, setUpLightTimerHmi } from '../utils/hmi.js';
 import { HmiElement } from '../../lib/hmi/index.js';
@@ -452,6 +453,39 @@ function lightWithRfSwitch(lights, rfSwitches) {
   );
 
 
+  //  DUSCHBAD
+  //    permutations
+  coupleRfSwitchesToLightPermutations(
+    lights,
+    rfSwitches,
+    [
+      'duschbadDeckenlampe',
+      'duschbadSpiegellampe',
+      'duschbadLampe'
+    ],
+    [
+      ['duschbadWallSink', 1],
+      ['duschbadButtonShower', 4]
+    ],
+    [
+      [
+        'duschbadLampe'
+      ],
+      [
+        'duschbadSpiegellampe'
+      ],
+      [
+        'duschbadDeckenlampe'
+      ],
+      [
+        'duschbadDeckenlampe',
+        'duschbadSpiegellampe',
+        'duschbadLampe'
+      ]
+    ]
+  );
+
+
   //  ESSZIMMER
   //    wall switches
   coupleRfSwitchToLight(
@@ -501,13 +535,42 @@ function lightWithRfSwitch(lights, rfSwitches) {
 
 
   //  KUECHE
-  //    wall switches
-  coupleRfSwitchToLight(
+  //    permutations
+  coupleRfSwitchesToLightPermutations(
     lights,
     rfSwitches,
-    'esszimmerDeckenlampe',
-    'kuecheWallRight',
-    2
+    [
+      'kuecheLedLeftUp',
+      'kuecheLedLeftWhite',
+      'kuecheLedLeftWWhite',
+      'kuecheLedRightUp',
+      'kuecheLedRightWhite',
+      'kuecheLedRightWWhite'
+    ],
+    [
+      ['kuecheWallRight', 2]
+    ],
+    [
+      [
+        'kuecheLedLeftUp'
+      ],
+      [
+        'kuecheLedLeftUp',
+        'kuecheLedRightUp'
+      ],
+      [
+        'kuecheLedLeftWWhite',
+        'kuecheLedRightWWhite'
+      ],
+      [
+        'kuecheLedLeftUp',
+        'kuecheLedLeftWhite',
+        'kuecheLedLeftWWhite',
+        'kuecheLedRightUp',
+        'kuecheLedRightWhite',
+        'kuecheLedRightWWhite'
+      ]
+    ]
   );
 
 
@@ -519,6 +582,58 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'schlafzimmerDeckenlampe',
     'schlafzimmerWallRight',
     1
+  );
+
+  //    permutations
+  coupleRfSwitchesToLightPermutations(
+    lights,
+    rfSwitches,
+    [
+      'schlafzimmerDeckenlampe',
+      'schlafzimmerSteinlampe',
+      'schlafzimmerBedLedRed',
+      'schlafzimmerBedLedGreen',
+      'schlafzimmerBedLedBlue',
+      'schlafzimmerBedLedWhite',
+      'schlafzimmerBedLedFloor',
+      'schlafzimmerBedLedNightstandLeft',
+      'schlafzimmerBedLedNightstandRight'
+    ],
+    [
+      ['schlafzimmerWallLeft', 1]
+    ],
+    [
+      [
+        'schlafzimmerSteinlampe'
+      ],
+      [
+        'schlafzimmerBedLedRed'
+      ],
+      [
+        'schlafzimmerBedLedGreen'
+      ],
+      [
+        'schlafzimmerBedLedBlue'
+      ],
+      [
+        'schlafzimmerBedLedNightstandLeft',
+        'schlafzimmerBedLedNightstandRight'
+      ],
+      [
+        'schlafzimmerDeckenlampe'
+      ],
+      [
+        'schlafzimmerDeckenlampe',
+        'schlafzimmerSteinlampe',
+        'schlafzimmerBedLedRed',
+        'schlafzimmerBedLedGreen',
+        'schlafzimmerBedLedBlue',
+        'schlafzimmerBedLedWhite',
+        'schlafzimmerBedLedFloor',
+        'schlafzimmerBedLedNightstandLeft',
+        'schlafzimmerBedLedNightstandRight'
+      ]
+    ]
   );
 
   //    buttons
@@ -580,7 +695,34 @@ function lightWithRfSwitch(lights, rfSwitches) {
   );
 
 
-  // WOHNZIMMER
+  //  WANNENBAD
+  //    permutations
+  coupleRfSwitchesToLightPermutations(
+    lights,
+    rfSwitches,
+    [
+      'wannenbadDeckenlampe',
+      'wannenbadLampe'
+    ],
+    [
+      ['wannenbadWallSink', 1]
+    ],
+    [
+      [
+        'wannenbadLampe'
+      ],
+      [
+        'wannenbadDeckenlampe'
+      ],
+      [
+        'wannenbadDeckenlampe',
+        'wannenbadLampe'
+      ]
+    ]
+  );
+
+
+  //  WOHNZIMMER
   //    wall switches
   coupleRfSwitchToLight(
     lights,

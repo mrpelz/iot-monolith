@@ -222,22 +222,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     'duschbadWallDoor',
     1
   );
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'duschbadLamps',
-    'duschbadWallSink',
-    1
-  );
-
-  //    buttons
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'duschbadLamps',
-    'duschbadButtonShower',
-    4
-  );
 
 
   //  ESSZIMMER
@@ -303,17 +287,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
   );
 
 
-  //  SCHLAFZIMMER
-  //    wall switches
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'schlafzimmerLamps',
-    'schlafzimmerWallLeft',
-    1
-  );
-
-
   //  WANNENBAD
   //    wall switches
   coupleRfSwitchToLight(
@@ -321,13 +294,6 @@ function groupWithRfSwitch(lightGroups, rfSwitches) {
     rfSwitches,
     'wannenbadLamps',
     'wannenbadWallDoor',
-    1
-  );
-  coupleRfSwitchToLight(
-    lightGroups,
-    rfSwitches,
-    'wannenbadLamps',
-    'wannenbadWallSink',
     1
   );
 
