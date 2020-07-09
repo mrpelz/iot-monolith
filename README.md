@@ -74,9 +74,21 @@ In the future, I'd like to connect to a good old relational database, which is i
 
 Testing a home automation solution that implements classes which represent devices only makes sense if you can also test the device itself or at least test correct communication with a mock. I haven't come around to creating a mock-device, so tests are located in `src/lib/**/tests/*` and are meant to be run manually as they often actually connect to the hardware and do stuff. I'm open to suggestions on how to sensibly implement unit-tests or some kind of end-to-end test.
 
-## About TypeScript
+## About Types and TypeScript
 
-At work, I'm using TypeScript on a daily basis and have gotten really comfortable around it. I realize that `iot-monolith` mainly shifts data around and that information moves through many modules. It would probably benefit heavily from a move to TypeScript. I'm still not sure if I want the software that controls my home to adopt a thing that is exclusively beneficial to the developer experience. If there was a true TypeScript-runtime that used typings for runtime-optimizations, I would use TypeScript right away. Also, Microsoft (writing this line in VSCode :'D).
+At work, I'm using TypeScript on a daily basis and have gotten really comfortable around it. I realize that `iot-monolith` mainly shifts data around and that information moves through many modules. It would probably benefit heavily from a move to TypeScript.
+
+In the past, I would argue that I didn't feel comfortable taking on TypeScript as a dependency because it only benefited the developer experience. While this is still true, since I started type-annotating new modules using TypeScript-style JSDoc, I realized how much cleaner a true TypeScript source would look like, compared to the clunky JSDoc-syntax.
+
+The branch `typescript-migration` contains a WIP migration to the leanest possible TypeScript-build (no bundler, just `tsc` outputting ESModules). While migrating the code, I would like to address a few bigger issues:
+
+* remove unused `lib`s
+* remove `utils` that have become obsolete (e.g. `flattenArrays`, `arraysToObject`)
+* reassess my calendar-timer implementations in `src/lib/utils/time.js`
+  * move to `node-cron`, somehow connect cron or systemd-timers on Linux?
+* move configuration from JSON-files to TypeScript
+* remove modifications to `global` object
+* implement classes to represent logical elements of the iot (`Home`, `Room`, etc.)
 
 ## Usage
 
