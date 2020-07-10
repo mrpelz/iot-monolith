@@ -552,14 +552,16 @@ function lightWithRfSwitch(lights, rfSwitches) {
     ],
     [
       [
-        'kuecheLedLeftUp'
-      ],
-      [
-        'kuecheLedLeftUp',
-        'kuecheLedRightUp'
+        'kuecheLedLeftWWhite'
       ],
       [
         'kuecheLedLeftWWhite',
+        'kuecheLedRightWWhite'
+      ],
+      [
+        'kuecheLedLeftUp',
+        'kuecheLedLeftWWhite',
+        'kuecheLedRightUp',
         'kuecheLedRightWWhite'
       ],
       [
