@@ -14,7 +14,7 @@ const roomSensor = new RoomSensor({
     'tvoc',
     'pm025',
     'pm10',
-    'co2',
+    'co2'
     // 'movement'
   ]
 });

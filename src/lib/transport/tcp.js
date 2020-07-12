@@ -181,7 +181,7 @@ export class TCPTransport extends Transport {
   _onDisconnection() {
     const {
       log,
-      messageTimer,
+      messageTimer
     } = this.tcpState;
 
     const {

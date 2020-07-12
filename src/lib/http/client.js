@@ -49,7 +49,7 @@ export function httpClient(method, url = {}, options = {}, data) {
     port,
     protocol
   }, options, {
-    headers: Object.assign(defaultHeaders, additionalHeaders),
+    headers: Object.assign(defaultHeaders, additionalHeaders)
   });
 
   return new Promise((resolve, reject) => {

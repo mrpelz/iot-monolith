@@ -1,7 +1,7 @@
 import { History, Trend } from '../../lib/history/index.js';
 import { RecurringMoment, every } from '../../lib/utils/time.js';
-import { flattenArrays, getKey } from '../../lib/utils/structures.js';
 import { camel } from '../../lib/utils/string.js';
+import { getKey } from '../../lib/utils/structures.js';
 import { resolveAlways } from '../../lib/utils/oop.js';
 
 function createHistory(name, retainHours, max, min, historyDb) {
@@ -182,7 +182,7 @@ export function create(config, data) {
   const cleanup = new RecurringMoment({ scheduler }, every.hour(retainHours));
   cleanup.setMaxListeners(0);
 
-  const histories = flattenArrays([
+  const histories = [[
     roomSensorsHistory(
       roomSensors,
       retainHours,
@@ -201,7 +201,7 @@ export function create(config, data) {
       historyDb,
       historyMetrics
     )
-  ]).filter(Boolean);
+  ]].flat(4).filter(Boolean);
 
   Object.assign(data, {
     histories

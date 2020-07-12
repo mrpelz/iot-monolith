@@ -1,5 +1,5 @@
 import { LongPollClient, post } from '../http/client.js';
-import { excludeKeys, flattenArrays, getKey } from '../utils/structures.js';
+import { excludeKeys, getKey } from '../utils/structures.js';
 import { rebind, resolveAlways } from '../utils/oop.js';
 import { Logger } from '../log/index.js';
 import { randomString } from '../utils/data.js';
@@ -14,7 +14,7 @@ const supportedUpdateTypes = [
   'edited_channel_post',
   // 'inline_query',
   // 'chosen_inline_result',
-  'callback_query',
+  'callback_query'
   // 'shipping_query',
   // 'pre_checkout_query'
 ];
@@ -126,9 +126,9 @@ class InlineKeyboard {
       data
     } = options;
 
-    return flattenArrays(Array.from(this.rows).map((row) => {
+    return Array.from(this.rows).map((row) => {
       return Array.from(row.buttons);
-    })).find((button) => {
+    }).flat(2).find((button) => {
       return button.id === data;
     });
   }
@@ -199,7 +199,7 @@ class Message {
         from: fromId,
         id: messageId,
         inlineKeyboard,
-        text,
+        text
       });
     });
   }
@@ -441,7 +441,7 @@ class Chat {
       id,
       message: {
         message_id: messageId = null
-      } = {},
+      } = {}
     } = payload;
 
     if (data === undefined) return;

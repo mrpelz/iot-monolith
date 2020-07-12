@@ -1,7 +1,7 @@
 import { RecurringMoment, every } from '../utils/time.js';
 import {
   readFileSync as read,
-  writeFileSync as write,
+  writeFileSync as write
 } from 'fs';
 import { Logger } from '../log/index.js';
 import { join } from 'path';

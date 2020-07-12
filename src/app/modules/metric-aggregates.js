@@ -1,7 +1,6 @@
 import { Aggregate } from '../../lib/aggregate/index.js';
 import { HmiElement } from '../../lib/hmi/index.js';
 import { camel } from '../../lib/utils/string.js';
-import { flattenArrays } from '../../lib/utils/structures.js';
 import { sanity } from '../../lib/utils/math.js';
 import { setUpHistoryTrendHmi } from '../utils/hmi.js';
 
@@ -15,7 +14,7 @@ export function create(config, data) {
     roomSensors
   } = data;
 
-  const metricAggregates = flattenArrays(metricAggregatesConfig.map((group) => {
+  const metricAggregates = metricAggregatesConfig.map((group) => {
     const {
       attributes,
       metrics = [],
@@ -69,7 +68,7 @@ export function create(config, data) {
         type
       };
     });
-  })).filter(Boolean);
+  }).flat(4).filter(Boolean);
 
   Object.assign(data, {
     metricAggregates
@@ -168,7 +167,7 @@ export function manage(config, data) {
     histories,
     hmiServer,
     metricAggregates,
-    prometheus,
+    prometheus
   } = data;
 
   metricAggregatesToPrometheus(metricAggregates, prometheus);

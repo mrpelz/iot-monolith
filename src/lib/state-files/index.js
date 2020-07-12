@@ -7,7 +7,7 @@ import {
   ftruncateSync as truncateSync,
   watch,
   writeFile as write,
-  writeFileSync as writeSync,
+  writeFileSync as writeSync
 } from 'fs';
 import { EventEmitter } from 'events';
 import { Logger } from '../log/index.js';

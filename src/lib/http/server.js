@@ -2,7 +2,6 @@ import { EventEmitter } from 'events';
 import { Logger } from '../log/index.js';
 import { Server } from 'http';
 import { URL } from 'url';
-import { arraysToObject } from '../utils/structures.js';
 import { emptyBuffer } from '../utils/data.js';
 import { rebind } from '../utils/oop.js';
 
@@ -88,10 +87,7 @@ export class HttpServer extends EventEmitter {
     });
 
     Object.assign(request, {
-      urlQuery: arraysToObject(
-        [...request.url.searchParams.keys()],
-        [...request.url.searchParams.values()]
-      )
+      urlQuery: Object.fromEntries(request.url.searchParams.entries())
     });
 
     if (request.method === 'POST') {

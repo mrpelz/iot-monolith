@@ -648,7 +648,7 @@ export class ReliableSocket extends Base {
       options: {
         keepAlive
       },
-      socket,
+      socket
     } = this._reliableSocket;
 
     socket.setNoDelay(true);

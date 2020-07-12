@@ -8,7 +8,7 @@ export class HmiServer {
   constructor() {
     this._hmi = {
       elements: {},
-      ingests: [],
+      ingests: []
     };
 
     rebind(this, '_getAllElementStates', '_listElements', '_setElementState');

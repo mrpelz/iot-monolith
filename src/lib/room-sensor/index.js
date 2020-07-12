@@ -1,7 +1,6 @@
 import { bufferToBoolean, readNumber } from '../utils/data.js';
 import { CachePromise } from '../cache/index.js';
 import { MessageClient } from '../messaging/index.js';
-import { arraysToObject } from '../utils/structures.js';
 import { resolveAlways } from '../utils/oop.js';
 import { sanity } from '../utils/math.js';
 import { sleep } from '../utils/time.js';
@@ -180,20 +179,17 @@ function prepareMetricHandlers(metrics) {
 }
 
 function getCaches(metrics) {
-  return arraysToObject(
-    metrics,
-    metrics.map((name) => {
-      const {
-        [name]: {
-          cache = 0,
-          timeout = 1000
-        } = {}
-      } = metricOptions;
+  return Object.fromEntries(metrics.map((name) => {
+    const {
+      [name]: {
+        cache = 0,
+        timeout = 1000
+      } = {}
+    } = metricOptions;
 
-      if (!cache) return null;
-      return new CachePromise(cache + timeout);
-    })
-  );
+    if (!cache) return [name, null];
+    return [name, new CachePromise(cache + timeout)];
+  }));
 }
 
 export class RoomSensor extends MessageClient {
@@ -362,9 +358,9 @@ export class RoomSensor extends MessageClient {
     }
 
     return Promise.all(metrics.map((metric) => {
-      return resolveAlways(this.getMetric(metric));
-    })).then((values) => {
-      return arraysToObject(metrics, values);
+      return [metric, resolveAlways(this.getMetric(metric))];
+    })).then((entries) => {
+      return Object.fromEntries(entries);
     }).catch((reason) => {
       log.error({
         head: 'getAll error',

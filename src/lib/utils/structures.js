@@ -4,35 +4,6 @@ export function arrayRandom(input) {
   ];
 }
 
-export function arraysToObject(keyArray, valueArray) {
-  if (!Array.isArray(keyArray) || !Array.isArray(valueArray)) {
-    throw new Error('inputs are not arrays');
-  }
-  if (keyArray.length !== valueArray.length) {
-    throw new Error('array lengths do not match');
-  }
-
-  const result = {};
-
-  keyArray.forEach((key, index) => {
-    result[key] = valueArray[index];
-  });
-
-  return result;
-}
-
-export function flattenArrays(input, result = []) {
-  for (let i = 0; i < input.length; i += 1) {
-    const value = input[i];
-    if (Array.isArray(value)) {
-      flattenArrays(value, result);
-    } else {
-      result.push(value);
-    }
-  }
-  return result;
-}
-
 export function flattenData(input, parentKey = null) {
   if (
     !input
@@ -86,7 +57,7 @@ export function includeKeys(object, ...keys) {
 
   keys.forEach((key) => {
     const { [key]: value } = object;
-    if (!value === undefined) return;
+    if (value === undefined) return;
 
     result[key] = value;
   });
@@ -103,7 +74,7 @@ export function excludeKeys(object, ...keys) {
     if (keys.includes(key)) return;
 
     const { [key]: value } = object;
-    if (!value === undefined) return;
+    if (value === undefined) return;
 
     result[key] = value;
   });

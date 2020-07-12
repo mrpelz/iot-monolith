@@ -7,7 +7,7 @@ import {
   TimeRange,
   calc,
   every,
-  sleep,
+  sleep
 } from '../time.js';
 
 import { remainder } from '../math.js';
