@@ -50,9 +50,6 @@ import { rebind } from '../utils/oop.js';
  * @type {TransportOptions|I_TCPTransportOptions|I_UDPTransportOptions}
  */
 
-/**
- * @type {string}
- */
 const libName = 'transport';
 
 /**
@@ -107,6 +104,12 @@ export class TransportDevice {
       }
     });
 
+    /**
+     * @type {{
+     *  transport: AnyTransport,
+     *  device: I_Device
+     * }}
+     */
     this.state = {
       transport,
       device
@@ -197,12 +200,18 @@ export class Transport {
 
     this.log.friendlyName('base transport');
 
+    /**
+     * @type {TransportOptions & {
+     *  isConnected: boolean | null,
+     *  log: ReturnType<import('../log/index.js').Logger['withPrefix']>
+     * }}
+     */
     this.state = {
       devices,
       identifier,
-      isConnected: /** @type {boolean|null} */ (null),
+      isConnected: null,
       log: this.log.withPrefix(libName),
-      singleDevice: Boolean(singleDevice)
+      singleDevice
     };
 
     rebind(
@@ -242,7 +251,6 @@ export class Transport {
   /**
    * add an instance of Device to this transport
    * @param {I_Device} device instance of Device
-   * @returns {TransportDevice} instance of TransportDevice
    */
   addDevice(device) {
     const { devices, singleDevice } = this.state;
@@ -314,8 +322,8 @@ export class AggregatedTransport {
    * create dataset of SubTransports
    * @param {Object} SubTransport transport class to be instantiated
    * @param {AnyTransportOptions} parentOptions configuration object
-   * @param {Array<AnyTransportOptions>} transportOptions array of configuration objects
-   * @returns {Array<AnyTransport>} array of Transport instances
+   * @param {AnyTransportOptions[]} transportOptions array of configuration objects
+   * @returns {AnyTransport[]} array of Transport instances
    */
   static createSubTransports(SubTransport, parentOptions, transportOptions) {
     return transportOptions.map((transportOption) => {
@@ -354,6 +362,13 @@ export class AggregatedTransport {
 
     this.log.friendlyName('aggregated transport');
 
+    /**
+     * @type {AnyTransportOptions & {
+     *  transports: AnyTransport[],
+     *  isConnected: boolean | null,
+     *  log: ReturnType<import('../log/index.js').Logger['withPrefix']>
+     * }}
+     */
     this.state = {
       transports: AggregatedTransport.createSubTransports(
         SubTransport,
@@ -362,7 +377,7 @@ export class AggregatedTransport {
       ),
       devices,
       identifier,
-      isConnected: /** @type {boolean|null} */ (null),
+      isConnected: null,
       log: this.log.withPrefix(libName)
     };
 
@@ -403,7 +418,6 @@ export class AggregatedTransport {
   /**
    * add an instance of Device to this transport
    * @param {I_Device} device instance of Device
-   * @returns {TransportDevice} instance of TransportDevice
    */
   addDevice(device) {
     const transportDevice = new TransportDevice(this, device);

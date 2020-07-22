@@ -1,3 +1,7 @@
+/**
+ * @param {Object} Class
+ * @returns {string[]}
+ */
 export function classMethods(Class) {
   return Object.keys(Object.getOwnPropertyDescriptors(Class.prototype))
     .filter((name) => {
@@ -5,6 +9,10 @@ export function classMethods(Class) {
     });
 }
 
+/**
+ * @param {Object} instance
+ * @returns {string[]}
+ */
 export function instanceMethods(instance) {
   return Object.getOwnPropertyNames(Object.getPrototypeOf(instance))
     .filter((name) => {
@@ -12,6 +20,10 @@ export function instanceMethods(instance) {
     });
 }
 
+/**
+ * @param {Promise} input
+ * @returns {boolean}
+ */
 export function isPromise(input) {
   /* eslint-disable-next-line eqeqeq */
   return Promise.resolve(input) == input;
@@ -19,7 +31,7 @@ export function isPromise(input) {
 
 /**
  * rebind class methods
- * @param {any} context class context (this)
+ * @param {Object} context class context (this)
  * @param  {...string} names method names
  */
 export function rebind(context, ...names) {
@@ -28,8 +40,12 @@ export function rebind(context, ...names) {
   });
 }
 
+/**
+ * @param {any} promise
+ * @returns {Promise}
+ */
 export function resolveAlways(promise) {
-  if (!isPromise(promise)) {
+  if (!isPromise(/** @type {Promise} */(promise))) {
     return Promise.resolve(null);
   }
 

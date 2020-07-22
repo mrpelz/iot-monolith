@@ -23,6 +23,16 @@
   "plugins": [
     "@typescript-eslint"
   ],
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".js",
+          ".ts"
+        ]
+      }
+    }
+  },
   "rules": {
     "accessor-pairs": "error",
     "array-bracket-newline": "off",
@@ -121,6 +131,7 @@
       "always"
     ],
     "import/no-commonjs": "error",
+    "import/no-unresolved": "off",
     "indent": "off",
     "indent-legacy": "off",
     "init-declarations": "off",

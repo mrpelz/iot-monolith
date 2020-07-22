@@ -4,11 +4,14 @@ export const emptyBuffer = Buffer.from([]);
 export const falseBuffer = Buffer.from([0]);
 export const trueBuffer = Buffer.from([1]);
 
+/**
+ * @template T
+ * @param {T[]} input
+ * @param {number} length
+ * @param {T} value
+ * @returns {T[]}
+ */
 export function arrayPadLeft(input, length, value = null) {
-  if (typeof input !== 'object' || !Array.isArray(input)) {
-    throw new Error('input is not an array');
-  }
-
   while (input.length < length) {
     input.unshift(value);
   }
@@ -16,11 +19,14 @@ export function arrayPadLeft(input, length, value = null) {
   return input;
 }
 
+/**
+ * @template T
+ * @param {T[]} input
+ * @param {number} length
+ * @param {T} value
+ * @returns {T[]}
+ */
 export function arrayPadRight(input, length, value = null) {
-  if (typeof input !== 'object' || !Array.isArray(input)) {
-    throw new Error('input is not an array');
-  }
-
   while (input.length >= length) {
     input.push(value);
   }
@@ -28,12 +34,18 @@ export function arrayPadRight(input, length, value = null) {
   return input;
 }
 
+/**
+ * @param {number[]} input
+ * @returns {Buffer}
+ */
 export function concatBytes(input) {
-  return Buffer.concat(input.map((byte) => {
-    return Buffer.from([byte]);
-  }));
+  return Buffer.from(input);
 }
 
+/**
+ * @param {Buffer} input
+ * @returns {string}
+ */
 export function humanPayload(input) {
   const payload = [...input];
 
@@ -53,11 +65,13 @@ export function humanPayload(input) {
   ].join('\n');
 }
 
+/**
+ * @param {number} input
+ * @param {number} pad
+ * @param {number} radix
+ * @returns {number[]}
+ */
 export function numberToDigits(input, pad = 0, radix = 10) {
-  if (typeof input !== 'number') {
-    throw new Error('input not a number');
-  }
-
   const number = Math.abs(input);
 
   if (Math.floor(number) !== number) {
@@ -69,6 +83,10 @@ export function numberToDigits(input, pad = 0, radix = 10) {
   });
 }
 
+/**
+ * @param {number} length
+ * @returns {string}
+ */
 export function randomString(length = 2) {
   const cache = Buffer.alloc(Math.max(1, length / 2));
   return randomFillSync(cache).toString('hex');
@@ -97,14 +115,26 @@ export function readNumber(input, bytes = 1) {
   }
 }
 
+/**
+ * @param {boolean} input
+ * @returns {Buffer}
+ */
 export function booleanToBuffer(input) {
   return input ? trueBuffer : falseBuffer;
 }
 
+/**
+ * @param {Buffer} input
+ * @returns {boolean}
+ */
 export function bufferToBoolean(input) {
   return Boolean(readNumber(input, 1));
 }
 
+/**
+ * @param {number} input
+ * @returns {number}
+ */
 export function swapByte(input) {
   let byte = input;
   /* eslint-disable no-bitwise */
@@ -115,6 +145,11 @@ export function swapByte(input) {
   return byte;
 }
 
+/**
+ * @param {number} input
+ * @param {number} bytes
+ * @returns {Buffer}
+ */
 export function writeNumber(input, bytes = 1) {
   if ((input < 0) || (input >= 2 ** (bytes * 8))) {
     throw new Error('number cannot be represented');

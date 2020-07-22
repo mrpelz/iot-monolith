@@ -1,5 +1,11 @@
 /* eslint-disable no-bitwise */
 
+/**
+ * @param {number} input
+ * @param {number} range
+ * @param {number} gamma
+ * @returns {number}
+ */
 export function gammaCorrect(input, range, gamma) {
   // return input;
   if (input === 0) return 0;
@@ -8,6 +14,10 @@ export function gammaCorrect(input, range, gamma) {
   return ((input / range) ** gamma) * range;
 }
 
+/**
+ * @param {number[]} numbers
+ * @returns {number | null}
+ */
 export function maxNumber(numbers) {
   if (!numbers.length) return null;
 
@@ -18,16 +28,28 @@ export function maxNumber(numbers) {
 }
 
 // http://www.jstips.co/en/javascript/array-average-and-median/
+/**
+ * @param {number[]} numbers
+ * @returns {number}
+ */
 export function mean(numbers) {
   return numbers.reduce((a, b) => { return a + b; }, 0) / numbers.length;
 }
 
+/**
+ * @param {number[]} input
+ * @returns {number}
+ */
 export function median(input) {
   const numbers = input.slice(0);
   numbers.sort((a, b) => { return a - b; });
   return (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2;
 }
 
+/**
+ * @param {number[]} numbers
+ * @returns {number | null}
+ */
 export function minNumber(numbers) {
   if (!numbers.length) return null;
 
@@ -37,19 +59,46 @@ export function minNumber(numbers) {
   }, Number.POSITIVE_INFINITY);
 }
 
+/**
+ * @param {number} dividend
+ * @param {number} divisor
+ * @returns {number}
+ */
 export function quotient(dividend, divisor) {
   return Math.floor(dividend / divisor);
 }
 
+/**
+ * @param {number} dividend
+ * @param {number} divisor
+ * @returns {number}
+ */
 export function remainder(dividend, divisor) {
   return dividend % divisor;
 }
 
+/**
+ * @param {number} input
+ * @param {number} decimals
+ * @returns {number}
+ */
 export function trimDecimals(input, decimals = 2) {
   const trimmer = 10 ** decimals;
   return Math.round(input * trimmer) / trimmer;
 }
 
+/**
+ * @param {number | null} input
+ * @param {{
+ *  divide?: number,
+ *  max?: number,
+ *  min?: number,
+ *  multiply?: number,
+ *  offset?: number,
+ *  round?: number
+ * }} options
+ * @returns {number | null}
+ */
 export function sanity(input, options) {
   if (input === null) return null;
 
@@ -59,7 +108,7 @@ export function sanity(input, options) {
     min = Number.NEGATIVE_INFINITY,
     multiply = 1,
     offset = 0,
-    round = false
+    round = 0
   } = options;
 
   if (input > max) return null;
@@ -71,7 +120,7 @@ export function sanity(input, options) {
   value /= divide;
   value *= multiply;
 
-  if (round !== false) {
+  if (round) {
     value = trimDecimals(
       value,
       Number.isInteger(round)
@@ -83,6 +132,11 @@ export function sanity(input, options) {
   return value;
 }
 
+/**
+ * @type {{
+ *  [transition: string]: (time: number) => number
+ * }}
+ */
 export const transitions = {
   linear: (t) => { return t; },
   // accelerating from zero velocity
@@ -138,6 +192,19 @@ export const transitions = {
   }
 };
 
+/**
+ * @param {number} fromP
+ * @param {number} toP
+ * @param {number} duration
+ * @param {(time: number) => number} transition
+ * @param {number} range
+ * @param {number} gamma
+ * @param {number} timeStep
+ * @returns {{
+ *  time: number,
+ *  value: number
+ * }[] | null}
+ */
 export function ledCalc(
   fromP,
   toP,
@@ -147,6 +214,10 @@ export function ledCalc(
   gamma = 2.8,
   timeStep = 17
 ) {
+
+  /**
+   * @param {number} input
+   */
   const toPwm = (input) => {
     return Math.round(
       Math.max(

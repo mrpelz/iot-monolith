@@ -80,7 +80,7 @@ function digitsToBytemap(digits, length) {
       return empty;
     }
 
-    return digitMap[digit];
+    return digitMap[/** @type {number} */ (digit)];
   });
 }
 

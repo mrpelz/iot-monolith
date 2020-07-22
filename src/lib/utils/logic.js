@@ -2,57 +2,18 @@ import { EventEmitter } from 'events';
 import { maxNumber } from './math.js';
 import { rebind } from './oop.js';
 
-export class Latch extends EventEmitter {
-  constructor(options = {}) {
-    const {
-      states: stateCount = 2,
-      initial = 0
-    } = options;
-
-    const states = stateCount - 1;
-
-    if (states < 1 || initial > states) {
-      throw new Error('insufficient options provided');
-    }
-
-    super();
-
-    this.state = initial;
-    this.states = states;
-  }
-
-  _publish() {
-    const output = this.states === 1
-      ? Boolean(this.state)
-      : this.state;
-
-    this.emit('hit', output);
-
-    return output;
-  }
-
-  hit() {
-    const newState = this.state + 1;
-
-    this.state = newState > this.states
-      ? 0
-      : newState;
-
-    return this._publish();
-  }
-
-  set(input) {
-    if (input > this.states) {
-      throw new Error('illegal state');
-    }
-
-    this.state = input;
-
-    return this._publish();
-  }
-}
-
+/**
+ * @typedef HysteresisOptions
+ * @type {{
+ *  inRangeAbove?: number,
+ *  outOfRangeBelow?: number
+ * }}
+ */
 export class Hysteresis extends EventEmitter {
+
+  /**
+   * @param {HysteresisOptions} options
+   */
   constructor(options = {}) {
     const {
       inRangeAbove = 0,
@@ -65,14 +26,27 @@ export class Hysteresis extends EventEmitter {
 
     super();
 
+    /**
+     * @type {number}
+     */
     this.inRangeAbove = inRangeAbove;
+
+    /**
+     * @type {number}
+     */
     this.outOfRangeBelow = outOfRangeBelow;
+
+    /**
+     * @type {boolean}
+     */
     this.inRange = false;
   }
 
+  /**
+   * @param {number} input
+   * @returns {boolean}
+   */
   feed(input) {
-    if (typeof input !== 'number') return null;
-
     const inRange = input > this.inRangeAbove
       || (
         this.inRange
@@ -90,25 +64,46 @@ export class Hysteresis extends EventEmitter {
   }
 }
 
+/**
+ * @class PriorityValue
+ * @template T
+ */
 export class PriorityValue {
+
+  /**
+   * @param {T} initial
+   */
   constructor(initial) {
+
+    /**
+     * @type {Map<number, T>}
+     */
     this._values = new Map();
+
+    /**
+     * @type {T}
+     */
     this._initial = initial;
+
     this._reset();
 
     rebind(this, 'set', 'withdraw');
   }
 
+  /**
+   * @returns {number}
+   */
   get priority() {
-    return maxNumber([...this._values.keys()]);
+    return /** @type {number} */ (maxNumber([...this._values.keys()]));
   }
 
+  /**
+   * @returns {T | null}
+   */
   get value() {
     const { priority } = this;
-    if (typeof priority !== 'number') return null;
-    if (!this._values.has(priority)) return null;
 
-    return this._values.get(priority);
+    return this._values.get(priority) || null;
   }
 
   _reset() {
@@ -116,16 +111,21 @@ export class PriorityValue {
     this.set(this._initial, 0);
   }
 
+  /**
+   * @param {T} value
+   * @param {number} priority
+   * @returns {T | null}
+   */
   set(value, priority) {
-    if (typeof priority !== 'number') throw new Error('priority is not a number');
-
-    if (value !== undefined) {
-      this._values.set(priority, value);
-    }
+    this._values.set(priority, value);
 
     return this.value;
   }
 
+  /**
+   * @param {number | null} priority
+   * @returns {T | null}
+   */
   withdraw(priority = null) {
     if (priority === 0) throw new Error('priority 0 cannot be withdrawn');
 
@@ -140,11 +140,29 @@ export class PriorityValue {
   }
 }
 
+
+/**
+ * @typedef Ranges
+ * @type {{
+ *  [key: string]: [number, number] | [number, number, boolean]
+ * }[]}
+ */
+
 export class Remap {
+
+  /**
+   * @param {Ranges} ranges
+   */
   constructor(ranges = []) {
     this._ranges = ranges;
   }
 
+  /**
+   * @param {string} inKey
+   * @param {string} outKey
+   * @param {number} input
+   * @returns {number | null}
+   */
   convert(inKey, outKey, input) {
     const matchingRange = this._ranges.find((range) => {
       if (!range[inKey] || !range[outKey]) return false;
@@ -165,6 +183,13 @@ export class Remap {
       [outKey]: [outFrom, outTo, round = true] = []
     } = matchingRange;
 
+    if (
+      inFrom === undefined
+      || inTo === undefined
+      || outFrom === undefined
+      || outTo === undefined
+    ) return null;
+
     const ratio = (input - inFrom) / (Math.abs(inTo - inFrom));
     const intermediate = (ratio * Math.abs(outTo - outFrom)) + outFrom;
     const output = round ? Math.round(intermediate) : intermediate;
@@ -172,10 +197,18 @@ export class Remap {
     return output;
   }
 
+  /**
+   * @param {number} input
+   * @returns {number | null}
+   */
   aToB(input) {
     return this.convert('a', 'b', input);
   }
 
+  /**
+   * @param {number} input
+   * @returns {number | null}
+   */
   bToA(input) {
     return this.convert('b', 'a', input);
   }

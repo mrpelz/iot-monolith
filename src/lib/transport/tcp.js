@@ -25,9 +25,6 @@ import { rebind } from '../utils/oop.js';
 // |                                |                      |                                  |                      |
 //
 
-/**
- * @type {string}
- */
 const libName = 'tcp transport';
 
 /**
@@ -65,6 +62,16 @@ export class TCPTransport extends Transport {
 
     this.log.friendlyName(`${host}:${port}`);
 
+    /**
+     * @type {TCPTransportOptions & {
+     *  connectionTime: number,
+     *  currentLength: number,
+     *  shouldBeConnected: boolean,
+     *  log: ReturnType<import('../log/index.js').Logger['withPrefix']>,
+     *  socket: Socket | null,
+     *  messageTimer: import('../utils/time').Timer
+     * }}
+     */
     this.tcpState = {
       connectionTime: 0,
       currentLength: 0,
@@ -75,7 +82,7 @@ export class TCPTransport extends Transport {
       lengthPreamble,
       log: this.log.withPrefix(libName),
       port,
-      socket: /** @type {Socket|null} */ (null),
+      socket: null,
 
       messageTimer: new Timer(keepAlive * 2)
     };
@@ -206,7 +213,7 @@ export class TCPTransport extends Transport {
 
   /**
    * read the right amount of bytes from socket
-   * @returns {boolean} if there are any bytes left to read
+   * @returns {boolean}
    */
   _read() {
     const {

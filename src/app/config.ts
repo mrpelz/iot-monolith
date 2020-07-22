@@ -1,8 +1,8 @@
 import { basename, extname, join as pathJoin } from 'path';
 import { lstatSync as lstat, readFileSync as readFile, readdirSync as readdir } from 'fs';
 
-export function readConfig(configPath) {
-  const result = {};
+export function readConfig(configPath: string) {
+  const result = {} as Object;
 
   readdir(configPath).forEach((fileName) => {
     const path = pathJoin(configPath, fileName);
@@ -11,7 +11,7 @@ export function readConfig(configPath) {
     if (!stat.isFile()) return;
     if (extname(path) !== '.json') return;
 
-    const name = basename(fileName, '.json');
+    const name = basename(fileName, '.json') as keyof Object;
 
     try {
       const payload = readFile(path, { encoding: 'utf8' });

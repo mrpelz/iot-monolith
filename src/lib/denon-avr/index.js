@@ -47,6 +47,8 @@ export class DenonAvr extends PersistentSocket {
     const payload = input.toString(apiEncoding);
     const match = findMatchingCall(calls, payload);
 
+    if (!match) return;
+
     const { [match]: resolver } = calls;
 
     if (resolver) {

@@ -222,7 +222,7 @@ export class Vent extends MessageClient {
       return Promise.resolve(this.target);
     }
 
-    return this.request('target', this.targetSetpoint).then((result) => {
+    return this.request('target', Buffer.from([this.targetSetpoint])).then((result) => {
       if (result !== this.targetSetpoint) {
         throw new Error('could not set target');
       }

@@ -41,9 +41,6 @@ import { rebind } from '../utils/oop.js';
  * }}
 */
 
-/**
- * @type {string}
- */
 const libName = 'device';
 
 const eventIdentifier = 0x00;
@@ -142,10 +139,23 @@ export class Device extends EventEmitter {
 
     super();
 
+    /**
+     * @type {Logger}
+     */
     this.log = new Logger();
 
     this.log.friendlyName('base device');
 
+    /**
+     * @type {{
+     *  isOnline: boolean | null,
+     *  services: DeviceServices,
+     *  requests: Map<number, RequestResolver>,
+     *  identifier: DeviceOptions['identifier'],
+     *  keepAlive: DeviceOptions['keepAlive'],
+     *  log: ReturnType<import('../log/index.js').Logger['withPrefix']>
+     * }}
+     */
     this.state = {
       // for now, always online because device-level keep-alive messages are not yet implemented
       isOnline: /** @type {boolean|null} */ (true),
@@ -157,7 +167,10 @@ export class Device extends EventEmitter {
       log: this.log.withPrefix(libName)
     };
 
-    this.transport = /** @type {I_TransportDevice|null} */ (transport.addDevice(this));
+    /**
+     * @type {I_TransportDevice}
+     */
+    this.transport = transport.addDevice(this);
 
     rebind(
       this,
@@ -179,6 +192,9 @@ export class Device extends EventEmitter {
     }, 0);
   }
 
+  /**
+   * @returns {boolean}
+   */
   get online() {
     return Boolean(
       this.transport

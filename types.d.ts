@@ -1,3 +1,10 @@
+declare namespace IoT {
+  export interface Environment {
+    configPath: string;
+    telegramToken: string;
+  }
+}
+
 declare namespace NodeJS {
   export interface Global {
     isProd: boolean;
@@ -5,6 +12,4 @@ declare namespace NodeJS {
     logLevel: string;
     telegramToken: string;
   }
-
-  export type UnhandledRejectionListener = (reason: Error | null | undefined, promise: Promise<any>) => void;
 }

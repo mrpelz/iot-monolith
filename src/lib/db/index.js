@@ -74,13 +74,13 @@ export class Db {
     let json;
 
     try {
-      json = JSON.stringify(data, null, null);
+      json = JSON.stringify(data);
     } catch (_) {
       this.log.error('could not JSON-stringify db-data!');
     }
 
     try {
-      write(path, Buffer.from(json), {
+      write(path, Buffer.from(json || ''), {
         flag: 'w'
       });
     } catch (_) {

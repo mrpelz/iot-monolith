@@ -1,3 +1,7 @@
+/**
+ * @param  {...any} input
+ * @returns {string}
+ */
 export function camel(...input) {
   return input.map((word, index) => {
     const tile = word.toString();
@@ -12,6 +16,10 @@ export function camel(...input) {
   }).join('');
 }
 
+/**
+ * @param  {...any} input
+ * @returns {string}
+ */
 export function pascal(...input) {
   return input.map((word) => {
     const tile = word.toString();
@@ -22,14 +30,26 @@ export function pascal(...input) {
   }).join('');
 }
 
+/**
+ * @param  {...string} input
+ * @returns {string}
+ */
 export function scope(...input) {
   return input.join('.');
 }
 
+/**
+ * @param {string} input
+ * @returns {string[]}
+ */
 export function words(input) {
   return input.trim().split(/\s+/);
 }
 
+/**
+ * @param {string} input
+ * @returns {string | number | boolean}
+ */
 export function parseString(input) {
   if (input === 'true') return true;
   if (input === 'false') return false;

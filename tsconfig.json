@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "checkJs": true,
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "module": "esnext",
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "target": "esnext",
+    "useDefineForClassFields": true
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}

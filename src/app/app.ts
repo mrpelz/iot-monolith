@@ -31,7 +31,7 @@ import * as vent from './modules/vent.js';
 import * as fridgeUtils from './modules/fridge-utils.js';
 
 
-function create(config, data) {
+function create(config: Object, data: Object) {
   scheduler.create(config, data);
 
   db.create(config, data);
@@ -60,7 +60,7 @@ function create(config, data) {
   webApi.create(config, data);
 }
 
-function manage(config, data) {
+function manage(config: Object, data: Object) {
   httpHooks.manage(config, data);
 
   doorSensors.manage(config, data);
@@ -77,7 +77,7 @@ function manage(config, data) {
   fridgeUtils.manage(config, data);
 }
 
-export function app(env) {
+export function app(env: IoT.Environment) {
   const {
     configPath
   } = env;

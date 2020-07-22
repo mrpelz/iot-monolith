@@ -47,14 +47,7 @@ import { rebind } from '../utils/oop.js';
  * @type {import('dgram').Socket}
  */
 
-/**
- * @type {string}
- */
 const libName = 'udp transport';
-
-/**
- * @type {number}
- */
 const sequenceRepeatOutgoing = 5;
 
 /**
@@ -88,6 +81,15 @@ export class UDPTransport extends Transport {
 
     this.log.friendlyName(`${host}:${port}`);
 
+    /**
+     * @type {UDPTransportOptions & {
+     *  messageIncomingSequence: number,
+     *  messageOutgoingSequence: number,
+     *  shouldBeConnected: boolean,
+     *  log: ReturnType<import('../log/index.js').Logger['withPrefix']>,
+     *  socket: Socket | null,
+     * }}
+     */
     this.udpState = {
       messageIncomingSequence: 0,
       messageOutgoingSequence: 0,
@@ -120,7 +122,7 @@ export class UDPTransport extends Transport {
 
   /**
    * manage sequence number to prepend to outgoing messages
-   * @returns {number} sequence number
+   * @returns {number}
    */
   _getOutgoingSequence() {
     this.udpState.messageOutgoingSequence = this.udpState.messageOutgoingSequence === 0xff

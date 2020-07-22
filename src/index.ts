@@ -6,7 +6,7 @@ process.stdin.resume();
 
 import { parseString } from './lib/utils/string.js';
 
-const env = {};
+const env = {} as IoT.Environment;
 
 (function populateEnvVars() {
   const { CONFIG_PATH, LOG_LEVEL, LOG_TELEGRAM, PROD_ENV, TELEGRAM_TOKEN } = process.env;
@@ -17,7 +17,7 @@ const env = {};
 
   const configPath = CONFIG_PATH;
   const isProd = PROD_ENV ? Boolean(parseString(PROD_ENV)) : false;
-  const logLevel = parseString(LOG_LEVEL);
+  const logLevel = LOG_LEVEL ? parseString(LOG_LEVEL) : 0;
   const logTelegram = LOG_TELEGRAM ? Boolean(parseString(LOG_TELEGRAM)) : false;
   const telegramToken = TELEGRAM_TOKEN;
 
@@ -49,7 +49,7 @@ const env = {};
     process.exit(1);
   });
 
-  function telegramRoot(title, message, stack) {
+  function telegramRoot(title: string, message?: string, stack?: string) {
     if (!global.logTelegram) {
       return Promise.resolve(null);
     }
@@ -74,17 +74,13 @@ const env = {};
     telegramRoot('Starting process');
   }());
 
-  function quit(signal) {
+  function quit(signal: number) {
     process.nextTick(() => {
       process.exit(signal);
     });
   }
 
-  /**
-   *
-   * @param {NodeJS.Signals} signal
-   */
-  function exit(signal = 'SIGINT') {
+  function exit(signal: number = 0) {
     process.removeListener('SIGINT', exit);
     process.removeListener('SIGTERM', exit);
     process.removeListener('SIGUSR1', exit);
@@ -106,9 +102,11 @@ const env = {};
   });
 
   process.on('unhandledRejection', (error) => {
+    if (!error) return;
+
     /* eslint-disable-next-line no-console */
-    console.log(`<0>unhandledRejection: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
-    telegramRoot('unhandledRejection', error.message, error.stack);
+    console.log(`<0>unhandledRejection: ${error}`);
+    telegramRoot('unhandledRejection', error.toString());
   });
 
   process.on('SIGINT', exit);

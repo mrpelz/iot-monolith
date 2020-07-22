@@ -4,12 +4,14 @@
   "description": "monolithic approach to Node.js-enabled home automation",
   "main": "src/index.js",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
     "deploy": "scripts/deploy.sh",
-    "lint": "tsc -p jsconfig.json; eslint src",
+    "lint": "tsc --noEmit; eslint src",
     "lint:fix": "eslint --fix src",
     "push": "git push -u origin HEAD --force && git push -u github HEAD --force",
     "start": "echo \"use systemd with 'iot-monolith.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
-    "start:dev": "CONFIG_PATH=./config LOG_LEVEL=0 LOG_TELEGRAM=false node --use_strict --experimental-modules src/index.js"
+    "start:dev": "CONFIG_PATH=./config LOG_LEVEL=0 LOG_TELEGRAM=false node --use_strict --experimental-modules dist/index.js"
   },
   "repository": {
     "type": "git",
