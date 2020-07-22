@@ -77,16 +77,9 @@ function manage(config: Object, data: Object) {
   fridgeUtils.manage(config, data);
 }
 
-export function app(env: IoT.Environment) {
-  const {
-    configPath
-  } = env;
-
+export function app() {
   const data = {};
-  const config = {
-    env,
-    ...readConfig(configPath)
-  };
+  const config = readConfig();
 
   create(config, data);
   manage(config, data);

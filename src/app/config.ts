@@ -1,7 +1,8 @@
 import { basename, extname, join as pathJoin } from 'path';
 import { lstatSync as lstat, readFileSync as readFile, readdirSync as readdir } from 'fs';
+import { configPath } from './environment.js';
 
-export function readConfig(configPath: string) {
+export function readConfig() {
   const result = {} as Object;
 
   readdir(configPath).forEach((fileName) => {

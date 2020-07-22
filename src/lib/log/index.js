@@ -1,11 +1,6 @@
 /* eslint-disable no-console */
+import { isProd, logLevel, logTelegram } from '../../app/environment.js';
 import { telegramSend } from '../telegram/simple.js';
-
-const {
-  isProd = false,
-  logLevel = 7,
-  logTelegram = false
-} = global;
 
 const telegramLogLevel = 3;
 const levelNames = [

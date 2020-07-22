@@ -1,4 +1,5 @@
 import { post } from '../http/client.js';
+import { telegramToken } from '../../app/environment.js';
 
 const host = 'api.telegram.org';
 const chatId = -274728913;
@@ -15,9 +16,9 @@ const telegramMessageOptions = {
 };
 
 export function telegramSend(message) {
-  const {
-    telegramToken
-  } = global;
+  if (!telegramToken) {
+    throw new Error('<3>missing env-variable "telegramToken"');
+  }
 
   return post(
     `https://${host}/bot${telegramToken}/sendMessage`,

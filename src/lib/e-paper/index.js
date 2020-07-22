@@ -69,7 +69,7 @@ export class EPaper {
       );
 
       const data = Object.assign({ values }, meta);
-      return Buffer.from(JSON.stringify(data, null, null));
+      return Buffer.from(JSON.stringify(data));
     }).catch(() => {
       return null;
     }).then((payload) => {

@@ -12,7 +12,7 @@
     "noImplicitReturns": true,
     "outDir": "./dist",
     "sourceMap": true,
-    "strictNullChecks": true,
+    "strictNullChecks": false,
     "target": "esnext",
     "useDefineForClassFields": true
   },
