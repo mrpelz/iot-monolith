@@ -5,7 +5,10 @@ console.log('→ creating instance with initial value on priority 0');
 const value = new PriorityValue('initial');
 
 const log = () => {
-  console.log({ value: value.value, priority: value.priority });
+  console.log({
+    priority: value.priority,
+    value: value.value,
+  });
 };
 
 log();
@@ -30,23 +33,33 @@ console.log('→ setting new value on priority 4 (no change)');
 value.set('p4', 4);
 log();
 
-console.log('→ withdrawing priority 3 while priority 4 & 5 are available (no change)');
+console.log(
+  '→ withdrawing priority 3 while priority 4 & 5 are available (no change)'
+);
 value.withdraw(3);
 log();
 
-console.log('→ withdrawing priority 5 while higher priority not available (change)');
+console.log(
+  '→ withdrawing priority 5 while higher priority not available (change)'
+);
 value.withdraw(5);
 log();
 
-console.log('→ withdrawing priority 4 while higher priority not available (change)');
+console.log(
+  '→ withdrawing priority 4 while higher priority not available (change)'
+);
 value.withdraw(4);
 log();
 
-console.log('→ withdrawing priority 2 while higher priority not available (change)');
+console.log(
+  '→ withdrawing priority 2 while higher priority not available (change)'
+);
 value.withdraw(2);
 log();
 
-console.log('→ withdrawing priority 1 with same value as priority 0 (no change)');
+console.log(
+  '→ withdrawing priority 1 with same value as priority 0 (no change)'
+);
 value.withdraw(1);
 log();
 

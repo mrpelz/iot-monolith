@@ -4,14 +4,14 @@ import { PersistentSocket, ReliableSocket } from '../index.js';
 // PERSISTENT SOCKET TEST
 const persistentSocket = new PersistentSocket({
   host: '127.0.0.1',
-  port: 3000,
   keepAlive: {
-    send: true,
+    data: Buffer.from([0xff]),
     receive: false,
+    send: true,
     time: 5000,
-    data: Buffer.from([0xff])
   },
-  lengthPreamble: 2
+  lengthPreamble: 2,
+  port: 3000,
 });
 
 let writeInterval1;
@@ -40,11 +40,10 @@ setTimeout(() => {
   persistentSocket.disconnect();
 }, 10000);
 
-
 // RELIABLE SOCKET TEST
 const reliableSocket = new ReliableSocket({
   host: '127.0.0.1',
-  port: 3000
+  port: 3000,
 });
 
 let writeInterval2;

@@ -1,40 +1,16 @@
-// eslint-disable-next-line spaced-comment
-/// <reference path="../types.d.ts" />
-
 import { app } from './app/app.js';
-import { logTelegram } from './app/environment.js';
-import { telegramSend } from './lib/telegram/simple.js';
+import { logger as globalLogger } from './app/logging.js';
+
+const logger = globalLogger.getInput({
+  head: 'root',
+});
 
 Error.stackTraceLimit = 50;
 process.stdin.resume();
 
-function telegramRoot(title: string, message?: string, stack?: string) {
-  if (!logTelegram) {
-    return Promise.resolve(null);
-  }
-
-  return telegramSend(
-    [
-      '*ROOT*',
-      `_${title || ''}_`,
-      message || null,
-      stack ? `\`${stack}\`` : null
-    ].filter(Boolean).join('  \n')
-  ).then(() => {
-    return null;
-  }).catch((reason: string) => {
-    /* eslint-disable-next-line no-console */
-    console.log(`<3>${reason}`);
-
-    return null;
-  });
-}
-
-(function onStart() {
-  /* eslint-disable-next-line no-console */
-  console.log('<6>starting process');
-  telegramRoot('Starting process');
-}());
+logger.info(() => ({
+  body: 'starting process',
+}));
 
 function quit(signal: number) {
   process.nextTick(() => {
@@ -42,33 +18,35 @@ function quit(signal: number) {
   });
 }
 
-function exit(signal: number = 0) {
+async function exit(signal = 0) {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
   process.removeListener('SIGUSR1', exit);
   process.removeListener('SIGUSR2', exit);
 
-  /* eslint-disable-next-line no-console */
-  console.log('<6>stopping process');
-  telegramRoot('Stopping process', `Signal = ${signal}`).then(() => {
-    quit(signal);
-  });
+  await logger.info(() => ({
+    body: `stopping process (signal=${signal})`,
+  }));
+
+  quit(signal);
 }
 
-process.on('uncaughtException', (error) => {
-  /* eslint-disable-next-line no-console */
-  console.log(`<0>uncaughtException: ${error.message}${error.stack ? `\n${error.stack}` : ''}`);
-  telegramRoot('uncaughtException', error.message, error.stack).then(() => {
-    exit();
-  });
+process.on('uncaughtException', async (error) => {
+  await logger.emergency(() => ({
+    body: `uncaughtException: ${error.message}`,
+  }));
+
+  exit();
 });
 
-process.on('unhandledRejection', (error) => {
+process.on('unhandledRejection', async (error) => {
   if (!error) return;
 
-  /* eslint-disable-next-line no-console */
-  console.log(`<0>unhandledRejection: ${error}`);
-  telegramRoot('unhandledRejection', error.toString());
+  await logger.emergency(() => ({
+    body: `uncaughtRejection: ${error.toString()}`,
+  }));
+
+  exit();
 });
 
 process.on('SIGINT', exit);

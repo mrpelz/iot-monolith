@@ -6,24 +6,30 @@ import { emptyBuffer } from '../../utils/data.js';
 // MESSAGE TEST
 const client = new MessageClient({
   host: '127.0.0.1',
-  port: 3001,
   messageTypes: [
     {
-      name: 'test1',
+      generator: (x) => {
+        return Buffer.from(x);
+      },
       head: Buffer.from([0x01]),
-      generator: (x) => { return Buffer.from(x); },
-      timeout: 60000
+      name: 'test1',
+      timeout: 60000,
     },
     {
-      name: 'test2',
+      eventName: 'test2',
+      generator: (x) => {
+        return Buffer.from(x);
+      },
       head: Buffer.from([0x02]),
+      name: 'test2',
+      parser: (x) => {
+        return x;
+      },
       tail: emptyBuffer,
-      parser: (x) => { return x; },
-      generator: (x) => { return Buffer.from(x); },
       timeout: 2000,
-      eventName: 'test2'
-    }
-  ]
+    },
+  ],
+  port: 3001,
 });
 
 client.on('data', (input) => {
@@ -33,17 +39,23 @@ client.on('data', (input) => {
 client.on('connect', () => {
   console.log('connected');
 
-  client.request('test1', Buffer.from('test1')).then((value) => {
-    console.log(value);
-  }, (error) => {
-    console.error(error);
-  });
+  client.request('test1', Buffer.from('test1')).then(
+    (value) => {
+      console.log(value);
+    },
+    (error) => {
+      console.error(error);
+    }
+  );
 
-  client.request('test2', Buffer.from('test2')).then((value) => {
-    console.log(value);
-  }, (error) => {
-    console.error(error);
-  });
+  client.request('test2', Buffer.from('test2')).then(
+    (value) => {
+      console.log(value);
+    },
+    (error) => {
+      console.error(error);
+    }
+  );
 });
 
 client.on('disconnect', () => {

@@ -11,24 +11,21 @@ const apiEncoding = 'utf8';
 
 export class Ev1527Server extends PersistentSocket {
   constructor(options = {}) {
-    const {
-      host = null,
-      port = 9000
-    } = options;
+    const { host = null, port = 9000 } = options;
 
     if (!host || !port) {
       throw new Error('insufficient options provided');
     }
 
     super({
+      delimiter: apiDelimiter,
       host,
-      port,
       keepAlive: {
         receive: true,
         time: 5000,
-        useNative: false
+        useNative: false,
       },
-      delimiter: apiDelimiter
+      port,
     });
 
     this._ev1527 = {};
@@ -46,8 +43,8 @@ export class Ev1527Server extends PersistentSocket {
     const payload = input.toString(apiEncoding).trim();
 
     log.info({
+      attachment: payload,
       head: 'received payload',
-      attachment: payload
     });
 
     let data;
@@ -56,8 +53,8 @@ export class Ev1527Server extends PersistentSocket {
       data = JSON.parse(payload);
     } catch (error) {
       log.error({
+        attachment: payload,
         head: 'illegal string received',
-        attachment: payload
       });
     }
 
@@ -78,7 +75,9 @@ export class Ev1527ServerAggregator extends EventEmitter {
     this.setMaxListeners(0);
 
     servers.forEach((server) => {
-      if (!(server instanceof Ev1527Server)) throw new Error('not a ev1527-server');
+      if (!(server instanceof Ev1527Server)) {
+        throw new Error('not a ev1527-server');
+      }
 
       server.on('message', (data) => {
         this.emit('message', data);
@@ -98,12 +97,16 @@ export class Ev1527Device extends Base {
     const {
       match: globalMatch = {},
       debounce: globalDebounce = 0,
-      repeat: globalRepeat = 0
+      repeat: globalRepeat = 0,
     } = device;
 
     return Object.keys(states).map((state) => {
       const { [state]: stateOptions } = states;
-      const { match = {}, debounce = globalDebounce, repeat = globalRepeat } = stateOptions;
+      const {
+        match = {},
+        debounce = globalDebounce,
+        repeat = globalRepeat,
+      } = stateOptions;
 
       const repeater = throttle(repeat);
       const throttler = throttle(debounce);
@@ -127,23 +130,19 @@ export class Ev1527Device extends Base {
 
         return {
           matches,
-          repeating
+          repeating,
         };
       };
 
       return {
         matcher,
-        state
+        state,
       };
     });
   }
 
   constructor(options = {}) {
-    const {
-      id = null,
-      server = null,
-      match = null
-    } = options;
+    const { id = null, server = null, match = null } = options;
 
     if (!id || !server || !match) {
       throw new Error('insufficient options provided');
@@ -152,7 +151,7 @@ export class Ev1527Device extends Base {
     super();
 
     this._ev1527Device = {
-      id
+      id,
     };
 
     rebind(this, '_handleMessage');

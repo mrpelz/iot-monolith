@@ -10,10 +10,12 @@ function makeLabelString(labels) {
     return '';
   }
 
-  return Object.keys(labels).map((key) => {
-    const value = labels[key];
-    return `${key}="${value}"`;
-  }).join(',');
+  return Object.keys(labels)
+    .map((key) => {
+      const value = labels[key];
+      return `${key}="${value}"`;
+    })
+    .join(',');
 }
 
 function drawValue(input) {
@@ -36,10 +38,7 @@ function isLegalMetricName(name) {
 
 export class Prometheus {
   constructor(options = {}) {
-    const {
-      port,
-      prefix = 'iot_'
-    } = options;
+    const { port, prefix = 'iot_' } = options;
 
     if (!port || !prefix) {
       throw new Error('insufficient options provided');
@@ -47,18 +46,18 @@ export class Prometheus {
 
     this._prometheus = {
       metrics: [],
-      prefix
+      prefix,
     };
 
     rebind(this, '_handleRequest');
 
     this._prometheus.server = new HttpServer({
-      port,
+      handler: HttpServer.do404,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        Server: 'iot-monolith prometheus'
+        Server: 'iot-monolith prometheus',
       },
-      handler: HttpServer.do404
+      port,
     });
     this._prometheus.server.route('/metrics', this._handleRequest);
 
@@ -69,20 +68,24 @@ export class Prometheus {
 
   _handleRequest(request) {
     const { log, metrics } = this._prometheus;
-    const { urlQuery: { test = false } } = request;
+    const {
+      urlQuery: { test = false },
+    } = request;
 
     const testOnly = Boolean(test);
 
     log.debug('getting metrics');
 
-    const calls = metrics.map((metric) => {
-      return metric(testOnly);
-    }).filter(Boolean);
+    const calls = metrics
+      .map((metric) => {
+        return metric(testOnly);
+      })
+      .filter(Boolean);
 
     return {
       handler: Promise.all(calls).then((values) => {
         return `${values.join('\n')}\n`;
-      })
+      }),
     };
   }
 
@@ -91,7 +94,7 @@ export class Prometheus {
 
     log.info({
       head: 'set active',
-      value: true
+      value: true,
     });
 
     server.listen();
@@ -102,7 +105,7 @@ export class Prometheus {
 
     log.info({
       head: 'set active',
-      value: false
+      value: false,
     });
 
     server.close();
@@ -124,13 +127,11 @@ export class Prometheus {
     metrics.push(() => {
       return resolveAlways(handler()).then((value) => {
         const now = new Date();
-        const time = (timeHandler && value !== null)
-          ? timeHandler() || now
-          : now;
+        const time = timeHandler && value !== null ? timeHandler() || now : now;
 
         log.debug({
           head: `got metric "${name}"`,
-          value
+          value,
         });
 
         return drawMetric(
@@ -162,16 +163,13 @@ export class Prometheus {
     const push = (value) => {
       values.push({
         time: new Date(),
-        value
+        value,
       });
     };
 
     metrics.push((test) => {
       const now = new Date();
-      const {
-        time = null,
-        value = null
-      } = values[0] || {};
+      const { time = null, value = null } = values[0] || {};
 
       if (!test && values.length > 1) {
         values.shift();
@@ -193,7 +191,7 @@ export class Prometheus {
     });
 
     return {
-      push
+      push,
     };
   }
 

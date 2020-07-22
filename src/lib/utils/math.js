@@ -11,7 +11,7 @@ export function gammaCorrect(input, range, gamma) {
   if (input === 0) return 0;
   if (input === range) return range;
   if (!gamma) return input * range;
-  return ((input / range) ** gamma) * range;
+  return (input / range) ** gamma * range;
 }
 
 /**
@@ -33,7 +33,11 @@ export function maxNumber(numbers) {
  * @returns {number}
  */
 export function mean(numbers) {
-  return numbers.reduce((a, b) => { return a + b; }, 0) / numbers.length;
+  return (
+    numbers.reduce((a, b) => {
+      return a + b;
+    }, 0) / numbers.length
+  );
 }
 
 /**
@@ -42,8 +46,12 @@ export function mean(numbers) {
  */
 export function median(input) {
   const numbers = input.slice(0);
-  numbers.sort((a, b) => { return a - b; });
-  return (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2;
+  numbers.sort((a, b) => {
+    return a - b;
+  });
+  return (
+    (numbers[(numbers.length - 1) >> 1] + numbers[numbers.length >> 1]) / 2
+  );
 }
 
 /**
@@ -108,7 +116,7 @@ export function sanity(input, options) {
     min = Number.NEGATIVE_INFINITY,
     multiply = 1,
     offset = 0,
-    round = 0
+    round = 0,
   } = options;
 
   if (input > max) return null;
@@ -121,12 +129,7 @@ export function sanity(input, options) {
   value *= multiply;
 
   if (round) {
-    value = trimDecimals(
-      value,
-      Number.isInteger(round)
-        ? round
-        : 0
-    );
+    value = trimDecimals(value, Number.isInteger(round) ? round : 0);
   }
 
   return value;
@@ -138,58 +141,64 @@ export function sanity(input, options) {
  * }}
  */
 export const transitions = {
-  linear: (t) => { return t; },
-  // accelerating from zero velocity
-  easeInQuad: (t) => { return t * t; },
-  // decelerating to zero velocity
-  easeOutQuad: (t) => { return t * (2 - t); },
-  // acceleration until halfway, then deceleration
-  easeInOutQuad: (t) => {
-    return t < 0.5
-      ? 2 * t * t
-      : -1 + ((4 - (2 * t)) * t);
+  /* eslint-disable sort-keys */
+  linear: (t) => {
+    return t;
   },
   // accelerating from zero velocity
-  easeInCubic: (t) => { return t * t * t; },
+  easeInQuad: (t) => {
+    return t * t;
+  },
+  // decelerating to zero velocity
+  easeOutQuad: (t) => {
+    return t * (2 - t);
+  },
+  // acceleration until halfway, then deceleration
+  easeInOutQuad: (t) => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  },
+  // accelerating from zero velocity
+  easeInCubic: (t) => {
+    return t * t * t;
+  },
   // decelerating to zero velocity
   easeOutCubic: (t) => {
     const i = t - 1;
-    return (i * i * i) + 1;
+    return i * i * i + 1;
   },
   // acceleration until halfway, then deceleration
   easeInOutCubic: (t) => {
-    return t < 0.5
-      ? 4 * t * t * t
-      : ((t - 1) * ((2 * t) - 2) * ((2 * t) - 2)) + 1;
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
   },
   // accelerating from zero velocity
-  easeInQuart: (t) => { return t * t * t * t; },
+  easeInQuart: (t) => {
+    return t * t * t * t;
+  },
   // decelerating to zero velocity
   easeOutQuart: (t) => {
     const i = t - 1;
-    return 1 - (i * i * i * i);
+    return 1 - i * i * i * i;
   },
   // acceleration until halfway, then deceleration
   easeInOutQuart: (t) => {
     const i = t - 1;
-    return t < 0.5
-      ? 8 * t * t * t * t
-      : 1 - (8 * i * i * i * i);
+    return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * i * i * i * i;
   },
   // accelerating from zero velocity
-  easeInQuint: (t) => { return t * t * t * t * t; },
+  easeInQuint: (t) => {
+    return t * t * t * t * t;
+  },
   // decelerating to zero velocity
   easeOutQuint: (t) => {
     const i = t - 1;
-    return 1 + (i * i * i * i * i);
+    return 1 + i * i * i * i * i;
   },
   // acceleration until halfway, then deceleration
   easeInOutQuint: (t) => {
     const i = t - 1;
-    return t < 0.5
-      ? 16 * t * t * t * t * t
-      : 1 + (16 * i * i * i * i * i);
-  }
+    return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * i * i * i * i * i;
+  },
+  /* eslint-enable sort-keys */
 };
 
 /**
@@ -214,23 +223,12 @@ export function ledCalc(
   gamma = 2.8,
   timeStep = 17
 ) {
-
   /**
    * @param {number} input
    */
   const toPwm = (input) => {
     return Math.round(
-      Math.max(
-        Math.min(
-          gammaCorrect(
-            input,
-            range,
-            gamma
-          ),
-          range
-        ),
-        0
-      )
+      Math.max(Math.min(gammaCorrect(input, range, gamma), range), 0)
     );
   };
 
@@ -248,20 +246,14 @@ export function ledCalc(
   const result = [];
 
   while (timeProgress < duration) {
-    const value = toPwm(
-      from + (
-        transition(
-          timeProgress / duration
-        ) * distance
-      )
-    );
+    const value = toPwm(from + transition(timeProgress / duration) * distance);
 
     if (Math.abs(value - valueProgress) >= 1) {
       valueProgress = value;
 
       result.push({
         time: timeProgress,
-        value
+        value,
       });
     }
 
@@ -271,7 +263,7 @@ export function ledCalc(
   if (!result.length) {
     result.push({
       time: duration,
-      value: target
+      value: target,
     });
   }
 

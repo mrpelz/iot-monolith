@@ -1,10 +1,9 @@
 /* eslint-disable sort-imports */
-import { readConfig } from './config.js';
+import * as applicationConfig from './config.js';
 
 // create only
 import * as db from './modules/db.js';
 
-import * as ePaper from './modules/e-paper.js';
 import * as histories from './modules/histories.js';
 import * as hmiServer from './modules/hmi-server.js';
 import * as prometheus from './modules/prometheus.js';
@@ -30,8 +29,30 @@ import * as vent from './modules/vent.js';
 // manage only
 import * as fridgeUtils from './modules/fridge-utils.js';
 
+export type ApplicationConfig = typeof applicationConfig;
+export type ApplicationConfigGlobals = ApplicationConfig['globals'];
 
-function create(config: Object, data: Object) {
+export type ApplicationState = scheduler.State &
+  db.State &
+  telegram.State &
+  ev1527Server.State &
+  hmiServer.State &
+  security.State &
+  roomSensors.State &
+  metricAggregates.State &
+  lights.State &
+  doorSensors.State &
+  fans.State &
+  histories.State &
+  httpHooks.State &
+  lightGroups.State &
+  prometheus.State &
+  rfSwitches.State &
+  sevenSegment.State &
+  vent.State &
+  webApi.State;
+
+function create(config: ApplicationConfig, data: ApplicationState) {
   scheduler.create(config, data);
 
   db.create(config, data);
@@ -48,7 +69,6 @@ function create(config: Object, data: Object) {
   lights.create(config, data);
 
   doorSensors.create(config, data);
-  ePaper.create(config, data);
   fans.create(config, data);
   histories.create(config, data);
   httpHooks.create(config, data);
@@ -60,7 +80,7 @@ function create(config: Object, data: Object) {
   webApi.create(config, data);
 }
 
-function manage(config: Object, data: Object) {
+function manage(config: ApplicationConfig, data: ApplicationState) {
   httpHooks.manage(config, data);
 
   doorSensors.manage(config, data);
@@ -77,10 +97,9 @@ function manage(config: Object, data: Object) {
   fridgeUtils.manage(config, data);
 }
 
-export function app() {
-  const data = {};
-  const config = readConfig();
+export function app(): void {
+  const data = {} as ApplicationState;
 
-  create(config, data);
-  manage(config, data);
+  create(applicationConfig, data);
+  manage(applicationConfig, data);
 }

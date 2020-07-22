@@ -4,20 +4,15 @@ import { Prometheus } from '../index.js';
 import { RoomSensor } from '../../room-sensor/index.js';
 
 const prometheus = new Prometheus({
-  port: 5555
+  port: 5555,
 });
 
-const metrics = [
-  'temperature',
-  'pressure',
-  'humidity',
-  'brightness'
-];
+const metrics = ['temperature', 'pressure', 'humidity', 'brightness'];
 
 const roomSensor = new RoomSensor({
   host: 'panucci.net.wurstsalat.cloud',
+  metrics,
   port: 3000,
-  metrics
 });
 
 metrics.forEach((metric) => {
@@ -46,10 +41,7 @@ metrics.forEach((metric) => {
   );
 });
 
-const metric = prometheus.pushMetric(
-  'pushtest',
-  { push: 'push' }
-);
+const metric = prometheus.pushMetric('pushtest', { push: 'push' });
 
 let count = 0;
 setInterval(() => {

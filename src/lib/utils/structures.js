@@ -4,9 +4,7 @@
  * @returns {T}
  */
 export function arrayRandom(input) {
-  return input[
-    Math.floor(Math.random() * input.length)
-  ];
+  return input[Math.floor(Math.random() * input.length)];
 }
 
 /**
@@ -28,11 +26,7 @@ export function getKey(object, key) {
  * @returns {boolean}
  */
 export function isObject(input) {
-  return (
-    input !== null
-    && typeof input === 'object'
-    && !Array.isArray(input)
-  );
+  return input !== null && typeof input === 'object' && !Array.isArray(input);
 }
 
 /**

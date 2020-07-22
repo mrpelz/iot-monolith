@@ -7,40 +7,36 @@ const libName = 'door-sensor';
 function makeMatchOptions(id) {
   return {
     device: {
+      debounce: 1500,
       match: {
+        id,
         model: 'Generic Remote',
-        id
       },
-      debounce: 1500
     },
     states: {
       close: {
         match: {
-          cmd: 14
-        }
+          cmd: 14,
+        },
       },
       open: {
         match: {
-          cmd: 10
-        }
+          cmd: 10,
+        },
       },
       tamper: {
+        debounce: 0,
         match: {
-          cmd: 7
+          cmd: 7,
         },
-        debounce: 0
-      }
-    }
+      },
+    },
   };
 }
 
 export class DoorSensor extends Base {
   constructor(options = {}) {
-    const {
-      id = null,
-      server = null,
-      isOpen = null
-    } = options;
+    const { id = null, server = null, isOpen = null } = options;
 
     if (!id || !server) {
       throw new Error('insufficient options provided');
@@ -55,8 +51,8 @@ export class DoorSensor extends Base {
 
     const ev1527device = new Ev1527Device({
       id,
+      match: makeMatchOptions(id),
       server,
-      match: makeMatchOptions(id)
     });
     ev1527device.on('close', this._handleClose);
     ev1527device.on('open', this._handleOpen);

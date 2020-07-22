@@ -60,10 +60,7 @@ export class PushMetricGroup extends EventEmitter {
 export class LightGroup extends EventEmitter {
   constructor(instances = [], allOf = false) {
     instances.forEach((instance) => {
-      if (
-        instance instanceof Relay
-        || instance instanceof LedLight
-      ) return;
+      if (instance instanceof Relay || instance instanceof LedLight) return;
 
       throw new Error('insufficient options provided');
     });
@@ -108,11 +105,12 @@ export class LightGroup extends EventEmitter {
 
   setPower(on, force = false) {
     this._isChanging = true;
-    const calls = (!force && this._interceptor)
-      ? this._interceptor(on, this._instances)
-      : this._instances.map((instance) => {
-        return instance.setPower(on);
-      });
+    const calls =
+      !force && this._interceptor
+        ? this._interceptor(on, this._instances)
+        : this._instances.map((instance) => {
+            return instance.setPower(on);
+          });
 
     return Promise.all(calls).then((values) => {
       this.emit('change');
@@ -127,7 +125,9 @@ export class LightGroup extends EventEmitter {
   }
 
   setInterceptor(fn) {
-    if (typeof fn !== 'function') throw new Error('interceptor (fn) is not a function');
+    if (typeof fn !== 'function') {
+      throw new Error('interceptor (fn) is not a function');
+    }
     this._interceptor = fn;
   }
 }

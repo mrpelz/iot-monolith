@@ -1,4 +1,9 @@
-import { booleanToBuffer, bufferToBoolean, readNumber, writeNumber } from '../utils/data.js';
+import {
+  booleanToBuffer,
+  bufferToBoolean,
+  readNumber,
+  writeNumber,
+} from '../utils/data.js';
 import { rebind, resolveAlways } from '../utils/oop.js';
 import { Base } from '../base/index.js';
 import { MessageClient } from '../messaging/index.js';
@@ -10,7 +15,7 @@ const buttonMappings = {
   0: 'down',
   1: 'up',
   2: 'shortpress',
-  3: 'longpress'
+  3: 'longpress',
 };
 
 function getMessageTypes(channels, buttons) {
@@ -20,33 +25,35 @@ function getMessageTypes(channels, buttons) {
         generator: booleanToBuffer,
         head: Buffer.from([1, index]),
         name: index,
-        parser: bufferToBoolean
+        parser: bufferToBoolean,
       };
     }),
-    ...[].concat(...new Array(buttons).fill(undefined).map((_, index) => {
-      return Object.keys(buttonMappings).map((payload) => {
-        const { [payload]: action } = buttonMappings;
-        const name = camel('button', index.toString(), action);
+    ...[].concat(
+      ...new Array(buttons).fill(undefined).map((_, index) => {
+        return Object.keys(buttonMappings).map((payload) => {
+          const { [payload]: action } = buttonMappings;
+          const name = camel('button', index.toString(), action);
 
-        return {
-          eventName: name,
-          head: Buffer.from([2, index, payload]),
-          name
-        };
-      });
-    })),
+          return {
+            eventName: name,
+            head: Buffer.from([2, index, payload]),
+            name,
+          };
+        });
+      })
+    ),
     {
       generator: booleanToBuffer,
       head: Buffer.from([0, 0]),
       name: 'indicator',
-      parser: bufferToBoolean
+      parser: bufferToBoolean,
     },
     {
       generator: writeNumber,
       head: Buffer.from([3, 0]),
       name: 'indicatorBlink',
-      parser: readNumber
-    }
+      parser: readNumber,
+    },
   ];
 }
 
@@ -57,7 +64,7 @@ export class RelayDriver extends MessageClient {
       port = null,
       channels = 0,
       buttons = 0,
-      hasIndicator = true
+      hasIndicator = true,
     } = options;
 
     if (!host || !port || !channels) {
@@ -66,13 +73,13 @@ export class RelayDriver extends MessageClient {
 
     super({
       host,
+      messageTypes: getMessageTypes(channels, buttons),
       port,
-      messageTypes: getMessageTypes(channels, buttons)
     });
 
     this._relayDriver = {
       channels: new Array(channels).fill(false),
-      hasIndicator
+      hasIndicator,
     };
 
     this.log.friendlyName(`Driver ${host}:${port}`);
@@ -81,9 +88,7 @@ export class RelayDriver extends MessageClient {
 
   _set(channel, payload) {
     const {
-      state: {
-        isConnected
-      }
+      state: { isConnected },
     } = this._reliableSocket;
 
     const { channels, log } = this._relayDriver;
@@ -98,8 +103,8 @@ export class RelayDriver extends MessageClient {
 
     return this.request(channel, payload).catch((reason) => {
       log.error({
+        attachment: reason,
         head: 'set error',
-        attachment: reason
       });
 
       throw reason;
@@ -113,20 +118,22 @@ export class RelayDriver extends MessageClient {
       throw new Error('driver has no indicator');
     }
 
-    return this.request('indicator', on).then((result) => {
-      if (result !== on) {
-        throw new Error('could not set indicator');
-      }
+    return this.request('indicator', on)
+      .then((result) => {
+        if (result !== on) {
+          throw new Error('could not set indicator');
+        }
 
-      return result;
-    }).catch((reason) => {
-      log.error({
-        head: 'indicator error',
-        attachment: reason
+        return result;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'indicator error',
+        });
+
+        throw reason;
       });
-
-      throw reason;
-    });
   }
 
   indicatorBlink(count, quiet = false) {
@@ -150,8 +157,8 @@ export class RelayDriver extends MessageClient {
 
     return blink.catch((reason) => {
       log.error({
+        attachment: reason,
         head: 'indicator-blink error',
-        attachment: reason
       });
 
       throw reason;
@@ -183,10 +190,16 @@ export class RelayDriver extends MessageClient {
 
 export class SonoffBasic extends RelayDriver {
   constructor(options) {
-    super(Object.assign({}, {
-      channels: 1,
-      buttons: 1
-    }, options));
+    super(
+      Object.assign(
+        {},
+        {
+          buttons: 1,
+          channels: 1,
+        },
+        options
+      )
+    );
   }
 }
 
@@ -194,14 +207,13 @@ export class Relay extends Base {
   constructor(options = {}) {
     super();
 
-    const {
-      driver = null,
-      useChannel
-    } = options;
+    const { driver = null, useChannel } = options;
 
-    if (!driver
-      || useChannel === undefined
-      || !(driver instanceof RelayDriver)) {
+    if (
+      !driver ||
+      useChannel === undefined ||
+      !(driver instanceof RelayDriver)
+    ) {
       throw new Error('insufficient options provided');
     }
 
@@ -211,7 +223,7 @@ export class Relay extends Base {
     this.power = null;
 
     this._relay = {
-      setChannel: this.driver.getChannel(useChannel)
+      setChannel: this.driver.getChannel(useChannel),
     };
 
     rebind(this, '_handleRelayDriverConnection');
@@ -235,27 +247,29 @@ export class Relay extends Base {
       return Promise.resolve(this.power);
     }
 
-    return setChannel(this.powerSetpoint).then((result) => {
-      if (result !== this.powerSetpoint) {
-        // reset, as conflicting message suggest a hardware fail
-        // resetting to null will make following requests go through regardless of state
-        this.power = null;
-        throw new Error('could not set power');
-      }
+    return setChannel(this.powerSetpoint)
+      .then((result) => {
+        if (result !== this.powerSetpoint) {
+          // reset, as conflicting message suggest a hardware fail
+          // resetting to null will make following requests go through regardless of state
+          this.power = null;
+          throw new Error('could not set power');
+        }
 
-      if (this.powerSetpoint !== this.power) {
-        this.power = this.powerSetpoint;
-        this.emit('change');
-      }
-      return this.power;
-    }).catch((reason) => {
-      log.error({
-        head: 'power error',
-        attachment: reason
+        if (this.powerSetpoint !== this.power) {
+          this.power = this.powerSetpoint;
+          this.emit('change');
+        }
+        return this.power;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'power error',
+        });
+
+        throw reason;
       });
-
-      throw reason;
-    });
   }
 
   toggle() {

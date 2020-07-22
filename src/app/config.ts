@@ -1,29 +1,12 @@
-import { basename, extname, join as pathJoin } from 'path';
-import { lstatSync as lstat, readFileSync as readFile, readdirSync as readdir } from 'fs';
-import { configPath } from './environment.js';
-
-export function readConfig() {
-  const result = {} as Object;
-
-  readdir(configPath).forEach((fileName) => {
-    const path = pathJoin(configPath, fileName);
-    const stat = lstat(path);
-
-    if (!stat.isFile()) return;
-    if (extname(path) !== '.json') return;
-
-    const name = basename(fileName, '.json') as keyof Object;
-
-    try {
-      const payload = readFile(path, { encoding: 'utf8' });
-      const config = JSON.parse(payload);
-
-      result[name] = config;
-    } catch (e) {
-      /* eslint-disable-next-line no-console */
-      console.log(`<3>could not read config "${fileName}" / ${e}`);
-    }
-  });
-
-  return result;
-}
+export { default as doorSensors } from '../../config/door-sensors.js';
+export { default as fans } from '../../config/fans.js';
+export { default as globals } from '../../config/globals.js';
+export { default as hmi } from '../../config/hmi.js';
+export { default as lightGroups } from '../../config/light-groups.js';
+export { default as lights } from '../../config/lights.js';
+export { default as metricAggregates } from '../../config/metric-aggregates.js';
+export { default as rfSwitches } from '../../config/rf-switches.js';
+export { default as roomSensors } from '../../config/room-sensors.js';
+export { default as telegram } from '../../config/telegram.js';
+export { default as trends } from '../../config/trends.js';
+export { default as vent } from '../../config/vent.js';

@@ -7,14 +7,14 @@ import {
   TimeRange,
   calc,
   every,
-  sleep
+  sleep,
 } from '../time.js';
 
 import { remainder } from '../math.js';
 
 (async function test() {
   console.log(await sleep(3000, 'console.log after sleeping 3000ms'));
-}());
+})();
 
 const scheduler = new Scheduler();
 scheduler.on('destroy', () => {
@@ -27,7 +27,7 @@ const every10SecsInEvenWeek = {
   },
   week: (wn) => {
     return !(wn % 2);
-  }
+  },
 };
 
 const every10SecsInOddWeek = {
@@ -35,16 +35,16 @@ const every10SecsInOddWeek = {
     return !remainder(sec, 10);
   },
   week: (wn) => {
-    return (wn % 2);
-  }
+    return wn % 2;
+  },
 };
 
 const everySecond30 = {
-  second: 30
+  second: 30,
 };
 
 const everySecond40 = {
-  second: 40
+  second: 40,
 };
 
 const moment1 = new Moment(scheduler, calc('second', 10));
@@ -105,7 +105,7 @@ rec3Moment.on('destroy', () => {
 
 const range1 = new TimeRange(scheduler, {
   from: calc('second', -10),
-  to: calc('second', 10)
+  to: calc('second', 10),
 });
 range1.on('start', () => {
   console.log('"nowMinus10Secs" to "nowPlus10Secs": started');
@@ -119,7 +119,7 @@ range1.on('destroy', () => {
 
 const range2 = new TimeRange(scheduler, {
   from: calc('second', 15),
-  to: calc('second', 20)
+  to: calc('second', 20),
 });
 range2.on('start', () => {
   console.log('"nowPlus15Secs" to "nowPlus20Secs": started');
@@ -131,27 +131,40 @@ range2.on('destroy', () => {
   console.log('"nowPlus15Secs" to "nowPlus20Secs": destroyed');
 });
 
-const range3 = new TimeRange(scheduler, {
-  from: calc('second', -10),
-  to: calc('second', 10)
-}, {
-  from: calc('second', 15),
-  to: calc('second', 20)
-});
+const range3 = new TimeRange(
+  scheduler,
+  {
+    from: calc('second', -10),
+    to: calc('second', 10),
+  },
+  {
+    from: calc('second', 15),
+    to: calc('second', 20),
+  }
+);
 range3.on('start', () => {
-  console.log('"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": started');
+  console.log(
+    '"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": started'
+  );
 });
 range3.on('end', () => {
-  console.log('"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": ended');
+  console.log(
+    '"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": ended'
+  );
 });
 range3.on('destroy', () => {
-  console.log('"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": destroyed');
+  console.log(
+    '"nowMinus10Secs" to "nowPlus10Secs" or "nowPlus15Secs" to "nowPlus20Secs": destroyed'
+  );
 });
 
-const rec1Range = new RecurringTimeRange({ scheduler }, {
-  from: everySecond30,
-  to: everySecond40
-});
+const rec1Range = new RecurringTimeRange(
+  { scheduler },
+  {
+    from: everySecond30,
+    to: everySecond40,
+  }
+);
 rec1Range.on('start', () => {
   console.log('"everySecond30" to "everySecond40": started');
 });

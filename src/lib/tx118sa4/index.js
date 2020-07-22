@@ -5,54 +5,51 @@ const libName = 'tx118sa4';
 function makeMatchOptions(id) {
   return {
     device: {
+      debounce: 500,
       match: {
+        id,
         model: (m) => {
           return ['TX118SA-4', 'TX118SA-4 Wallswitch'].includes(m);
         },
-        id
       },
-      debounce: 500,
-      repeat: 5000
+      repeat: 5000,
     },
     states: {
       1: {
         match: {
           channels: (c) => {
             return c.includes(1);
-          }
-        }
+          },
+        },
       },
       2: {
         match: {
           channels: (c) => {
             return c.includes(2);
-          }
-        }
+          },
+        },
       },
       3: {
         match: {
           channels: (c) => {
             return c.includes(3);
-          }
-        }
+          },
+        },
       },
       4: {
         match: {
           channels: (c) => {
             return c.includes(4);
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   };
 }
 
 export class Tx118sa4 extends Ev1527Device {
   constructor(options = {}) {
-    const {
-      id = null,
-      server = null
-    } = options;
+    const { id = null, server = null } = options;
 
     if (!id || !server) {
       throw new Error('insufficient options provided');
@@ -60,8 +57,8 @@ export class Tx118sa4 extends Ev1527Device {
 
     super({
       id,
+      match: makeMatchOptions(id),
       server,
-      match: makeMatchOptions(id)
     });
 
     this._tx118sa4 = {};

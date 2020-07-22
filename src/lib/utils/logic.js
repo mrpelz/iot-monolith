@@ -10,15 +10,11 @@ import { rebind } from './oop.js';
  * }}
  */
 export class Hysteresis extends EventEmitter {
-
   /**
    * @param {HysteresisOptions} options
    */
   constructor(options = {}) {
-    const {
-      inRangeAbove = 0,
-      outOfRangeBelow = 0
-    } = options;
+    const { inRangeAbove = 0, outOfRangeBelow = 0 } = options;
 
     if (inRangeAbove === outOfRangeBelow) {
       throw new Error('insufficient options provided');
@@ -47,11 +43,9 @@ export class Hysteresis extends EventEmitter {
    * @returns {boolean}
    */
   feed(input) {
-    const inRange = input > this.inRangeAbove
-      || (
-        this.inRange
-        && input > this.outOfRangeBelow
-      );
+    const inRange =
+      input > this.inRangeAbove ||
+      (this.inRange && input > this.outOfRangeBelow);
 
     if (inRange === this.inRange) return this.inRange;
 
@@ -69,12 +63,10 @@ export class Hysteresis extends EventEmitter {
  * @template T
  */
 export class PriorityValue {
-
   /**
    * @param {T} initial
    */
   constructor(initial) {
-
     /**
      * @type {Map<number, T>}
      */
@@ -135,11 +127,9 @@ export class PriorityValue {
       this._values.delete(priority);
     }
 
-
     return this.value;
   }
 }
-
 
 /**
  * @typedef Ranges
@@ -149,7 +139,6 @@ export class PriorityValue {
  */
 
 export class Remap {
-
   /**
    * @param {Ranges} ranges
    */
@@ -167,31 +156,30 @@ export class Remap {
     const matchingRange = this._ranges.find((range) => {
       if (!range[inKey] || !range[outKey]) return false;
 
-      const {
-        [inKey]: [from, to] = []
-      } = range;
-      return from !== undefined
-        && to !== undefined
-        && input >= from
-        && input <= to;
+      const { [inKey]: [from, to] = [] } = range;
+      return (
+        from !== undefined && to !== undefined && input >= from && input <= to
+      );
     });
 
     if (!matchingRange) return null;
 
     const {
       [inKey]: [inFrom, inTo] = [],
-      [outKey]: [outFrom, outTo, round = true] = []
+      [outKey]: [outFrom, outTo, round = true] = [],
     } = matchingRange;
 
     if (
-      inFrom === undefined
-      || inTo === undefined
-      || outFrom === undefined
-      || outTo === undefined
-    ) return null;
+      inFrom === undefined ||
+      inTo === undefined ||
+      outFrom === undefined ||
+      outTo === undefined
+    ) {
+      return null;
+    }
 
-    const ratio = (input - inFrom) / (Math.abs(inTo - inFrom));
-    const intermediate = (ratio * Math.abs(outTo - outFrom)) + outFrom;
+    const ratio = (input - inFrom) / Math.abs(inTo - inFrom);
+    const intermediate = ratio * Math.abs(outTo - outFrom) + outFrom;
     const output = round ? Math.round(intermediate) : intermediate;
 
     return output;

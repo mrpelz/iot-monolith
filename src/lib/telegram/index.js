@@ -14,21 +14,21 @@ const supportedUpdateTypes = [
   'edited_channel_post',
   // 'inline_query',
   // 'chosen_inline_result',
-  'callback_query'
+  'callback_query',
   // 'shipping_query',
   // 'pre_checkout_query'
 ];
 const editMethods = {
-  text: 'editMessageText',
   caption: 'editMessageCaption',
   media: 'editMessageMedia',
-  reply_markup: 'editMessageReplyMarkup'
+  reply_markup: 'editMessageReplyMarkup',
+  text: 'editMessageText',
 };
 
 const telegramHttpOptions = {
   headers: {
-    'Content-Type': 'application/json; charset=utf-8'
-  }
+    'Content-Type': 'application/json; charset=utf-8',
+  },
 };
 
 function telegramRequest(host, token, method, payload) {
@@ -49,11 +49,7 @@ function telegramRequest(host, token, method, payload) {
 
 class InlineKeyboardButton {
   constructor(options = {}) {
-    const {
-      callback,
-      text,
-      url
-    } = options;
+    const { callback, text, url } = options;
 
     if (!text || !(callback || url) || (callback && url)) {
       throw new Error('insufficient options provided!');
@@ -69,7 +65,7 @@ class InlineKeyboardButton {
     return {
       callback_data: this.id,
       text: this.text,
-      url: this.url
+      url: this.url,
     };
   }
 }
@@ -122,15 +118,16 @@ class InlineKeyboard {
   }
 
   query(options = {}) {
-    const {
-      data
-    } = options;
+    const { data } = options;
 
-    return Array.from(this.rows).map((row) => {
-      return Array.from(row.buttons);
-    }).flat(2).find((button) => {
-      return button.id === data;
-    });
+    return Array.from(this.rows)
+      .map((row) => {
+        return Array.from(row.buttons);
+      })
+      .flat(2)
+      .find((button) => {
+        return button.id === data;
+      });
   }
 }
 
@@ -143,7 +140,7 @@ class Message {
       notification = true,
       pagePreviews = true,
       responseToId,
-      text
+      text,
     } = options;
 
     if (!text) throw new Error('no text specified');
@@ -158,7 +155,7 @@ class Message {
     let replyMarkup;
     if (inlineKeyboard) {
       replyMarkup = {
-        inline_keyboard: inlineKeyboard.get()
+        inline_keyboard: inlineKeyboard.get(),
       };
     }
 
@@ -169,7 +166,7 @@ class Message {
       parse_mode: parseMode,
       reply_markup: replyMarkup,
       reply_to_message_id: responseToId,
-      text
+      text,
     };
   }
 
@@ -180,40 +177,32 @@ class Message {
 
     const { inlineKeyboard } = options;
 
-    return client.request('sendMessage', Message.createPayload(chat, options)).then((payload) => {
-      if (!payload) throw new Error('error sending message');
+    return client
+      .request('sendMessage', Message.createPayload(chat, options))
+      .then((payload) => {
+        if (!payload) throw new Error('error sending message');
 
-      const {
-        date,
-        from: {
-          id: fromId = null
-        } = {},
-        message_id: messageId,
-        text
-      } = payload;
+        const {
+          date,
+          from: { id: fromId = null } = {},
+          message_id: messageId,
+          text,
+        } = payload;
 
-      return new Message({
-        chat,
-        client,
-        date,
-        from: fromId,
-        id: messageId,
-        inlineKeyboard,
-        text
+        return new Message({
+          chat,
+          client,
+          date,
+          from: fromId,
+          id: messageId,
+          inlineKeyboard,
+          text,
+        });
       });
-    });
   }
 
   constructor(options) {
-    const {
-      chat,
-      client,
-      date,
-      from,
-      id,
-      inlineKeyboard,
-      text
-    } = options;
+    const { chat, client, date, from, id, inlineKeyboard, text } = options;
 
     if (!chat || !client || !id || !date) {
       throw new Error('insufficient options provided!');
@@ -245,9 +234,11 @@ class Message {
     const { id } = options;
 
     const button = this._inlineKeyboard.query(options);
-    resolveAlways(this._client.request('answerCallbackQuery', {
-      callback_query_id: id
-    })).then(() => {
+    resolveAlways(
+      this._client.request('answerCallbackQuery', {
+        callback_query_id: id,
+      })
+    ).then(() => {
       if (!button) return;
 
       button.callback(button, this, this._chat, this._client);
@@ -264,34 +255,41 @@ class Message {
 
       if (!value) return Promise.resolve();
 
-      return this._client.request(method, Object.assign({
-        message_id: this.id,
-        [key]: value
-      }, excludeKeys(
-        Message.createPayload(this._chat, options), ...editKeys
-      )
-      )).then((payload = {}) => {
-        const {
-          edit_date: editDate
-        } = payload;
-        this.editDate = new Date(editDate);
-      });
+      return this._client
+        .request(
+          method,
+          Object.assign(
+            {
+              [key]: value,
+              message_id: this.id,
+            },
+            excludeKeys(Message.createPayload(this._chat, options), ...editKeys)
+          )
+        )
+        .then((payload = {}) => {
+          const { edit_date: editDate } = payload;
+          this.editDate = new Date(editDate);
+        });
     });
 
-    return Promise.all(calls).then(() => true).catch(() => false);
+    return Promise.all(calls)
+      .then(() => true)
+      .catch(() => false);
   }
 
   delete() {
     if (this.deleted) return Promise.reject();
 
-    return this._client.request('deleteMessage', {
-      chat_id: this._chat.id,
-      message_id: this.id
-    }).then((result) => {
-      this.deleted = true;
+    return this._client
+      .request('deleteMessage', {
+        chat_id: this._chat.id,
+        message_id: this.id,
+      })
+      .then((result) => {
+        this.deleted = true;
 
-      return result;
-    });
+        return result;
+      });
   }
 }
 
@@ -301,24 +299,22 @@ class Chat {
       throw new Error('insufficient options provided!');
     }
 
-    return client.request('getChat', {
-      chat_id: chatId
-    }).then((payload) => {
-      if (!payload) throw new Error('chat does not exist');
+    return client
+      .request('getChat', {
+        chat_id: chatId,
+      })
+      .then((payload) => {
+        if (!payload) throw new Error('chat does not exist');
 
-      const {
-        id,
-        title,
-        type
-      } = payload;
+        const { id, title, type } = payload;
 
-      return new Chat({
-        client,
-        id,
-        title,
-        type
+        return new Chat({
+          client,
+          id,
+          title,
+          type,
+        });
       });
-    });
   }
 
   static restoreMessages(client, chat) {
@@ -327,21 +323,19 @@ class Chat {
     const { messages: saved = [] } = getKey(db, chat.id.toString());
 
     saved.forEach((msg = {}) => {
-      const {
-        date,
-        from,
-        id,
-        text
-      } = msg;
+      const { date, from, id, text } = msg;
 
-      messages.set(id, new Message({
-        chat,
-        client,
-        date,
-        from,
+      messages.set(
         id,
-        text
-      }));
+        new Message({
+          chat,
+          client,
+          date,
+          from,
+          id,
+          text,
+        })
+      );
     });
 
     return messages;
@@ -354,13 +348,7 @@ class Chat {
 
     const saved = [];
     messages.forEach((msg) => {
-      const {
-        date,
-        deleted,
-        from,
-        id,
-        text
-      } = msg;
+      const { date, deleted, from, id, text } = msg;
 
       if (deleted) return;
 
@@ -368,7 +356,7 @@ class Chat {
         date: date.getTime(),
         from,
         id,
-        text
+        text,
       });
     });
 
@@ -376,12 +364,7 @@ class Chat {
   }
 
   constructor(options) {
-    const {
-      client,
-      id,
-      title,
-      type
-    } = options;
+    const { client, id, title, type } = options;
 
     if (!client || !id || !title || !type) {
       throw new Error('insufficient options provided!');
@@ -399,31 +382,28 @@ class Chat {
   ingestMessage(payload = {}) {
     const {
       date,
-      from: {
-        id: fromId = null
-      } = {},
+      from: { id: fromId = null } = {},
       message_id: messageId,
-      text
+      text,
     } = payload;
 
     if (text === undefined) return;
 
-    this._messages.set(messageId, new Message({
-      chat: this,
-      client: this._client,
-      date,
-      from: fromId,
-      id: messageId,
-      text
-    }));
+    this._messages.set(
+      messageId,
+      new Message({
+        chat: this,
+        client: this._client,
+        date,
+        from: fromId,
+        id: messageId,
+        text,
+      })
+    );
   }
 
   ingestEditedMessage(payload = {}) {
-    const {
-      edit_date: editDate,
-      message_id: messageId,
-      text
-    } = payload;
+    const { edit_date: editDate, message_id: messageId, text } = payload;
 
     if (text === undefined) return;
 
@@ -435,22 +415,18 @@ class Chat {
   ingestCallbackQuery(payload = {}) {
     const {
       data,
-      from: {
-        id: fromId = null
-      } = {},
+      from: { id: fromId = null } = {},
       id,
-      message: {
-        message_id: messageId = null
-      } = {}
+      message: { message_id: messageId = null } = {},
     } = payload;
 
     if (data === undefined) return;
 
     if (this._messages.has(messageId)) {
       this._messages.get(messageId).callbackQuery({
-        id,
         data,
-        fromId
+        fromId,
+        id,
       });
     }
   }
@@ -475,22 +451,26 @@ class Chat {
   }
 
   addMessage(options) {
-    return Message.createOutgoing(this._client, this, options).then((message) => {
-      this._messages.set(message.id, message);
+    return Message.createOutgoing(this._client, this, options).then(
+      (message) => {
+        this._messages.set(message.id, message);
 
-      Chat.storeMessages(this._client, this._messages, this);
+        Chat.storeMessages(this._client, this._messages, this);
 
-      return message;
-    });
+        return message;
+      }
+    );
   }
 
   clear() {
     const deletions = [];
 
     this._messages.forEach((msg, id) => {
-      deletions.push(resolveAlways(msg.delete()).then(() => {
-        this._messages.delete(id);
-      }));
+      deletions.push(
+        resolveAlways(msg.delete()).then(() => {
+          this._messages.delete(id);
+        })
+      );
     });
 
     return Promise.all(deletions).then(() => {
@@ -512,7 +492,7 @@ class Client {
         first_name: firstName,
         id,
         last_name: lastName,
-        username
+        username,
       } = payload;
 
       return new Client({
@@ -523,7 +503,7 @@ class Client {
         lastName,
         scheduler,
         token,
-        username
+        username,
       });
     });
   }
@@ -537,7 +517,7 @@ class Client {
       lastName,
       scheduler,
       token,
-      username
+      username,
     } = options;
 
     if (!id || !token || !scheduler || !host || !db) {
@@ -569,9 +549,9 @@ class Client {
     const offset = this._latestUpdateId ? this._latestUpdateId + 1 : undefined;
 
     return this.request('getUpdates', {
+      allowed_updates: supportedUpdateTypes,
       offset,
       timeout: updateTimeoutSeconds,
-      allowed_updates: supportedUpdateTypes
     });
   }
 
@@ -588,15 +568,9 @@ class Client {
       const {
         [type]: payload,
         [type]: {
-          chat: {
-            id: chatIdA = null
-          } = {},
-          message: {
-            chat: {
-              id: chatIdB = null
-            } = {}
-          } = {}
-        } = {}
+          chat: { id: chatIdA = null } = {},
+          message: { chat: { id: chatIdB = null } = {} } = {},
+        } = {},
       } = update;
 
       const chatId = chatIdA || chatIdB;
@@ -641,9 +615,13 @@ export function createTelegramClient(scheduler, token, host, db) {
 }
 
 export function createInlineKeyboard(layout = []) {
-  return new InlineKeyboard(layout.map((row) => {
-    return new InlineKeyboardRow(row.map((button) => {
-      return new InlineKeyboardButton(button);
-    }));
-  }));
+  return new InlineKeyboard(
+    layout.map((row) => {
+      return new InlineKeyboardRow(
+        row.map((button) => {
+          return new InlineKeyboardButton(button);
+        })
+      );
+    })
+  );
 }

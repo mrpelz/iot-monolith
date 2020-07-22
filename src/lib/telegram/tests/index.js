@@ -16,33 +16,33 @@ const chatId = -288897571; // IoT-Group
   const respond = (button, message) => {
     message.delete();
     chat.addMessage({
-      text: `you chose "${button.text}"`
+      text: `you chose "${button.text}"`,
     });
   };
 
   await chat.addMessage({
-    text: 'Hallo @tsiatt! How much do you love @mrpelz',
     inlineKeyboard: createInlineKeyboard([
       [
         {
+          callback: respond,
           text: 'Very much',
-          callback: respond
         },
         {
+          callback: respond,
           text: 'Very, very much',
-          callback: respond
-        }
+        },
       ],
       [
         {
+          callback: respond,
           text: 'So much it hurts. 😏',
-          callback: respond
         },
         {
+          callback: respond,
           text: 'Not.',
-          callback: respond
-        }
-      ]
-    ])
+        },
+      ],
+    ]),
+    text: 'Hallo @tsiatt! How much do you love @mrpelz',
   });
 })();

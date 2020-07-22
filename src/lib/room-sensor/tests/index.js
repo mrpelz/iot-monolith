@@ -3,7 +3,6 @@ import { RoomSensor } from '../index.js';
 
 const roomSensor = new RoomSensor({
   host: '10.97.0.223',
-  port: 5045,
   metrics: [
     'temperature',
     'temperature2',
@@ -14,9 +13,10 @@ const roomSensor = new RoomSensor({
     'tvoc',
     'pm025',
     'pm10',
-    'co2'
+    'co2',
     // 'movement'
-  ]
+  ],
+  port: 5045,
 });
 
 let interval = null;

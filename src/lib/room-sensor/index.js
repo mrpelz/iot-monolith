@@ -8,110 +8,110 @@ import { sleep } from '../utils/time.js';
 const libName = 'room-sensor';
 
 const metricOptions = {
-  temperature: {
-    head: 1,
-    bytes: 2,
-    sanity: {
-      offset: -4000,
-      divide: 100,
-      max: 10000,
-      min: 0
-    },
-    cache: 1000
-  },
-  pressure: {
-    head: 2,
-    bytes: 4,
-    sanity: {
-      divide: 100
-    },
-    cache: 1000
-  },
-  humidity: {
-    head: 3,
-    bytes: 2,
-    sanity: {
-      divide: 100
-    },
-    cache: 1000
-  },
   brightness: {
+    bytes: 4,
+    cache: 1000,
     head: 4,
-    bytes: 4,
     sanity: {
-      divide: 100
-    },
-    cache: 1000
-  },
-  eco2: {
-    head: 5,
-    bytes: 2,
-    cache: 1000,
-    leadIn: 15000
-  },
-  tvoc: {
-    head: 6,
-    bytes: 2,
-    cache: 1000,
-    leadIn: 15000
-  },
-  movement: {
-    head: 7,
-    bytes: 1,
-    event: true,
-    request: false
-  },
-  pm025: {
-    head: 8,
-    bytes: 4,
-    sanity: {
-      divide: 1000
-    },
-    cache: 60000,
-    timeout: 15000,
-    request: false,
-    tolerateNull: true
-  },
-  pm10: {
-    head: 9,
-    bytes: 4,
-    sanity: {
-      divide: 1000
-    },
-    cache: 60000,
-    timeout: 15000,
-    request: false,
-    tolerateNull: true
-  },
-  co2: {
-    head: 10,
-    bytes: 2,
-    cache: 1000,
-    leadIn: 180000,
-    tolerateNull: true
-  },
-  temperature2: {
-    head: 11,
-    bytes: 2,
-    sanity: {
-      offset: -4000,
       divide: 100,
-      max: 10000,
-      min: 0
     },
-    cache: 1000
   },
   co: {
-    head: 12,
     bytes: 4,
-    sanity: {
-      divide: 1000
-    },
     cache: 300000,
+    head: 12,
     leadIn: 300000,
+    request: false,
+    sanity: {
+      divide: 1000,
+    },
     timeout: 60000,
-    request: false
-  }
+  },
+  co2: {
+    bytes: 2,
+    cache: 1000,
+    head: 10,
+    leadIn: 180000,
+    tolerateNull: true,
+  },
+  eco2: {
+    bytes: 2,
+    cache: 1000,
+    head: 5,
+    leadIn: 15000,
+  },
+  humidity: {
+    bytes: 2,
+    cache: 1000,
+    head: 3,
+    sanity: {
+      divide: 100,
+    },
+  },
+  movement: {
+    bytes: 1,
+    event: true,
+    head: 7,
+    request: false,
+  },
+  pm025: {
+    bytes: 4,
+    cache: 60000,
+    head: 8,
+    request: false,
+    sanity: {
+      divide: 1000,
+    },
+    timeout: 15000,
+    tolerateNull: true,
+  },
+  pm10: {
+    bytes: 4,
+    cache: 60000,
+    head: 9,
+    request: false,
+    sanity: {
+      divide: 1000,
+    },
+    timeout: 15000,
+    tolerateNull: true,
+  },
+  pressure: {
+    bytes: 4,
+    cache: 1000,
+    head: 2,
+    sanity: {
+      divide: 100,
+    },
+  },
+  temperature: {
+    bytes: 2,
+    cache: 1000,
+    head: 1,
+    sanity: {
+      divide: 100,
+      max: 10000,
+      min: 0,
+      offset: -4000,
+    },
+  },
+  temperature2: {
+    bytes: 2,
+    cache: 1000,
+    head: 11,
+    sanity: {
+      divide: 100,
+      max: 10000,
+      min: 0,
+      offset: -4000,
+    },
+  },
+  tvoc: {
+    bytes: 2,
+    cache: 1000,
+    head: 6,
+    leadIn: 15000,
+  },
 };
 
 function prepareMetricHandlers(metrics) {
@@ -126,7 +126,7 @@ function prepareMetricHandlers(metrics) {
       head,
       sanity: sanityOptions = {},
       timeout,
-      tolerateNull
+      tolerateNull,
     } = options;
 
     const parser = (input) => {
@@ -138,67 +138,64 @@ function prepareMetricHandlers(metrics) {
         throw new Error('received null value');
       }
 
-      const result = (bytes > 1)
-        ? sanity(readNumber(input, bytes), sanityOptions)
-        : bufferToBoolean(input);
+      const result =
+        bytes > 1
+          ? sanity(readNumber(input, bytes), sanityOptions)
+          : bufferToBoolean(input);
 
       state.set(name, result);
 
       return result;
     };
 
-    const eventParser = event ? (input) => {
-      if (!input.length) return undefined;
+    const eventParser = event
+      ? (input) => {
+          if (!input.length) return undefined;
 
-      const payload = input.slice(1);
-      if (!payload.length) return undefined;
+          const payload = input.slice(1);
+          if (!payload.length) return undefined;
 
-      const result = (bytes > 1)
-        ? sanity(readNumber(payload, bytes), sanityOptions)
-        : bufferToBoolean(payload);
+          const result =
+            bytes > 1
+              ? sanity(readNumber(payload, bytes), sanityOptions)
+              : bufferToBoolean(payload);
 
-      state.set(name, result);
+          state.set(name, result);
 
-      return result;
-    } : undefined;
+          return result;
+        }
+      : undefined;
 
     return {
-      name,
       eventName: event ? name : undefined,
       eventParser,
       head: Buffer.from([head]),
+      name,
       parser,
-      timeout
+      timeout,
     };
   });
 
   return {
     state,
-    types
+    types,
   };
 }
 
 function getCaches(metrics) {
-  return Object.fromEntries(metrics.map((name) => {
-    const {
-      [name]: {
-        cache = 0,
-        timeout = 1000
-      } = {}
-    } = metricOptions;
+  return Object.fromEntries(
+    metrics.map((name) => {
+      const { [name]: { cache = 0, timeout = 1000 } = {} } = metricOptions;
 
-    if (!cache) return [name, null];
-    return [name, new CachePromise(cache + timeout)];
-  }));
+      if (!cache) return [name, null];
+      return [name, new CachePromise(cache + timeout)];
+    })
+  );
 }
 
 export class RoomSensor extends MessageClient {
   constructor(options = {}) {
-    const {
-      host = null,
-      port = null,
-      metrics = []
-    } = options;
+    const { host = null, port = null, metrics = [] } = options;
 
     if (!host || !port || !metrics.length) {
       throw new Error('insufficient options provided');
@@ -208,14 +205,14 @@ export class RoomSensor extends MessageClient {
 
     super({
       host,
+      messageTypes: types,
       port,
-      messageTypes: types
     });
 
     this._roomSensor = {
-      metrics,
       caches: getCaches(metrics),
-      state
+      metrics,
+      state,
     };
 
     this.log.friendlyName(`${host}:${port}`);
@@ -224,49 +221,41 @@ export class RoomSensor extends MessageClient {
 
   requestMetric(metric) {
     const {
-      state: {
-        isConnected,
-        connectionTime
-      }
+      state: { isConnected, connectionTime },
     } = this._reliableSocket;
 
-    const {
-      log,
-      caches
-    } = this._roomSensor;
+    const { log, caches } = this._roomSensor;
 
     if (!isConnected) {
       return Promise.reject(new Error('sensor not connected'));
     }
 
     const { [metric]: cache } = caches;
-    const {
-      [metric]: {
-        leadIn = 0
-      } = {}
-    } = metricOptions;
+    const { [metric]: { leadIn = 0 } = {} } = metricOptions;
 
-    const isLeadIn = Date.now() < (connectionTime + leadIn);
+    const isLeadIn = Date.now() < connectionTime + leadIn;
 
     if (cache) {
       if (cache.hit()) {
         return cache.defer();
       }
 
-      return cache.promise(this.request(metric, undefined, isLeadIn)).catch((reason) => {
-        log.error({
-          head: `metric [cached] (${metric}) error`,
-          attachment: reason
-        });
+      return cache
+        .promise(this.request(metric, undefined, isLeadIn))
+        .catch((reason) => {
+          log.error({
+            attachment: reason,
+            head: `metric [cached] (${metric}) error`,
+          });
 
-        throw reason;
-      });
+          throw reason;
+        });
     }
 
     return this.request(metric, undefined, isLeadIn).catch((reason) => {
       log.error({
+        attachment: reason,
         head: `metric [uncached] (${metric}) error`,
-        attachment: reason
       });
 
       throw reason;
@@ -274,20 +263,13 @@ export class RoomSensor extends MessageClient {
   }
 
   getMetric(metric, timeout = null) {
-    const {
-      metrics
-    } = this._roomSensor;
+    const { metrics } = this._roomSensor;
 
     if (!metrics.includes(metric)) {
       throw new Error('metric not configured');
     }
 
-    const {
-      [metric]: {
-        cache = 0,
-        request = true
-      } = {}
-    } = metricOptions;
+    const { [metric]: { cache = 0, request = true } = {} } = metricOptions;
 
     const fallback = cache ? this.getCache(metric) : this.getState(metric);
 
@@ -298,7 +280,7 @@ export class RoomSensor extends MessageClient {
     if (timeout) {
       return Promise.race([
         this.requestMetric(metric),
-        sleep(timeout, fallback)
+        sleep(timeout, fallback),
       ]);
     }
 
@@ -306,10 +288,7 @@ export class RoomSensor extends MessageClient {
   }
 
   getCache(metric) {
-    const {
-      metrics,
-      caches
-    } = this._roomSensor;
+    const { metrics, caches } = this._roomSensor;
 
     if (!metrics.includes(metric)) {
       throw new Error('metric not configured');
@@ -327,10 +306,7 @@ export class RoomSensor extends MessageClient {
   }
 
   getMetricTime(metric) {
-    const {
-      metrics,
-      caches
-    } = this._roomSensor;
+    const { metrics, caches } = this._roomSensor;
 
     if (!metrics.includes(metric)) {
       throw new Error('metric not configured');
@@ -343,32 +319,31 @@ export class RoomSensor extends MessageClient {
 
   getAll() {
     const {
-      state: {
-        isConnected
-      }
+      state: { isConnected },
     } = this._reliableSocket;
 
-    const {
-      log,
-      metrics
-    } = this._roomSensor;
+    const { log, metrics } = this._roomSensor;
 
     if (!isConnected) {
       return Promise.reject(new Error('sensor not connected'));
     }
 
-    return Promise.all(metrics.map((metric) => {
-      return [metric, resolveAlways(this.getMetric(metric))];
-    })).then((entries) => {
-      return Object.fromEntries(entries);
-    }).catch((reason) => {
-      log.error({
-        head: 'getAll error',
-        attachment: reason
-      });
+    return Promise.all(
+      metrics.map((metric) => {
+        return [metric, resolveAlways(this.getMetric(metric))];
+      })
+    )
+      .then((entries) => {
+        return Object.fromEntries(entries);
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'getAll error',
+        });
 
-      throw reason;
-    });
+        throw reason;
+      });
   }
 
   getTemperature() {

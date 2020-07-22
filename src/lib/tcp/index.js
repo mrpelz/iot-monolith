@@ -12,14 +12,19 @@ export class PersistentSocket extends Base {
   constructor(options = {}) {
     super();
 
-    this._persistentSocket = {};
+    this._persistentSocket = {
+      options: {
+        host: null,
+        port: null,
+      },
+    };
 
     const {
       delimiter = null,
       host = null,
       keepAlive = {},
       lengthPreamble = 0,
-      port = null
+      port = null,
     } = options;
 
     if (!host || !port || !(lengthPreamble > 0 || delimiter)) {
@@ -31,7 +36,7 @@ export class PersistentSocket extends Base {
       receive = false,
       send = false,
       time = null,
-      useNative = true
+      useNative = true,
     } = keepAlive;
 
     if (send && (!time || !data)) {
@@ -39,17 +44,17 @@ export class PersistentSocket extends Base {
     }
 
     this._persistentSocket.options = {
+      delimiter,
       host,
-      port,
       keepAlive: {
         data,
         receive,
         send,
         time,
-        useNative
+        useNative,
       },
       lengthPreamble,
-      delimiter
+      port,
     };
 
     this._persistentSocket.state = {
@@ -62,7 +67,7 @@ export class PersistentSocket extends Base {
       messageTickTimeout: null,
       shouldBeConnected: false,
       tcpTimeout: null,
-      watcherInterval: null
+      watcherInterval: null,
     };
 
     rebind(this, '_handleData', '_onConnection', '_onDisconnection');
@@ -79,8 +84,8 @@ export class PersistentSocket extends Base {
     const payload = Buffer.from(input);
 
     log.debug({
+      attachment: humanPayload(payload),
       head: 'payload received',
-      attachment: humanPayload(payload)
     });
 
     this.emit('data', payload);
@@ -94,18 +99,19 @@ export class PersistentSocket extends Base {
   }
 
   _parseLengthMessages() {
-    const { state, state: { buffer, cache }, options } = this._persistentSocket;
+    const {
+      state,
+      state: { buffer, cache },
+      options,
+    } = this._persistentSocket;
 
     while (cache.length) {
       const byte = cache.shift();
 
       if (!state.messageTick) {
-        state.messageTick = setTimeout(
-          () => {
-            this._resetReading();
-          },
-          options.keepAlive.time * 2
-        );
+        state.messageTick = setTimeout(() => {
+          this._resetReading();
+        }, options.keepAlive.time * 2);
       }
 
       if (state.currentMessageLength === null) {
@@ -128,7 +134,10 @@ export class PersistentSocket extends Base {
   }
 
   _parseDelimitedMessages() {
-    const { state: { buffer, cache }, options } = this._persistentSocket;
+    const {
+      state: { buffer, cache },
+      options,
+    } = this._persistentSocket;
 
     while (cache.length) {
       const byte = cache.shift();
@@ -143,7 +152,10 @@ export class PersistentSocket extends Base {
   }
 
   _handleData(data) {
-    const { state: { cache }, options } = this._persistentSocket;
+    const {
+      state: { cache },
+      options,
+    } = this._persistentSocket;
 
     cache.push(...data);
 
@@ -164,20 +176,18 @@ export class PersistentSocket extends Base {
     const {
       log,
       state,
-      options: {
-        keepAlive
-      },
-      socket
+      options: { keepAlive },
+      socket,
     } = this._persistentSocket;
 
     const now = Date.now();
 
     if (!state.isConnected) {
-      if (now > (state.connectionTime + reconnectionDebounce)) {
+      if (now > state.connectionTime + reconnectionDebounce) {
         log.info({
           head: 'is connected',
+          telegram: state.isConnected !== null,
           value: true,
-          telegram: state.isConnected !== null
         });
       }
 
@@ -210,24 +220,22 @@ export class PersistentSocket extends Base {
     const {
       log,
       state,
-      options: {
-        keepAlive
-      },
-      socket
+      options: { keepAlive },
+      socket,
     } = this._persistentSocket;
 
     if (state.isConnected) {
-      if (Date.now() > (state.connectionTime + reconnectionDebounce)) {
+      if (Date.now() > state.connectionTime + reconnectionDebounce) {
         if (state.shouldBeConnected) {
           log.error({
+            attachment: null || (error && error.message),
             head: 'unexpected disconnect',
-            attachment: null || (error && error.message)
           });
         }
 
         log.info({
           head: 'is connected',
-          value: false
+          value: false,
         });
       }
 
@@ -254,11 +262,8 @@ export class PersistentSocket extends Base {
     const {
       log,
       state,
-      options: {
-        host,
-        port
-      },
-      socket
+      options: { host, port },
+      socket,
     } = this._persistentSocket;
 
     if (!state.isConnected && state.shouldBeConnected) {
@@ -266,13 +271,17 @@ export class PersistentSocket extends Base {
 
       socket.connect({
         host,
-        port
+        port,
       });
     }
   }
 
   _timeoutTick(stop = false) {
-    const { log, state, options: { keepAlive } } = this._persistentSocket;
+    const {
+      log,
+      state,
+      options: { keepAlive },
+    } = this._persistentSocket;
 
     if (state.tcpTimeout) {
       clearTimeout(state.tcpTimeout);
@@ -292,15 +301,10 @@ export class PersistentSocket extends Base {
 
   write(input) {
     const {
-      state: {
-        isConnected
-      },
-      options: {
-        lengthPreamble,
-        delimiter
-      },
+      state: { isConnected },
+      options: { lengthPreamble, delimiter },
       log,
-      socket
+      socket,
     } = this._persistentSocket;
 
     if (!isConnected) {
@@ -308,32 +312,30 @@ export class PersistentSocket extends Base {
     }
 
     log.debug({
+      attachment: humanPayload(input),
       head: 'payload send',
-      attachment: humanPayload(input)
     });
 
-    socket.write(Buffer.concat(lengthPreamble ? [
-      writeNumber(input.length, lengthPreamble),
-      input
-    ] : [
-        input,
-        Buffer.from([delimiter])
-      ]));
+    socket.write(
+      Buffer.concat(
+        lengthPreamble
+          ? [writeNumber(input.length, lengthPreamble), input]
+          : [input, Buffer.from([delimiter])]
+      )
+    );
   }
 
   connect() {
     const {
       log,
       state,
-      options: {
-        keepAlive
-      },
-      socket
+      options: { keepAlive },
+      socket,
     } = this._persistentSocket;
 
     log.info({
       head: 'set connect',
-      value: true
+      value: true,
     });
 
     socket.on('connect', this._onConnection);
@@ -360,7 +362,7 @@ export class PersistentSocket extends Base {
 
     log.info({
       head: 'set connect',
-      value: false
+      value: false,
     });
 
     if (state.watcherInterval) {
@@ -397,7 +399,7 @@ export class ReliableSocket extends Base {
       host = null,
       port = null,
       lengthPreamble = 1,
-      keepAlive = 2000
+      keepAlive = 2000,
     } = options;
 
     if (!host || !port || !lengthPreamble) {
@@ -407,24 +409,24 @@ export class ReliableSocket extends Base {
     this.log.friendlyName(`${host}:${port}`);
 
     this._reliableSocket = {
+      connectDebounceTimer: new Timer(keepAlive),
+      disconnectTimer: new Timer(keepAlive * 20),
+      keepAliveTimer: new Timer(keepAlive * 4),
+      log: this.log.withPrefix(libName),
+      messageTimer: new Timer(keepAlive * 2),
       options: {
         host,
-        port,
+        keepAlive,
         lengthPreamble,
-        keepAlive
+        port,
       },
+      socket: null,
       state: {
         connectionTime: 0,
         currentLength: 0,
         isConnected: null,
-        shouldBeConnected: false
+        shouldBeConnected: false,
       },
-      socket: null,
-      keepAliveTimer: new Timer(keepAlive * 4),
-      messageTimer: new Timer(keepAlive * 2),
-      disconnectTimer: new Timer(keepAlive * 20),
-      connectDebounceTimer: new Timer(keepAlive),
-      log: this.log.withPrefix(libName)
     };
 
     rebind(
@@ -443,13 +445,11 @@ export class ReliableSocket extends Base {
 
   _init() {
     const {
-      options: {
-        keepAlive
-      },
+      options: { keepAlive },
       keepAliveTimer,
       messageTimer,
       disconnectTimer,
-      connectDebounceTimer
+      connectDebounceTimer,
     } = this._reliableSocket;
 
     setInterval(this._connect, Math.round(keepAlive / 2));
@@ -464,15 +464,9 @@ export class ReliableSocket extends Base {
 
   _connect() {
     const {
-      options: {
-        host,
-        port
-      },
-      state: {
-        isConnected,
-        shouldBeConnected
-      },
-      log
+      options: { host, port },
+      state: { isConnected, shouldBeConnected },
+      log,
     } = this._reliableSocket;
 
     log.debug('connection/disconnection handling');
@@ -531,13 +525,11 @@ export class ReliableSocket extends Base {
 
   _onConnection() {
     const {
-      state: {
-        isConnected
-      },
+      state: { isConnected },
       disconnectTimer,
       connectDebounceTimer,
       keepAliveTimer,
-      log
+      log,
     } = this._reliableSocket;
 
     if (isConnected) return;
@@ -552,7 +544,7 @@ export class ReliableSocket extends Base {
 
     log.info({
       head: 'is connected',
-      value: true
+      value: true,
     });
 
     this.emit('connect');
@@ -560,15 +552,12 @@ export class ReliableSocket extends Base {
 
   _onDisconnection() {
     const {
-      state: {
-        isConnected,
-        shouldBeConnected
-      },
+      state: { isConnected, shouldBeConnected },
       messageTimer,
       disconnectTimer,
       connectDebounceTimer,
       keepAliveTimer,
-      log
+      log,
     } = this._reliableSocket;
 
     if (!isConnected) return;
@@ -588,7 +577,7 @@ export class ReliableSocket extends Base {
 
     log.info({
       head: 'is connected',
-      value: false
+      value: false,
     });
 
     this.emit('disconnect');
@@ -598,10 +587,8 @@ export class ReliableSocket extends Base {
     const {
       messageTimer,
       socket,
-      options: {
-        lengthPreamble
-      },
-      log
+      options: { lengthPreamble },
+      log,
     } = this._reliableSocket;
 
     if (this._reliableSocket.state.currentLength) {
@@ -613,8 +600,8 @@ export class ReliableSocket extends Base {
       messageTimer.stop();
 
       log.debug({
+        attachment: humanPayload(bodyPayload),
         head: 'msg incoming',
-        attachment: humanPayload(bodyPayload)
       });
 
       this.emit('data', bodyPayload);
@@ -625,30 +612,35 @@ export class ReliableSocket extends Base {
     const lengthPayload = socket.read(lengthPreamble);
     if (!lengthPayload) return false;
 
-    this._reliableSocket.state.currentLength = readNumber(lengthPayload, lengthPreamble);
+    this._reliableSocket.state.currentLength = readNumber(
+      lengthPayload,
+      lengthPreamble
+    );
 
     messageTimer.start();
 
     if (this._reliableSocket.state.currentLength > 5) {
-      log.error(`message length > 5 bytes: ${this._reliableSocket.state.currentLength} bytes`);
+      log.error(
+        `message length > 5 bytes: ${this._reliableSocket.state.currentLength} bytes`
+      );
     }
 
-    log.debug(`receive ${this._reliableSocket.state.currentLength} byte payload`);
+    log.debug(
+      `receive ${this._reliableSocket.state.currentLength} byte payload`
+    );
 
     return true;
   }
 
   _sendKeepAlive() {
     if (!this._reliableSocket.state.isConnected) return;
-    this.write(Buffer.from([0xFF]));
+    this.write(Buffer.from([0xff]));
   }
 
   _setUpSocket() {
     const {
-      options: {
-        keepAlive
-      },
-      socket
+      options: { keepAlive },
+      socket,
     } = this._reliableSocket;
 
     socket.setNoDelay(true);
@@ -670,7 +662,7 @@ export class ReliableSocket extends Base {
 
     this._reliableSocket.log.info({
       head: 'set connect',
-      value: true
+      value: true,
     });
 
     this._connect();
@@ -681,7 +673,7 @@ export class ReliableSocket extends Base {
 
     this._reliableSocket.log.info({
       head: 'set connect',
-      value: false
+      value: false,
     });
 
     this._connect();
@@ -693,14 +685,10 @@ export class ReliableSocket extends Base {
 
   write(input) {
     const {
-      options: {
-        lengthPreamble
-      },
-      state: {
-        isConnected
-      },
+      options: { lengthPreamble },
+      state: { isConnected },
       socket,
-      log
+      log,
     } = this._reliableSocket;
 
     if (!isConnected) {
@@ -710,13 +698,12 @@ export class ReliableSocket extends Base {
     log.debug(`send ${input.length} byte payload`);
 
     log.debug({
+      attachment: humanPayload(input),
       head: 'msg outgoing',
-      attachment: humanPayload(input)
     });
 
-    socket.write(Buffer.concat([
-      writeNumber(input.length, lengthPreamble),
-      input
-    ]));
+    socket.write(
+      Buffer.concat([writeNumber(input.length, lengthPreamble), input])
+    );
   }
 }

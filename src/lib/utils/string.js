@@ -3,17 +3,19 @@
  * @returns {string}
  */
 export function camel(...input) {
-  return input.map((word, index) => {
-    const tile = word.toString();
+  return input
+    .map((word, index) => {
+      const tile = word.toString();
 
-    if (!index) {
-      return tile;
-    }
+      if (!index) {
+        return tile;
+      }
 
-    const first = tile.charAt(0).toUpperCase();
-    const rest = tile.slice(1);
-    return `${first}${rest}`;
-  }).join('');
+      const first = tile.charAt(0).toUpperCase();
+      const rest = tile.slice(1);
+      return `${first}${rest}`;
+    })
+    .join('');
 }
 
 /**
@@ -21,13 +23,15 @@ export function camel(...input) {
  * @returns {string}
  */
 export function pascal(...input) {
-  return input.map((word) => {
-    const tile = word.toString();
+  return input
+    .map((word) => {
+      const tile = word.toString();
 
-    const first = tile.charAt(0).toUpperCase();
-    const rest = tile.slice(1);
-    return `${first}${rest}`;
-  }).join('');
+      const first = tile.charAt(0).toUpperCase();
+      const rest = tile.slice(1);
+      return `${first}${rest}`;
+    })
+    .join('');
 }
 
 /**

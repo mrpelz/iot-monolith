@@ -16,13 +16,19 @@ function prepareMessageTypes(types) {
   return types.map((msg) => {
     const {
       eventName = null,
-      eventParser = (x) => { return x; },
-      generator = (x) => { return x; },
+      eventParser = (x) => {
+        return x;
+      },
+      generator = (x) => {
+        return x;
+      },
       head = emptyBuffer,
       name,
-      parser = (x) => { return x; },
+      parser = (x) => {
+        return x;
+      },
       tail = emptyBuffer,
-      timeout = defaultTimeout
+      timeout = defaultTimeout,
     } = msg;
 
     return {
@@ -33,7 +39,7 @@ function prepareMessageTypes(types) {
       name,
       parser,
       tail,
-      timeout
+      timeout,
     };
   });
 }
@@ -43,7 +49,7 @@ function bufferBeginsWith(input, head) {
     return true;
   }
   return [...head].reduce((acc, curr, index) => {
-    return acc && (curr === input[index]);
+    return acc && curr === input[index];
   }, true);
 }
 
@@ -53,7 +59,7 @@ function bufferEndsWith(input, tail) {
   }
   const start = input.length - tail.length;
   return [...tail].reduce((acc, curr, index) => {
-    return acc && (curr === input[start + index]);
+    return acc && curr === input[start + index];
   }, true);
 }
 
@@ -92,7 +98,7 @@ export class MessageClient extends ReliableSocket {
       port = null,
       lengthBytes = 1,
       timeout = 2000,
-      messageTypes = []
+      messageTypes = [],
     } = options;
 
     if (!host || !port || !messageTypes.length) {
@@ -101,9 +107,9 @@ export class MessageClient extends ReliableSocket {
 
     super({
       host,
-      port,
       keepAlive: timeout,
-      lengthPreamble: lengthBytes
+      lengthPreamble: lengthBytes,
+      port,
     });
 
     this._messaging = {};
@@ -112,7 +118,7 @@ export class MessageClient extends ReliableSocket {
 
     this._messaging.state = {
       callCount: minCallId,
-      calls: {}
+      calls: {},
     };
 
     rebind(this, '_handleResponse', '_handleDisconnection');
@@ -124,9 +130,7 @@ export class MessageClient extends ReliableSocket {
   }
 
   _emitEvent(payload) {
-    const {
-      types
-    } = this._messaging;
+    const { types } = this._messaging;
     const msg = findRequestPatternMatch(types, payload);
 
     if (msg && msg.eventName) {
@@ -138,7 +142,7 @@ export class MessageClient extends ReliableSocket {
   _handleDisconnection() {
     const {
       log,
-      state: { calls }
+      state: { calls },
     } = this._messaging;
 
     const callIds = Object.keys(calls);
@@ -159,7 +163,7 @@ export class MessageClient extends ReliableSocket {
 
   _handleResponse(data) {
     const {
-      state: { calls }
+      state: { calls },
     } = this._messaging;
 
     const id = readNumber(data.slice(0, 1), 1);
@@ -181,16 +185,14 @@ export class MessageClient extends ReliableSocket {
 
   request(name, data = emptyBuffer, quietParse = false) {
     const {
-      state: {
-        isConnected
-      }
+      state: { isConnected },
     } = this._reliableSocket;
 
     const {
       log,
       state,
       state: { calls },
-      types
+      types,
     } = this._messaging;
 
     if (!isConnected) {
@@ -203,13 +205,7 @@ export class MessageClient extends ReliableSocket {
       throw new Error(`no configured request for "${name}"`);
     }
 
-    const {
-      head,
-      tail,
-      parser,
-      generator,
-      timeout
-    } = msg;
+    const { head, tail, parser, generator, timeout } = msg;
 
     const id = callId(state);
     const payload = generator(data);
@@ -241,18 +237,13 @@ export class MessageClient extends ReliableSocket {
         delete calls[id];
       };
 
-      this.write(Buffer.concat([
-        Buffer.from([id]),
-        head,
-        payload,
-        tail
-      ]));
+      this.write(Buffer.concat([Buffer.from([id]), head, payload, tail]));
     });
 
     return Promise.race([timeoutHandler, responseHandler]).catch((reason) => {
       log.warning({
+        attachment: reason,
         head: 'request error',
-        attachment: reason
       });
 
       throw reason;

@@ -1,4 +1,9 @@
-import { booleanToBuffer, bufferToBoolean, readNumber, writeNumber } from '../utils/data.js';
+import {
+  booleanToBuffer,
+  bufferToBoolean,
+  readNumber,
+  writeNumber,
+} from '../utils/data.js';
 import { ledCalc, transitions } from '../utils/math.js';
 import { rebind, resolveAlways } from '../utils/oop.js';
 import { Base } from '../base/index.js';
@@ -14,6 +19,7 @@ const defaultAnimationDuration = 2000;
 const defaultGamma = 2.8;
 const defaultBrightnessSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
 const defaultRGBPresets = {
+  /* eslint-disable sort-keys */
   red: { r: 1, g: 0, b: 0 },
   orange: { r: 1, g: 0.5, b: 0 },
   yellow: { r: 1, g: 1, b: 0 },
@@ -25,19 +31,29 @@ const defaultRGBPresets = {
   blue: { r: 0, g: 0, b: 1 },
   violet: { r: 0.5, g: 0, b: 1 },
   magenta: { r: 1, g: 0, b: 1 },
-  rose: { r: 1, g: 0, b: 0.5 }
+  rose: { r: 1, g: 0, b: 0.5 },
+  /* eslint-enable sort-keys */
 };
 
-const remap = new Remap([{
-  logic: [0, 1, false],
-  cycle: [minCycle, maxCycle, true],
-  percent: [0, 100, true]
-}]);
+const remap = new Remap([
+  {
+    cycle: [minCycle, maxCycle, true],
+    logic: [0, 1, false],
+    percent: [0, 100, true],
+  },
+]);
 
 function createAnimationPayload(from, to, duration, gamma) {
   if (from === null) return null;
 
-  const animation = ledCalc(from, to, duration, transitions.easeOutQuad, maxCycle, gamma);
+  const animation = ledCalc(
+    from,
+    to,
+    duration,
+    transitions.easeOutQuad,
+    maxCycle,
+    gamma
+  );
   if (!animation) return null;
 
   // console.log(JSON.stringify(animation, null, 2));
@@ -46,7 +62,7 @@ function createAnimationPayload(from, to, duration, gamma) {
     animation.map((frame) => {
       return Buffer.concat([
         writeNumber(frame.time, 4),
-        writeNumber(frame.value, 1)
+        writeNumber(frame.value, 1),
       ]);
     })
   );
@@ -72,21 +88,21 @@ function getMessageTypes(channels) {
         },
         head: Buffer.from([1, index]),
         name: index,
-        parser: readNumber
+        parser: readNumber,
       };
     }),
     {
       generator: booleanToBuffer,
       head: Buffer.from([0, 0]),
       name: 'indicator',
-      parser: bufferToBoolean
+      parser: bufferToBoolean,
     },
     {
       generator: writeNumber,
       head: Buffer.from([2, 0]),
       name: 'indicatorBlink',
-      parser: readNumber
-    }
+      parser: readNumber,
+    },
   ];
 }
 
@@ -96,7 +112,7 @@ export class LedDriver extends MessageClient {
       host = null,
       port = null,
       channels = 0,
-      hasIndicator = true
+      hasIndicator = true,
     } = options;
 
     if (!host || !port || !channels) {
@@ -105,14 +121,14 @@ export class LedDriver extends MessageClient {
 
     super({
       host,
-      port,
+      lengthBytes: 2,
       messageTypes: getMessageTypes(channels),
-      lengthBytes: 2
+      port,
     });
 
     this._ledDriver = {
       channels: new Array(channels).fill(false),
-      hasIndicator
+      hasIndicator,
     };
 
     this.log.friendlyName(`Driver ${host}:${port}`);
@@ -121,9 +137,7 @@ export class LedDriver extends MessageClient {
 
   _set(channel, payload) {
     const {
-      state: {
-        isConnected
-      }
+      state: { isConnected },
     } = this._reliableSocket;
 
     const { channels, log } = this._ledDriver;
@@ -138,8 +152,8 @@ export class LedDriver extends MessageClient {
 
     return this.request(channel, payload).catch((reason) => {
       log.error({
+        attachment: reason,
         head: 'set error',
-        attachment: reason
       });
 
       throw reason;
@@ -153,20 +167,22 @@ export class LedDriver extends MessageClient {
       throw new Error('driver has no indicator');
     }
 
-    return this.request('indicator', on).then((result) => {
-      if (result !== on) {
-        throw new Error('could not set indicator');
-      }
+    return this.request('indicator', on)
+      .then((result) => {
+        if (result !== on) {
+          throw new Error('could not set indicator');
+        }
 
-      return result;
-    }).catch((reason) => {
-      log.error({
-        head: 'indicator error',
-        attachment: reason
+        return result;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'indicator error',
+        });
+
+        throw reason;
       });
-
-      throw reason;
-    });
   }
 
   indicatorBlink(count, quiet = false) {
@@ -190,8 +206,8 @@ export class LedDriver extends MessageClient {
 
     return blink.catch((reason) => {
       log.error({
+        attachment: reason,
         head: 'indicator-blink error',
-        attachment: reason
       });
 
       throw reason;
@@ -223,9 +239,15 @@ export class LedDriver extends MessageClient {
 
 export class H801 extends LedDriver {
   constructor(options) {
-    super(Object.assign({}, {
-      channels: 5
-    }, options));
+    super(
+      Object.assign(
+        {},
+        {
+          channels: 5,
+        },
+        options
+      )
+    );
   }
 }
 
@@ -238,15 +260,17 @@ export class LedLight extends Base {
       duration = defaultAnimationDuration,
       gamma = defaultGamma,
       useChannel,
-      steps = defaultBrightnessSteps
+      steps = defaultBrightnessSteps,
     } = options;
 
-    if (!driver
-      || duration === undefined
-      || gamma === undefined
-      || useChannel === undefined
-      || !(driver instanceof LedDriver)
-      || !steps.length) {
+    if (
+      !driver ||
+      duration === undefined ||
+      gamma === undefined ||
+      useChannel === undefined ||
+      !(driver instanceof LedDriver) ||
+      !steps.length
+    ) {
       throw new Error('insufficient options provided');
     }
 
@@ -259,7 +283,7 @@ export class LedLight extends Base {
       duration,
       gamma,
       setChannel: this.driver.getChannel(useChannel),
-      steps
+      steps,
     };
 
     rebind(this, '_handleLedDriverConnection');
@@ -270,6 +294,10 @@ export class LedLight extends Base {
 
   get powerSetpoint() {
     return Boolean(this.brightnessSetpoint);
+  }
+
+  set powerSetpoint(input) {
+    this.brightnessSetpoint = input;
   }
 
   get power() {
@@ -286,7 +314,7 @@ export class LedLight extends Base {
     this.setBrightness(this.brightnessSetpoint, 0);
   }
 
-  setBrightness(input, duration) {
+  setBrightness(input, duration = null) {
     if (input < 0 || input > 1 || Number.isNaN(input)) {
       throw new Error('brightness input out of range');
     }
@@ -295,10 +323,11 @@ export class LedLight extends Base {
       duration: defaultDuration,
       gamma,
       log,
-      setChannel
+      setChannel,
     } = this._ledLight;
 
-    const animationDuration = typeof duration === 'number' ? duration : defaultDuration;
+    const animationDuration =
+      typeof duration === 'number' ? duration : defaultDuration;
 
     this.brightnessSetpoint = input;
 
@@ -320,10 +349,7 @@ export class LedLight extends Base {
     );
 
     if (!payload) {
-      payload = Buffer.from([
-        writeNumber(0, 4),
-        writeNumber(cycle, 1)
-      ]);
+      payload = Buffer.from([writeNumber(0, 4), writeNumber(cycle, 1)]);
     }
 
     if (payload.length > 1275) {
@@ -333,34 +359,31 @@ export class LedLight extends Base {
     // Complete message:
     // length (2 bytes) + ID + CMD + index + target cycle + animation-payload (max. 1275 bytes)
     // = 1279 bytes
-    return setChannel(
-      Buffer.concat([
-        writeNumber(cycle, 1),
-        payload
-      ])
-    ).then((result) => {
-      if (result !== cycle) {
-        // reset, as conflicting message suggest a hardware fail
-        // resetting to null will make following requests go through regardless of state
-        this.brightness = null;
-        throw new Error('could not set brightness');
-      }
+    return setChannel(Buffer.concat([writeNumber(cycle, 1), payload]))
+      .then((result) => {
+        if (result !== cycle) {
+          // reset, as conflicting message suggest a hardware fail
+          // resetting to null will make following requests go through regardless of state
+          this.brightness = null;
+          throw new Error('could not set brightness');
+        }
 
-      const brightness = remap.convert('cycle', 'logic', result);
+        const brightness = remap.convert('cycle', 'logic', result);
 
-      if (brightness !== this.brightness) {
-        this.brightness = this.brightnessSetpoint;
-        this.emit('change');
-      }
-      return this.brightness;
-    }).catch((reason) => {
-      log.error({
-        head: 'brightness error',
-        attachment: reason
+        if (brightness !== this.brightness) {
+          this.brightness = this.brightnessSetpoint;
+          this.emit('change');
+        }
+        return this.brightness;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'brightness error',
+        });
+
+        throw reason;
       });
-
-      throw reason;
-    });
   }
 
   toggle() {
@@ -375,7 +398,7 @@ export class LedLight extends Base {
     return this.setBrightness(0);
   }
 
-  increase(up, duration) {
+  increase(up, duration = null) {
     const { steps } = this._ledLight;
 
     const currentStep = getClosestStep(steps, this.brightnessSetpoint);
@@ -413,50 +436,56 @@ export class RGBLed {
       b,
       duration = defaultAnimationDuration,
       gamma = defaultGamma,
-      presets = defaultRGBPresets
+      presets = defaultRGBPresets,
     } = options;
 
-    const allLightInstances = r instanceof LedLight
-      && g instanceof LedLight
-      && b instanceof LedLight;
+    const allLightInstances =
+      r instanceof LedLight && g instanceof LedLight && b instanceof LedLight;
 
-    if (!driver
-      || r === undefined
-      || g === undefined
-      || b === undefined
-      || !(driver instanceof LedDriver)
-      || (
-        // only require duration and gamma
-        // if LedLight-instaces are to be created inside this instance
-        !allLightInstances
-        && (duration === undefined || gamma === undefined)
-      )
+    if (
+      !driver ||
+      r === undefined ||
+      g === undefined ||
+      b === undefined ||
+      !(driver instanceof LedDriver) ||
+      // only require duration and gamma
+      // if LedLight-instaces are to be created inside this instance
+      (!allLightInstances && (duration === undefined || gamma === undefined))
     ) {
       throw new Error('insufficient options provided');
     }
 
     this.driver = driver;
 
-    this.r = r instanceof LedLight ? r : new LedLight({
-      driver,
-      duration,
-      gamma,
-      useChannel: r
-    });
+    this.r =
+      r instanceof LedLight
+        ? r
+        : new LedLight({
+            driver,
+            duration,
+            gamma,
+            useChannel: r,
+          });
 
-    this.g = g instanceof LedLight ? g : new LedLight({
-      driver,
-      duration,
-      gamma,
-      useChannel: g
-    });
+    this.g =
+      g instanceof LedLight
+        ? g
+        : new LedLight({
+            driver,
+            duration,
+            gamma,
+            useChannel: g,
+          });
 
-    this.b = b instanceof LedLight ? b : new LedLight({
-      driver,
-      duration,
-      gamma,
-      useChannel: b
-    });
+    this.b =
+      b instanceof LedLight
+        ? b
+        : new LedLight({
+            driver,
+            duration,
+            gamma,
+            useChannel: b,
+          });
 
     this._presets = presets;
   }
@@ -465,7 +494,7 @@ export class RGBLed {
     return Promise.all([
       this.r.setBrightness(r, duration),
       this.g.setBrightness(g, duration),
-      this.b.setBrightness(b, duration)
+      this.b.setBrightness(b, duration),
     ]);
   }
 

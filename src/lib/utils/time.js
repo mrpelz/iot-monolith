@@ -3,6 +3,9 @@ import { isObject } from './structures.js';
 import { rebind } from './oop.js';
 import { remainder } from './math.js';
 
+/**
+ * @param  {...Date} input
+ */
 export function sortTimes(...input) {
   return input.sort((a, b) => {
     return a.getTime() - b.getTime();
@@ -38,18 +41,19 @@ export function isLeapYear(year) {
 function everyTime(type, count = 1) {
   if (count === 1) {
     return {
-      [type]: 'change'
+      [type]: 'change',
     };
   }
 
   return {
     [type]: (input) => {
       return !remainder(input, count);
-    }
+    },
   };
 }
 
 export const every = {
+  /* eslint-disable sort-keys */
   second: (input) => {
     return everyTime('second', input);
   },
@@ -75,13 +79,19 @@ export const every = {
     return everyTime('year', input);
   },
   parse: (input) => {
-    if (typeof input !== 'string') throw new Error(`"${input}" is not a string`);
+    if (typeof input !== 'string') {
+      throw new Error(`"${input}" is not a string`);
+    }
 
     const [keyword, num, option] = input.split(':');
     const count = Number.parseInt(num, 10);
 
-    if (keyword !== 'every') throw new Error(`"${input}" does not start with "every" keyword`);
-    if (Number.isNaN(count) || count <= 0) throw new Error('illegal number given');
+    if (keyword !== 'every') {
+      throw new Error(`"${input}" does not start with "every" keyword`);
+    }
+    if (Number.isNaN(count) || count <= 0) {
+      throw new Error('illegal number given');
+    }
 
     switch (option) {
       case 'second':
@@ -103,7 +113,8 @@ export const every = {
       default:
         throw new Error('illegal option given');
     }
-  }
+  },
+  /* eslint-enable sort-keys */
 };
 
 export const epochs = (() => {
@@ -116,8 +127,8 @@ export const epochs = (() => {
   const year = 365 * date;
   const leapYear = 366 * date;
 
-
   return {
+    /* eslint-disable sort-keys */
     second,
     minute,
     hour,
@@ -141,14 +152,13 @@ export const epochs = (() => {
     specificYear: (y) => {
       const leap = isLeapYear(y);
       return leap ? leapYear : year;
-    }
+    },
+    /* eslint-enable sort-keys */
   };
 })();
 
 export function calc(type, count = 1, ref) {
-  const date = ref
-    ? new Date(ref.getTime())
-    : new Date();
+  const date = ref ? new Date(ref.getTime()) : new Date();
 
   switch (type) {
     case 'second':
@@ -164,7 +174,7 @@ export function calc(type, count = 1, ref) {
       date.setDate(date.getDate() + count);
       break;
     case 'week':
-      date.setDate(date.getDate() + (count * 7));
+      date.setDate(date.getDate() + count * 7);
       break;
     case 'month':
       date.setMonth(date.getMonth() + count);
@@ -182,7 +192,7 @@ export function getWeekNumber(input) {
   const date = new Date(input.getTime());
   date.setDate(date.getDate() + 4 - (date.getDay() || 7));
   const yearStart = new Date(date.getFullYear(), 0, 1);
-  return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 export function recurring(options, offset) {
@@ -235,9 +245,7 @@ export function recurring(options, offset) {
         return change;
       }
 
-      return simple
-        ? match === now
-        : match(now);
+      return simple ? match === now : match(now);
     };
   });
 
@@ -252,12 +260,7 @@ export function recurring(options, offset) {
 
 export function recurringToDate(input) {
   const date = new Date();
-  date.setHours(
-    input.hour || 0,
-    input.minute || 0,
-    input.second || 0,
-    0
-  );
+  date.setHours(input.hour || 0, input.minute || 0, input.second || 0, 0);
   date.setDate(input.date || 1);
   date.setMonth(input.month || 0);
   date.setFullYear(input.year || 0);
@@ -339,12 +342,18 @@ export class Moment extends EventEmitter {
   static prepare(input) {
     const now = TimeFloor.second(new Date()).getTime();
 
-    return [...new Set(input.map((moment) => {
-      const time = TimeFloor.second(moment).getTime();
-      return time > now && time;
-    }).filter((moment) => {
-      return moment !== false;
-    }))].sort((a, b) => {
+    return [
+      ...new Set(
+        input
+          .map((moment) => {
+            const time = TimeFloor.second(moment).getTime();
+            return time > now && time;
+          })
+          .filter((moment) => {
+            return moment !== false;
+          })
+      ),
+    ].sort((a, b) => {
       return a - b;
     });
   }
@@ -395,10 +404,7 @@ export class RecurringMoment extends EventEmitter {
   }
 
   constructor(options = {}, ...moments) {
-    const {
-      scheduler,
-      offset
-    } = options;
+    const { scheduler, offset } = options;
 
     if (!scheduler || !moments.length) {
       throw new Error('insufficient options provided');
@@ -521,30 +527,32 @@ export class TimeRange extends EventEmitter {
     const now = TimeFloor.second(new Date()).getTime();
     let lastTo = 0;
 
-    return input.map((range) => {
-      const from = TimeFloor.second(range.from).getTime();
-      const to = TimeFloor.second(range.to).getTime();
+    return input
+      .map((range) => {
+        const from = TimeFloor.second(range.from).getTime();
+        const to = TimeFloor.second(range.to).getTime();
 
-      if (from > to || to < now || from < lastTo) {
-        throw new Error('illegal time range');
-      }
+        if (from > to || to < now || from < lastTo) {
+          throw new Error('illegal time range');
+        }
 
-      lastTo = to;
+        lastTo = to;
 
-      if (now > from) {
+        if (now > from) {
+          return {
+            from: true,
+            to,
+          };
+        }
+
         return {
-          from: true,
-          to
+          from,
+          to,
         };
-      }
-
-      return {
-        from,
-        to
-      };
-    }).sort((a, b) => {
-      return a.to - b.to;
-    });
+      })
+      .sort((a, b) => {
+        return a.to - b.to;
+      });
   }
 
   constructor(scheduler, ...ranges) {
@@ -599,16 +607,13 @@ export class RecurringTimeRange extends EventEmitter {
     return input.map((range) => {
       return {
         from: recurring(range.from, offset),
-        to: recurring(range.to, offset)
+        to: recurring(range.to, offset),
       };
     });
   }
 
   constructor(options = {}, ...ranges) {
-    const {
-      scheduler,
-      offset
-    } = options;
+    const { scheduler, offset } = options;
 
     if (!scheduler || !ranges.length) {
       throw new Error('insufficient options provided');

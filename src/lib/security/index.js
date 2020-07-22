@@ -10,9 +10,7 @@ const allowedLevels = [0, 1];
 
 export class Security extends EventEmitter {
   constructor(options = {}) {
-    const {
-      telegram
-    } = options;
+    const { telegram } = options;
 
     super();
 
@@ -44,8 +42,8 @@ export class Security extends EventEmitter {
     if (!this._chat) return;
 
     this._chat.addMessage({
+      markdown: true,
       text: `*SECURITY*\n${message}`,
-      markdown: true
     });
   }
 
@@ -66,13 +64,12 @@ export class Security extends EventEmitter {
 
     return (state, text) => {
       if (
-        !this.armed
-        || level > this.level
-        || (
-          state !== undefined
-          && state === lastState
-        )
-      ) return;
+        !this.armed ||
+        level > this.level ||
+        (state !== undefined && state === lastState)
+      ) {
+        return;
+      }
 
       if (graceTimer) {
         graceTimer.start(undefined, false);
@@ -86,9 +83,9 @@ export class Security extends EventEmitter {
       this.triggered = true;
 
       this._log.notice({
+        attachment: `${name}: ${text}`,
         head: 'triggered',
         value: state,
-        attachment: `${name}: ${text}`
       });
 
       this._telegram(`_${name}_\n${text}`);
@@ -112,7 +109,7 @@ export class Security extends EventEmitter {
 
     this._log.info({
       head: 'active',
-      value: active
+      value: active,
     });
 
     this._telegram(`${active ? `aktiv (Level ${level})` : 'inaktiv'}`);
@@ -120,7 +117,7 @@ export class Security extends EventEmitter {
     if (active) {
       this._log.info({
         head: 'level',
-        value: this.level
+        value: this.level,
       });
     }
 

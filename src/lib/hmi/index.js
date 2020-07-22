@@ -8,7 +8,7 @@ export class HmiServer {
   constructor() {
     this._hmi = {
       elements: {},
-      ingests: []
+      ingests: [],
     };
 
     rebind(this, '_getAllElementStates', '_listElements', '_setElementState');
@@ -19,16 +19,15 @@ export class HmiServer {
   }
 
   _pushNewElementToServices() {
-    const {
-      ingests,
-      log
-    } = this._hmi;
+    const { ingests, log } = this._hmi;
 
     Promise.all(
       ingests.map((ingest) => {
-        return resolveAlways(ingest({
-          type: 'element'
-        }));
+        return resolveAlways(
+          ingest({
+            type: 'element',
+          })
+        );
       })
     ).then(() => {
       log.info('pushed new element to all ingests');
@@ -36,18 +35,17 @@ export class HmiServer {
   }
 
   _pushElementStateToServices(name, value) {
-    const {
-      ingests,
-      log
-    } = this._hmi;
+    const { ingests, log } = this._hmi;
 
     Promise.all(
       ingests.map((ingest) => {
-        return resolveAlways(ingest({
-          name,
-          value,
-          type: 'stream'
-        }));
+        return resolveAlways(
+          ingest({
+            name,
+            type: 'stream',
+            value,
+          })
+        );
       })
     ).then(() => {
       log.info('pushed state to all ingests');
@@ -55,10 +53,7 @@ export class HmiServer {
   }
 
   _getAllElementStates() {
-    const {
-      elements,
-      log
-    } = this._hmi;
+    const { elements, log } = this._hmi;
 
     return Promise.all(
       Object.values(elements).map((element) => {
@@ -76,10 +71,7 @@ export class HmiServer {
   }
 
   _listElements(includeValues = false) {
-    const {
-      log,
-      elements
-    } = this._hmi;
+    const { log, elements } = this._hmi;
 
     return Promise.all(
       Object.values(elements).map((element) => {
@@ -95,10 +87,7 @@ export class HmiServer {
   }
 
   _setElementState(name, value) {
-    const {
-      log,
-      elements
-    } = this._hmi;
+    const { log, elements } = this._hmi;
 
     if (value === undefined) {
       throw new Error('insufficient options provided');
@@ -110,21 +99,16 @@ export class HmiServer {
 
     log.info(`setting "${name}" to "${value}"`);
 
-    const { [name]: { setter } } = elements;
+    const {
+      [name]: { setter },
+    } = elements;
     return setter ? setter(value) : Promise.resolve(null);
   }
 
   addElement(options) {
-    const {
-      elements
-    } = this._hmi;
+    const { elements } = this._hmi;
 
-    const {
-      name,
-      attributes,
-      get,
-      set
-    } = options;
+    const { name, attributes, get, set } = options;
 
     if (!name || !attributes || !(get || set)) {
       throw new Error('insufficient options provided');
@@ -138,14 +122,12 @@ export class HmiServer {
     };
 
     const lister = async (includeValues) => {
-      const value = (includeValues && get)
-        ? await get(true)
-        : null;
+      const value = includeValues && get ? await get(true) : null;
 
       return {
-        name,
         attributes,
-        value
+        name,
+        value,
       };
     };
 
@@ -156,7 +138,7 @@ export class HmiServer {
     elements[name] = {
       getter: get ? getter : null,
       lister,
-      setter: set ? setter : null
+      setter: set ? setter : null,
     };
 
     this._pushNewElementToServices();
@@ -165,9 +147,7 @@ export class HmiServer {
   }
 
   addService(ingest) {
-    const {
-      ingests
-    } = this._hmi;
+    const { ingests } = this._hmi;
 
     if (typeof ingest === 'function') {
       ingests.push(ingest);
@@ -175,8 +155,8 @@ export class HmiServer {
 
     return {
       getAll: this._getAllElementStates,
+      list: this._listElements,
       set: this._setElementState,
-      list: this._listElements
     };
   }
 
@@ -192,7 +172,7 @@ export class HmiElement extends EventEmitter {
       getter = null,
       name = null,
       server = null,
-      settable = false
+      settable = false,
     } = options;
 
     if (!name || !attributes || !server || !(getter || settable)) {
@@ -202,18 +182,18 @@ export class HmiElement extends EventEmitter {
     super();
 
     this._hmiElement = {
-      name,
       attributes: Object.assign(
         {
           get: typeof getter === 'function',
-          set: settable
+          set: settable,
         },
         attributes
       ),
       getter,
-      settable,
+      name,
+      oldValue: null,
       server,
-      oldValue: null
+      settable,
     };
 
     rebind(this, '_get', '_set');
@@ -225,30 +205,20 @@ export class HmiElement extends EventEmitter {
   }
 
   _setUpServer() {
-    const {
-      name,
-      attributes,
-      getter,
-      settable,
-      server
-    } = this._hmiElement;
+    const { name, attributes, getter, settable, server } = this._hmiElement;
 
     const update = server.addElement({
-      name,
       attributes,
       get: typeof getter === 'function' ? this._get : null,
-      set: settable ? this._set : null
+      name,
+      set: settable ? this._set : null,
     });
 
     this._hmiElement.update = update;
   }
 
   async _get(force = false) {
-    const {
-      getter,
-      log,
-      oldValue
-    } = this._hmiElement;
+    const { getter, log, oldValue } = this._hmiElement;
 
     const value = await resolveAlways(getter());
 
@@ -256,7 +226,7 @@ export class HmiElement extends EventEmitter {
 
     log.info({
       head: 'got new value',
-      value
+      value,
     });
 
     this._hmiElement.oldValue = value;
@@ -265,10 +235,7 @@ export class HmiElement extends EventEmitter {
   }
 
   _set(input) {
-    const {
-      log,
-      settable
-    } = this._hmiElement;
+    const { log, settable } = this._hmiElement;
 
     if (!settable) {
       throw new Error('element not settable');
@@ -276,17 +243,14 @@ export class HmiElement extends EventEmitter {
 
     log.info({
       head: 'setting',
-      value: input
+      value: input,
     });
 
     this.emit('set', input);
   }
 
   update() {
-    const {
-      log,
-      update
-    } = this._hmiElement;
+    const { log, update } = this._hmiElement;
 
     log.info('force-updating');
 

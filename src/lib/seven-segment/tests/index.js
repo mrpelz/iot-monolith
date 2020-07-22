@@ -5,7 +5,7 @@ import { sleep } from '../../utils/time.js';
 
 const display = new SevenSegment({
   host: '10.97.0.227',
-  port: 5045
+  port: 5045,
 });
 
 // (async function test() {
@@ -84,54 +84,19 @@ display.once('connect', async () => {
     await sleep(1000);
     await display.clear();
     await sleep(1000);
-    await display.setSegments(
-      0b10000000,
-      0b10000000,
-      0b10000000,
-      0b10000000
-    );
+    await display.setSegments(0b10000000, 0b10000000, 0b10000000, 0b10000000);
     await sleep(1000);
-    await display.setSegments(
-      0b01000000,
-      0b11000000,
-      0b11000000,
-      0b01000000
-    );
+    await display.setSegments(0b01000000, 0b11000000, 0b11000000, 0b01000000);
     await sleep(1000);
-    await display.setSegments(
-      0b00100000,
-      0b11100000,
-      0b11100000,
-      0b00100000
-    );
+    await display.setSegments(0b00100000, 0b11100000, 0b11100000, 0b00100000);
     await sleep(1000);
-    await display.setSegments(
-      0b00010000,
-      0b11110000,
-      0b11110000,
-      0b00010000
-    );
+    await display.setSegments(0b00010000, 0b11110000, 0b11110000, 0b00010000);
     await sleep(1000);
-    await display.setSegments(
-      0b00001000,
-      0b11111000,
-      0b11111000,
-      0b00001000
-    );
+    await display.setSegments(0b00001000, 0b11111000, 0b11111000, 0b00001000);
     await sleep(1000);
-    await display.setSegments(
-      0b00000100,
-      0b11111100,
-      0b11111100,
-      0b00000100
-    );
+    await display.setSegments(0b00000100, 0b11111100, 0b11111100, 0b00000100);
     await sleep(1000);
-    await display.setSegments(
-      0b00000010,
-      0b11111110,
-      0b11111110,
-      0b00000010
-    );
+    await display.setSegments(0b00000010, 0b11111110, 0b11111110, 0b00000010);
     await sleep(1000);
     await display.setSlideshow('DIES IST EIN TOLLER TEST');
     await sleep(1000);

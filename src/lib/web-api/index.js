@@ -15,20 +15,21 @@ const elementAttributes = [
   'setType',
   'subLabel',
   'subType',
-  'unit'
+  'unit',
 ];
 
 function getExtensions(extensions) {
   return Object.keys(extensions).map((name) => {
-    const {
-      [name]: attributes = {}
-    } = extensions;
+    const { [name]: attributes = {} } = extensions;
 
     return {
+      attributes: Object.assign(
+        {
+          isExtension: true,
+        },
+        attributes
+      ),
       name,
-      attributes: Object.assign({
-        isExtension: true
-      }, attributes)
     };
   });
 }
@@ -46,15 +47,17 @@ function sortElements(rawInput = [], list = [], key = 'name') {
     return !list.includes(name);
   });
 
-  const sorted = list.map((sortKey) => {
-    return input.filter(({ [key]: name, [altKey]: altName }) => {
-      if (altName !== undefined) {
-        return altName === sortKey;
-      }
+  const sorted = list
+    .map((sortKey) => {
+      return input.filter(({ [key]: name, [altKey]: altName }) => {
+        if (altName !== undefined) {
+          return altName === sortKey;
+        }
 
-      return name === sortKey;
-    });
-  }).filter(Boolean);
+        return name === sortKey;
+      });
+    })
+    .filter(Boolean);
 
   return [].concat(...sorted, unsorted);
 }
@@ -62,24 +65,33 @@ function sortElements(rawInput = [], list = [], key = 'name') {
 function elementNames(elements, key = 'name') {
   const result = new Set();
 
-  elements.forEach(({
-    attributes: { [key]: value = null } = /** @type {{ [key: string]: any }} */ ({})
-  }) => {
-    result.add(value);
-  });
+  elements.forEach(
+    ({
+      attributes: {
+        [key]: value = null,
+      } = /** @type {{ [key: string]: any }} */ ({}),
+    }) => {
+      result.add(value);
+    }
+  );
 
   return [...result].sort();
 }
 
 function elementsInHierarchy(elements, value, key = 'name') {
-  return elements.filter(({
-    attributes: { [key]: is = null } = /** @type {{ [key: string]: any }} */ ({})
-  }) => {
-    return is === value || (
-      (value === undefined || value === null)
-      && (is === undefined || is === null)
-    );
-  });
+  return elements.filter(
+    ({
+      attributes: {
+        [key]: is = null,
+      } = /** @type {{ [key: string]: any }} */ ({}),
+    }) => {
+      return (
+        is === value ||
+        ((value === undefined || value === null) &&
+          (is === undefined || is === null))
+      );
+    }
+  );
 }
 
 function combineAttributes(elements) {
@@ -98,10 +110,7 @@ function findShowSubGroup(elements) {
 
   elements.forEach((element) => {
     const {
-      attributes: {
-        group: primary = null,
-        groupLabel: secondary = null
-      } = {}
+      attributes: { group: primary = null, groupLabel: secondary = null } = {},
     } = element;
 
     const group = secondary || primary;
@@ -118,10 +127,7 @@ function findShowSubGroup(elements) {
   return elements.map((element) => {
     const {
       attributes,
-      attributes: {
-        group: primary = null,
-        groupLabel: secondary = null
-      } = {}
+      attributes: { group: primary = null, groupLabel: secondary = null } = {},
     } = element;
 
     const group = secondary || primary;
@@ -135,80 +141,96 @@ function findShowSubGroup(elements) {
 }
 
 function filterElementAttributes(input) {
-  return Object.assign(
-    {},
-    input,
-    {
-      attributes: includeKeys(input.attributes, ...elementAttributes)
-    }
-  );
+  return Object.assign({}, input, {
+    attributes: includeKeys(input.attributes, ...elementAttributes),
+  });
 }
 
 function getHierarchy(
   elements = [],
-  {
-    sections = [],
-    categories = [],
-    groups = []
-  } = {}
+  { sections = [], categories = [], groups = [] } = {}
 ) {
   const sectionMap = sections.map((sectionGroup) => {
-    return sortElements(sectionGroup.map((sectionName) => {
-      const sectionElements = elementsInHierarchy(elements, sectionName, 'section');
-
-      if (!sectionElements.length) return null;
-
-      const categoryMap = sortElements(elementNames(sectionElements, 'category').map((categoryName) => {
-        const categoryElements = findShowSubGroup(
-          elementsInHierarchy(sectionElements, categoryName, 'category')
+    return sortElements(
+      sectionGroup.map((sectionName) => {
+        const sectionElements = elementsInHierarchy(
+          elements,
+          sectionName,
+          'section'
         );
 
-        if (!categoryElements.length) return null;
+        if (!sectionElements.length) return null;
 
-        const groupMap = sortElements([].concat(...elementNames(categoryElements, 'group').map((groupName) => {
-          const groupElements = elementsInHierarchy(categoryElements, groupName, 'group');
+        const categoryMap = sortElements(
+          elementNames(sectionElements, 'category').map((categoryName) => {
+            const categoryElements = findShowSubGroup(
+              elementsInHierarchy(sectionElements, categoryName, 'category')
+            );
 
-          if (!groupElements.length) return null;
+            if (!categoryElements.length) return null;
 
-          const isSingle = groupElements.length === 1;
-          const {
-            groupLabel,
-            showSubGroup,
-            sortGroup,
-            subGroup,
-            type
-          } = combineAttributes(groupElements);
+            const groupMap = sortElements(
+              [].concat(
+                ...elementNames(categoryElements, 'group').map((groupName) => {
+                  const groupElements = elementsInHierarchy(
+                    categoryElements,
+                    groupName,
+                    'group'
+                  );
 
-          return [{
-            elements: groupElements.map(filterElementAttributes),
-            group: groupName,
-            groupLabel,
-            single: isSingle,
-            showSubGroup,
-            sortGroup,
-            subGroup,
-            type
-          }];
-        })), groups, 'group');
+                  if (!groupElements.length) return null;
 
-        const { sortCategory } = combineAttributes(categoryElements);
+                  const isSingle = groupElements.length === 1;
+                  const {
+                    groupLabel,
+                    showSubGroup,
+                    sortGroup,
+                    subGroup,
+                    type,
+                  } = combineAttributes(groupElements);
+
+                  return [
+                    {
+                      elements: groupElements.map(filterElementAttributes),
+                      group: groupName,
+                      groupLabel,
+                      showSubGroup,
+                      single: isSingle,
+                      sortGroup,
+                      subGroup,
+                      type,
+                    },
+                  ];
+                })
+              ),
+              groups,
+              'group'
+            );
+
+            const { sortCategory } = combineAttributes(categoryElements);
+
+            return {
+              category: categoryName,
+              groups: groupMap,
+              sortCategory,
+            };
+          }),
+          categories,
+          'category'
+        );
 
         return {
-          category: categoryName,
-          sortCategory,
-          groups: groupMap
+          categories: categoryMap,
+          section: sectionName,
         };
-      }), categories, 'category');
-
-      return {
-        section: sectionName,
-        categories: categoryMap
-      };
-    }), sectionGroup, 'section');
+      }),
+      sectionGroup,
+      'section'
+    );
   });
 
   return {
-    sections: sectionMap
+    sections: sectionMap,
   };
 }
 
@@ -220,7 +242,7 @@ export class WebApi {
       hmiServer = null,
       scheduler = null,
       update = null,
-      meta = {}
+      meta = {},
     } = options;
 
     if (!port || !hmiServer || !scheduler || !update) {
@@ -228,10 +250,10 @@ export class WebApi {
     }
 
     this._webApi = {
-      isActive: false,
       clients: {},
+      isActive: false,
       list: null,
-      meta
+      meta,
     };
 
     rebind(
@@ -253,12 +275,12 @@ export class WebApi {
 
   _setUpHttpServer(host, port) {
     const httpServer = new HttpServer({
-      host,
-      port,
       handler: HttpServer.do404,
       headers: {
-        'Cache-Control': 'no-cache'
-      }
+        'Cache-Control': 'no-cache',
+      },
+      host,
+      port,
     });
     httpServer.route('/stream', this._handleStream);
     httpServer.route('/list', this._handleList);
@@ -269,14 +291,8 @@ export class WebApi {
 
   _setUpHmiService(hmiServer, scheduler, update) {
     const hmiService = hmiServer.addService(this._handleIngest);
-    new RecurringMoment(
-      { scheduler },
-      every.parse(update)
-    ).on('hit', () => {
-      if (
-        this._webApi.isActive
-        && Object.keys(this._webApi.clients).length
-      ) {
+    new RecurringMoment({ scheduler }, every.parse(update)).on('hit', () => {
+      if (this._webApi.isActive && Object.keys(this._webApi.clients).length) {
         hmiService.getAll();
       }
     });
@@ -284,10 +300,7 @@ export class WebApi {
   }
 
   _sendToStream(input) {
-    const {
-      log,
-      clients
-    } = this._webApi;
+    const { log, clients } = this._webApi;
 
     Object.values(clients).forEach((write) => {
       try {
@@ -308,42 +321,41 @@ export class WebApi {
   _updateList() {
     const {
       hmiService,
-      meta: {
-        extensions = {},
-        sort = {},
-        strings = {}
-      }
+      meta: { extensions = {}, sort = {}, strings = {} },
     } = this._webApi;
 
-    hmiService.list().then((elements) => {
-      return JSON.stringify({
-        strings,
-        hierarchy: getHierarchy(
-          [].concat(elements, getExtensions(extensions)),
-          sort
-        )
-      }, null, null);
-    }).catch(() => { }).then((result) => {
-      if (!result) return;
+    hmiService
+      .list()
+      .then((elements) => {
+        return JSON.stringify(
+          {
+            hierarchy: getHierarchy(
+              [].concat(elements, getExtensions(extensions)),
+              sort
+            ),
+            strings,
+          },
+          null,
+          null
+        );
+      })
+      .catch()
+      .then((result) => {
+        if (!result) return;
 
-      this._webApi.list = result;
-    });
+        this._webApi.list = result;
+      });
   }
 
   _handleIngest(options) {
-    const {
-      name,
-      attributes,
-      value,
-      type
-    } = options;
+    const { name, attributes, value, type } = options;
 
     switch (type) {
       case 'stream':
         this._publishMessage({
-          name,
           attributes,
-          value
+          name,
+          value,
         });
         break;
       case 'element':
@@ -355,7 +367,9 @@ export class WebApi {
 
   _handleStream(request, response) {
     const { log, clients } = this._webApi;
-    const { connection: { remoteAddress, remotePort } } = request;
+    const {
+      connection: { remoteAddress, remotePort },
+    } = request;
     const { write } = response;
 
     log.info(`add stream from client "${remoteAddress}:${remotePort}"`);
@@ -363,10 +377,10 @@ export class WebApi {
     const name = `webApi/${remoteAddress}:${remotePort}`;
 
     this._publishMessage({
-      isSystem: true,
+      count: Object.keys(clients).length + 1,
       event: 'newClient',
       id: name,
-      count: Object.keys(clients).length + 1
+      isSystem: true,
     });
 
     clients[name] = write;
@@ -375,21 +389,21 @@ export class WebApi {
       delete clients[name];
 
       this._publishMessage({
-        isSystem: true,
+        count: Object.keys(clients).length,
         event: 'delClient',
         id: name,
-        count: Object.keys(clients).length
+        isSystem: true,
       });
     });
 
     return {
-      headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8'
-      },
-      openEnd: true,
       handler: Promise.resolve(
         `: welcome to the event stream\n: client "${name}"\n\n`
-      )
+      ),
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+      },
+      openEnd: true,
     };
   }
 
@@ -397,29 +411,33 @@ export class WebApi {
     const {
       hmiService,
       list,
-      meta: {
-        extensions = {},
-        sort = {},
-        strings = {}
-      }
+      meta: { extensions = {}, sort = {}, strings = {} },
     } = this._webApi;
-    const { urlQuery: { values = false } } = request;
+    const {
+      urlQuery: { values = false },
+    } = request;
 
     const getValues = Boolean(parseString(values));
 
     return {
+      handler: getValues
+        ? hmiService.list(true).then((elements) => {
+            return JSON.stringify(
+              {
+                hierarchy: getHierarchy(
+                  [].concat(elements, getExtensions(extensions)),
+                  sort
+                ),
+                strings,
+              },
+              null,
+              null
+            );
+          })
+        : Promise.resolve(list),
       headers: {
-        'Content-Type': 'application/json; charset=utf-8'
+        'Content-Type': 'application/json; charset=utf-8',
       },
-      handler: getValues ? hmiService.list(true).then((elements) => {
-        return JSON.stringify({
-          strings,
-          hierarchy: getHierarchy(
-            [].concat(elements, getExtensions(extensions)),
-            sort
-          )
-        }, null, null);
-      }) : Promise.resolve(list)
     };
   }
 
@@ -427,28 +445,23 @@ export class WebApi {
     const { hmiService } = this._webApi;
 
     return {
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8'
-      },
       handler: hmiService.list(true).then((response = []) => {
-        const elements = response.map(
-          ({ name, value }) => {
-            return { name, value };
-          }
-        );
+        const elements = response.map(({ name, value }) => {
+          return { name, value };
+        });
         return JSON.stringify(elements, null, null);
-      })
+      }),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
     };
   }
 
   _handleSet(request) {
     const { log, hmiService } = this._webApi;
     const {
-      connection: {
-        remoteAddress,
-        remotePort
-      },
-      urlQuery
+      connection: { remoteAddress, remotePort },
+      urlQuery,
     } = request;
 
     log.info(`setting from client "${remoteAddress}:${remotePort}"`);
@@ -462,7 +475,7 @@ export class WebApi {
 
     return {
       handler: Promise.all(setters),
-      resolveCode: 204
+      resolveCode: 204,
     };
   }
 

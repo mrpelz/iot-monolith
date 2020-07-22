@@ -10,10 +10,13 @@ import { get, post } from '../client.js';
     await get('https://www.google.com');
 
     // POST TEST (HTTP)
-    const test3 = await post('http://httpbin.org/post', Buffer.from([0x00, 0x00, 0x00, 0x00]));
+    const test3 = await post(
+      'http://httpbin.org/post',
+      Buffer.from([0x00, 0x00, 0x00, 0x00])
+    );
 
     console.log(test1.toString(), test3.toString());
   } catch (error) {
     console.error(error);
   }
-}());
+})();

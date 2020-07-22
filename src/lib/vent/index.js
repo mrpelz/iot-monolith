@@ -12,11 +12,13 @@ const maxTarget = 7;
 
 const userPriority = 3;
 
-const stateRemap = new Remap([{
-  switch: [0, 1024],
-  control: [minTarget, maxTarget],
-  percent: [0, 100]
-}]);
+const stateRemap = new Remap([
+  {
+    control: [minTarget, maxTarget],
+    percent: [0, 100],
+    switch: [0, 1024],
+  },
+]);
 
 const adcToFlowRate = (input) => {
   return input * 0.28769663;
@@ -24,49 +26,45 @@ const adcToFlowRate = (input) => {
 
 const messageTypes = [
   {
+    head: Buffer.from([1, 0]),
     name: 'actualIn',
     parser: (payload) => {
       return readNumber(payload, 2);
     },
-    head: Buffer.from([1, 0])
   },
   {
+    head: Buffer.from([1, 1]),
     name: 'actualOut',
     parser: (payload) => {
       return readNumber(payload, 2);
     },
-    head: Buffer.from([1, 1])
   },
   {
-    name: 'target',
     generator: (input) => {
       return writeNumber(input, 1);
     },
+    head: Buffer.from([2]),
+    name: 'target',
     parser: (payload) => {
       return readNumber(payload, 2);
     },
-    head: Buffer.from([2])
   },
   {
-    name: 'switch',
     eventName: 'switchRaw',
     eventParser: (payload) => {
       return readNumber(payload.slice(1), 2);
     },
+    head: Buffer.from([3]),
+    name: 'switch',
     parser: (payload) => {
       return readNumber(payload, 2);
     },
-    head: Buffer.from([3])
-  }
+  },
 ];
 
 export class Vent extends MessageClient {
   constructor(options = {}) {
-    const {
-      host = null,
-      port = null,
-      setDefaultTimeout = 0
-    } = options;
+    const { host = null, port = null, setDefaultTimeout = 0 } = options;
 
     if (!host || !port) {
       throw new Error('insufficient options provided');
@@ -74,20 +72,20 @@ export class Vent extends MessageClient {
 
     super({
       host,
+      messageTypes,
       port,
-      messageTypes
     });
 
     this.minTarget = minTarget;
     this.maxTarget = maxTarget;
 
     this._vent = {
-      default: undefined,
       caches: {
         actualIn: new CachePromise(1000),
-        actualOut: new CachePromise(1000)
+        actualOut: new CachePromise(1000),
       },
-      timer: new Timer(setDefaultTimeout)
+      default: undefined,
+      timer: new Timer(setDefaultTimeout),
     };
 
     this.targetSetpointPriority = new PriorityValue(0);
@@ -156,36 +154,35 @@ export class Vent extends MessageClient {
    * @param {'actualIn'| 'actualOut'} direction
    */
   _getActual(direction) {
-    const {
-      log,
-      caches: {
-        [direction]: cache
-      } = {}
-    } = this._vent;
+    const { log, caches: { [direction]: cache } = {} } = this._vent;
 
     if (cache) {
       if (cache.hit()) {
         return cache.defer();
       }
 
-      return cache.promise(this.request(direction).then(adcToFlowRate)).catch((reason) => {
+      return cache
+        .promise(this.request(direction).then(adcToFlowRate))
+        .catch((reason) => {
+          log.error({
+            attachment: reason,
+            head: `get [cached] (${direction}) error`,
+          });
+
+          throw reason;
+        });
+    }
+
+    return this.request(direction)
+      .then(adcToFlowRate)
+      .catch((reason) => {
         log.error({
-          head: `get [cached] (${direction}) error`,
-          attachment: reason
+          attachment: reason,
+          head: `get [uncached] (${direction}) error`,
         });
 
         throw reason;
       });
-    }
-
-    return this.request(direction).then(adcToFlowRate).catch((reason) => {
-      log.error({
-        head: `get [uncached] (${direction}) error`,
-        attachment: reason
-      });
-
-      throw reason;
-    });
   }
 
   getActualIn() {
@@ -222,24 +219,26 @@ export class Vent extends MessageClient {
       return Promise.resolve(this.target);
     }
 
-    return this.request('target', Buffer.from([this.targetSetpoint])).then((result) => {
-      if (result !== this.targetSetpoint) {
-        throw new Error('could not set target');
-      }
+    return this.request('target', Buffer.from([this.targetSetpoint]))
+      .then((result) => {
+        if (result !== this.targetSetpoint) {
+          throw new Error('could not set target');
+        }
 
-      if (result !== this.target) {
-        this.target = this.targetSetpoint;
-        this.emit('change');
-      }
+        if (result !== this.target) {
+          this.target = this.targetSetpoint;
+          this.emit('change');
+        }
 
-      return this.target;
-    }).catch((reason) => {
-      log.error({
-        head: 'target error',
-        attachment: reason
+        return this.target;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'target error',
+        });
+
+        throw reason;
       });
-
-      throw reason;
-    });
   }
 }

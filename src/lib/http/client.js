@@ -11,8 +11,8 @@ export function httpClient(method, url = {}, options = {}, data) {
     pathname = '/',
     port: specifiedPort,
     protocol,
-    search
-  } = (typeof url === 'string') ? new URL(url) : url;
+    search,
+  } = typeof url === 'string' ? new URL(url) : url;
 
   if (!hostname) {
     throw new Error('unknown host in url');
@@ -36,21 +36,25 @@ export function httpClient(method, url = {}, options = {}, data) {
 
   const defaultHeaders = {
     'Accept-Encoding': 'gzip, deflate',
-    'User-Agent': `node ${process.version}`
+    'User-Agent': `node ${process.version}`,
   };
 
   const { headers: additionalHeaders = {} } = options;
 
-  const mergedOptions = Object.assign({
-    auth,
-    hostname,
-    method,
-    path: `${pathname}${search}`,
-    port,
-    protocol
-  }, options, {
-    headers: Object.assign(defaultHeaders, additionalHeaders)
-  });
+  const mergedOptions = Object.assign(
+    {
+      auth,
+      hostname,
+      method,
+      path: `${pathname}${search}`,
+      port,
+      protocol,
+    },
+    options,
+    {
+      headers: Object.assign(defaultHeaders, additionalHeaders),
+    }
+  );
 
   return new Promise((resolve, reject) => {
     const req = request(mergedOptions);
@@ -66,9 +70,13 @@ export function httpClient(method, url = {}, options = {}, data) {
         const result = Buffer.concat(cache);
 
         if (res.statusCode < 200 || res.statusCode > 299) {
-          reject(new Error(
-            `failed to load page, status code: ${res.statusCode}, content: ${result.toString()}`
-          ));
+          reject(
+            new Error(
+              `failed to load page, status code: ${
+                res.statusCode
+              }, content: ${result.toString()}`
+            )
+          );
         } else {
           resolve(result);
         }

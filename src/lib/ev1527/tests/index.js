@@ -5,30 +5,30 @@ import { Tx118sa4 } from '../../tx118sa4/index.js';
 
 const server = new Ev1527Server({
   host: 'flexo.net.wurstsalat.cloud',
-  port: 9000
+  port: 9000,
 });
 
 const doorSensors = [
   {
+    id: 15442,
     name: 'wannenbad',
-    id: 15442
   },
   {
+    id: 47642,
     name: 'schlafzimmer',
-    id: 47642
   },
   {
+    id: 51866,
     name: 'abstellraum',
-    id: 51866
   },
   {
+    id: 52455,
     name: 'wohnungstür',
-    id: 52455
   },
   {
+    id: 52595,
     name: 'duschbad',
-    id: 52595
-  }
+  },
 ];
 
 doorSensors.forEach((sensor) => {
@@ -36,7 +36,7 @@ doorSensors.forEach((sensor) => {
 
   const doorSensor = new DoorSensor({
     id,
-    server
+    server,
   });
 
   doorSensor.on('change', () => {
@@ -46,7 +46,7 @@ doorSensors.forEach((sensor) => {
 
 const thePushbutton = new Tx118sa4({
   id: 570816,
-  server
+  server,
 });
 thePushbutton.on('one', () => {
   console.log('thePushbutton one was pressed');

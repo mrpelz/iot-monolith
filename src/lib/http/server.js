@@ -7,16 +7,13 @@ import { rebind } from '../utils/oop.js';
 
 const libName = 'http-server';
 
-const allowedMethods = [
-  'GET',
-  'POST'
-];
+const allowedMethods = ['GET', 'POST'];
 
 export class HttpServer extends EventEmitter {
   static do404() {
     return {
       handler: Promise.reject(new Error('Not found.')),
-      rejectCode: 404
+      rejectCode: 404,
     };
   }
 
@@ -34,7 +31,7 @@ export class HttpServer extends EventEmitter {
       host = '0.0.0.0',
       port = null,
       handler = null,
-      headers = {}
+      headers = {},
     } = options;
 
     if (!host || !port) {
@@ -42,10 +39,10 @@ export class HttpServer extends EventEmitter {
     }
 
     this._httpServer.options = {
+      headers,
       host,
       port,
-      headers,
-      routes: {}
+      routes: {},
     };
 
     this._httpServer.globalHandler = handler;
@@ -71,23 +68,18 @@ export class HttpServer extends EventEmitter {
     const {
       log,
       globalHandler,
-      options: {
-        host,
-        port,
-        headers: globalHeaders,
-        routes
-      }
+      options: { host, port, headers: globalHeaders, routes },
     } = this._httpServer;
 
     const httpHost = request.headers.host;
     const baseUrl = httpHost || `${host}:${port}`;
 
     Object.assign(request, {
-      url: new URL(request.url, `http://${baseUrl}/`)
+      url: new URL(request.url, `http://${baseUrl}/`),
     });
 
     Object.assign(request, {
-      urlQuery: Object.fromEntries(request.url.searchParams.entries())
+      urlQuery: Object.fromEntries(request.url.searchParams.entries()),
     });
 
     if (request.method === 'POST') {
@@ -116,18 +108,18 @@ export class HttpServer extends EventEmitter {
       Object.assign(request, {
         get postPayload() {
           return getPostPayload();
-        }
+        },
       });
     }
 
     log.info({
-      head: 'request received',
       attachment: [
         `Method: ${request.method}`,
         `URL: ${request.url.href}`,
         `RemoteAddress: ${request.connection.remoteAddress}`,
-        `RemotePort: ${request.connection.remotePort}`
-      ].join('\n')
+        `RemotePort: ${request.connection.remotePort}`,
+      ].join('\n'),
+      head: 'request received',
     });
 
     rebind(response, 'write');
@@ -154,30 +146,28 @@ export class HttpServer extends EventEmitter {
       resolveCode = 200,
       rejectCode = 500,
       headers: localHeaders = {},
-      openEnd = false
+      openEnd = false,
     } = match;
 
-    const headers = Object.assign(
-      {},
-      globalHeaders,
-      localHeaders
-    );
+    const headers = Object.assign({}, globalHeaders, localHeaders);
 
     if (handler) {
-      handler.then((body) => {
-        response.writeHead(resolveCode, headers);
-        response.write(body || emptyBuffer);
-        if (!openEnd) {
-          response.end();
-        }
-      }).catch((reason) => {
-        response.writeHead(rejectCode, headers);
-        try {
-          response.end(`[${rejectCode}]\n${reason.message || ''}`);
-        } catch (_) {
-          // empty
-        }
-      });
+      handler
+        .then((body) => {
+          response.writeHead(resolveCode, headers);
+          response.write(body || emptyBuffer);
+          if (!openEnd) {
+            response.end();
+          }
+        })
+        .catch((reason) => {
+          response.writeHead(rejectCode, headers);
+          try {
+            response.end(`[${rejectCode}]\n${reason.message || ''}`);
+          } catch (_) {
+            // empty
+          }
+        });
     } else {
       response.writeHead(500, headers);
       response.end();
@@ -189,7 +179,7 @@ export class HttpServer extends EventEmitter {
 
     log.info({
       head: 'listening',
-      value: true
+      value: true,
     });
 
     this.emit('listening');
@@ -200,14 +190,17 @@ export class HttpServer extends EventEmitter {
 
     log.info({
       head: 'listening',
-      value: false
+      value: false,
     });
 
     this.emit('close');
   }
 
   route(route, options) {
-    const { log, options: { routes } } = this._httpServer;
+    const {
+      log,
+      options: { routes },
+    } = this._httpServer;
 
     if (!route || !options) {
       throw new Error('insufficient options for route provided');
@@ -219,15 +212,11 @@ export class HttpServer extends EventEmitter {
   }
 
   listen() {
-    const {
-      log,
-      options,
-      server
-    } = this._httpServer;
+    const { log, options, server } = this._httpServer;
 
     log.info({
       head: 'set listen',
-      value: true
+      value: true,
     });
 
     server.listen(options);
@@ -238,7 +227,7 @@ export class HttpServer extends EventEmitter {
 
     log.info({
       head: 'set listen',
-      value: false
+      value: false,
     });
 
     server.close();

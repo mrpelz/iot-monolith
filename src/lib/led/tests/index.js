@@ -6,13 +6,15 @@ import { sleep } from '../../utils/time.js';
 
 const rgb = new RGBLed({
   driver: new LedDriver({
+    channels: 5,
     host: '10.97.4.51',
     port: 5045,
-    channels: 5
   }),
+  /* eslint-disable sort-keys */
   r: 0,
   g: 1,
-  b: 2
+  b: 2,
+  /* eslint-enable sort-keys */
 });
 
 rgb.driver.once('connect', async () => {

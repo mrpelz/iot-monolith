@@ -15,9 +15,7 @@ export class History extends EventEmitter {
   }
 
   constructor(options = {}) {
-    const {
-      retainHours = 24
-    } = options;
+    const { retainHours = 24 } = options;
 
     if (!retainHours || typeof retainHours !== 'number') {
       throw new Error('insufficient options provided');
@@ -33,11 +31,13 @@ export class History extends EventEmitter {
 
   expunge() {
     const cut = calc('hour', this._retain);
-    this.values = this.values.filter(({ time }) => {
-      return time.getTime() > cut.getTime();
-    }).sort((a, b) => {
-      return a.time.getTime() - b.time.getTime();
-    });
+    this.values = this.values
+      .filter(({ time }) => {
+        return time.getTime() > cut.getTime();
+      })
+      .sort((a, b) => {
+        return a.time.getTime() - b.time.getTime();
+      });
   }
 
   add(value, time = new Date()) {
@@ -46,8 +46,8 @@ export class History extends EventEmitter {
     }
 
     this.values.push({
+      time,
       value,
-      time
     });
 
     this.emit('change');
@@ -63,18 +63,18 @@ export class Trend {
   constructor(options = {}) {
     const {
       history,
-      nowLength = (epochs.minute * 2),
-      meanLength = (epochs.minute * 15),
+      nowLength = epochs.minute * 2,
+      meanLength = epochs.minute * 15,
       max,
-      min
+      min,
     } = options;
 
     if (
-      !history
-      || !nowLength
-      || !meanLength
-      || max === undefined
-      || min === undefined
+      !history ||
+      !nowLength ||
+      !meanLength ||
+      max === undefined ||
+      min === undefined
     ) {
       throw new Error('insufficient options provided');
     }
@@ -88,19 +88,14 @@ export class Trend {
   }
 
   get() {
-    const {
-      _history,
-      _nowLength,
-      _meanLength,
-      _range
-    } = this;
+    const { _history, _nowLength, _meanLength, _range } = this;
 
     const values = _history.get();
 
     if (!values.length) {
       return {
         diff: null,
-        factor: null
+        factor: null,
       };
     }
 
@@ -108,17 +103,25 @@ export class Trend {
     const meanCut = now - _meanLength;
     const nowCut = now - _nowLength;
 
-    const meanValues = values.filter(({ time }) => {
-      return time.getTime() > meanCut;
-    }).map(({ value }) => { return value; });
-    const nowValues = values.filter(({ time }) => {
-      return time.getTime() > nowCut;
-    }).map(({ value }) => { return value; });
+    const meanValues = values
+      .filter(({ time }) => {
+        return time.getTime() > meanCut;
+      })
+      .map(({ value }) => {
+        return value;
+      });
+    const nowValues = values
+      .filter(({ time }) => {
+        return time.getTime() > nowCut;
+      })
+      .map(({ value }) => {
+        return value;
+      });
 
     if (!nowValues.length || !meanValues.length) {
       return {
         diff: null,
-        factor: null
+        factor: null,
       };
     }
 
@@ -127,7 +130,7 @@ export class Trend {
 
     return {
       diff,
-      factor
+      factor,
     };
   }
 }

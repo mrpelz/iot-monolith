@@ -7,9 +7,12 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "deploy": "scripts/deploy.sh",
-    "lint": "tsc --noEmit; eslint src",
-    "lint:fix": "eslint --fix src",
-    "push": "git push -u origin HEAD --force && git push -u github HEAD --force",
+    "format:verify": "prettier --check '**/*.{ts,json,js}'",
+    "format:write": "prettier --write '**/*.{ts,json,js}'",
+    "lint": "tsc --noEmit; eslint --ext js,ts src",
+    "lint:ts-only": "tsc --noEmit; eslint --ext ts src",
+    "lint:fix": "eslint --fix --ext js,ts src",
+    "push": "git push origin HEAD --force && git push github HEAD --force",
     "start": "echo \"use systemd with 'iot-monolith.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
     "start:dev": "CONFIG_PATH=./config LOG_LEVEL=0 LOG_TELEGRAM=false node --use_strict --experimental-modules dist/index.js"
   },
@@ -20,12 +23,13 @@
   "author": "Lennart Pelz <mail@mrpelz.de>",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/node": "^14.0.14",
-    "@typescript-eslint/eslint-plugin": "^3.4.0",
-    "@typescript-eslint/parser": "^3.4.0",
-    "eslint": "^6.8.0",
-    "eslint-plugin-import": "^2.22.0",
-    "typescript": "^3.9.5"
+    "@types/node": "^14.14.22",
+    "@typescript-eslint/eslint-plugin": "^4.14.0",
+    "@typescript-eslint/parser": "^4.14.0",
+    "eslint": "^7.18.0",
+    "eslint-plugin-import": "^2.22.1",
+    "prettier": "^2.2.1",
+    "typescript": "^4.1.3"
   },
   "type": "module"
 }

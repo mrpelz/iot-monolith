@@ -1,8 +1,0 @@
-{
-  "host": "api.telegram.org",
-  "chatIds": {
-    "log": -274728913,
-    "automation": -207880637,
-    "iot": -288897571
-  }
-}

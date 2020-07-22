@@ -3,7 +3,7 @@ import {
   bufferToBoolean,
   concatBytes,
   numberToDigits,
-  swapByte
+  swapByte,
 } from '../utils/data.js';
 import { MessageClient } from '../messaging/index.js';
 import { rebind } from '../utils/oop.js';
@@ -30,10 +30,11 @@ const digitMap = [
   0b10111110,
   0b11100000,
   0b11111110,
-  0b11110110
+  0b11110110,
 ];
 
 const letterMap = {
+  /* eslint-disable sort-keys */
   A: 0b11101110,
   b: 0b00111110,
   C: 0b10011100,
@@ -62,7 +63,8 @@ const letterMap = {
   Y: 0b01110110,
   Z: 0b11011010,
   _: 0b00010000,
-  '-': 0b00000010
+  '-': 0b00000010,
+  /* eslint-enable sort-keys */
 };
 
 const emptyDisplay = Array(displayLength).fill(empty);
@@ -71,8 +73,8 @@ const runningAnimationError = 'slideshow is running';
 const emptyString = ' '.repeat(displayLength);
 
 /* eslint-disable-next-line no-bitwise */
-const minNumber = ~((digitMap.length ** negativeDisplayLength) - 1) + 1;
-const maxNumber = (digitMap.length ** displayLength) - 1;
+const minNumber = ~(digitMap.length ** negativeDisplayLength - 1) + 1;
+const maxNumber = digitMap.length ** displayLength - 1;
 
 function digitsToBytemap(digits, length) {
   return arrayPadLeft(digits, length).map((digit) => {
@@ -85,17 +87,19 @@ function digitsToBytemap(digits, length) {
 }
 
 function numberToBytemap(number = 0) {
-  if (sanity(number, {
-    min: minNumber,
-    max: maxNumber
-  }) === null) {
+  if (
+    sanity(number, {
+      max: maxNumber,
+      min: minNumber,
+    }) === null
+  ) {
     throw new Error('number out of range');
   }
 
   if (number < 0) {
     return [
       letterMap['-'],
-      ...digitsToBytemap(numberToDigits(number), negativeDisplayLength)
+      ...digitsToBytemap(numberToDigits(number), negativeDisplayLength),
     ];
   }
 
@@ -111,19 +115,23 @@ function stringToBytemap(input) {
     throw new Error('too much characters');
   }
 
-  return input.padStart(displayLength, ' ').split('').map((char) => {
-    const lc = char.toLowerCase();
-    const uc = char.toUpperCase();
-    const sign = (lc === ' ') ? empty : (
-      letterMap[char]
-      || letterMap[lc]
-      || letterMap[uc]
-      || digitMap[Number.parseInt(char, 10)]
-      || fallback
-    );
+  return input
+    .padStart(displayLength, ' ')
+    .split('')
+    .map((char) => {
+      const lc = char.toLowerCase();
+      const uc = char.toUpperCase();
+      const sign =
+        lc === ' '
+          ? empty
+          : letterMap[char] ||
+            letterMap[lc] ||
+            letterMap[uc] ||
+            digitMap[Number.parseInt(char, 10)] ||
+            fallback;
 
-    return sign;
-  });
+      return sign;
+    });
 }
 
 function segmentGuard(segments = emptyDisplay) {
@@ -132,7 +140,7 @@ function segmentGuard(segments = emptyDisplay) {
   }
 
   segments.forEach((segment) => {
-    if (segment > ((2 ** 8) - 0b10)) {
+    if (segment > 2 ** 8 - 0b10) {
       throw new Error(`segment "${segment.toString(2)}" cannot be displayed`);
     }
   });
@@ -145,43 +153,37 @@ function stringSlideshow(input) {
     return [input];
   }
 
-  return [].concat(...words(input).map((word) => {
-    let string = word;
-    const result = [];
+  return [].concat(
+    ...words(input).map((word) => {
+      let string = word;
+      const result = [];
 
-    while (string.length) {
-      result.push(
-        string.substring(0, displayLength)
-      );
-      string = string.substring(displayLength);
-    }
-
-    return result.map((tile, index) => {
-      if (!index) {
-        return tile.padStart(displayLength, ' ');
+      while (string.length) {
+        result.push(string.substring(0, displayLength));
+        string = string.substring(displayLength);
       }
 
-      return tile.padEnd(displayLength, ' ');
-    });
-  }));
+      return result.map((tile, index) => {
+        if (!index) {
+          return tile.padStart(displayLength, ' ');
+        }
+
+        return tile.padEnd(displayLength, ' ');
+      });
+    })
+  );
 }
 
 function stringCrawl(input) {
-  const string = [
-    emptyString,
-    words(input).join(' '),
-    emptyString
-  ].join('');
+  const string = [emptyString, words(input).join(' '), emptyString].join('');
 
   const result = [];
 
-  while (result.length <= (string.length - displayLength)) {
+  while (result.length <= string.length - displayLength) {
     const start = result.length;
     const end = start + displayLength;
 
-    result.push(
-      string.substring(start, end)
-    );
+    result.push(string.substring(start, end));
   }
 
   return result;
@@ -189,10 +191,7 @@ function stringCrawl(input) {
 
 export class SevenSegment extends MessageClient {
   constructor(options = {}) {
-    const {
-      host = null,
-      port = null
-    } = options;
+    const { host = null, port = null } = options;
 
     if (!host || !port) {
       throw new Error('insufficient options provided');
@@ -200,27 +199,33 @@ export class SevenSegment extends MessageClient {
 
     super({
       host,
-      port,
       messageTypes: [
         {
-          name: 'display',
           generator: (input) => {
-            return concatBytes([...input].map((byte) => {
-              return swapByte(byte);
-            }));
+            return concatBytes(
+              [...input].map((byte) => {
+                return swapByte(byte);
+              })
+            );
           },
-          parser: bufferToBoolean
-        }
-      ]
+          name: 'display',
+          parser: bufferToBoolean,
+        },
+      ],
+      port,
     });
 
     this._sevenSegment = {
+      animationRunning: false,
       display: emptyDisplay,
       onConnectTimeout: null,
-      animationRunning: false
     };
 
-    rebind(this, '_handleSevenSegmentConnection', '_handleSevenSegmentDisconnection');
+    rebind(
+      this,
+      '_handleSevenSegmentConnection',
+      '_handleSevenSegmentDisconnection'
+    );
     this.on('reliableConnect', this._handleSevenSegmentConnection);
     this.on('reliableDisconnect', this._handleSevenSegmentDisconnection);
 
@@ -258,8 +263,8 @@ export class SevenSegment extends MessageClient {
     // }));
     return this.request('display', Buffer.from(display)).catch((reason) => {
       log.error({
+        attachment: reason,
         head: 'display error',
-        attachment: reason
       });
 
       throw reason;
@@ -306,29 +311,35 @@ export class SevenSegment extends MessageClient {
       return Promise.reject(new Error(runningAnimationError));
     }
 
-    const slides = [...((typeof input === 'string')
-      ? stringSlideshow(input)
-      : input
-    ).map(stringToBytemap), emptyDisplay];
+    const slides = [
+      ...(typeof input === 'string' ? stringSlideshow(input) : input).map(
+        stringToBytemap
+      ),
+      emptyDisplay,
+    ];
 
     this._sevenSegment.animationRunning = true;
 
-    return Promise.all(slides.map((slide, index) => {
-      return sleep(delay * index).then(() => {
-        this._sevenSegment.display = slide;
-        return this._commit();
-      });
-    })).then((value) => {
-      this._sevenSegment.animationRunning = false;
-      return value;
-    }).catch((reason) => {
-      log.error({
-        head: 'slideshow error',
-        attachment: reason
-      });
+    return Promise.all(
+      slides.map((slide, index) => {
+        return sleep(delay * index).then(() => {
+          this._sevenSegment.display = slide;
+          return this._commit();
+        });
+      })
+    )
+      .then((value) => {
+        this._sevenSegment.animationRunning = false;
+        return value;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'slideshow error',
+        });
 
-      throw reason;
-    });
+        throw reason;
+      });
   }
 
   setCrawl(string, delay = animationDelay) {
@@ -342,22 +353,26 @@ export class SevenSegment extends MessageClient {
 
     this._sevenSegment.animationRunning = true;
 
-    return Promise.all(slides.map((slide, index) => {
-      return sleep(delay * index).then(() => {
-        this._sevenSegment.display = slide;
-        return this._commit();
-      });
-    })).then((value) => {
-      this._sevenSegment.animationRunning = false;
-      return value;
-    }).catch((reason) => {
-      log.error({
-        head: 'crawl error',
-        attachment: reason
-      });
+    return Promise.all(
+      slides.map((slide, index) => {
+        return sleep(delay * index).then(() => {
+          this._sevenSegment.display = slide;
+          return this._commit();
+        });
+      })
+    )
+      .then((value) => {
+        this._sevenSegment.animationRunning = false;
+        return value;
+      })
+      .catch((reason) => {
+        log.error({
+          attachment: reason,
+          head: 'crawl error',
+        });
 
-      throw reason;
-    });
+        throw reason;
+      });
   }
 
   setSegments(...segments) {
