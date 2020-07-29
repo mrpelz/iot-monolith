@@ -161,6 +161,66 @@
     ]
   },
   {
+    "name": "esszimmerKallaxLedDriver",
+    "host": "10.97.4.51",
+    "port": 5045,
+    "type": "LED_H801",
+    "lights": [
+      {
+        "name": "esszimmerKallaxLedRed",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "led-red",
+            "groupLabel": "led",
+            "section": "esszimmer",
+            "sortGroup": "red",
+            "subGroup": "red"
+          }
+        }
+      },
+      {
+        "name": "esszimmerKallaxLedGreen",
+        "useChannel": 1,
+        "attributes": {
+          "hmi": {
+            "group": "led-green",
+            "groupLabel": "led",
+            "section": "esszimmer",
+            "sortGroup": "green",
+            "subGroup": "green"
+          }
+        }
+      },
+      {
+        "name": "esszimmerKallaxLedBlue",
+        "useChannel": 2,
+        "attributes": {
+          "hmi": {
+            "group": "led-blue",
+            "groupLabel": "led",
+            "section": "esszimmer",
+            "sortGroup": "blue",
+            "subGroup": "blue"
+          }
+        }
+      },
+      {
+        "name": "esszimmerKallaxLedWWhite",
+        "useChannel": 3,
+        "attributes": {
+          "hmi": {
+            "group": "led-w-white",
+            "groupLabel": "led",
+            "section": "esszimmer",
+            "sortGroup": "w-white",
+            "subGroup": "w-white"
+          }
+        }
+      }
+    ]
+  },
+  {
     "name": "esszimmerStehlampeDriver",
     "host": "10.97.4.12",
     "port": 5045,
@@ -634,66 +694,6 @@
           "hmi": {
             "group": "standing-lamp",
             "section": "wohnzimmer"
-          }
-        }
-      }
-    ]
-  },
-  {
-    "name": "wohnzimmerKallaxLedDriver",
-    "host": "10.97.4.51",
-    "port": 5045,
-    "type": "LED_H801",
-    "lights": [
-      {
-        "name": "wohnzimmerKallaxLedRed",
-        "useChannel": 0,
-        "attributes": {
-          "hmi": {
-            "group": "led-red",
-            "groupLabel": "led",
-            "section": "wohnzimmer",
-            "sortGroup": "red",
-            "subGroup": "red"
-          }
-        }
-      },
-      {
-        "name": "wohnzimmerKallaxLedGreen",
-        "useChannel": 1,
-        "attributes": {
-          "hmi": {
-            "group": "led-green",
-            "groupLabel": "led",
-            "section": "wohnzimmer",
-            "sortGroup": "green",
-            "subGroup": "green"
-          }
-        }
-      },
-      {
-        "name": "wohnzimmerKallaxLedBlue",
-        "useChannel": 2,
-        "attributes": {
-          "hmi": {
-            "group": "led-blue",
-            "groupLabel": "led",
-            "section": "wohnzimmer",
-            "sortGroup": "blue",
-            "subGroup": "blue"
-          }
-        }
-      },
-      {
-        "name": "wohnzimmerKallaxLedWWhite",
-        "useChannel": 3,
-        "attributes": {
-          "hmi": {
-            "group": "led-w-white",
-            "groupLabel": "led",
-            "section": "wohnzimmer",
-            "sortGroup": "w-white",
-            "subGroup": "w-white"
           }
         }
       }

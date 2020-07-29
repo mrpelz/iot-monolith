@@ -101,18 +101,18 @@
     }
   },
   {
-    "name": "wohnzimmerLedAll",
+    "name": "esszimmerLedAll",
     "lights": [
-      "wohnzimmerKallaxLedBlue",
-      "wohnzimmerKallaxLedGreen",
-      "wohnzimmerKallaxLedRed",
-      "wohnzimmerKallaxLedWWhite"
+      "esszimmerKallaxLedBlue",
+      "esszimmerKallaxLedGreen",
+      "esszimmerKallaxLedRed",
+      "esszimmerKallaxLedWWhite"
     ],
     "attributes": {
       "hmi": {
         "group": "led-all",
         "groupLabel": "led",
-        "section": "wohnzimmer",
+        "section": "esszimmer",
         "sortGroup": "all",
         "subGroup": "all"
       }
@@ -133,10 +133,10 @@
       "kuecheLedRightWhite",
       "kuecheLedRightWWhite",
       "wohnzimmerDeckenlampe",
-      "wohnzimmerKallaxLedBlue",
-      "wohnzimmerKallaxLedGreen",
-      "wohnzimmerKallaxLedRed",
-      "wohnzimmerKallaxLedWWhite",
+      "esszimmerKallaxLedBlue",
+      "esszimmerKallaxLedGreen",
+      "esszimmerKallaxLedRed",
+      "esszimmerKallaxLedWWhite",
       "wohnzimmerStehlampe"
     ],
     "attributes": {
