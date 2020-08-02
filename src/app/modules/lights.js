@@ -475,9 +475,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
         'duschbadSpiegellampe'
       ],
       [
-        'duschbadDeckenlampe'
-      ],
-      [
         'duschbadDeckenlampe',
         'duschbadSpiegellampe',
         'duschbadLampe'
@@ -552,6 +549,9 @@ function lightWithRfSwitch(lights, rfSwitches) {
     ],
     [
       [
+        'kuecheLedRightWWhite'
+      ],
+      [
         'kuecheLedLeftWWhite'
       ],
       [
@@ -616,13 +616,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
       ],
       [
         'schlafzimmerBedLedBlue'
-      ],
-      [
-        'schlafzimmerBedLedNightstandLeft',
-        'schlafzimmerBedLedNightstandRight'
-      ],
-      [
-        'schlafzimmerDeckenlampe'
       ],
       [
         'schlafzimmerDeckenlampe',
@@ -712,9 +705,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
     [
       [
         'wannenbadLampe'
-      ],
-      [
-        'wannenbadDeckenlampe'
       ],
       [
         'wannenbadDeckenlampe',
