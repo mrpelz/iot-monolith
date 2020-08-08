@@ -36,11 +36,11 @@ export function manage(_, data) {
     name: 'ufiClock',
     attributes: {
       category: 'other',
-      group: 'clock',
+      group: 'ufi',
       section: 'global',
       setType: 'trigger',
       sortCategory: '_bottom',
-      type: 'binary-light'
+      type: 'fan'
     },
     server: hmiServer,
     getter: () => {

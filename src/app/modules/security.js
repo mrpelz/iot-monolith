@@ -96,10 +96,15 @@ function securityLightKill(security, allLightsGroup) {
   });
 }
 
-function securityDisplayKill(security, ufiDisplay) {
+function securityDisplay(security, ufiDisplay) {
   security.on('change', () => {
-    if (!security.armed || security.triggered) return;
-    ufiDisplay.toggle(false);
+    if (security.triggered) return;
+
+    if (security.armed) {
+      ufiDisplay.toggle(false);
+    } else {
+      ufiDisplay.toggle(true);
+    }
   });
 }
 
@@ -223,7 +228,7 @@ export function manage(config, data) {
 
   entryDoorTimer(telegram, entryDoor, entryDoorTimeout, entryDoorMessage);
   securityLightKill(security, allLightsGroup);
-  securityDisplayKill(security, ufiDisplay);
+  securityDisplay(security, ufiDisplay);
   securityToPrometheus(security, prometheus);
   securityHmi(security, hmiServer);
   securityHttpHooks(security, httpHookServer);
