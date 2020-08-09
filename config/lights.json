@@ -217,6 +217,19 @@
             "subGroup": "w-white"
           }
         }
+      },
+      {
+        "name": "esszimmerKallaxLedWWhiteSide",
+        "useChannel": 4,
+        "attributes": {
+          "hmi": {
+            "group": "led-side",
+            "groupLabel": "led",
+            "section": "esszimmer",
+            "sortGroup": "w-white",
+            "subGroup": "side"
+          }
+        }
       }
     ]
   },

@@ -106,7 +106,8 @@
       "esszimmerKallaxLedBlue",
       "esszimmerKallaxLedGreen",
       "esszimmerKallaxLedRed",
-      "esszimmerKallaxLedWWhite"
+      "esszimmerKallaxLedWWhite",
+      "esszimmerKallaxLedWWhiteSide"
     ],
     "attributes": {
       "hmi": {
@@ -123,6 +124,11 @@
     "lights": [
       "esszimmerDeckenlampe",
       "esszimmerFloodlight",
+      "esszimmerKallaxLedBlue",
+      "esszimmerKallaxLedGreen",
+      "esszimmerKallaxLedRed",
+      "esszimmerKallaxLedWWhite",
+      "esszimmerKallaxLedWWhiteSide",
       "esszimmerStehlampe",
       "flurDeckenlampeBack",
       "flurDeckenlampeFront",
@@ -133,10 +139,6 @@
       "kuecheLedRightWhite",
       "kuecheLedRightWWhite",
       "wohnzimmerDeckenlampe",
-      "esszimmerKallaxLedBlue",
-      "esszimmerKallaxLedGreen",
-      "esszimmerKallaxLedRed",
-      "esszimmerKallaxLedWWhite",
       "wohnzimmerStehlampe"
     ],
     "attributes": {
