@@ -39,7 +39,42 @@
         "attributes": {
           "hmi": {
             "group": "ceiling-lamp",
+            "sortGroup": "_top",
             "section": "arbeitszimmer"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "arbeitszimmerBasteltischLedDriver",
+    "host": "10.97.4.52",
+    "port": 5045,
+    "type": "LED_H801",
+    "lights": [
+      {
+        "name": "arbeitszimmerBasteltischLedWhite",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "led-c-white",
+            "groupLabel": "led",
+            "section": "arbeitszimmer",
+            "sortGroup": "c-white",
+            "subGroup": "c-white"
+          }
+        }
+      },
+      {
+        "name": "arbeitszimmerBasteltischLedWWhite",
+        "useChannel": 1,
+        "attributes": {
+          "hmi": {
+            "group": "led-w-white",
+            "groupLabel": "led",
+            "section": "arbeitszimmer",
+            "sortGroup": "w-white",
+            "subGroup": "w-white"
           }
         }
       }

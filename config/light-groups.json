@@ -1,5 +1,21 @@
 [
   {
+    "name": "arbeitszimmerBasteltischLedAll",
+    "lights": [
+      "arbeitszimmerBasteltischLedWhite",
+      "arbeitszimmerBasteltischLedWWhite"
+    ],
+    "attributes": {
+      "hmi": {
+        "group": "led-all",
+        "groupLabel": "led",
+        "section": "arbeitszimmer",
+        "sortGroup": "_top",
+        "subGroup": "all"
+      }
+    }
+  },
+  {
     "name": "duschbadLamps",
     "lights": [
       "duschbadDeckenlampe",
