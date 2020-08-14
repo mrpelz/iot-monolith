@@ -511,13 +511,6 @@ function lightWithRfSwitch(lights, rfSwitches) {
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
-    'esszimmerKallaxLedWWhite',
-    'esszimmerButton3',
-    4
-  );
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
     'esszimmerDeckenlampe',
     'esszimmerMulti1',
     1

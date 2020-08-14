@@ -213,6 +213,17 @@ function groupWithDoorSensor(lightGroups, doorSensors) {
 }
 
 function groupWithRfSwitch(lightGroups, rfSwitches) {
+  //  ARBEITSZIMMER
+  //    buttons
+  coupleRfSwitchToLight(
+    lightGroups,
+    rfSwitches,
+    'arbeitszimmerBasteltischLedAll',
+    'arbeitszimmerButton1',
+    4
+  );
+
+
   //  DUSCHBAD
   //    wall switches
   coupleRfSwitchToLight(

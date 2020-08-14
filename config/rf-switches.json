@@ -8,6 +8,10 @@
     "id": 44526
   },
   {
+    "name": "arbeitszimmerButton1",
+    "id": 903326
+  },
+  {
     "name": "duschbadWallDoor",
     "id": 43091
   },
@@ -30,10 +34,6 @@
   {
     "name": "esszimmerButton2",
     "id": 992584
-  },
-  {
-    "name": "esszimmerButton3",
-    "id": 903326
   },
   {
     "name": "esszimmerMulti1",
