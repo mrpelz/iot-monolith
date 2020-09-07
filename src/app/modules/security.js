@@ -98,6 +98,7 @@ function securityLightKill(security, allLightsGroup) {
 
 function securityDisplay(security, ufiDisplay) {
   security.on('change', () => {
+    if (security.armDelay) return;
     if (security.triggered) return;
 
     if (security.armed) {
