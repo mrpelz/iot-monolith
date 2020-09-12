@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "usp.wurstsalat.cloud:git/iot-monolith.git"
+    "url": "wslt@git.wurstsalat.cloud:IoT/iot-monolith.git"
   },
   "author": "Lennart Pelz <mail@mrpelz.de>",
   "license": "UNLICENSED",
