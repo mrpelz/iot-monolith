@@ -10,7 +10,7 @@ const libName = 'led';
 const minCycle = 0;
 const maxCycle = 255;
 
-const defaultAnimationDuration = 2000;
+const defaultAnimationDuration = 500;
 const defaultGamma = 2.8;
 const defaultBrightnessSteps = [0, 0.2, 0.4, 0.6, 0.8, 1];
 const defaultRGBPresets = {
