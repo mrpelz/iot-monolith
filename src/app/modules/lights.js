@@ -522,13 +522,13 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'esszimmerMulti1',
     2
   );
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerFloodlight',
-    'esszimmerMulti1',
-    3
-  );
+  // coupleRfSwitchToLight(
+  //   lights,
+  //   rfSwitches,
+  //   'esszimmerFloodlight',
+  //   'esszimmerMulti1',
+  //   3
+  // );
   coupleRfSwitchToLight(
     lights,
     rfSwitches,
@@ -753,13 +753,13 @@ function lightWithRfSwitch(lights, rfSwitches) {
     'wohnzimmerMulti1',
     1
   );
-  coupleRfSwitchToLight(
-    lights,
-    rfSwitches,
-    'esszimmerFloodlight',
-    'wohnzimmerMulti1',
-    2
-  );
+  // coupleRfSwitchToLight(
+  //   lights,
+  //   rfSwitches,
+  //   'esszimmerFloodlight',
+  //   'wohnzimmerMulti1',
+  //   2
+  // );
   coupleRfSwitchToLight(
     lights,
     rfSwitches,

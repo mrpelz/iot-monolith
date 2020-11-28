@@ -47,6 +47,29 @@
     ]
   },
   {
+    "name": "arbeitszimmerFloodlightDriver",
+    "host": "10.97.4.33",
+    "port": 5045,
+    "type": "SONOFF_BASIC",
+    "attributes": {
+      "driver": {
+        "enableButton": true
+      }
+    },
+    "lights": [
+      {
+        "name": "arbeitszimmerFloodlight",
+        "useChannel": 0,
+        "attributes": {
+          "hmi": {
+            "group": "flood-lamp",
+            "section": "arbeitszimmer"
+          }
+        }
+      }
+    ]
+  },
+  {
     "name": "arbeitszimmerBasteltischLedDriver",
     "host": "10.97.4.52",
     "port": 5045,
@@ -166,29 +189,6 @@
         "attributes": {
           "hmi": {
             "group": "ceiling-lamp",
-            "section": "esszimmer"
-          }
-        }
-      }
-    ]
-  },
-  {
-    "name": "esszimmerFloodlightDriver",
-    "host": "10.97.4.33",
-    "port": 5045,
-    "type": "SONOFF_BASIC",
-    "attributes": {
-      "driver": {
-        "enableButton": true
-      }
-    },
-    "lights": [
-      {
-        "name": "esszimmerFloodlight",
-        "useChannel": 0,
-        "attributes": {
-          "hmi": {
-            "group": "flood-lamp",
             "section": "esszimmer"
           }
         }
