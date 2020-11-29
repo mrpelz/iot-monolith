@@ -777,23 +777,29 @@ function lightWithRfSwitch(lights, rfSwitches) {
 }
 
 function arbeitszimmerDeckenlampeWithHttpHook(lights) {
-  const name = 'arbeitszimmerDeckenlampe';
-  const lightMatch = lights.find(({ name: n }) => {
-    return n === name;
-  });
+  const names = [
+    'arbeitszimmerDeckenlampe',
+    'arbeitszimmerFloodlight'
+  ];
 
-  if (!lightMatch) {
-    throw new Error('could not find light');
-  }
+  names.forEach((name) => {
+    const lightMatch = lights.find(({ name: n }) => {
+      return n === name;
+    });
 
-  const { instance } = lightMatch;
-  const url = new URL('https://hermes.net.wurstsalat.cloud/phonebutton.php');
-  url.searchParams.set('change', '1');
-  url.searchParams.set('symbn', name);
+    if (!lightMatch) {
+      throw new Error('could not find light');
+    }
 
-  instance.on('change', () => {
-    url.searchParams.set('state', instance.power ? '1' : '0');
-    resolveAlways(get(url));
+    const { instance } = lightMatch;
+    const url = new URL('https://hermes.net.wurstsalat.cloud/phonebutton.php');
+    url.searchParams.set('change', '1');
+    url.searchParams.set('symbn', name);
+
+    instance.on('change', () => {
+      url.searchParams.set('state', instance.power ? '1' : '0');
+      resolveAlways(get(url));
+    });
   });
 }
 
