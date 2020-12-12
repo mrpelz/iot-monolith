@@ -92,7 +92,7 @@ export class LightGroup extends EventEmitter {
 
   get power() {
     const sane = this._instances.filter((instance) => {
-      return instance.power !== null;
+      return instance.driver._reliableSocket.state.isConnected;
     });
 
     if (this._allOf) {
