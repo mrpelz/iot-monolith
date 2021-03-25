@@ -1,5 +1,6 @@
 import { AnyTransport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
+import { BooleanState } from '../state/index.js';
 import { EventEmitter } from 'events';
 import { Input } from '../log/index.js';
 import { Timer } from '../utils/time.js';
@@ -17,7 +18,7 @@ type RequestResolver = {
 
 type DeviceState = {
   identifier: Buffer | null;
-  isOnline: boolean | null;
+  isOnline: BooleanState;
   keepAlive: number;
   log: Input;
   requests: Map<number, RequestResolver>;
@@ -111,7 +112,7 @@ export class Device extends EventEmitter {
 
     this.state = {
       // for now, always online because device-level keep-alive messages are not yet implemented
-      isOnline: true,
+      isOnline: new BooleanState(true),
       requests: new Map(),
       services: new Set(),
 
@@ -146,7 +147,7 @@ export class Device extends EventEmitter {
     return Boolean(
       this.transport &&
         this.transport.state.transport.state.isConnected &&
-        this.state.isOnline
+        this.state.isOnline.value
     );
   }
 

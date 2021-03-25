@@ -8,12 +8,10 @@ export class BooleanState extends Observable<boolean> {
   }
 }
 
-export class EnumState<T extends readonly T[number][]> extends Observable<
-  T[number]
-> {
-  private _enum: T;
+export class EnumState<T> extends Observable<T> {
+  private _enum: T[];
 
-  constructor(_enum: T, initialValue: T[number]) {
+  constructor(_enum: T[], initialValue: T) {
     if (!_enum.includes(initialValue)) {
       throw new RangeError(`"${initialValue}" is not an allowed value`);
     }
@@ -26,17 +24,17 @@ export class EnumState<T extends readonly T[number][]> extends Observable<
     return this._enum.length - 1;
   }
 
-  private indexOf(value: T[number]) {
+  private indexOf(value: T) {
     const index = this._enum.indexOf(value);
 
     return index === -1 ? null : index;
   }
 
-  get value(): T[number] {
+  get value(): T {
     return this._value;
   }
 
-  set value(value: T[number]) {
+  set value(value: T) {
     if (value === this._value) return;
 
     if (!this._enum.includes(value)) {

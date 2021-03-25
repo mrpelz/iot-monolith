@@ -1,5 +1,6 @@
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { Transport, TransportOptions } from './index.js';
+import { BooleanState } from '../state/index.js';
 import { Input } from '../log/index.js';
 import { humanPayload } from '../utils/data.js';
 import { logger } from '../../app/logging.js';
@@ -54,7 +55,7 @@ type UDPTransportState = {
   messageOutgoingSequence: number;
   port: number;
   sequenceHandling: boolean;
-  shouldBeConnected: boolean;
+  shouldBeConnected: BooleanState;
   socket: Socket | null;
 };
 
@@ -73,22 +74,6 @@ export class UDPTransport extends Transport {
 
     super(options);
 
-    this.udpState = {
-      messageIncomingSequence: 0,
-      messageOutgoingSequence: 0,
-      shouldBeConnected: false,
-
-      /* eslint-disable-next-line sort-keys */
-      host,
-      keepAlive,
-      log: logger.getInput({
-        head: 'UDPTransport',
-      }),
-      port,
-      sequenceHandling,
-      socket: null,
-    };
-
     rebind(
       this,
       'addDevice',
@@ -102,6 +87,24 @@ export class UDPTransport extends Transport {
       '_onConnection',
       '_onDisconnection'
     );
+
+    this.udpState = {
+      messageIncomingSequence: 0,
+      messageOutgoingSequence: 0,
+      shouldBeConnected: new BooleanState(false),
+
+      /* eslint-disable-next-line sort-keys */
+      host,
+      keepAlive,
+      log: logger.getInput({
+        head: 'UDPTransport',
+      }),
+      port,
+      sequenceHandling,
+      socket: null,
+    };
+
+    this.udpState.shouldBeConnected.observe(() => this._connect());
 
     setInterval(this._connect, Math.round(keepAlive / 2));
   }
@@ -247,9 +250,7 @@ export class UDPTransport extends Transport {
    * connect UDPTransport instance
    */
   connect(): void {
-    this.udpState.shouldBeConnected = true;
-
-    this._connect();
+    this.udpState.shouldBeConnected.value = true;
 
     this.udpState.log.info(() => 'set connect');
   }
@@ -258,9 +259,7 @@ export class UDPTransport extends Transport {
    * disconnect UDPTransport instance
    */
   disconnect(): void {
-    this.udpState.shouldBeConnected = false;
-
-    this._connect();
+    this.udpState.shouldBeConnected.value = false;
 
     this.udpState.log.info(() => 'set disconnect');
   }

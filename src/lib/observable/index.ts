@@ -35,6 +35,6 @@ export class Observable<T> {
   }
 
   valueOf(): T {
-    return this._value;
+    return this.value;
   }
 }

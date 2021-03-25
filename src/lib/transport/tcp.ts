@@ -1,5 +1,6 @@
 import { Transport, TransportOptions } from './index.js';
 import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
+import { BooleanState } from '../state/index.js';
 import { Input } from '../log/index.js';
 import { Socket } from 'net';
 import { Timer } from '../utils/time.js';
@@ -36,7 +37,7 @@ type TCPTransportState = {
   log: Input;
   messageTimer: Timer;
   port: number;
-  shouldBeConnected: boolean;
+  shouldBeConnected: BooleanState;
   socket: Socket | null;
 };
 
@@ -59,10 +60,24 @@ export class TCPTransport extends Transport {
 
     super(options);
 
+    rebind(
+      this,
+      'addDevice',
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToNetwork',
+      '_connect',
+      '_handleReadable',
+      '_onConnection',
+      '_onDisconnection'
+    );
+
     this.tcpState = {
       connectionTime: 0,
       currentLength: 0,
-      shouldBeConnected: false,
+      shouldBeConnected: new BooleanState(false),
 
       /* eslint-disable-next-line sort-keys */
       host,
@@ -78,19 +93,7 @@ export class TCPTransport extends Transport {
       messageTimer: new Timer(keepAlive * 2),
     };
 
-    rebind(
-      this,
-      'addDevice',
-      'connect',
-      'disconnect',
-      'reconnect',
-      'removeDevice',
-      'writeToNetwork',
-      '_connect',
-      '_handleReadable',
-      '_onConnection',
-      '_onDisconnection'
-    );
+    this.tcpState.shouldBeConnected.observe(() => this._connect());
 
     setInterval(this._connect, Math.round(keepAlive / 2));
 
@@ -258,9 +261,7 @@ export class TCPTransport extends Transport {
    * connect TCPTransport instance
    */
   connect(): void {
-    this.tcpState.shouldBeConnected = true;
-
-    this._connect();
+    this.tcpState.shouldBeConnected.value = true;
 
     this.tcpState.log.info(() => 'set connect');
   }
@@ -269,9 +270,7 @@ export class TCPTransport extends Transport {
    * disconnect TCPTransport instance
    */
   disconnect(): void {
-    this.tcpState.shouldBeConnected = false;
-
-    this._connect();
+    this.tcpState.shouldBeConnected.value = false;
 
     this.tcpState.log.info(() => 'set disconnect');
   }

@@ -1,5 +1,6 @@
 import { TCPTransport, TCPTransportOptions } from './tcp.js';
 import { UDPTransport, UDPTransportOptions } from './udp.js';
+import { BooleanState } from '../state/index.js';
 import { Device } from '../device/index.js';
 import { Input } from '../log/index.js';
 import { logger } from '../../app/logging.js';
@@ -16,7 +17,7 @@ type TransportDevices = Set<TransportDevice>;
 type TransportState = {
   devices: TransportDevices;
   identifier: Buffer | null;
-  isConnected: boolean | null;
+  isConnected: BooleanState;
   log: Input;
   singleDevice: boolean;
 };
@@ -155,16 +156,6 @@ export class Transport {
       throw new Error('identifier is required for multi device transport');
     }
 
-    this.state = {
-      devices,
-      identifier,
-      isConnected: null,
-      log: logger.getInput({
-        head: 'Transport',
-      }),
-      singleDevice,
-    };
-
     rebind(
       this,
       'addDevice',
@@ -173,6 +164,22 @@ export class Transport {
       'reconnect',
       'removeDevice',
       'writeToNetwork'
+    );
+
+    this.state = {
+      devices,
+      identifier,
+      isConnected: new BooleanState(false),
+      log: logger.getInput({
+        head: 'Transport',
+      }),
+      singleDevice,
+    };
+
+    this.state.isConnected.observe(() =>
+      this.state.devices.forEach((device) => {
+        device.state.device.onOnlineChange();
+      })
     );
   }
 
@@ -189,11 +196,7 @@ export class Transport {
    * set the online status of all devices on this transport
    */
   _setConnected(online: boolean): void {
-    this.state.isConnected = online;
-
-    this.state.devices.forEach((device) => {
-      device.state.device.onOnlineChange();
-    });
+    this.state.isConnected.value = online;
   }
 
   /**
@@ -282,10 +285,20 @@ export class AggregatedTransport {
       throw new Error('identifier is required for aggregate transport');
     }
 
+    rebind(
+      this,
+      'addDevice',
+      'connect',
+      'disconnect',
+      'reconnect',
+      'removeDevice',
+      'writeToTransport'
+    );
+
     this.state = {
       devices,
       identifier,
-      isConnected: null,
+      isConnected: new BooleanState(false),
       log: logger.getInput({
         head: 'AggregatedTransport',
       }),
@@ -296,14 +309,10 @@ export class AggregatedTransport {
       ),
     };
 
-    rebind(
-      this,
-      'addDevice',
-      'connect',
-      'disconnect',
-      'reconnect',
-      'removeDevice',
-      'writeToTransport'
+    this.state.isConnected.observe(() =>
+      this.state.devices.forEach((device) => {
+        device.state.device.onOnlineChange();
+      })
     );
   }
 
@@ -320,11 +329,7 @@ export class AggregatedTransport {
    * set the online status of all devices on this transport
    */
   _setOnline(online: boolean): void {
-    this.state.isConnected = online;
-
-    this.state.devices.forEach((device) => {
-      device.state.device.onOnlineChange();
-    });
+    this.state.isConnected.value = online;
   }
 
   /**
