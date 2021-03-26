@@ -1,15 +1,16 @@
-import { eventSymbol, onlineState } from '../index.js';
 import { UDPDevice } from '../udp.js';
 
 const device = new UDPDevice({
-  host: '127.0.0.1',
-  keepAlive: 20000,
-  port: 5000,
+  host: '10.97.0.198',
+  port: 8266,
 });
 
-const service = device.getService(Buffer.from([0]));
+const event = device.getEvent(Buffer.from([0]));
+const service = device.getService(Buffer.from([1]), 2000);
 
-device.once(onlineState.true, () => {
+device.state.isOnline.observe((online) => {
+  if (!online) return;
+
   const request = service.request(Buffer.from('test'));
 
   request
@@ -23,7 +24,7 @@ device.once(onlineState.true, () => {
     });
 });
 
-service.on(eventSymbol, (data) => {
+event.observable.observe((data) => {
   // eslint-disable-next-line no-console
   console.log('event', data.toString());
 });

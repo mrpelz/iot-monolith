@@ -34,7 +34,7 @@ export class StateGroup<T> {
   }
 }
 
-enum BooleanGroupStrategy {
+export enum BooleanGroupStrategy {
   IS_TRUE_IF_ALL_TRUE,
   IS_TRUE_IF_SOME_TRUE,
 }

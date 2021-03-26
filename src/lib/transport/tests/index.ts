@@ -1,4 +1,4 @@
-import { Device, eventSymbol } from '../../device/index.js';
+import { Device } from '../../device/index.js';
 import { UDPTransport } from '../udp.js';
 
 const transport = new UDPTransport({
@@ -8,10 +8,11 @@ const transport = new UDPTransport({
 
 const device = new Device({ transport });
 
+const event = device.getEvent(Buffer.from([1]));
 const service = device.getService(Buffer.from([1]));
 
 // eslint-disable-next-line no-console
-service.on(eventSymbol, console.log);
+event.observable.observe(console.log);
 
 service
   .request()

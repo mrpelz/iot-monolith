@@ -175,12 +175,6 @@ export class Transport {
       }),
       singleDevice,
     };
-
-    this.state.isConnected.observe(() =>
-      this.state.devices.forEach((device) => {
-        device.state.device.onOnlineChange();
-      })
-    );
   }
 
   /**
@@ -308,12 +302,6 @@ export class AggregatedTransport {
         transportOptions
       ),
     };
-
-    this.state.isConnected.observe(() =>
-      this.state.devices.forEach((device) => {
-        device.state.device.onOnlineChange();
-      })
-    );
   }
 
   /**

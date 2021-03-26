@@ -1,12 +1,16 @@
 import { AnyTransport, TransportDevice } from '../transport/index.js';
+import {
+  BooleanGroupStrategy,
+  BooleanStateGroup,
+} from '../state-group/index.js';
+import { BooleanState, NullState } from '../state/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
-import { BooleanState } from '../state/index.js';
-import { EventEmitter } from 'events';
 import { Input } from '../log/index.js';
 import { Timer } from '../utils/time.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
 
+type DeviceEvents = Set<Event>;
 type DeviceServices = Set<Service>;
 
 type Request = Promise<Buffer>;
@@ -17,9 +21,9 @@ type RequestResolver = {
 };
 
 type DeviceState = {
+  events: DeviceEvents;
   identifier: Buffer | null;
   isOnline: BooleanState;
-  keepAlive: number;
   log: Input;
   requests: Map<number, RequestResolver>;
   services: DeviceServices;
@@ -28,25 +32,21 @@ type DeviceState = {
 type DeviceOptions = {
   transport: AnyTransport;
   identifier?: DeviceState['identifier'];
-  keepAlive?: DeviceState['keepAlive'];
 };
 
-type ServiceState = {
+type PropertyState = {
   device: Device;
   identifier: Buffer;
 };
 
-const eventIdentifier = 0x00;
-
-export const onlineState = {
-  false: Symbol('deviceIsOffline'),
-  true: Symbol('deviceIsOnline'),
+type ServiceState = {
+  timeout: number;
 };
 
-export const eventSymbol = Symbol('event');
+const eventIdentifier = 0x00;
 
-class Service extends EventEmitter {
-  state: ServiceState;
+class Property {
+  state: PropertyState;
 
   constructor(identifier: Buffer, device: Device) {
     const {
@@ -65,8 +65,6 @@ class Service extends EventEmitter {
       }
     });
 
-    super();
-
     this.state = {
       device,
       identifier,
@@ -76,63 +74,101 @@ class Service extends EventEmitter {
   /**
    * get device online state
    */
-  get online() {
-    return this.state.device.online;
+  get isOnline() {
+    return this.state.device.isOnline;
   }
+}
+
+class Event extends Property {
+  observable: NullState<Buffer>;
 
   /**
    * ingest event from Device instance
    */
-  ingestEvent(payload: Buffer) {
+  ingest(payload: Buffer) {
     const serviceIdentifier = payload.subarray(0, this.state.identifier.length);
     if (!serviceIdentifier.equals(this.state.identifier)) return;
 
     const eventData = payload.subarray(this.state.identifier.length);
 
-    this.emit(eventSymbol, eventData);
+    this.observable.trigger(eventData);
+  }
+
+  /**
+   * remove Event from Device
+   */
+  remove(): void {
+    this.state.device.removeEvent(this);
+  }
+}
+
+class Service extends Property {
+  serviceState: ServiceState;
+
+  constructor(identifier: Buffer, timeout: number, device: Device) {
+    super(identifier, device);
+
+    this.serviceState = {
+      timeout,
+    };
   }
 
   /**
    * issue request on Device instance
    */
   request(payload: Buffer | null = null): Request {
-    return this.state.device.request(this.state.identifier, payload);
+    return this.state.device.request(
+      this.state.identifier,
+      payload,
+      this.serviceState.timeout
+    );
+  }
+
+  /**
+   * remove Event from Device
+   */
+  remove(): void {
+    this.state.device.removeService(this);
   }
 }
 
-export class Device extends EventEmitter {
+export class Device {
   state: DeviceState;
 
   transport: TransportDevice;
 
-  constructor(options: DeviceOptions) {
-    const { transport, identifier = null, keepAlive = 2000 } = options;
+  isOnline: BooleanStateGroup;
 
-    super();
+  constructor(options: DeviceOptions) {
+    const { transport, identifier = null } = options;
+
+    rebind(
+      this,
+      'getService',
+      'matchDataToRequest',
+      'removeService',
+      'request'
+    );
 
     this.state = {
       // for now, always online because device-level keep-alive messages are not yet implemented
+      events: new Set(),
       isOnline: new BooleanState(true),
       requests: new Map(),
       services: new Set(),
 
       /* eslint-disable-next-line sort-keys */
       identifier,
-      keepAlive,
       log: logger.getInput({
         head: '',
       }),
     };
 
     this.transport = transport.addDevice(this);
-
-    rebind(
-      this,
-      'getService',
-      'matchDataToRequest',
-      'onOnlineChange',
-      'removeService',
-      'request'
+    this.isOnline = new BooleanStateGroup(
+      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+      transport.state.isConnected,
+      this.state.isOnline
     );
   }
 
@@ -143,19 +179,11 @@ export class Device extends EventEmitter {
     }, 0);
   }
 
-  get online(): boolean {
-    return Boolean(
-      this.transport &&
-        this.transport.state.transport.state.isConnected &&
-        this.state.isOnline.value
-    );
-  }
-
   _handleEvent(payload: Buffer): void {
-    const { services } = this.state;
+    const { events } = this.state;
 
-    services.forEach((service) => {
-      service.ingestEvent(payload);
+    events.forEach((event) => {
+      event.ingest(payload);
     });
   }
 
@@ -191,12 +219,24 @@ export class Device extends EventEmitter {
   }
 
   /**
+   * add an instance of Event to this device
+   */
+  getEvent(identifier: Buffer): Event {
+    const { events } = this.state;
+
+    const event = new Event(identifier, this);
+    events.add(event);
+
+    return event;
+  }
+
+  /**
    * add an instance of Service to this device
    */
-  getService(identifier: Buffer): Service {
+  getService(identifier: Buffer, timeout: number): Service {
     const { services } = this.state;
 
-    const service = new Service(identifier, this);
+    const service = new Service(identifier, timeout, this);
     services.add(service);
 
     return service;
@@ -220,10 +260,10 @@ export class Device extends EventEmitter {
   }
 
   /**
-   * handle change in Transport online state
+   * remove an instance of Service from this device
    */
-  onOnlineChange(): void {
-    this.emit(this.online ? onlineState.true : onlineState.false);
+  removeEvent(event: Event): void {
+    this.state.events.delete(event);
   }
 
   /**
@@ -236,13 +276,17 @@ export class Device extends EventEmitter {
   /**
    * issue request
    */
-  request(serviceIdentifier: Buffer, payload: Buffer | null = null): Request {
-    const { requests, keepAlive } = this.state;
+  request(
+    serviceIdentifier: Buffer,
+    payload: Buffer | null = null,
+    timeout: number
+  ): Request {
+    const { requests } = this.state;
     const id = this._requestId;
 
     return new Promise((resolver, reject) => {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
-      const timer = new Timer(keepAlive);
+      const timer = new Timer(timeout);
 
       timer.on('hit', () => {
         reject(new Error('request timed out'));

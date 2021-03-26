@@ -79,14 +79,14 @@ export class EnumState<T> extends Observable<T> {
   }
 }
 
-export class NullState {
-  protected readonly observers: Set<ObserverCallback<null>>;
+export class NullState<T = null> {
+  protected readonly observers: Set<ObserverCallback<T>>;
 
-  constructor(observer?: ObserverCallback<null>) {
+  constructor(observer?: ObserverCallback<T>) {
     this.observers = new Set(observer ? [observer] : undefined);
   }
 
-  observe(observer: ObserverCallback<null>): Observer {
+  observe(observer: ObserverCallback<T>): Observer {
     this.observers.add(observer);
 
     return {
@@ -94,7 +94,7 @@ export class NullState {
     };
   }
 
-  trigger(): void {
-    this.observers.forEach((observer) => observer(null));
+  trigger(data: T): void {
+    this.observers.forEach((observer) => observer(data));
   }
 }
