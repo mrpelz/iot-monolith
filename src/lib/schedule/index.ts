@@ -10,13 +10,9 @@ const MAX_TIMEOUT = 2147483647;
 
 export class Schedule {
   private readonly nextExecutionProvider: NextExecutionProvider;
-
   private readonly once: boolean;
-
   private previousExecution: Date | null;
-
   private readonly tasks = new Set<Task>();
-
   private timeout: NodeJS.Timeout | null = null;
 
   constructor(nextExecutionProvider: NextExecutionProvider, once = false) {

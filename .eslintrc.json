@@ -198,7 +198,8 @@
     "lines-around-directive": "error",
     "lines-between-class-members": [
       "error",
-      "always"
+      "always",
+      { "exceptAfterSingleLine": true }
     ],
     "max-classes-per-file": "off",
     "max-depth": "error",

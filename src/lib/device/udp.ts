@@ -1,14 +1,11 @@
-import { UDPTransport, UDPTransportOptions } from '../transport/udp.js';
 import { Device } from './index.js';
+import { UDPTransport } from '../transport/udp.js';
 
 export class UDPDevice extends Device {
-  constructor(options: UDPTransportOptions) {
-    const transport = new UDPTransport(options);
+  constructor(host: string, port: number) {
+    const transport = new UDPTransport(host, port);
 
-    super({
-      keepAlive: options.keepAlive,
-      transport,
-    });
+    super(transport);
 
     transport.connect();
   }

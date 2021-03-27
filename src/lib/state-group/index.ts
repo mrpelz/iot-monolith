@@ -3,10 +3,10 @@ import { Observable, Observer, ObserverCallback } from '../observable/index.js';
 export class StateGroup<T> {
   protected _value: T;
 
-  protected children: Observable<T>[];
+  protected readonly _children: Observable<T>[];
 
   constructor(...children: Observable<T>[]) {
-    this.children = children;
+    this._children = children;
   }
 
   get value(): T {
@@ -16,7 +16,7 @@ export class StateGroup<T> {
   observe(observer: ObserverCallback<T>): Observer {
     const observers: Observer[] = [];
 
-    for (const child of this.children) {
+    for (const child of this._children) {
       observers.push(child.observe(observer));
     }
 
@@ -40,7 +40,7 @@ export enum BooleanGroupStrategy {
 }
 
 export class BooleanStateGroup extends StateGroup<boolean> {
-  private strategy: BooleanGroupStrategy;
+  private readonly _strategy: BooleanGroupStrategy;
 
   constructor(
     strategy: BooleanGroupStrategy,
@@ -48,11 +48,11 @@ export class BooleanStateGroup extends StateGroup<boolean> {
   ) {
     super(...children);
 
-    this.strategy = strategy;
+    this._strategy = strategy;
   }
 
   get value(): boolean {
-    if (this.strategy === BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE) {
+    if (this._strategy === BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE) {
       this.someTrue();
     }
 
@@ -60,7 +60,7 @@ export class BooleanStateGroup extends StateGroup<boolean> {
   }
 
   allTrue(): boolean {
-    for (const child of this.children) {
+    for (const child of this._children) {
       if (!child.value) return false;
     }
 
@@ -68,7 +68,7 @@ export class BooleanStateGroup extends StateGroup<boolean> {
   }
 
   someTrue(): boolean {
-    for (const child of this.children) {
+    for (const child of this._children) {
       if (child.value) return true;
     }
 
@@ -76,6 +76,6 @@ export class BooleanStateGroup extends StateGroup<boolean> {
   }
 
   values(): boolean[] {
-    return this.children.map(({ value }) => value);
+    return this._children.map(({ value }) => value);
   }
 }

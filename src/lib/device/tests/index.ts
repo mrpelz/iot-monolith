@@ -1,15 +1,13 @@
 import { UDPDevice } from '../udp.js';
 
-const device = new UDPDevice({
-  host: '10.97.0.198',
-  port: 8266,
-});
+const device = new UDPDevice('10.97.0.198', 8266);
 
 const event = device.getEvent(Buffer.from([0]));
 const service = device.getService(Buffer.from([1]), 2000);
 
-device.state.isOnline.observe((online) => {
+const observation = device.isOnline.observe((online) => {
   if (!online) return;
+  observation.remove();
 
   const request = service.request(Buffer.from('test'));
 

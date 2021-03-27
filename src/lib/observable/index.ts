@@ -1,17 +1,17 @@
-export type ObserverCallback<T> = (value: T) => void;
-
 export type Observer = {
   remove: () => void;
 };
 
+export type ObserverCallback<T> = (value: T) => void;
+
 export class Observable<T> {
   protected _value: T;
 
-  protected readonly observers: Set<ObserverCallback<T>>;
+  protected readonly _observers: Set<ObserverCallback<T>>;
 
   constructor(initialValue: T, observer?: ObserverCallback<T>) {
     this._value = initialValue;
-    this.observers = new Set(observer ? [observer] : undefined);
+    this._observers = new Set(observer ? [observer] : undefined);
   }
 
   get value(): T {
@@ -23,15 +23,35 @@ export class Observable<T> {
 
     this._value = value;
 
-    this.observers.forEach((observer) => observer(this._value));
+    this._observers.forEach((observer) => observer(this._value));
   }
 
   observe(observer: ObserverCallback<T>): Observer {
-    this.observers.add(observer);
+    this._observers.add(observer);
 
     return {
-      remove: () => this.observers.delete(observer),
+      remove: () => this._observers.delete(observer),
     };
+  }
+
+  valueOf(): T {
+    return this.value;
+  }
+}
+
+export class ReadOnlyObservable<T> {
+  private readonly _observable: Observable<T>;
+
+  constructor(observable: Observable<T>) {
+    this._observable = observable;
+  }
+
+  get value(): T {
+    return this._observable.value;
+  }
+
+  observe(observer: ObserverCallback<T>): Observer {
+    return this._observable.observe(observer);
   }
 
   valueOf(): T {

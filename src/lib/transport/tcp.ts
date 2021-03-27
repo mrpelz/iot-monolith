@@ -1,11 +1,10 @@
-import { Transport, TransportOptions } from './index.js';
 import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
 import { BooleanState } from '../state/index.js';
-import { Input } from '../log/index.js';
+import { ReadOnlyObservable } from '../observable/index.js';
 import { Socket } from 'net';
 import { Timer } from '../utils/time.js';
+import { Transport } from './index.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../utils/oop.js';
 
 // PACKET FORMAT
 //
@@ -28,92 +27,57 @@ import { rebind } from '../utils/oop.js';
 // |                                |                      |                                  |                      |
 //
 
-type TCPTransportState = {
-  connectionTime: number;
-  currentLength: number;
-  host: string;
-  keepAlive: number;
-  lengthPreamble: number;
-  log: Input;
-  messageTimer: Timer;
-  port: number;
-  shouldBeConnected: BooleanState;
-  socket: Socket | null;
-};
-
-export type TCPTransportOptions = TransportOptions & {
-  host: TCPTransportState['host'];
-  port: TCPTransportState['port'];
-  lengthPreamble?: TCPTransportState['lengthPreamble'];
-  keepAlive?: TCPTransportState['keepAlive'];
-};
-
 export class TCPTransport extends Transport {
-  tcpState: TCPTransportState;
+  private readonly _host: string;
+  private readonly _keepAlive: number;
+  private readonly _lengthPreamble: number;
+  private readonly _messageTimer: Timer;
+  private readonly _port: number;
+  private readonly _shouldBeConnected = new BooleanState(false);
+  private readonly _tcpLog = logger.getInput({ head: 'TCPTransport' });
 
-  constructor(options: TCPTransportOptions) {
-    const { host, port, lengthPreamble = 1, keepAlive = 2000 } = options;
+  private _connectionTime: number;
+  private _currentLength: number;
+  private _socket: Socket | null = null;
 
+  readonly shouldBeConnected: ReadOnlyObservable<boolean>;
+
+  constructor(
+    host: string,
+    port: number,
+    lengthPreamble = 1,
+    keepAlive = 2000
+  ) {
     if (!lengthPreamble) {
       throw new Error('insufficient options provided');
     }
 
-    super(options);
+    super();
 
-    rebind(
-      this,
-      'addDevice',
-      'connect',
-      'disconnect',
-      'reconnect',
-      'removeDevice',
-      'writeToNetwork',
-      '_connect',
-      '_handleReadable',
-      '_onConnection',
-      '_onDisconnection'
-    );
+    this._host = host;
+    this._keepAlive = keepAlive;
+    this._lengthPreamble = lengthPreamble;
+    this._messageTimer = new Timer(keepAlive * 2);
+    this._port = port;
 
-    this.tcpState = {
-      connectionTime: 0,
-      currentLength: 0,
-      shouldBeConnected: new BooleanState(false),
+    this.shouldBeConnected = new ReadOnlyObservable(this._shouldBeConnected);
 
-      /* eslint-disable-next-line sort-keys */
-      host,
-      keepAlive,
-      lengthPreamble,
-      log: logger.getInput({
-        head: 'TCPTransport',
-      }),
-      port,
-      socket: null,
-
-      /* eslint-disable-next-line sort-keys */
-      messageTimer: new Timer(keepAlive * 2),
-    };
-
-    this.tcpState.shouldBeConnected.observe(() => this._connect());
+    this._shouldBeConnected.observe(() => this._connect());
 
     setInterval(this._connect, Math.round(keepAlive / 2));
-
-    this.tcpState.messageTimer.on('hit', this._onDisconnection);
+    this._messageTimer.on('hit', this._onDisconnection);
   }
 
   /**
    * handle (dis)connection of socket
    */
   _connect(): void {
-    const { log, shouldBeConnected } = this.tcpState;
+    this._tcpLog.debug(() => 'connection/disconnection handling');
 
-    const { isConnected } = this.state;
-
-    log.debug(() => 'connection/disconnection handling');
-
-    if (shouldBeConnected && !isConnected) {
+    if (this._shouldBeConnected.value && !this.isConnected.value) {
       this._nukeSocket();
       this._setUpSocket();
-    } else if (!shouldBeConnected && isConnected) {
+    } else if (!this._shouldBeConnected.value && this.isConnected.value) {
       this._nukeSocket();
     }
   }
@@ -132,34 +96,29 @@ export class TCPTransport extends Transport {
    * destroy old socket and remove listeners
    */
   _nukeSocket(): void {
-    const { socket } = this.tcpState;
-    if (!socket) return;
+    if (!this._socket) return;
 
-    socket.removeListener('readable', this._handleReadable);
-    socket.removeListener('connect', this._onConnection);
-    socket.removeListener('end', this._onDisconnection);
-    socket.removeListener('timeout', this._onDisconnection);
-    socket.removeListener('error', this._onDisconnection);
+    this._socket.removeListener('readable', this._handleReadable);
+    this._socket.removeListener('connect', this._onConnection);
+    this._socket.removeListener('end', this._onDisconnection);
+    this._socket.removeListener('timeout', this._onDisconnection);
+    this._socket.removeListener('error', this._onDisconnection);
 
-    socket.end();
-    socket.destroy();
+    this._socket.end();
+    this._socket.destroy();
 
-    this.tcpState.socket = null;
+    this._socket = null;
   }
 
   /**
    * handle socket connection
    */
   _onConnection(): void {
-    const { log } = this.tcpState;
+    if (this.isConnected.value) return;
 
-    const { isConnected } = this.state;
+    this._connectionTime = Date.now();
 
-    if (isConnected) return;
-
-    this.tcpState.connectionTime = Date.now();
-
-    log.info(() => 'is connected');
+    this._tcpLog.info(() => 'is connected');
 
     this._setConnected(true);
   }
@@ -168,19 +127,15 @@ export class TCPTransport extends Transport {
    * handle socket disconnection
    */
   _onDisconnection(): void {
-    const { log, messageTimer } = this.tcpState;
+    if (!this.isConnected.value) return;
 
-    const { isConnected } = this.state;
-
-    if (!isConnected) return;
-
-    messageTimer.stop();
+    this._messageTimer.stop();
 
     this._nukeSocket();
 
-    this.tcpState.currentLength = 0;
+    this._currentLength = 0;
 
-    log.info(() => 'is disconnected');
+    this._tcpLog.info(() => 'is disconnected');
 
     this._setConnected(false);
   }
@@ -189,45 +144,37 @@ export class TCPTransport extends Transport {
    * read the right amount of bytes from socket
    */
   _read(): boolean {
-    const {
-      currentLength,
-      lengthPreamble,
-      log,
-      messageTimer,
-      socket,
-    } = this.tcpState;
+    if (!this._socket) return false;
 
-    if (!socket) return false;
-
-    if (currentLength) {
-      const payload = socket.read(currentLength);
+    if (this._currentLength) {
+      const payload = this._socket.read(this._currentLength);
       if (!payload) return false;
 
-      this.tcpState.currentLength = 0;
+      this._currentLength = 0;
 
-      messageTimer.stop();
+      this._messageTimer.stop();
 
-      log.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
+      this._tcpLog.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
 
       this._ingestIntoDeviceInstances(null, payload);
 
       return true;
     }
 
-    const length = socket.read(lengthPreamble);
+    const length = this._socket.read(this._lengthPreamble);
     if (!length) return false;
 
-    this.tcpState.currentLength = readNumber(length, lengthPreamble);
+    this._currentLength = readNumber(length, this._lengthPreamble);
 
-    messageTimer.start();
+    this._messageTimer.start();
 
-    if (this.tcpState.currentLength > 5) {
-      log.error(
-        () => `unusual large message: ${this.tcpState.currentLength} bytes`
+    if (this._currentLength > 5) {
+      this._tcpLog.error(
+        () => `unusual large message: ${this._currentLength} bytes`
       );
     }
 
-    log.debug(() => `receive ${this.tcpState.currentLength} byte payload`);
+    this._tcpLog.debug(() => `receive ${this._currentLength} byte payload`);
 
     return true;
   }
@@ -236,16 +183,17 @@ export class TCPTransport extends Transport {
    * create new socket and set up listeners
    */
   _setUpSocket(): void {
-    const { host, keepAlive, port } = this.tcpState;
-
     const socket = new Socket();
-    socket.connect({ host, port });
+    socket.connect({
+      host: this._host,
+      port: this._port,
+    });
 
     socket.setNoDelay(true);
 
-    if (keepAlive) {
-      socket.setKeepAlive(true, keepAlive);
-      socket.setTimeout(keepAlive * 2);
+    if (this._keepAlive) {
+      socket.setKeepAlive(true, this._keepAlive);
+      socket.setTimeout(this._keepAlive * 2);
     }
 
     socket.on('readable', this._handleReadable);
@@ -254,25 +202,25 @@ export class TCPTransport extends Transport {
     socket.on('timeout', this._onDisconnection);
     socket.on('error', this._onDisconnection);
 
-    this.tcpState.socket = socket;
+    this._socket = socket;
   }
 
   /**
    * connect TCPTransport instance
    */
   connect(): void {
-    this.tcpState.shouldBeConnected.value = true;
+    this._shouldBeConnected.value = true;
 
-    this.tcpState.log.info(() => 'set connect');
+    this._tcpLog.info(() => 'set connect');
   }
 
   /**
    * disconnect TCPTransport instance
    */
   disconnect(): void {
-    this.tcpState.shouldBeConnected.value = false;
+    this._shouldBeConnected.value = false;
 
-    this.tcpState.log.info(() => 'set disconnect');
+    this._tcpLog.info(() => 'set disconnect');
   }
 
   /**
@@ -286,24 +234,23 @@ export class TCPTransport extends Transport {
    * write from Transport instance to network
    */
   writeToNetwork(_: unknown, payload: Buffer): void {
-    const { lengthPreamble, socket, log } = this.tcpState;
-
-    const { isConnected } = this.state;
-
-    if (!socket) {
+    if (!this._socket) {
       throw new Error('no socket!');
     }
 
-    if (!isConnected) {
+    if (!this.isConnected.value) {
       throw new Error('socket is not connected!');
     }
 
-    log.debug(() => `send ${payload.length} byte payload`);
+    this._tcpLog.debug(() => `send ${payload.length} byte payload`);
 
-    log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
+    this._tcpLog.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
-    socket.write(
-      Buffer.concat([writeNumber(payload.length, lengthPreamble), payload])
+    this._socket.write(
+      Buffer.concat([
+        writeNumber(payload.length, this._lengthPreamble),
+        payload,
+      ])
     );
   }
 }

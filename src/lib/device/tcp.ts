@@ -1,14 +1,11 @@
-import { TCPTransport, TCPTransportOptions } from '../transport/tcp.js';
 import { Device } from './index.js';
+import { TCPTransport } from '../transport/tcp.js';
 
 export class TCPDevice extends Device {
-  constructor(options: TCPTransportOptions) {
-    const transport = new TCPTransport(options);
+  constructor(host: string, port: number) {
+    const transport = new TCPTransport(host, port);
 
-    super({
-      keepAlive: options.keepAlive,
-      transport,
-    });
+    super(transport);
 
     transport.connect();
   }

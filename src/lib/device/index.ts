@@ -1,11 +1,8 @@
 import { AnyTransport, TransportDevice } from '../transport/index.js';
-import {
-  BooleanGroupStrategy,
-  BooleanStateGroup,
-} from '../state-group/index.js';
-import { BooleanState, NullState } from '../state/index.js';
+import { NullState, ReadOnlyNullState } from '../state/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
 import { Input } from '../log/index.js';
+import { ReadOnlyObservable } from '../observable/index.js';
 import { Timer } from '../utils/time.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
@@ -20,128 +17,106 @@ type RequestResolver = {
   timer: Timer;
 };
 
-type DeviceState = {
-  events: DeviceEvents;
-  identifier: Buffer | null;
-  isOnline: BooleanState;
-  log: Input;
-  requests: Map<number, RequestResolver>;
-  services: DeviceServices;
-};
-
-type DeviceOptions = {
-  transport: AnyTransport;
-  identifier?: DeviceState['identifier'];
-};
-
-type PropertyState = {
-  device: Device;
-  identifier: Buffer;
-};
-
-type ServiceState = {
-  timeout: number;
-};
+type DeviceIdentifier = Buffer | null;
 
 const eventIdentifier = 0x00;
 
 class Property {
-  state: PropertyState;
-
-  constructor(identifier: Buffer, device: Device) {
-    const {
-      state: { services },
-    } = device;
-
-    services.forEach((previousDeviceService) => {
-      const {
-        state: { identifier: previousIdentifier },
-      } = previousDeviceService;
-
-      if (previousIdentifier.equals(identifier)) {
+  static isValidPropertyIdentifier(
+    properties: DeviceServices | DeviceEvents,
+    identifier: Buffer
+  ) {
+    properties.forEach((previousProperty: Event | Service) => {
+      if (previousProperty.identifier.equals(identifier)) {
         throw new Error(
-          `cannot use the same identifier for multiple services (${identifier})`
+          `cannot use the same identifier for multiple properties (${identifier})`
         );
       }
     });
+  }
 
-    this.state = {
-      device,
-      identifier,
-    };
+  protected readonly _device: Device;
+
+  readonly identifier: Buffer;
+
+  constructor(identifier: Buffer, device: Device) {
+    this.identifier = identifier;
+    this._device = device;
   }
 
   /**
    * get device online state
    */
   get isOnline() {
-    return this.state.device.isOnline;
+    return this._device.isOnline;
   }
 }
 
 class Event extends Property {
-  observable: NullState<Buffer>;
+  private readonly _observable = new NullState<Buffer>();
+  readonly observable: ReadOnlyNullState<Buffer>;
+
+  constructor(identifier: Buffer, device: Device) {
+    super(identifier, device);
+
+    this.observable = new ReadOnlyNullState(this._observable);
+  }
 
   /**
    * ingest event from Device instance
    */
   ingest(payload: Buffer) {
-    const serviceIdentifier = payload.subarray(0, this.state.identifier.length);
-    if (!serviceIdentifier.equals(this.state.identifier)) return;
+    const serviceIdentifier = payload.subarray(0, this.identifier.length);
+    if (!serviceIdentifier.equals(this.identifier)) return;
 
-    const eventData = payload.subarray(this.state.identifier.length);
+    const eventData = payload.subarray(this.identifier.length);
 
-    this.observable.trigger(eventData);
+    this._observable.trigger(eventData);
   }
 
   /**
    * remove Event from Device
    */
   remove(): void {
-    this.state.device.removeEvent(this);
+    this._device.remove(this);
   }
 }
 
 class Service extends Property {
-  serviceState: ServiceState;
+  private readonly _timeout: number;
 
   constructor(identifier: Buffer, timeout: number, device: Device) {
     super(identifier, device);
 
-    this.serviceState = {
-      timeout,
-    };
+    this._timeout = timeout;
   }
 
   /**
    * issue request on Device instance
    */
   request(payload: Buffer | null = null): Request {
-    return this.state.device.request(
-      this.state.identifier,
-      payload,
-      this.serviceState.timeout
-    );
+    return this._device.request(this.identifier, payload, this._timeout);
   }
 
   /**
    * remove Event from Device
    */
   remove(): void {
-    this.state.device.removeService(this);
+    this._device.remove(this);
   }
 }
 
 export class Device {
-  state: DeviceState;
+  private readonly _events = new Set<Event>();
+  private readonly _log: Input;
+  private readonly _requests = new Map<number, RequestResolver>();
+  private readonly _services = new Set<Service>();
+  private readonly _transport: TransportDevice;
 
-  transport: TransportDevice;
+  readonly identifier: DeviceIdentifier;
+  readonly isOnline: ReadOnlyObservable<boolean>;
 
-  isOnline: BooleanStateGroup;
-
-  constructor(options: DeviceOptions) {
-    const { transport, identifier = null } = options;
-
+  constructor(transport: AnyTransport, identifier: DeviceIdentifier = null) {
     rebind(
       this,
       'getService',
@@ -150,52 +125,35 @@ export class Device {
       'request'
     );
 
-    this.state = {
-      // for now, always online because device-level keep-alive messages are not yet implemented
-      events: new Set(),
-      isOnline: new BooleanState(true),
-      requests: new Map(),
-      services: new Set(),
+    this.identifier = identifier;
+    this._log = logger.getInput({
+      head: `${identifier}`,
+    });
+    this._transport = transport.addDevice(this);
 
-      /* eslint-disable-next-line sort-keys */
-      identifier,
-      log: logger.getInput({
-        head: '',
-      }),
-    };
-
-    this.transport = transport.addDevice(this);
-    this.isOnline = new BooleanStateGroup(
-      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-      transport.state.isConnected,
-      this.state.isOnline
-    );
+    this.isOnline = transport.isConnected;
   }
 
-  get _requestId(): number {
-    return [1, ...this.state.requests.keys()].reduce((last, id) => {
+  private get _requestId(): number {
+    return [1, ...this._requests.keys()].reduce((last, id) => {
       if (id > last) return id;
       return last;
     }, 0);
   }
 
-  _handleEvent(payload: Buffer): void {
-    const { events } = this.state;
-
-    events.forEach((event) => {
+  private _handleEvent(payload: Buffer): void {
+    this._events.forEach((event) => {
       event.ingest(payload);
     });
   }
 
-  _handleRequest(identifier: number, payload: Buffer): void {
-    const { requests } = this.state;
-
-    const request = requests.get(identifier);
+  private _handleRequest(identifier: number, payload: Buffer): void {
+    const request = this._requests.get(identifier);
     if (!request) return;
 
     const { resolver, timer } = request;
 
-    requests.delete(identifier);
+    this._requests.delete(identifier);
 
     timer.stop(true);
     resolver(payload);
@@ -209,7 +167,7 @@ export class Device {
     serviceIdentifier: Buffer,
     payload: Buffer | null = null
   ): void {
-    this.transport.writeToTransport(
+    this._transport._writeToTransport(
       Buffer.concat([
         requestIdentifier,
         serviceIdentifier,
@@ -222,10 +180,10 @@ export class Device {
    * add an instance of Event to this device
    */
   getEvent(identifier: Buffer): Event {
-    const { events } = this.state;
+    Event.isValidPropertyIdentifier(this._events, identifier);
 
     const event = new Event(identifier, this);
-    events.add(event);
+    this._events.add(event);
 
     return event;
   }
@@ -234,10 +192,10 @@ export class Device {
    * add an instance of Service to this device
    */
   getService(identifier: Buffer, timeout: number): Service {
-    const { services } = this.state;
+    Service.isValidPropertyIdentifier(this._services, identifier);
 
     const service = new Service(identifier, timeout, this);
-    services.add(service);
+    this._services.add(service);
 
     return service;
   }
@@ -260,17 +218,14 @@ export class Device {
   }
 
   /**
-   * remove an instance of Service from this device
+   * remove an instance of Property from this device
    */
-  removeEvent(event: Event): void {
-    this.state.events.delete(event);
-  }
-
-  /**
-   * remove an instance of Service from this device
-   */
-  removeService(service: Service): void {
-    this.state.services.delete(service);
+  remove(property: Property): void {
+    if (property instanceof Service) {
+      this._services.delete(property);
+    } else if (property instanceof Event) {
+      this._events.delete(property);
+    }
   }
 
   /**
@@ -281,7 +236,6 @@ export class Device {
     payload: Buffer | null = null,
     timeout: number
   ): Request {
-    const { requests } = this.state;
     const id = this._requestId;
 
     return new Promise((resolver, reject) => {
@@ -294,7 +248,7 @@ export class Device {
 
       timer.start();
 
-      requests.set(id, {
+      this._requests.set(id, {
         resolver,
         timer,
       });

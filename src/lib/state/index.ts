@@ -9,7 +9,7 @@ export class BooleanState extends Observable<boolean> {
 }
 
 export class EnumState<T> extends Observable<T> {
-  private _enum: T[];
+  private readonly _enum: T[];
 
   constructor(_enum: T[], initialValue: T) {
     if (!_enum.includes(initialValue)) {
@@ -43,7 +43,7 @@ export class EnumState<T> extends Observable<T> {
 
     this._value = value;
 
-    this.observers.forEach((observer) => observer(this._value));
+    this._observers.forEach((observer) => observer(this._value));
   }
 
   getIndex(): number | null {
@@ -80,21 +80,33 @@ export class EnumState<T> extends Observable<T> {
 }
 
 export class NullState<T = null> {
-  protected readonly observers: Set<ObserverCallback<T>>;
+  protected readonly _observers: Set<ObserverCallback<T>>;
 
   constructor(observer?: ObserverCallback<T>) {
-    this.observers = new Set(observer ? [observer] : undefined);
+    this._observers = new Set(observer ? [observer] : undefined);
   }
 
   observe(observer: ObserverCallback<T>): Observer {
-    this.observers.add(observer);
+    this._observers.add(observer);
 
     return {
-      remove: () => this.observers.delete(observer),
+      remove: () => this._observers.delete(observer),
     };
   }
 
   trigger(data: T): void {
-    this.observers.forEach((observer) => observer(data));
+    this._observers.forEach((observer) => observer(data));
+  }
+}
+
+export class ReadOnlyNullState<T> {
+  private readonly _nullState: NullState<T>;
+
+  constructor(nullState: NullState<T>) {
+    this._nullState = nullState;
+  }
+
+  observe(observer: ObserverCallback<T>): Observer {
+    return this._nullState.observe(observer);
   }
 }
