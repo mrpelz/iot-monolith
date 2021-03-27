@@ -151,7 +151,7 @@ export class ModifiableDate {
       }
     })();
 
-    if (Math.round(value / mod) * mod < value) {
+    if (Math.round(value / mod) * mod <= value) {
       this.floor(unit, modulo);
 
       return this;
