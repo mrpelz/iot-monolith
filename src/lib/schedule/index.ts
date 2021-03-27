@@ -9,32 +9,33 @@ type NextExecutionProvider = (previousExecution: Date | null) => Date | null;
 const MAX_TIMEOUT = 2147483647;
 
 export class Schedule {
-  private readonly nextExecutionProvider: NextExecutionProvider;
-  private readonly once: boolean;
-  private previousExecution: Date | null;
-  private readonly tasks = new Set<Task>();
-  private timeout: NodeJS.Timeout | null = null;
+  private readonly _nextExecutionProvider: NextExecutionProvider;
+  private readonly _once: boolean;
+  private readonly _tasks = new Set<Task>();
+
+  private _previousExecution: Date | null;
+  private _timeout: NodeJS.Timeout | null = null;
 
   constructor(nextExecutionProvider: NextExecutionProvider, once = false) {
-    this.nextExecutionProvider = nextExecutionProvider;
-    this.once = once;
+    this._nextExecutionProvider = nextExecutionProvider;
+    this._once = once;
 
-    this.scheduleNextExecution();
+    this._scheduleNextExecution();
   }
 
-  private run() {
-    this.tasks.forEach((task) => task(this.previousExecution));
+  private _run() {
+    this._tasks.forEach((task) => task(this._previousExecution));
   }
 
-  private scheduleNextExecution(carriedOverExecution?: Date) {
+  private _scheduleNextExecution(carriedOverExecution?: Date) {
     const nextExecution =
       carriedOverExecution ||
-      this.nextExecutionProvider(this.previousExecution);
+      this._nextExecutionProvider(this._previousExecution);
 
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
-      this.previousExecution = null;
+      this._previousExecution = null;
       this.stop();
 
       return;
@@ -43,38 +44,42 @@ export class Schedule {
     const timeUntilNextExecution = nextExecution.getTime() - now;
 
     if (timeUntilNextExecution > MAX_TIMEOUT) {
-      this.timeout = setTimeout(
-        () => this.scheduleNextExecution(nextExecution),
+      this._timeout = setTimeout(
+        () => this._scheduleNextExecution(nextExecution),
         MAX_TIMEOUT
       );
 
       return;
     }
 
-    this.timeout = setTimeout(() => {
-      this.previousExecution = nextExecution;
+    this._timeout = setTimeout(() => {
+      this._previousExecution = nextExecution;
       this.stop();
 
-      this.run();
+      this._run();
 
-      if (this.once) return;
+      if (this._once) return;
 
-      this.scheduleNextExecution();
+      this._scheduleNextExecution();
     }, timeUntilNextExecution);
   }
 
   addTask(task: Task): TaskRemove {
-    this.tasks.add(task);
+    this._tasks.add(task);
 
     return {
-      remove: () => this.tasks.delete(task),
+      remove: () => this._tasks.delete(task),
     };
   }
 
+  start(): void {
+    this._scheduleNextExecution();
+  }
+
   stop(): void {
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = null;
     }
   }
 }

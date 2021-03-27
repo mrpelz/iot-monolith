@@ -8,7 +8,7 @@ import { logger } from '../../app/logging.js';
 export type AnyTransport = Transport | TCPTransport | UDPTransport;
 
 export class TransportDevice {
-  static isValidDeviceForTransport(
+  static _isValidDeviceForTransport(
     devices: Set<TransportDevice>,
     device: Device
   ): void {
@@ -127,7 +127,7 @@ export class Transport {
       throw new Error('device identifier has wrong length for transport');
     }
 
-    TransportDevice.isValidDeviceForTransport(this._devices, device);
+    TransportDevice._isValidDeviceForTransport(this._devices, device);
 
     const transportDevice = new TransportDevice(this, device);
     this._devices.add(transportDevice);

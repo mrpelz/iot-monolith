@@ -71,7 +71,7 @@ export class TCPTransport extends Transport {
   /**
    * handle (dis)connection of socket
    */
-  _connect(): void {
+  private _connect() {
     this._tcpLog.debug(() => 'connection/disconnection handling');
 
     if (this._shouldBeConnected.value && !this.isConnected.value) {

@@ -81,6 +81,20 @@ export class UDPTransport extends Transport {
   }
 
   /**
+   * handle (dis)connection of socket
+   */
+  private _connect() {
+    this._udpLog.debug(() => 'connection/disconnection handling');
+
+    if (this._shouldBeConnected.value && !this.isConnected.value) {
+      this._nukeSocket();
+      this._setUpSocket();
+    } else if (!this._shouldBeConnected.value && this.isConnected.value) {
+      this._nukeSocket();
+    }
+  }
+
+  /**
    * manage sequence number to prepend to outgoing messages
    */
   _getOutgoingSequence(): number {
@@ -107,20 +121,6 @@ export class UDPTransport extends Transport {
     this._messageIncomingSequence = sequence;
 
     return true;
-  }
-
-  /**
-   * handle (dis)connection of socket
-   */
-  _connect(): void {
-    this._udpLog.debug(() => 'connection/disconnection handling');
-
-    if (this._shouldBeConnected.value && !this.isConnected.value) {
-      this._nukeSocket();
-      this._setUpSocket();
-    } else if (!this._shouldBeConnected.value && this.isConnected.value) {
-      this._nukeSocket();
-    }
   }
 
   /**
