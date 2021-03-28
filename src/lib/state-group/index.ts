@@ -28,10 +28,6 @@ export class StateGroup<T> {
       },
     };
   }
-
-  valueOf(): T {
-    return this.value;
-  }
 }
 
 export enum BooleanGroupStrategy {

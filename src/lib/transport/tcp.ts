@@ -5,6 +5,7 @@ import { Socket } from 'net';
 import { Timer } from '../utils/time.js';
 import { Transport } from './index.js';
 import { logger } from '../../app/logging.js';
+import { rebind } from '../utils/oop.js';
 
 // PACKET FORMAT
 //
@@ -53,6 +54,14 @@ export class TCPTransport extends Transport {
     }
 
     super();
+
+    rebind(
+      this,
+      '_connect',
+      '_handleReadable',
+      '_onConnection',
+      '_onDisconnection'
+    );
 
     this._host = host;
     this._keepAlive = keepAlive;
@@ -114,20 +123,20 @@ export class TCPTransport extends Transport {
    * handle socket connection
    */
   _onConnection(): void {
-    if (this.isConnected.value) return;
+    if (this._isConnected.value) return;
 
     this._connectionTime = Date.now();
 
     this._tcpLog.info(() => 'is connected');
 
-    this._setConnected(true);
+    this._isConnected.value = true;
   }
 
   /**
    * handle socket disconnection
    */
   _onDisconnection(): void {
-    if (!this.isConnected.value) return;
+    if (!this._isConnected.value) return;
 
     this._messageTimer.stop();
 
@@ -137,7 +146,7 @@ export class TCPTransport extends Transport {
 
     this._tcpLog.info(() => 'is disconnected');
 
-    this._setConnected(false);
+    this._isConnected.value = false;
   }
 
   /**

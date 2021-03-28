@@ -127,7 +127,7 @@ export class Device {
 
     this.identifier = identifier;
     this._log = logger.getInput({
-      head: `${identifier}`,
+      head: `Device ${identifier}`,
     });
     this._transport = transport.addDevice(this);
 
@@ -135,10 +135,7 @@ export class Device {
   }
 
   private get _requestId(): number {
-    return [1, ...this._requests.keys()].reduce((last, id) => {
-      if (id > last) return id;
-      return last;
-    }, 0);
+    return (this._requests.size + 1) % 0xff || 1;
   }
 
   private _handleEvent(payload: Buffer): void {

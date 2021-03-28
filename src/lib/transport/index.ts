@@ -75,9 +75,10 @@ export class TransportDevice {
 
 export class Transport {
   private readonly _devices = new Set<TransportDevice>();
-  private readonly _isConnected = new BooleanState(false);
   private readonly _log = logger.getInput({ head: 'Transport' });
   private readonly _singleDevice: boolean;
+
+  protected readonly _isConnected = new BooleanState(false);
 
   readonly identifierLength: number;
   readonly isConnected: ReadOnlyObservable<boolean>;
@@ -103,13 +104,6 @@ export class Transport {
     this._devices.forEach((device) => {
       device._ingestIntoDeviceInstance(identifier, payload);
     });
-  }
-
-  /**
-   * set the online status of all devices on this transport
-   */
-  _setConnected(online: boolean): void {
-    this._isConnected.value = online;
   }
 
   /**

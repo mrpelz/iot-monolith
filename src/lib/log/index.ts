@@ -83,9 +83,9 @@ export class DevOutput extends Output {
   private static callback(log: LogWithLevel) {
     // eslint-disable-next-line no-console
     console.log(
-      `[${new Date().toLocaleTimeString()}] ${logLevelNames[log.level]}:\t${
-        log.head ? `${log.head}:` : ''
-      }\t${log.body}`
+      `[${new Date().toLocaleTimeString('en', { hour12: false })}] ${
+        logLevelNames[log.level]
+      }:\t${log.head ? `${log.head}:` : ''}\t${log.body}`
     );
 
     return Promise.resolve();

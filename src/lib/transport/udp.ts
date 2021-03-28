@@ -4,6 +4,7 @@ import { ReadOnlyObservable } from '../observable/index.js';
 import { Transport } from './index.js';
 import { humanPayload } from '../utils/data.js';
 import { logger } from '../../app/logging.js';
+import { rebind } from '../utils/oop.js';
 
 // PACKET FORMAT
 //
@@ -67,6 +68,14 @@ export class UDPTransport extends Transport {
     sequenceHandling = false
   ) {
     super();
+
+    rebind(
+      this,
+      '_connect',
+      '_handleMessage',
+      '_onConnection',
+      '_onDisconnection'
+    );
 
     this._host = host;
     this._keepAlive = keepAlive;
@@ -165,24 +174,24 @@ export class UDPTransport extends Transport {
    * handle socket connection
    */
   _onConnection(): void {
-    if (this.isConnected.value) return;
+    if (this._isConnected.value) return;
 
     this._udpLog.info(() => 'is connected');
 
-    this._setConnected(true);
+    this._isConnected.value = true;
   }
 
   /**
    * handle socket disconnection
    */
   _onDisconnection(): void {
-    if (!this.isConnected.value) return;
+    if (!this._isConnected.value) return;
 
     this._nukeSocket();
 
     this._udpLog.info(() => 'is disconnected');
 
-    this._setConnected(false);
+    this._isConnected.value = false;
   }
 
   /**

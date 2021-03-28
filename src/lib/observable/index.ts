@@ -33,10 +33,6 @@ export class Observable<T> {
       remove: () => this._observers.delete(observer),
     };
   }
-
-  valueOf(): T {
-    return this.value;
-  }
 }
 
 export class ReadOnlyObservable<T> {
@@ -52,9 +48,5 @@ export class ReadOnlyObservable<T> {
 
   observe(observer: ObserverCallback<T>): Observer {
     return this._observable.observe(observer);
-  }
-
-  valueOf(): T {
-    return this.value;
   }
 }
