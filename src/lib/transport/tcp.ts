@@ -2,7 +2,7 @@ import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
 import { BooleanState } from '../state/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 import { Socket } from 'net';
-import { Timer } from '../utils/time.js';
+import { Timer } from '../timer/index.js';
 import { Transport } from './index.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
@@ -74,7 +74,7 @@ export class TCPTransport extends Transport {
     this._shouldBeConnected.observe(() => this._connect());
 
     setInterval(this._connect, Math.round(keepAlive / 2));
-    this._messageTimer.on('hit', this._onDisconnection);
+    this._messageTimer.observe(this._onDisconnection);
   }
 
   /**

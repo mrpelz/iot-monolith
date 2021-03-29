@@ -9,7 +9,7 @@ type Bme280Response = {
 
 class Bme280 extends Service<Bme280Response> {
   constructor() {
-    super(Buffer.from([5]), 3000);
+    super(Buffer.from([5]));
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -29,37 +29,37 @@ const device = new UDPDevice('10.97.0.198', 8266);
 const event = new Event<Buffer>(Buffer.from([0]));
 device.addEvent(event);
 
-const service1 = new Service(Buffer.from([1]), 3000); // hello
+const service1 = new Service(Buffer.from([1])); // hello
 device.addService(service1);
 
-const service2 = new Service(Buffer.from([2]), 3000); // systemInfo
+const service2 = new Service(Buffer.from([2])); // systemInfo
 device.addService(service2);
 
-const service3 = new Service(Buffer.from([3]), 33000); // async
+const service3 = new Service(Buffer.from([3]), 32000); // async
 device.addService(service3);
 
-const service4 = new Service(Buffer.from([4]), 3000); // mcp9808
+const service4 = new Service(Buffer.from([4])); // mcp9808
 device.addService(service4);
 
 const service5 = new Bme280(); // bme280
 device.addService(service5);
 
-const service6 = new Service(Buffer.from([6]), 3000); // tsl2561
+const service6 = new Service(Buffer.from([6])); // tsl2561
 device.addService(service6);
 
-const service7 = new Service(Buffer.from([7]), 3000); // sgp30
+const service7 = new Service(Buffer.from([7])); // sgp30
 device.addService(service7);
 
-const service8 = new Service(Buffer.from([8]), 3000); // ccs811
+const service8 = new Service(Buffer.from([8])); // ccs811
 device.addService(service8);
 
-const service9 = new Service(Buffer.from([9]), 3000); // veml6070
+const service9 = new Service(Buffer.from([9])); // veml6070
 device.addService(service9);
 
-const service10 = new Service(Buffer.from([10]), 33000); // sds011
+const service10 = new Service(Buffer.from([10]), 32000); // sds011
 device.addService(service10);
 
-const service11 = new Service(Buffer.from([11]), 3000); // mhz19
+const service11 = new Service(Buffer.from([11])); // mhz19
 device.addService(service11);
 
 device.isOnline.observe((online, observer) => {

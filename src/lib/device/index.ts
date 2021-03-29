@@ -11,7 +11,7 @@ import {
 import { Transport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
 import { Input } from '../log/index.js';
-import { Timer } from '../utils/time.js';
+import { Timer } from '../timer/index.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
 
@@ -26,6 +26,23 @@ type RequestResolver = {
 };
 
 type DeviceIdentifier = Buffer | null;
+
+const KEEPALIVE_IDENTIFIER = 0xff;
+const KEEPALIVE_COMMAND = 0xff;
+const KEEPALIVE_PAYLOAD = Buffer.from([
+  KEEPALIVE_IDENTIFIER,
+  KEEPALIVE_COMMAND,
+]);
+
+const EVENT_PEER_COMMAND = 0x00;
+const EVENT_PEER_PRIORITY = 0x01;
+const EVENT_PEER_SET = 0x01;
+const EVENT_PEER_PAYLOAD = Buffer.from([
+  KEEPALIVE_IDENTIFIER,
+  EVENT_PEER_COMMAND,
+  EVENT_PEER_PRIORITY,
+  EVENT_PEER_SET,
+]);
 
 const EVENT_IDENTIFIER = 0x00;
 
@@ -105,7 +122,7 @@ export class Service<T = unknown, S = unknown | void> extends Property {
     return (input as unknown) as T;
   }
 
-  constructor(identifier: Buffer, timeout: number) {
+  constructor(identifier: Buffer, timeout = 5000) {
     super(identifier);
 
     this._timeout = timeout;
@@ -132,6 +149,7 @@ export class Service<T = unknown, S = unknown | void> extends Property {
 export class Device {
   private readonly _events = new Set<Event>();
   private readonly _isOnline = new BooleanState(false);
+  private readonly _keepAliveTimer: Timer;
   private readonly _log: Input;
   private readonly _requests = new Map<number, RequestResolver>();
   private readonly _services = new Set<Service>();
@@ -140,20 +158,20 @@ export class Device {
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
 
-  constructor(transport: Transport, identifier: DeviceIdentifier = null) {
-    rebind(
-      this,
-      'getService',
-      'matchDataToRequest',
-      'removeService',
-      'request'
-    );
+  constructor(
+    transport: Transport,
+    identifier: DeviceIdentifier = null,
+    keepAlive = 2000
+  ) {
+    rebind(this, '_sendKeepAlive');
 
-    this.identifier = identifier;
+    this._keepAliveTimer = new Timer(keepAlive);
     this._log = logger.getInput({
       head: `Device ${identifier}`,
     });
     this._transport = transport.addDevice(this);
+
+    this.identifier = identifier;
 
     this.isOnline = new ReadOnlyObservable(
       new BooleanStateGroup(
@@ -162,6 +180,11 @@ export class Device {
         this._isOnline
       )
     );
+
+    setInterval(this._sendKeepAlive, keepAlive);
+    this._keepAliveTimer.observe(() => {
+      this._isOnline.value = false;
+    });
   }
 
   private get _requestId(): number {
@@ -182,8 +205,19 @@ export class Device {
 
     this._requests.delete(identifier);
 
-    timer.stop(true);
+    timer.stop();
     resolver(payload);
+  }
+
+  private _receiveKeepAlive() {
+    this._keepAliveTimer.stop();
+    this._isOnline.value = true;
+  }
+
+  private _sendKeepAlive() {
+    this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
+    this._transport._writeToTransport(EVENT_PEER_PAYLOAD);
+    this._keepAliveTimer.start();
   }
 
   /**
@@ -232,6 +266,11 @@ export class Device {
     const requestIdentifier = readNumber(message.subarray(0, 1));
     const payload = message.subarray(1);
 
+    if (requestIdentifier === KEEPALIVE_IDENTIFIER && !payload.length) {
+      this._receiveKeepAlive();
+      return;
+    }
+
     if (requestIdentifier === EVENT_IDENTIFIER) {
       this._handleEvent(payload);
       return;
@@ -265,7 +304,8 @@ export class Device {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
       const timer = new Timer(timeout);
 
-      timer.on('hit', () => {
+      timer.observe((_, observer) => {
+        observer.remove();
         reject(new Error('request timed out'));
       });
 
