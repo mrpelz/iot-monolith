@@ -1,32 +1,64 @@
-import { Observable, Observer, ObserverCallback } from '../observable/index.js';
+import {
+  AnyObservable,
+  MetaObserverCallback,
+  Observer,
+  ObserverCallback,
+  ReadOnlyObservable,
+} from '../observable/index.js';
 
 export class StateGroup<T> {
+  private _locked = false;
+
   protected _value: T;
 
-  protected readonly _children: Observable<T>[];
+  protected readonly _children: AnyObservable<T>[];
+  protected readonly _observers = new Set<MetaObserverCallback<T>>();
 
-  constructor(...children: Observable<T>[]) {
+  constructor(...children: AnyObservable<T>[]) {
     this._children = children;
+
+    children.forEach((child) =>
+      child.observe((value) => this._forwardObservers(value))
+    );
   }
 
   get value(): T {
     return this._value;
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    const observers: Observer[] = [];
+  set value(value: T) {
+    this._locked = true;
+    this._children.forEach((child) => {
+      if (child instanceof ReadOnlyObservable) return;
+      child.value = value;
+    });
 
-    for (const child of this._children) {
-      observers.push(child.observe(observer));
-    }
+    this._locked = false;
+    this._forwardObservers(value);
+  }
 
-    return {
-      remove: () => {
-        for (const _observer of observers) {
-          _observer.remove();
-        }
-      },
+  private _forwardObservers(_: T) {
+    if (this._locked) return;
+
+    const value = this.value;
+    this._observers.forEach((observer) => observer(value));
+  }
+
+  observe(observerCallback: ObserverCallback<T>): Observer {
+    // eslint-disable-next-line prefer-const
+    let observer: Observer;
+
+    const metaObserverCallback = (value: T) => {
+      observerCallback(value, observer);
     };
+
+    this._observers.add(metaObserverCallback);
+
+    observer = {
+      remove: () => this._observers.delete(metaObserverCallback),
+    };
+
+    return observer;
   }
 }
 
@@ -40,7 +72,7 @@ export class BooleanStateGroup extends StateGroup<boolean> {
 
   constructor(
     strategy: BooleanGroupStrategy,
-    ...children: Observable<boolean>[]
+    ...children: AnyObservable<boolean>[]
   ) {
     super(...children);
 

@@ -1,4 +1,9 @@
-import { Observable, Observer, ObserverCallback } from '../observable/index.js';
+import {
+  MetaObserverCallback,
+  Observable,
+  Observer,
+  ObserverCallback,
+} from '../observable/index.js';
 
 export class BooleanState extends Observable<boolean> {
   flip(): boolean {
@@ -80,18 +85,29 @@ export class EnumState<T> extends Observable<T> {
 }
 
 export class NullState<T = null> {
-  protected readonly _observers: Set<ObserverCallback<T>>;
+  protected readonly _observers: Set<MetaObserverCallback<T>>;
 
-  constructor(observer?: ObserverCallback<T>) {
-    this._observers = new Set(observer ? [observer] : undefined);
+  constructor(observerCallback?: MetaObserverCallback<T>) {
+    this._observers = observerCallback
+      ? new Set([observerCallback])
+      : new Set();
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    this._observers.add(observer);
+  observe(observerCallback: ObserverCallback<T>): Observer {
+    // eslint-disable-next-line prefer-const
+    let observer: Observer;
 
-    return {
-      remove: () => this._observers.delete(observer),
+    const metaObserverCallback = (value: T) => {
+      observerCallback(value, observer);
     };
+
+    this._observers.add(metaObserverCallback);
+
+    observer = {
+      remove: () => this._observers.delete(metaObserverCallback),
+    };
+
+    return observer;
   }
 
   trigger(data: T): void {
@@ -106,7 +122,7 @@ export class ReadOnlyNullState<T> {
     this._nullState = nullState;
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    return this._nullState.observe(observer);
+  observe(observerCallback: ObserverCallback<T>): Observer {
+    return this._nullState.observe(observerCallback);
   }
 }

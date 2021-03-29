@@ -1,4 +1,9 @@
 import {
+  BooleanGroupStrategy,
+  BooleanStateGroup,
+} from '../state-group/index.js';
+import { BooleanState, NullState } from '../state/index.js';
+import {
   Observer,
   ObserverCallback,
   ReadOnlyObservable,
@@ -6,7 +11,6 @@ import {
 import { Transport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
 import { Input } from '../log/index.js';
-import { NullState } from '../state/index.js';
 import { Timer } from '../utils/time.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
@@ -127,6 +131,7 @@ export class Service<T = unknown, S = unknown | void> extends Property {
 
 export class Device {
   private readonly _events = new Set<Event>();
+  private readonly _isOnline = new BooleanState(false);
   private readonly _log: Input;
   private readonly _requests = new Map<number, RequestResolver>();
   private readonly _services = new Set<Service>();
@@ -150,7 +155,13 @@ export class Device {
     });
     this._transport = transport.addDevice(this);
 
-    this.isOnline = transport.isConnected;
+    this.isOnline = new ReadOnlyObservable(
+      new BooleanStateGroup(
+        BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+        transport.isConnected,
+        this._isOnline
+      )
+    );
   }
 
   private get _requestId(): number {

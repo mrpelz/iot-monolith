@@ -1,17 +1,27 @@
+import { StateGroup } from '../state-group/index.js';
+
 export type Observer = {
   remove: () => void;
 };
 
-export type ObserverCallback<T> = (value: T) => void;
+export type MetaObserverCallback<T> = (value: T) => void;
+export type ObserverCallback<T> = (value: T, observer: Observer) => void;
+
+export type AnyObservable<T> =
+  | Observable<T>
+  | ReadOnlyObservable<T>
+  | StateGroup<T>;
 
 export class Observable<T> {
   protected _value: T;
 
-  protected readonly _observers: Set<ObserverCallback<T>>;
+  protected readonly _observers: Set<MetaObserverCallback<T>>;
 
-  constructor(initialValue: T, observer?: ObserverCallback<T>) {
+  constructor(initialValue: T, observerCallback?: MetaObserverCallback<T>) {
     this._value = initialValue;
-    this._observers = new Set(observer ? [observer] : undefined);
+    this._observers = observerCallback
+      ? new Set([observerCallback])
+      : new Set();
   }
 
   get value(): T {
@@ -26,19 +36,28 @@ export class Observable<T> {
     this._observers.forEach((observer) => observer(this._value));
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    this._observers.add(observer);
+  observe(observerCallback: ObserverCallback<T>): Observer {
+    // eslint-disable-next-line prefer-const
+    let observer: Observer;
 
-    return {
-      remove: () => this._observers.delete(observer),
+    const metaObserverCallback = (value: T) => {
+      observerCallback(value, observer);
     };
+
+    this._observers.add(metaObserverCallback);
+
+    observer = {
+      remove: () => this._observers.delete(metaObserverCallback),
+    };
+
+    return observer;
   }
 }
 
 export class ReadOnlyObservable<T> {
-  private readonly _observable: Observable<T>;
+  private readonly _observable: AnyObservable<T>;
 
-  constructor(observable: Observable<T>) {
+  constructor(observable: AnyObservable<T>) {
     this._observable = observable;
   }
 
@@ -46,7 +65,7 @@ export class ReadOnlyObservable<T> {
     return this._observable.value;
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    return this._observable.observe(observer);
+  observe(observerCallback: ObserverCallback<T>): Observer {
+    return this._observable.observe(observerCallback);
   }
 }

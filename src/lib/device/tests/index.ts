@@ -62,9 +62,9 @@ device.addService(service10);
 const service11 = new Service(Buffer.from([11]), 3000); // mhz19
 device.addService(service11);
 
-const observation = device.isOnline.observe((online) => {
+device.isOnline.observe((online, observer) => {
   if (!online) return;
-  observation.remove();
+  observer.remove();
 
   const onResolve = (description: string, result: unknown) => {
     // eslint-disable-next-line no-console
