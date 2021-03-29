@@ -1,30 +1,79 @@
+import { Event, Service } from '../index.js';
 import { UDPDevice } from '../udp.js';
+
+type Bme280Response = {
+  humidity: number;
+  pressure: number;
+  temperature: number;
+};
+
+class Bme280 extends Service<Bme280Response> {
+  constructor() {
+    super(Buffer.from([5]), 3000);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected decode(input: Buffer): Bme280Response | null {
+    if (input.length < 12) return null;
+
+    return {
+      humidity: input.subarray(4, 8).readFloatLE(), // 2.
+      pressure: input.subarray(8, 12).readFloatLE(), // 3.
+      temperature: input.subarray(0, 4).readFloatLE(), // 1.
+    };
+  }
+}
 
 const device = new UDPDevice('10.97.0.198', 8266);
 
-const event = device.getEvent(Buffer.from([0]));
-const service1 = device.getService(Buffer.from([1]), 3000); // hello
-const service2 = device.getService(Buffer.from([2]), 3000); // systemInfo
-const service3 = device.getService(Buffer.from([3]), 33000); // async
-const service4 = device.getService(Buffer.from([4]), 3000); // mcp9808
-const service5 = device.getService(Buffer.from([5]), 3000); // bme280
-const service6 = device.getService(Buffer.from([6]), 3000); // tsl2561
-const service7 = device.getService(Buffer.from([7]), 3000); // sgp30
-const service8 = device.getService(Buffer.from([8]), 3000); // ccs811
-const service9 = device.getService(Buffer.from([9]), 3000); // veml6070
-const service10 = device.getService(Buffer.from([10]), 33000); // sds011
-const service11 = device.getService(Buffer.from([11]), 3000); // mhz19
+const event = new Event<Buffer>(Buffer.from([0]));
+device.addEvent(event);
+
+const service1 = new Service(Buffer.from([1]), 3000); // hello
+device.addService(service1);
+
+const service2 = new Service(Buffer.from([2]), 3000); // systemInfo
+device.addService(service2);
+
+const service3 = new Service(Buffer.from([3]), 33000); // async
+device.addService(service3);
+
+const service4 = new Service(Buffer.from([4]), 3000); // mcp9808
+device.addService(service4);
+
+const service5 = new Bme280(); // bme280
+device.addService(service5);
+
+const service6 = new Service(Buffer.from([6]), 3000); // tsl2561
+device.addService(service6);
+
+const service7 = new Service(Buffer.from([7]), 3000); // sgp30
+device.addService(service7);
+
+const service8 = new Service(Buffer.from([8]), 3000); // ccs811
+device.addService(service8);
+
+const service9 = new Service(Buffer.from([9]), 3000); // veml6070
+device.addService(service9);
+
+const service10 = new Service(Buffer.from([10]), 33000); // sds011
+device.addService(service10);
+
+const service11 = new Service(Buffer.from([11]), 3000); // mhz19
+device.addService(service11);
 
 const observation = device.isOnline.observe((online) => {
   if (!online) return;
   observation.remove();
 
-  const onResolve = (description: string, result: Buffer) => {
+  const onResolve = (description: string, result: unknown) => {
     // eslint-disable-next-line no-console
     console.log(
       description,
       'response bytes',
-      [...result].map((byte) => byte.toString(16)).join(',')
+      result instanceof Buffer
+        ? [...result].map((byte) => byte.toString(16)).join(',')
+        : result
     );
   };
 
@@ -90,7 +139,7 @@ const observation = device.isOnline.observe((online) => {
     .catch(() => onReject('mhz19'));
 });
 
-event.observable.observe((data) => {
+event.observe((data) => {
   // eslint-disable-next-line no-console
-  console.log('event', data.toString());
+  console.log('event', data ? data.toString() : data);
 });

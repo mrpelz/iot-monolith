@@ -1,8 +1,12 @@
-import { AnyTransport, TransportDevice } from '../transport/index.js';
-import { NullState, ReadOnlyNullState } from '../state/index.js';
+import {
+  Observer,
+  ObserverCallback,
+  ReadOnlyObservable,
+} from '../observable/index.js';
+import { Transport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
 import { Input } from '../log/index.js';
-import { ReadOnlyObservable } from '../observable/index.js';
+import { NullState } from '../state/index.js';
 import { Timer } from '../utils/time.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
@@ -10,7 +14,7 @@ import { rebind } from '../utils/oop.js';
 type DeviceEvents = Set<Event>;
 type DeviceServices = Set<Service>;
 
-type Request = Promise<Buffer>;
+type Request<T = Buffer> = Promise<T>;
 
 type RequestResolver = {
   resolver: (value: Buffer) => void;
@@ -19,13 +23,13 @@ type RequestResolver = {
 
 type DeviceIdentifier = Buffer | null;
 
-const eventIdentifier = 0x00;
+const EVENT_IDENTIFIER = 0x00;
 
-class Property {
+export class Property {
   static isValidPropertyIdentifier(
     properties: DeviceServices | DeviceEvents,
     identifier: Buffer
-  ) {
+  ): void {
     properties.forEach((previousProperty: Event | Service) => {
       if (previousProperty.identifier.equals(identifier)) {
         throw new Error(
@@ -35,58 +39,70 @@ class Property {
     });
   }
 
-  protected readonly _device: Device;
+  protected _device: Device | null;
 
   readonly identifier: Buffer;
 
-  constructor(identifier: Buffer, device: Device) {
+  constructor(identifier: Buffer) {
     this.identifier = identifier;
-    this._device = device;
   }
 
   /**
    * get device online state
    */
-  get isOnline() {
+  get isOnline(): ReadOnlyObservable<boolean> {
+    if (!this._device) {
+      throw new Error('no device is present on this proerty');
+    }
+
     return this._device.isOnline;
+  }
+
+  _setDevice(device: Device): void {
+    this._device = device;
   }
 }
 
-class Event extends Property {
-  private readonly _observable = new NullState<Buffer>();
-  readonly observable: ReadOnlyNullState<Buffer>;
+export class Event<T = unknown> extends Property {
+  private readonly _observable = new NullState<T>();
 
-  constructor(identifier: Buffer, device: Device) {
-    super(identifier, device);
+  // eslint-disable-next-line class-methods-use-this
+  protected decode(input: Buffer): T {
+    return (input as unknown) as T;
+  }
 
-    this.observable = new ReadOnlyNullState(this._observable);
+  observe(observer: ObserverCallback<T>): Observer {
+    return this._observable.observe(observer);
   }
 
   /**
    * ingest event from Device instance
    */
-  ingest(payload: Buffer) {
+  ingest(payload: Buffer): void {
     const serviceIdentifier = payload.subarray(0, this.identifier.length);
     if (!serviceIdentifier.equals(this.identifier)) return;
 
     const eventData = payload.subarray(this.identifier.length);
 
-    this._observable.trigger(eventData);
-  }
-
-  /**
-   * remove Event from Device
-   */
-  remove(): void {
-    this._device.remove(this);
+    this._observable.trigger(this.decode(eventData));
   }
 }
 
-class Service extends Property {
+export class Service<T = unknown, S = unknown | void> extends Property {
   private readonly _timeout: number;
 
-  constructor(identifier: Buffer, timeout: number, device: Device) {
-    super(identifier, device);
+  // eslint-disable-next-line class-methods-use-this
+  protected encode(input: S): Buffer {
+    return (input as unknown) as Buffer;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected decode(input: Buffer): T | null {
+    return (input as unknown) as T;
+  }
+
+  constructor(identifier: Buffer, timeout: number) {
+    super(identifier);
 
     this._timeout = timeout;
   }
@@ -94,15 +110,18 @@ class Service extends Property {
   /**
    * issue request on Device instance
    */
-  request(payload: Buffer | null = null): Request {
-    return this._device.request(this.identifier, payload, this._timeout);
-  }
+  request(payload: S | null = null): Request<T | null> {
+    if (!this._device) {
+      throw new Error('no device is present on this proerty');
+    }
 
-  /**
-   * remove Event from Device
-   */
-  remove(): void {
-    this._device.remove(this);
+    return this._device
+      .request(
+        this.identifier,
+        payload ? this.encode(payload) : null,
+        this._timeout
+      )
+      .then((result) => this.decode(result));
   }
 }
 
@@ -116,7 +135,7 @@ export class Device {
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
 
-  constructor(transport: AnyTransport, identifier: DeviceIdentifier = null) {
+  constructor(transport: Transport, identifier: DeviceIdentifier = null) {
     rebind(
       this,
       'getService',
@@ -176,25 +195,21 @@ export class Device {
   /**
    * add an instance of Event to this device
    */
-  getEvent(identifier: Buffer): Event {
-    Event.isValidPropertyIdentifier(this._events, identifier);
+  addEvent(event: Event): void {
+    Event.isValidPropertyIdentifier(this._events, event.identifier);
 
-    const event = new Event(identifier, this);
+    event._setDevice(this);
     this._events.add(event);
-
-    return event;
   }
 
   /**
    * add an instance of Service to this device
    */
-  getService(identifier: Buffer, timeout: number): Service {
-    Service.isValidPropertyIdentifier(this._services, identifier);
+  addService(service: Service): void {
+    Service.isValidPropertyIdentifier(this._services, service.identifier);
 
-    const service = new Service(identifier, timeout, this);
+    service._setDevice(this);
     this._services.add(service);
-
-    return service;
   }
 
   /**
@@ -206,7 +221,7 @@ export class Device {
     const requestIdentifier = readNumber(message.subarray(0, 1));
     const payload = message.subarray(1);
 
-    if (requestIdentifier === eventIdentifier) {
+    if (requestIdentifier === EVENT_IDENTIFIER) {
       this._handleEvent(payload);
       return;
     }

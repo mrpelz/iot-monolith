@@ -1,11 +1,7 @@
 import { BooleanState } from '../state/index.js';
 import { Device } from '../device/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
-import { TCPTransport } from './tcp.js';
-import { UDPTransport } from './udp.js';
 import { logger } from '../../app/logging.js';
-
-export type AnyTransport = Transport | TCPTransport | UDPTransport;
 
 export class TransportDevice {
   static _isValidDeviceForTransport(
@@ -28,11 +24,11 @@ export class TransportDevice {
     });
   }
 
-  private readonly _transport: AnyTransport;
+  private readonly _transport: Transport;
 
   readonly device: Device;
 
-  constructor(transport: AnyTransport, device: Device) {
+  constructor(transport: Transport, device: Device) {
     this._transport = transport;
     this.device = device;
   }
