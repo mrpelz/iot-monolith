@@ -3,6 +3,8 @@ import {
   BooleanStateGroup,
 } from '../state-group/index.js';
 import { BooleanState, NullState } from '../state/index.js';
+import { ModifiableDate, Unit } from '../modifiable-date/index.js';
+import { NUMBER_RANGES, RollingNumber } from '../rolling-number/index.js';
 import {
   Observer,
   ObserverCallback,
@@ -11,6 +13,7 @@ import {
 import { Transport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../utils/data.js';
 import { Input } from '../log/index.js';
+import { Schedule } from '../schedule/index.js';
 import { Timer } from '../timer/index.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
@@ -147,13 +150,29 @@ export class Service<T = unknown, S = unknown | void> extends Property {
 }
 
 export class Device {
+  private static _setUpSchedule(keepAlive: number): Schedule {
+    const delaySeconds = Math.round(keepAlive / 2000);
+    return new Schedule(
+      (prev) =>
+        new ModifiableDate().set(prev).ceil(Unit.SECOND, delaySeconds).date,
+      false
+    );
+  }
+
   private readonly _events = new Set<Event>();
   private readonly _isOnline = new BooleanState(false);
-  private readonly _keepAliveTimer: Timer;
+  private readonly _keepAliveReceiveTimer: Timer;
+  private readonly _keepAliveSendSchedule: Schedule;
   private readonly _log: Input;
   private readonly _requests = new Map<number, RequestResolver>();
   private readonly _services = new Set<Service>();
   private readonly _transport: TransportDevice;
+
+  private readonly _requestIdentifier = new RollingNumber(
+    0,
+    NUMBER_RANGES.uint8_t,
+    [EVENT_IDENTIFIER, KEEPALIVE_IDENTIFIER]
+  );
 
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
@@ -161,11 +180,13 @@ export class Device {
   constructor(
     transport: Transport,
     identifier: DeviceIdentifier = null,
-    keepAlive = 2000
+    keepAlive = 30000
   ) {
     rebind(this, '_sendKeepAlive');
 
-    this._keepAliveTimer = new Timer(keepAlive);
+    this._keepAliveReceiveTimer = new Timer(keepAlive);
+    this._keepAliveSendSchedule = Device._setUpSchedule(keepAlive);
+
     this._log = logger.getInput({
       head: `Device ${identifier}`,
     });
@@ -181,14 +202,20 @@ export class Device {
       )
     );
 
-    setInterval(this._sendKeepAlive, keepAlive);
-    this._keepAliveTimer.observe(() => {
+    transport.isConnected.observe((transportConnected) => {
+      if (!transportConnected) {
+        this._keepAliveSendSchedule.stop();
+      }
+
+      this._sendKeepAlive();
+      this._keepAliveSendSchedule.start();
+    });
+
+    this._keepAliveReceiveTimer.observe(() => {
       this._isOnline.value = false;
     });
-  }
 
-  private get _requestId(): number {
-    return (this._requests.size + 1) % 0xff || 1;
+    this._keepAliveSendSchedule.addTask(this._sendKeepAlive);
   }
 
   private _handleEvent(payload: Buffer): void {
@@ -210,14 +237,14 @@ export class Device {
   }
 
   private _receiveKeepAlive() {
-    this._keepAliveTimer.stop();
+    this._keepAliveReceiveTimer.stop();
     this._isOnline.value = true;
   }
 
   private _sendKeepAlive() {
     this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
     this._transport._writeToTransport(EVENT_PEER_PAYLOAD);
-    this._keepAliveTimer.start();
+    this._keepAliveReceiveTimer.start();
   }
 
   /**
@@ -298,7 +325,7 @@ export class Device {
     payload: Buffer | null = null,
     timeout: number
   ): Request {
-    const id = this._requestId;
+    const id = this._requestIdentifier.get();
 
     return new Promise((resolver, reject) => {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);

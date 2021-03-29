@@ -16,11 +16,16 @@ export class Schedule {
   private _previousExecution: Date | null;
   private _timeout: NodeJS.Timeout | null = null;
 
-  constructor(nextExecutionProvider: NextExecutionProvider, once = false) {
+  constructor(
+    nextExecutionProvider: NextExecutionProvider,
+    start = true,
+    once = false
+  ) {
     this._nextExecutionProvider = nextExecutionProvider;
     this._once = once;
 
-    this._scheduleNextExecution();
+    if (!start) return;
+    this.start();
   }
 
   private _run() {

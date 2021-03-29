@@ -94,7 +94,7 @@ export class TCPTransport extends Transport {
   /**
    * handle readable (incoming) bytes from socket
    */
-  _handleReadable(): void {
+  private _handleReadable(): void {
     let remainder = true;
     while (remainder) {
       remainder = this._read();
@@ -104,7 +104,7 @@ export class TCPTransport extends Transport {
   /**
    * destroy old socket and remove listeners
    */
-  _nukeSocket(): void {
+  private _nukeSocket(): void {
     if (!this._socket) return;
 
     this._socket.removeListener('readable', this._handleReadable);
@@ -122,7 +122,7 @@ export class TCPTransport extends Transport {
   /**
    * handle socket connection
    */
-  _onConnection(): void {
+  private _onConnection(): void {
     if (this._isConnected.value) return;
 
     this._connectionTime = Date.now();
@@ -135,7 +135,7 @@ export class TCPTransport extends Transport {
   /**
    * handle socket disconnection
    */
-  _onDisconnection(): void {
+  private _onDisconnection(): void {
     if (!this._isConnected.value) return;
 
     this._messageTimer.stop();
@@ -152,7 +152,7 @@ export class TCPTransport extends Transport {
   /**
    * read the right amount of bytes from socket
    */
-  _read(): boolean {
+  private _read(): boolean {
     if (!this._socket) return false;
 
     if (this._currentLength) {
@@ -191,7 +191,7 @@ export class TCPTransport extends Transport {
   /**
    * create new socket and set up listeners
    */
-  _setUpSocket(): void {
+  private _setUpSocket(): void {
     const socket = new Socket();
     socket.connect({
       host: this._host,

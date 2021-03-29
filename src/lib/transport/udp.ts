@@ -1,3 +1,4 @@
+import { NUMBER_RANGES, RollingNumber } from '../rolling-number/index.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { BooleanState } from '../state/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
@@ -54,9 +55,12 @@ export class UDPTransport extends Transport {
   private readonly _sequenceHandling: boolean;
   private readonly _shouldBeConnected = new BooleanState(false);
   private readonly _udpLog = logger.getInput({ head: 'UDPTransport' });
+  private readonly _messageOutgoingSequence = new RollingNumber(
+    0,
+    NUMBER_RANGES.uint8_t
+  );
 
   private _socket: Socket | null = null;
-  private _messageOutgoingSequence = 0;
   private _messageIncomingSequence = 0;
 
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
@@ -104,21 +108,9 @@ export class UDPTransport extends Transport {
   }
 
   /**
-   * manage sequence number to prepend to outgoing messages
-   */
-  _getOutgoingSequence(): number {
-    this._messageOutgoingSequence =
-      this._messageOutgoingSequence === 0xff
-        ? 0
-        : (this._messageOutgoingSequence += 1);
-
-    return this._messageOutgoingSequence;
-  }
-
-  /**
    * manage sequence number to check from incoming messages
    */
-  _checkIncomingSequence(sequence: number): boolean {
+  private _checkIncomingSequence(sequence: number) {
     if (this._messageIncomingSequence === 0xff && sequence !== 0) {
       return false;
     }
@@ -135,7 +127,7 @@ export class UDPTransport extends Transport {
   /**
    * handle incoming messages
    */
-  _handleMessage(message: Buffer, remoteInfo: RemoteInfo): void {
+  private _handleMessage(message: Buffer, remoteInfo: RemoteInfo) {
     if (!remoteInfo.size) return;
 
     let payload: Buffer;
@@ -157,7 +149,7 @@ export class UDPTransport extends Transport {
   /**
    * destroy old socket and remove listeners
    */
-  _nukeSocket(): void {
+  private _nukeSocket() {
     if (!this._socket) return;
 
     this._socket.removeListener('message', this._handleMessage);
@@ -173,7 +165,7 @@ export class UDPTransport extends Transport {
   /**
    * handle socket connection
    */
-  _onConnection(): void {
+  private _onConnection() {
     if (this._isConnected.value) return;
 
     this._udpLog.info(() => 'is connected');
@@ -184,7 +176,7 @@ export class UDPTransport extends Transport {
   /**
    * handle socket disconnection
    */
-  _onDisconnection(): void {
+  private _onDisconnection() {
     if (!this._isConnected.value) return;
 
     this._nukeSocket();
@@ -197,7 +189,7 @@ export class UDPTransport extends Transport {
   /**
    * create new socket and set up listeners
    */
-  _setUpSocket(): void {
+  private _setUpSocket() {
     const socket = createSocket('udp4');
 
     socket.on('message', this._handleMessage);
@@ -253,7 +245,10 @@ export class UDPTransport extends Transport {
     if (this._sequenceHandling) {
       for (let index = 0; index < sequenceRepeatOutgoing; index += 1) {
         this._socket.send(
-          Buffer.concat([Buffer.from([this._getOutgoingSequence()]), payload]),
+          Buffer.concat([
+            Buffer.from([this._messageOutgoingSequence.get()]),
+            payload,
+          ]),
           this._port,
           this._host
         );
