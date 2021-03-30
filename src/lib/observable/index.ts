@@ -33,7 +33,9 @@ export class Observable<T> {
 
     this._value = value;
 
-    this._observers.forEach((observer) => observer(this._value));
+    for (const observer of this._observers) {
+      observer(this._value);
+    }
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {

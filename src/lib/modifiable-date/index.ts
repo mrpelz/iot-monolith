@@ -162,7 +162,7 @@ export class ModifiableDate {
     return this;
   }
 
-  set(date?: Date | number | null): this {
+  set(date: Date | number | null = null): this {
     this._date = date ? new Date(date) : new Date();
 
     return this;

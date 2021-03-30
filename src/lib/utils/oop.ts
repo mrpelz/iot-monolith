@@ -25,12 +25,12 @@ export function isPromise<T>(input: T | Promise<T>): input is Promise<T> {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function rebind(context: any, ...names: string[]): void {
-  names.forEach((name) => {
+  for (const name of names) {
     const fn = context[name];
     if (typeof fn !== 'function') return;
 
     context[name] = fn.bind(context);
-  });
+  }
 }
 
 export function resolveAlways<T>(promise: T | Promise<T>): Promise<T | null> {

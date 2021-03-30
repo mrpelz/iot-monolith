@@ -48,7 +48,9 @@ export class EnumState<T> extends Observable<T> {
 
     this._value = value;
 
-    this._observers.forEach((observer) => observer(this._value));
+    for (const observer of this._observers) {
+      observer(this._value);
+    }
   }
 
   getIndex(): number | null {
@@ -111,7 +113,9 @@ export class NullState<T = null> {
   }
 
   trigger(data: T): void {
-    this._observers.forEach((observer) => observer(data));
+    for (const observer of this._observers) {
+      observer(data);
+    }
   }
 }
 

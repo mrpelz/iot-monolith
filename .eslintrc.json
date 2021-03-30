@@ -241,7 +241,7 @@
     "no-console": "error",
     "no-const-assign": "off",
     "no-constant-condition": "error",
-    "no-continue": "error",
+    "no-continue": "off",
     "no-control-regex": "error",
     "no-debugger": "error",
     "no-delete-var": "error",

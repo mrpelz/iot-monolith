@@ -8,7 +8,7 @@ export class TransportDevice {
     devices: Set<TransportDevice>,
     device: Device
   ): void {
-    devices.forEach((previousTransportDevice) => {
+    for (const previousTransportDevice of devices) {
       const previousDeviceIdentifier =
         previousTransportDevice.device.identifier;
 
@@ -21,16 +21,18 @@ export class TransportDevice {
           `cannot use the same identifier for multiple devices (${device.identifier})`
         );
       }
-    });
+    }
   }
 
   private readonly _transport: Transport;
 
   readonly device: Device;
+  readonly isConnected: ReadOnlyObservable<boolean>;
 
   constructor(transport: Transport, device: Device) {
     this._transport = transport;
     this.device = device;
+    this.isConnected = transport.isConnected;
   }
 
   /**
@@ -97,9 +99,9 @@ export class Transport {
     identifier: Buffer | null,
     payload: Buffer
   ): void {
-    this._devices.forEach((device) => {
+    for (const device of this._devices) {
       device._ingestIntoDeviceInstance(identifier, payload);
-    });
+    }
   }
 
   /**

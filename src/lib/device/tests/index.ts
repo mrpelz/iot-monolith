@@ -2,6 +2,11 @@ import { Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Schedule } from '../../schedule/index.js';
 import { UDPDevice } from '../udp.js';
+import { logger } from '../../../app/logging.js';
+
+const log = logger.getInput({
+  head: 'device-test',
+});
 
 class Hello extends Service<string> {
   constructor() {
@@ -160,96 +165,110 @@ const service11 = new Mhz19(); // mhz19
 device.addService(service11);
 
 const every5Seconds = new Schedule(
-  (prev) => new ModifiableDate().set(prev).ceil(Unit.SECOND, 5).date,
+  () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
   false
 );
 
 const every30Seconds = new Schedule(
-  (prev) => new ModifiableDate().set(prev).ceil(Unit.SECOND, 30).date,
+  () => new ModifiableDate().ceil(Unit.SECOND, 30).date,
   false
 );
 
 const every2Minutes = new Schedule(
-  (prev) => new ModifiableDate().set(prev).ceil(Unit.MINUTE, 2).date,
+  () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
   false
 );
 
-device.isOnline.observe((online, observer) => {
-  if (!online) return;
-  observer.remove();
+const onResolve = (description: string, result: unknown) => {
+  log.info(
+    () =>
+      `${description} ${JSON.stringify(
+        result instanceof Buffer
+          ? [...result].map((byte) => byte.toString(16)).join(',')
+          : result
+      )}`
+  );
+};
 
-  const onResolve = (description: string, result: unknown) => {
-    // eslint-disable-next-line no-console
-    console.log(
-      description,
-      result instanceof Buffer
-        ? [...result].map((byte) => byte.toString(16)).join(',')
-        : JSON.stringify(result)
-    );
-  };
+const onReject = (description: string) => {
+  log.info(() => `${description} failed`);
+};
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onReject = (description: string) => {
-    // eslint-disable-next-line no-console
-    console.log(description, 'failed');
-  };
+every5Seconds.addTask(() => {
+  log.info(() => '⏲ every5Seconds');
 
-  every5Seconds.addTask(() => {
-    service4
-      .request()
-      .then((result) => onResolve('mcp9808', result))
-      .catch(() => onReject('mcp9808'));
+  service4
+    .request()
+    .then((result) => onResolve('✅ mcp9808', result))
+    .catch(() => onReject('⛔️ mcp9808'));
 
-    service5
-      .request()
-      .then((result) => onResolve('bme280', result))
-      .catch(() => onReject('bme280'));
+  service5
+    .request()
+    .then((result) => onResolve('✅ bme280', result))
+    .catch(() => onReject('⛔️ bme280'));
 
-    service6
-      .request()
-      .then((result) => onResolve('tsl2561', result))
-      .catch(() => onReject('tsl256'));
+  service6
+    .request()
+    .then((result) => onResolve('✅ tsl2561', result))
+    .catch(() => onReject('⛔️ tsl256'));
 
-    service9
-      .request()
-      .then((result) => onResolve('veml6070', result))
-      .catch(() => onReject('veml60'));
-  });
+  service9
+    .request()
+    .then((result) => onResolve('✅ veml6070', result))
+    .catch(() => onReject('⛔️ veml60'));
+});
+
+every30Seconds.addTask(() => {
+  log.info(() => '⏲ every30Seconds');
+
+  service1
+    .request()
+    .then((result) => onResolve('✅ hello', result))
+    .catch(() => onReject('⛔️ hello'));
+
+  service2
+    .request()
+    .then((result) => onResolve('✅ systemInfo', result))
+    .catch(() => onReject('⛔️ system'));
+
+  service11
+    .request()
+    .then((result) => onResolve('✅ mhz19', result))
+    .catch(() => onReject('⛔️ mhz19'));
+});
+
+every2Minutes.addTask(() => {
+  log.info(() => '⏲ every2Minutes');
+
+  service3
+    .request()
+    .then((result) => onResolve('✅ async', result))
+    .catch(() => onReject('⛔️ async'));
+
+  service10
+    .request()
+    .then((result) => onResolve('✅ sds011', result))
+    .catch(() => onReject('⛔️ sds011'));
+});
+
+device.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ offline');
+
+    every5Seconds.stop();
+    every30Seconds.stop();
+    every2Minutes.stop();
+
+    return;
+  }
+
+  log.info(() => '📶 online');
+
   every5Seconds.start();
-
-  every30Seconds.addTask(() => {
-    service1
-      .request()
-      .then((result) => onResolve('hello', result))
-      .catch(() => onReject('hello'));
-
-    service2
-      .request()
-      .then((result) => onResolve('systemInfo', result))
-      .catch(() => onReject('system'));
-
-    service11
-      .request()
-      .then((result) => onResolve('mhz19', result))
-      .catch(() => onReject('mhz19'));
-  });
   every30Seconds.start();
-
-  every2Minutes.addTask(() => {
-    service3
-      .request()
-      .then((result) => onResolve('async', result))
-      .catch(() => onReject('async'));
-
-    service10
-      .request()
-      .then((result) => onResolve('sds011', result))
-      .catch(() => onReject('sds011'));
-  });
   every2Minutes.start();
 });
 
 event.observe((data) => {
-  // eslint-disable-next-line no-console
-  console.log('event', data ? data.toString() : data);
+  log.info(() => `event ${data ? data.toString() : data}`);
 });

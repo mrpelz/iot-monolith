@@ -1,19 +1,24 @@
+import { logger } from '../../app/logging.js';
+
 type Task = (previousExecution: Date | null) => void;
 
 type TaskRemove = {
   remove: () => void;
 };
 
-type NextExecutionProvider = (previousExecution: Date | null) => Date | null;
+type NextExecutionProvider = (
+  previousExecution: Date | undefined
+) => Date | null;
 
 const MAX_TIMEOUT = 2147483647;
 
 export class Schedule {
+  private readonly _log = logger.getInput({ head: 'schedule' });
   private readonly _nextExecutionProvider: NextExecutionProvider;
   private readonly _once: boolean;
   private readonly _tasks = new Set<Task>();
 
-  private _previousExecution: Date | null;
+  private _previousExecution: Date | null = null;
   private _timeout: NodeJS.Timeout | null = null;
 
   constructor(
@@ -29,13 +34,19 @@ export class Schedule {
   }
 
   private _run() {
-    this._tasks.forEach((task) => task(this._previousExecution));
+    try {
+      for (const task of this._tasks) {
+        task(this._previousExecution);
+      }
+    } catch (error) {
+      this._log.error(() => `task error: ${error}`);
+    }
   }
 
   private _scheduleNextExecution(carriedOverExecution?: Date) {
     const nextExecution =
       carriedOverExecution ||
-      this._nextExecutionProvider(this._previousExecution);
+      this._nextExecutionProvider(this._previousExecution || undefined);
 
     const now = Date.now();
 
@@ -61,11 +72,11 @@ export class Schedule {
       this._previousExecution = nextExecution;
       this.stop();
 
+      if (!this._once) {
+        this._scheduleNextExecution();
+      }
+
       this._run();
-
-      if (this._once) return;
-
-      this._scheduleNextExecution();
     }, timeUntilNextExecution);
   }
 

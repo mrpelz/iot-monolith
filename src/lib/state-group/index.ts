@@ -17,9 +17,9 @@ export class StateGroup<T> {
   constructor(...children: AnyObservable<T>[]) {
     this._children = children;
 
-    children.forEach((child) =>
-      child.observe((value) => this._forwardObservers(value))
-    );
+    for (const child of this._children) {
+      child.observe((value) => this._forwardObservers(value));
+    }
   }
 
   get value(): T {
@@ -28,10 +28,11 @@ export class StateGroup<T> {
 
   set value(value: T) {
     this._locked = true;
-    this._children.forEach((child) => {
-      if (child instanceof ReadOnlyObservable) return;
+
+    for (const child of this._children) {
+      if (child instanceof ReadOnlyObservable) continue;
       child.value = value;
-    });
+    }
 
     this._locked = false;
     this._forwardObservers(value);
@@ -41,7 +42,10 @@ export class StateGroup<T> {
     if (this._locked) return;
 
     const value = this.value;
-    this._observers.forEach((observer) => observer(value));
+
+    for (const observer of this._observers) {
+      observer(value);
+    }
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {

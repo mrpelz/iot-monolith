@@ -83,10 +83,10 @@ export class TCPTransport extends Transport {
   private _connect() {
     this._tcpLog.debug(() => 'connection/disconnection handling');
 
-    if (this._shouldBeConnected.value && !this.isConnected.value) {
+    if (this._shouldBeConnected.value && !this._isConnected.value) {
       this._nukeSocket();
       this._setUpSocket();
-    } else if (!this._shouldBeConnected.value && this.isConnected.value) {
+    } else if (!this._shouldBeConnected.value && this._isConnected.value) {
       this._nukeSocket();
     }
   }
@@ -247,7 +247,7 @@ export class TCPTransport extends Transport {
       throw new Error('no socket!');
     }
 
-    if (!this.isConnected.value) {
+    if (!this._isConnected.value) {
       throw new Error('socket is not connected!');
     }
 

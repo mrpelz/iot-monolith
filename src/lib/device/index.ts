@@ -24,6 +24,7 @@ type DeviceServices = Set<Service>;
 type Request<T = Buffer> = Promise<T>;
 
 type RequestResolver = {
+  reject: (reason?: unknown) => void;
   resolver: (value: Buffer) => void;
   timer: Timer;
 };
@@ -54,13 +55,13 @@ export class Property {
     properties: DeviceServices | DeviceEvents,
     identifier: Buffer
   ): void {
-    properties.forEach((previousProperty: Event | Service) => {
+    for (const previousProperty of properties) {
       if (previousProperty.identifier.equals(identifier)) {
         throw new Error(
           `cannot use the same identifier for multiple properties (${identifier})`
         );
       }
-    });
+    }
   }
 
   protected _device: Device | null;
@@ -153,8 +154,7 @@ export class Device {
   private static _setUpSchedule(keepAlive: number): Schedule {
     const delaySeconds = Math.round(keepAlive / 2000);
     return new Schedule(
-      (prev) =>
-        new ModifiableDate().set(prev).ceil(Unit.SECOND, delaySeconds).date,
+      () => new ModifiableDate().set().ceil(Unit.SECOND, delaySeconds).date,
       false
     );
   }
@@ -184,9 +184,6 @@ export class Device {
   ) {
     rebind(this, '_sendKeepAlive');
 
-    this._keepAliveReceiveTimer = new Timer(keepAlive);
-    this._keepAliveSendSchedule = Device._setUpSchedule(keepAlive);
-
     this._log = logger.getInput({
       head: `Device ${identifier}`,
     });
@@ -202,26 +199,35 @@ export class Device {
       )
     );
 
+    this._keepAliveReceiveTimer = new Timer(keepAlive);
+
+    this._keepAliveSendSchedule = Device._setUpSchedule(keepAlive);
+    this._keepAliveSendSchedule.addTask(this._sendKeepAlive);
+
     transport.isConnected.observe((transportConnected) => {
-      if (!transportConnected) {
-        this._keepAliveSendSchedule.stop();
+      if (transportConnected) {
+        this._sendKeepAlive();
+        this._keepAliveSendSchedule.start();
+
+        return;
       }
 
-      this._sendKeepAlive();
-      this._keepAliveSendSchedule.start();
+      this._keepAliveSendSchedule.stop();
     });
 
     this._keepAliveReceiveTimer.observe(() => {
       this._isOnline.value = false;
-    });
 
-    this._keepAliveSendSchedule.addTask(this._sendKeepAlive);
+      for (const [, request] of this._requests) {
+        request.reject(new Error('request aborted due to disconnection'));
+      }
+    });
   }
 
   private _handleEvent(payload: Buffer): void {
-    this._events.forEach((event) => {
+    for (const event of this._events) {
       event.ingest(payload);
-    });
+    }
   }
 
   private _handleRequest(identifier: number, payload: Buffer): void {
@@ -242,8 +248,16 @@ export class Device {
   }
 
   private _sendKeepAlive() {
-    this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
-    this._transport._writeToTransport(EVENT_PEER_PAYLOAD);
+    if (!this._transport.isConnected.value) return;
+
+    try {
+      this._transport._writeToTransport(EVENT_PEER_PAYLOAD);
+      this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
+    } catch (_) {
+      // noop
+    }
+
+    if (this._keepAliveReceiveTimer.isRunning) return;
     this._keepAliveReceiveTimer.start();
   }
 
@@ -325,6 +339,10 @@ export class Device {
     payload: Buffer | null = null,
     timeout: number
   ): Request {
+    if (!this._isOnline.value) {
+      throw new Error('device is not online');
+    }
+
     const id = this._requestIdentifier.get();
 
     return new Promise((resolver, reject) => {
@@ -339,6 +357,7 @@ export class Device {
       timer.start();
 
       this._requests.set(id, {
+        reject,
         resolver,
         timer,
       });
