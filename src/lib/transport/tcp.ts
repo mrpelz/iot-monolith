@@ -29,17 +29,16 @@ import { rebind } from '../utils/oop.js';
 //
 
 export class TCPTransport extends Transport {
+  private _connectionTime: number;
+  private _currentLength: number;
   private readonly _host: string;
   private readonly _keepAlive: number;
   private readonly _lengthPreamble: number;
   private readonly _messageTimer: Timer;
   private readonly _port: number;
   private readonly _shouldBeConnected = new BooleanState(false);
-  private readonly _tcpLog = logger.getInput({ head: 'TCPTransport' });
-
-  private _connectionTime: number;
-  private _currentLength: number;
   private _socket: Socket | null = null;
+  private readonly _tcpLog = logger.getInput({ head: 'TCPTransport' });
 
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 

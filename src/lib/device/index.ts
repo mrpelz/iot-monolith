@@ -96,10 +96,6 @@ export class Event<T = unknown> extends Property {
     return (input as unknown) as T;
   }
 
-  observe(observer: ObserverCallback<T>): Observer {
-    return this._observable.observe(observer);
-  }
-
   /**
    * ingest event from Device instance
    */
@@ -111,14 +107,19 @@ export class Event<T = unknown> extends Property {
 
     this._observable.trigger(this.decode(eventData));
   }
+
+  observe(observer: ObserverCallback<T>): Observer {
+    return this._observable.observe(observer);
+  }
 }
 
 export class Service<T = unknown, S = unknown | void> extends Property {
   private readonly _timeout: number;
 
-  // eslint-disable-next-line class-methods-use-this
-  protected encode(input: S): Buffer {
-    return (input as unknown) as Buffer;
+  constructor(identifier: Buffer, timeout = 5000) {
+    super(identifier);
+
+    this._timeout = timeout;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -126,10 +127,9 @@ export class Service<T = unknown, S = unknown | void> extends Property {
     return (input as unknown) as T;
   }
 
-  constructor(identifier: Buffer, timeout = 5000) {
-    super(identifier);
-
-    this._timeout = timeout;
+  // eslint-disable-next-line class-methods-use-this
+  protected encode(input: S): Buffer {
+    return (input as unknown) as Buffer;
   }
 
   /**
@@ -164,15 +164,16 @@ export class Device {
   private readonly _keepAliveReceiveTimer: Timer;
   private readonly _keepAliveSendSchedule: Schedule;
   private readonly _log: Input;
-  private readonly _requests = new Map<number, RequestResolver>();
-  private readonly _services = new Set<Service>();
-  private readonly _transport: TransportDevice;
 
   private readonly _requestIdentifier = new RollingNumber(
     0,
-    NUMBER_RANGES.uint8_t,
+    NUMBER_RANGES.uint8,
     [EVENT_IDENTIFIER, KEEPALIVE_IDENTIFIER]
   );
+
+  private readonly _requests = new Map<number, RequestResolver>();
+  private readonly _services = new Set<Service>();
+  private readonly _transport: TransportDevice;
 
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;

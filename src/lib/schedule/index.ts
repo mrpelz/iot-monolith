@@ -16,9 +16,8 @@ export class Schedule {
   private readonly _log = logger.getInput({ head: 'schedule' });
   private readonly _nextExecutionProvider: NextExecutionProvider;
   private readonly _once: boolean;
-  private readonly _tasks = new Set<Task>();
-
   private _previousExecution: Date | null = null;
+  private readonly _tasks = new Set<Task>();
   private _timeout: NodeJS.Timeout | null = null;
 
   constructor(

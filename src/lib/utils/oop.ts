@@ -1,13 +1,13 @@
 export type Constructor<T> = new (...args: unknown[]) => T;
 
 export function classMethods(
-  Class: Constructor<Record<string, unknown>>
+  classDefinition: Constructor<Record<string, unknown>>
 ): string[] {
-  return Object.keys(Object.getOwnPropertyDescriptors(Class.prototype)).filter(
-    (name) => {
-      return name !== 'constructor' && name[0] !== '_';
-    }
-  );
+  return Object.keys(
+    Object.getOwnPropertyDescriptors(classDefinition.prototype)
+  ).filter((name) => {
+    return name !== 'constructor' && name[0] !== '_';
+  });
 }
 
 export function instanceMethods(instance: Record<string, unknown>): string[] {

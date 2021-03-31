@@ -51,17 +51,18 @@ const sequenceRepeatOutgoing = 5;
 export class UDPTransport extends Transport {
   private readonly _host: string;
   private readonly _keepAlive: number;
+  private _messageIncomingSequence = 0;
+
+  private readonly _messageOutgoingSequence = new RollingNumber(
+    0,
+    NUMBER_RANGES.uint8
+  );
+
   private readonly _port: number;
   private readonly _sequenceHandling: boolean;
   private readonly _shouldBeConnected = new BooleanState(false);
-  private readonly _udpLog = logger.getInput({ head: 'UDPTransport' });
-  private readonly _messageOutgoingSequence = new RollingNumber(
-    0,
-    NUMBER_RANGES.uint8_t
-  );
-
   private _socket: Socket | null = null;
-  private _messageIncomingSequence = 0;
+  private readonly _udpLog = logger.getInput({ head: 'UDPTransport' });
 
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
@@ -94,20 +95,6 @@ export class UDPTransport extends Transport {
   }
 
   /**
-   * handle (dis)connection of socket
-   */
-  private _connect() {
-    this._udpLog.debug(() => 'connection/disconnection handling');
-
-    if (this._shouldBeConnected.value && !this._isConnected.value) {
-      this._nukeSocket();
-      this._setUpSocket();
-    } else if (!this._shouldBeConnected.value && this._isConnected.value) {
-      this._nukeSocket();
-    }
-  }
-
-  /**
    * manage sequence number to check from incoming messages
    */
   private _checkIncomingSequence(sequence: number) {
@@ -122,6 +109,20 @@ export class UDPTransport extends Transport {
     this._messageIncomingSequence = sequence;
 
     return true;
+  }
+
+  /**
+   * handle (dis)connection of socket
+   */
+  private _connect() {
+    this._udpLog.debug(() => 'connection/disconnection handling');
+
+    if (this._shouldBeConnected.value && !this._isConnected.value) {
+      this._nukeSocket();
+      this._setUpSocket();
+    } else if (!this._shouldBeConnected.value && this._isConnected.value) {
+      this._nukeSocket();
+    }
   }
 
   /**

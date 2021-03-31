@@ -46,13 +46,13 @@ function logMerge(input: Log | string): Log {
 }
 
 export class Output {
-  private callback: Callback;
+  private _callback: Callback;
 
   levels: Level[];
 
   constructor(levels: Level[], callback: Callback) {
     this.levels = levels;
-    this.callback = callback;
+    this._callback = callback;
   }
 
   ingestLog(log: LogWithLevel): Promise<void> {
@@ -60,27 +60,12 @@ export class Output {
       return Promise.resolve();
     }
 
-    return this.callback(log);
+    return this._callback(log);
   }
 }
 
 export class DevOutput extends Output {
-  constructor() {
-    super(
-      [
-        Level.EMERGENCY,
-        Level.ALERT,
-        Level.CRITICAL,
-        Level.ERROR,
-        Level.WARNING,
-        Level.NOTICE,
-        Level.INFO,
-      ],
-      DevOutput.callback
-    );
-  }
-
-  private static callback(log: LogWithLevel) {
+  private static _callback(log: LogWithLevel) {
     // eslint-disable-next-line no-console
     console.log(
       `[${new Date().toLocaleTimeString('en', { hour12: false })}] ${
@@ -90,9 +75,7 @@ export class DevOutput extends Output {
 
     return Promise.resolve();
   }
-}
 
-export class JournaldOutput extends Output {
   constructor() {
     super(
       [
@@ -104,19 +87,19 @@ export class JournaldOutput extends Output {
         Level.NOTICE,
         Level.INFO,
       ],
-      JournaldOutput.callback
+      DevOutput._callback
     );
   }
+}
 
-  private static callback(log: LogWithLevel) {
+export class JournaldOutput extends Output {
+  private static _callback(log: LogWithLevel) {
     // eslint-disable-next-line no-console
     console.log(`<${log.level}>${log.head ? `${log.head}:` : ''} ${log.body}`);
 
     return Promise.resolve();
   }
-}
 
-export class TelegramOutput extends Output {
   constructor() {
     super(
       [
@@ -125,12 +108,16 @@ export class TelegramOutput extends Output {
         Level.CRITICAL,
         Level.ERROR,
         Level.WARNING,
+        Level.NOTICE,
+        Level.INFO,
       ],
-      TelegramOutput.callback
+      JournaldOutput._callback
     );
   }
+}
 
-  private static callback(log: LogWithLevel) {
+export class TelegramOutput extends Output {
+  private static _callback(log: LogWithLevel) {
     return telegramSend(
       [`*${logLevelNames[log.level]}*`, log.head, `\`${log.body}\``]
         .filter(Boolean)
@@ -140,90 +127,103 @@ export class TelegramOutput extends Output {
       console.log(`<${Level.ERROR}>failed to log to Telegram: ${reason}`);
     });
   }
+
+  constructor() {
+    super(
+      [
+        Level.EMERGENCY,
+        Level.ALERT,
+        Level.CRITICAL,
+        Level.ERROR,
+        Level.WARNING,
+      ],
+      TelegramOutput._callback
+    );
+  }
 }
 
-class Input {
-  private logger: Logger;
-
-  private options: Partial<Log>;
+export class Input {
+  private _logger: Logger;
+  private _options: Partial<Log>;
 
   /**
    * DO NOT CALL YOURSELF, USE `Logger.getInput` INSTEAD
    */
   constructor(logger: Logger, options: Partial<Log>) {
-    this.logger = logger;
-    this.options = options;
+    this._logger = logger;
+    this._options = options;
   }
 
-  private log(level: Level, initiator: Initiator) {
+  private _log(level: Level, initiator: Initiator) {
     const amendedInitiator = () => {
       const log = logMerge(initiator());
 
       return {
-        ...this.options,
+        ...this._options,
         ...log,
       };
     };
 
-    return this.logger.log(level, amendedInitiator);
+    return this._logger.log(level, amendedInitiator);
   }
 
+  /* eslint-disable @typescript-eslint/member-ordering */
   emergency(initiator: Initiator): Promise<void> {
-    return this.log(Level.EMERGENCY, initiator);
+    return this._log(Level.EMERGENCY, initiator);
   }
 
   alert(initiator: Initiator): Promise<void> {
-    return this.log(Level.ALERT, initiator);
+    return this._log(Level.ALERT, initiator);
   }
 
   critical(initiator: Initiator): Promise<void> {
-    return this.log(Level.CRITICAL, initiator);
+    return this._log(Level.CRITICAL, initiator);
   }
 
   error(initiator: Initiator): Promise<void> {
-    return this.log(Level.ERROR, initiator);
+    return this._log(Level.ERROR, initiator);
   }
 
   warning(initiator: Initiator): Promise<void> {
-    return this.log(Level.WARNING, initiator);
+    return this._log(Level.WARNING, initiator);
   }
 
   notice(initiator: Initiator): Promise<void> {
-    return this.log(Level.NOTICE, initiator);
+    return this._log(Level.NOTICE, initiator);
   }
 
   info(initiator: Initiator): Promise<void> {
-    return this.log(Level.INFO, initiator);
+    return this._log(Level.INFO, initiator);
   }
 
   debug(initiator: Initiator): Promise<void> {
-    return this.log(Level.DEBUG, initiator);
+    return this._log(Level.DEBUG, initiator);
   }
+  /* eslint-enable @typescript-eslint/member-ordering */
 
   removeInput(): void {
-    this.logger.removeInput(this);
+    this._logger.removeInput(this);
   }
 }
 
 export class Logger {
-  private inputs = new Set<Input>();
+  private _inputs = new Set<Input>();
+  private _outputs = new Set<Output>();
 
-  private outputs = new Set<Output>();
-
-  private shouldLog(level: Level) {
+  private _shouldLog(level: Level) {
     return Boolean(
-      [...this.outputs].find((output) =>
+      [...this._outputs].find((output) =>
         Boolean(output.levels.find((outputLevel) => outputLevel === level))
       )
     );
   }
 
   addOutput(output: Output): { remove: () => void } {
-    this.outputs.add(output);
+    this._outputs.add(output);
 
     return {
       remove: () => {
-        this.outputs.delete(output);
+        this._outputs.delete(output);
       },
     };
   }
@@ -231,20 +231,20 @@ export class Logger {
   getInput(options: Partial<Log>): Input {
     const input = new Input(this, options);
 
-    this.inputs.add(input);
+    this._inputs.add(input);
 
     return input;
   }
 
   log(level: Level, initiator: () => Log): Promise<void> {
-    if (!this.shouldLog(level)) {
+    if (!this._shouldLog(level)) {
       return Promise.resolve();
     }
 
     const log = initiator();
 
     return Promise.allSettled(
-      [...this.outputs].map((output) =>
+      [...this._outputs].map((output) =>
         output.ingestLog({
           ...log,
           level,
@@ -254,9 +254,6 @@ export class Logger {
   }
 
   removeInput(input: Input): void {
-    this.inputs.delete(input);
+    this._inputs.delete(input);
   }
 }
-
-type _Input = ReturnType<Logger['getInput']>;
-export { _Input as Input };

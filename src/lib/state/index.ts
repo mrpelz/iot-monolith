@@ -25,11 +25,11 @@ export class EnumState<T> extends Observable<T> {
     this._enum = _enum;
   }
 
-  private get maxIndex() {
+  private get _maxIndex() {
     return this._enum.length - 1;
   }
 
-  private indexOf(value: T) {
+  private _indexOf(value: T) {
     const index = this._enum.indexOf(value);
 
     return index === -1 ? null : index;
@@ -54,29 +54,29 @@ export class EnumState<T> extends Observable<T> {
   }
 
   getIndex(): number | null {
-    return this.indexOf(this.value);
+    return this._indexOf(this.value);
   }
 
   next(): this {
-    const currentIndex = this.indexOf(this.value);
+    const currentIndex = this._indexOf(this.value);
     if (currentIndex === null) return this;
 
-    const index = currentIndex === this.maxIndex ? 0 : currentIndex + 1;
+    const index = currentIndex === this._maxIndex ? 0 : currentIndex + 1;
 
     return this.setIndex(index);
   }
 
   previous(): this {
-    const currentIndex = this.indexOf(this.value);
+    const currentIndex = this._indexOf(this.value);
     if (currentIndex === null) return this;
 
-    const index = currentIndex === 0 ? currentIndex - 1 : this.maxIndex;
+    const index = currentIndex === 0 ? currentIndex - 1 : this._maxIndex;
 
     return this.setIndex(index);
   }
 
   setIndex(index: number): this {
-    if (index < 0 || index > this.maxIndex) {
+    if (index < 0 || index > this._maxIndex) {
       throw new RangeError(`"${index}" is a not existing index`);
     }
 

@@ -72,8 +72,110 @@
     "@typescript-eslint/no-use-before-define": "error",
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-as-const": "error",
+    "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-namespace-keyword": "error",
     "@typescript-eslint/triple-slash-reference": "error",
+    "@typescript-eslint/member-ordering": [
+      "error",
+      {
+        "default": {
+          "memberTypes": [
+            "signature",
+
+            "private-static-field",
+            "protected-static-field",
+            "public-static-field",
+            "static-field",
+
+            "private-static-method",
+            "protected-static-method",
+            "public-static-method",
+            "static-method",
+
+            "private-abstract-field",
+            "private-decorated-field",
+            "private-instance-field",
+            "private-field",
+            "protected-abstract-field",
+            "protected-decorated-field",
+            "protected-instance-field",
+            "protected-field",
+            "public-abstract-field",
+            "public-decorated-field",
+            "public-instance-field",
+            "public-field",
+            "abstract-field",
+            "decorated-field",
+            "instance-field",
+            "field",
+            
+            "private-constructor",
+            "protected-constructor",
+            "public-constructor",
+            "constructor",
+
+            "private-abstract-method",
+            "private-decorated-method",
+            "private-instance-method",
+            "private-method",
+            "protected-abstract-method",
+            "protected-decorated-method",
+            "protected-instance-method",
+            "protected-method",
+            "public-abstract-method",
+            "public-decorated-method",
+            "public-instance-method",
+            "public-method",
+            "abstract-method",
+            "decorated-method",
+            "instance-method",
+            "method"
+          ],
+          "order": "alphabetically"
+        }
+      }
+    ],
+    "@typescript-eslint/naming-convention": [
+      "error",
+      {
+        "selector": "default",
+        "format": ["camelCase"]
+      },
+      {
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "variable",
+        "modifiers": ["destructured"],
+        "format": null
+      },
+      {
+        "selector": "parameter",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "memberLike",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "memberLike",
+        "modifiers": ["private"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "require"
+      },
+      {
+        "selector": "enumMember",
+        "format": ["UPPER_CASE"]
+      },
+      {
+        "selector": "typeLike",
+        "format": ["PascalCase"]
+      }
+    ],
     "accessor-pairs": "error",
     "array-bracket-newline": "off",
     "array-bracket-spacing": [
@@ -107,6 +209,7 @@
       }
     ],
     "callback-return": "error",
+    "camelcase": "off",
     "capitalized-comments": "off",
     "class-methods-use-this": "error",
     "comma-dangle": "off",

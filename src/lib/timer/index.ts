@@ -2,10 +2,9 @@ import { NullState } from '../state/index.js';
 import { rebind } from '../utils/oop.js';
 
 export class Timer extends NullState {
-  private _timeout: NodeJS.Timeout | null = null;
   private _enabled = false;
-
   private readonly _time: number;
+  private _timeout: NodeJS.Timeout | null = null;
 
   constructor(time = 0) {
     super();

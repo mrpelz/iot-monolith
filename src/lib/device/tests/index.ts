@@ -101,8 +101,8 @@ class Sds011280 extends Service<Sds011Response> {
 }
 
 type Mhz19Response = {
-  accuracy: number;
   abc: boolean;
+  accuracy: number;
   co2: number;
   temperature: number;
   transmittance: number;

@@ -9,10 +9,10 @@ import {
 export class StateGroup<T> {
   private _locked = false;
 
-  protected _value: T;
-
   protected readonly _children: AnyObservable<T>[];
   protected readonly _observers = new Set<MetaObserverCallback<T>>();
+
+  protected _value: T;
 
   constructor(...children: AnyObservable<T>[]) {
     this._children = children;

@@ -7,9 +7,9 @@ export function byteRange(count: number): number {
 }
 
 export const NUMBER_RANGES = {
-  uint16_t: bitRange(16),
-  uint32_t: bitRange(32),
-  uint8_t: bitRange(8),
+  uint16: bitRange(16),
+  uint32: bitRange(32),
+  uint8: bitRange(8),
 };
 
 export class RollingNumber {
@@ -17,28 +17,28 @@ export class RollingNumber {
   private readonly _min: number;
   private readonly _reserved: number[];
 
-  private value: number;
+  private _value: number;
 
   constructor(min: number, max: number, reserved: number[] = []) {
     this._max = max;
     this._min = min;
     this._reserved = reserved;
 
-    this.value = min - 1;
+    this._value = min - 1;
   }
 
   private _next(): void {
-    this.value =
-      ((this.value + 1 - this._min) % (this._max + 1 - this._min)) + this._min;
+    this._value =
+      ((this._value + 1 - this._min) % (this._max + 1 - this._min)) + this._min;
   }
 
   get(): number {
     this._next();
 
-    while (this._reserved.includes(this.value)) {
+    while (this._reserved.includes(this._value)) {
       this._next();
     }
 
-    return this.value;
+    return this._value;
   }
 }

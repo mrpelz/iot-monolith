@@ -13,9 +13,9 @@ export type AnyObservable<T> =
   | StateGroup<T>;
 
 export class Observable<T> {
-  protected _value: T;
-
   protected readonly _observers: Set<MetaObserverCallback<T>>;
+
+  protected _value: T;
 
   constructor(initialValue: T, observerCallback?: MetaObserverCallback<T>) {
     this._value = initialValue;
