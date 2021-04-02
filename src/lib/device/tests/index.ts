@@ -1,3 +1,7 @@
+import {
+  BooleanGroupStrategy,
+  BooleanStateGroup,
+} from '../../state-group/index.js';
 import { Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Schedule } from '../../schedule/index.js';
@@ -7,6 +11,19 @@ import { logger } from '../../../app/logging.js';
 const log = logger.getInput({
   head: 'device-test',
 });
+
+const wt32TestBoard = new UDPDevice('10.97.0.198', 8266);
+const shelly1 = new UDPDevice('10.97.0.199', 8266);
+const obiJack = new UDPDevice('10.97.0.159', 8266);
+
+const isOnline = new BooleanStateGroup(
+  BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+  wt32TestBoard.isOnline,
+  shelly1.isOnline,
+  obiJack.isOnline
+);
+
+let on = false;
 
 class Hello extends Service<string> {
   constructor() {
@@ -126,43 +143,106 @@ class Mhz19 extends Service<Mhz19Response> {
   }
 }
 
-const device = new UDPDevice('10.97.0.198', 8266);
+class Relay extends Service<null> {
+  constructor() {
+    super(Buffer.from([0xa0]));
+  }
 
-const event = new Event<Buffer>(Buffer.from([0]));
-device.addEvent(event);
+  // eslint-disable-next-line class-methods-use-this
+  protected encode(input: boolean): Buffer {
+    return Buffer.from([input ? 1 : 0]);
+  }
+}
 
-const service1 = new Hello(); // hello
-device.addService(service1);
+type ButtonEvent = {
+  down: boolean;
+  downChanged: boolean;
+  longpress: number;
+  previousDuration: number;
+  repeat: number;
+};
+class Button extends Event<ButtonEvent> {
+  constructor() {
+    super(Buffer.from([0]));
+  }
 
-const service2 = new Service(Buffer.from([2])); // systemInfo
-device.addService(service2);
+  // eslint-disable-next-line class-methods-use-this
+  protected decode(input: Buffer): ButtonEvent | null {
+    if (input.length < 8) return null;
 
-const service3 = new Service(Buffer.from([3]), 32000); // async
-device.addService(service3);
+    return {
+      down: input.subarray(0, 1).readUInt8() !== 0, // 1.
+      downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
+      longpress: input.subarray(3, 4).readUInt8(), // 4.
+      previousDuration: input.subarray(4, 10).readUInt32LE(), // 5.
+      repeat: input.subarray(2, 3).readUInt8(), // 3.
+    };
+  }
+}
 
-const service4 = new Mcp9808(); // mcp9808
-device.addService(service4);
+class MotionSensor extends Event<boolean> {
+  constructor() {
+    super(Buffer.from([0xa0]));
+  }
 
-const service5 = new Bme280(); // bme280
-device.addService(service5);
+  // eslint-disable-next-line class-methods-use-this
+  protected decode(input: Buffer): boolean | null {
+    if (!input.length) return null;
 
-const service6 = new Tsl2561(); // tsl2561
-device.addService(service6);
+    return input[0] !== 0;
+  }
+}
 
-const service7 = new Service(Buffer.from([7])); // sgp30
-device.addService(service7);
+const hello0 = new Hello(); // hello
+wt32TestBoard.addService(hello0);
 
-const service8 = new Service(Buffer.from([8])); // ccs811
-device.addService(service8);
+const hello1 = new Hello(); // hello
+shelly1.addService(hello1);
 
-const service9 = new Veml6070(); // veml6070
-device.addService(service9);
+const hello2 = new Hello(); // hello
+obiJack.addService(hello2);
 
-const service10 = new Sds011280(); // sds011
-device.addService(service10);
+const async = new Service(Buffer.from([3]), 32000); // async
+wt32TestBoard.addService(async);
 
-const service11 = new Mhz19(); // mhz19
-device.addService(service11);
+const mcp9808 = new Mcp9808(); // mcp9808
+wt32TestBoard.addService(mcp9808);
+
+const bme280 = new Bme280(); // bme280
+wt32TestBoard.addService(bme280);
+
+const tsl2561 = new Tsl2561(); // tsl2561
+wt32TestBoard.addService(tsl2561);
+
+const sgp30 = new Service(Buffer.from([7])); // sgp30
+wt32TestBoard.addService(sgp30);
+
+const ccs811 = new Service(Buffer.from([8])); // ccs811
+wt32TestBoard.addService(ccs811);
+
+const veml6070 = new Veml6070(); // veml6070
+wt32TestBoard.addService(veml6070);
+
+const sds011 = new Sds011280(); // sds011
+wt32TestBoard.addService(sds011);
+
+const mhz19 = new Mhz19(); // mhz19
+wt32TestBoard.addService(mhz19);
+
+const relay0 = new Relay();
+shelly1.addService(relay0);
+
+const button0 = new Button();
+shelly1.addEvent(button0);
+
+const relay1 = new Relay();
+obiJack.addService(relay1);
+
+const button1 = new Button();
+obiJack.addEvent(button1);
+
+const motion0 = new MotionSensor();
+wt32TestBoard.addEvent(motion0);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -197,22 +277,22 @@ const onReject = (description: string) => {
 every5Seconds.addTask(() => {
   log.info(() => '⏲ every5Seconds');
 
-  service4
+  mcp9808
     .request()
     .then((result) => onResolve('✅ mcp9808', result))
     .catch(() => onReject('⛔️ mcp9808'));
 
-  service5
+  bme280
     .request()
     .then((result) => onResolve('✅ bme280', result))
     .catch(() => onReject('⛔️ bme280'));
 
-  service6
+  tsl2561
     .request()
     .then((result) => onResolve('✅ tsl2561', result))
     .catch(() => onReject('⛔️ tsl256'));
 
-  service9
+  veml6070
     .request()
     .then((result) => onResolve('✅ veml6070', result))
     .catch(() => onReject('⛔️ veml60'));
@@ -221,17 +301,22 @@ every5Seconds.addTask(() => {
 every30Seconds.addTask(() => {
   log.info(() => '⏲ every30Seconds');
 
-  service1
+  hello0
     .request()
     .then((result) => onResolve('✅ hello', result))
     .catch(() => onReject('⛔️ hello'));
 
-  service2
+  hello1
     .request()
-    .then((result) => onResolve('✅ systemInfo', result))
-    .catch(() => onReject('⛔️ system'));
+    .then((result) => onResolve('✅ hello', result))
+    .catch(() => onReject('⛔️ hello'));
 
-  service11
+  hello2
+    .request()
+    .then((result) => onResolve('✅ hello', result))
+    .catch(() => onReject('⛔️ hello'));
+
+  mhz19
     .request()
     .then((result) => onResolve('✅ mhz19', result))
     .catch(() => onReject('⛔️ mhz19'));
@@ -240,18 +325,18 @@ every30Seconds.addTask(() => {
 every2Minutes.addTask(() => {
   log.info(() => '⏲ every2Minutes');
 
-  service3
+  async
     .request()
     .then((result) => onResolve('✅ async', result))
     .catch(() => onReject('⛔️ async'));
 
-  service10
+  sds011
     .request()
     .then((result) => onResolve('✅ sds011', result))
     .catch(() => onReject('⛔️ sds011'));
 });
 
-device.isOnline.observe((online) => {
+isOnline.observe((online) => {
   if (!online) {
     log.info(() => '❌ offline');
 
@@ -269,6 +354,45 @@ device.isOnline.observe((online) => {
   every2Minutes.start();
 });
 
-event.observe((data) => {
-  log.info(() => `event ${data ? data.toString() : data}`);
+const changeRelays = (force?: boolean) => {
+  if (!isOnline.value) return;
+
+  on = force === undefined ? !on : force;
+
+  relay0
+    .request(on)
+    .then(() => {
+      onResolve('✅ relay0', null);
+    })
+    .catch(() => onReject('⛔️ relay0'));
+
+  relay1
+    .request(on)
+    .then(() => {
+      onResolve('✅ relay1', null);
+    })
+    .catch(() => onReject('⛔️ relay1'));
+};
+
+button0.observe((data) => {
+  log.info(() => `event button0 ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
+button1.observe((data) => {
+  log.info(() => `event button1 ${JSON.stringify(data)}`);
+
+  if (
+    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
+    data.longpress === 5
+  ) {
+    changeRelays();
+  }
+});
+
+motion0.observe((data) => {
+  log.info(() => `event motion0 ${data ? '👍' : '🚫'}`);
 });

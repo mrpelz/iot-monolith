@@ -84,6 +84,10 @@ export class Property {
   }
 
   _setDevice(device: Device): void {
+    if (this._device) {
+      throw new Error('device is already set');
+    }
+
     this._device = device;
   }
 }
@@ -92,7 +96,7 @@ export class Event<T = unknown> extends Property {
   private readonly _observable = new NullState<T>();
 
   // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): T {
+  protected decode(input: Buffer): T | null {
     return (input as unknown) as T;
   }
 
@@ -103,9 +107,10 @@ export class Event<T = unknown> extends Property {
     const serviceIdentifier = payload.subarray(0, this.identifier.length);
     if (!serviceIdentifier.equals(this.identifier)) return;
 
-    const eventData = payload.subarray(this.identifier.length);
+    const eventData = this.decode(payload.subarray(this.identifier.length));
 
-    this._observable.trigger(this.decode(eventData));
+    if (eventData === null) return;
+    this._observable.trigger(eventData);
   }
 
   observe(observer: ObserverCallback<T>): Observer {
