@@ -5,6 +5,7 @@ import {
 import { Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Schedule } from '../../schedule/index.js';
+import { Timer } from '../../timer/index.js';
 import { UDPDevice } from '../udp.js';
 import { logger } from '../../../app/logging.js';
 
@@ -15,15 +16,21 @@ const log = logger.getInput({
 const wt32TestBoard = new UDPDevice('10.97.0.198', 8266);
 const shelly1 = new UDPDevice('10.97.0.199', 8266);
 const obiJack = new UDPDevice('10.97.0.159', 8266);
+const h801 = new UDPDevice('10.97.0.154', 8266);
+const shellyi3 = new UDPDevice('10.97.0.187', 8266);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
   wt32TestBoard.isOnline,
   shelly1.isOnline,
-  obiJack.isOnline
+  obiJack.isOnline,
+  h801.isOnline,
+  shellyi3.isOnline
 );
 
 let on = false;
+
+const timer = new Timer(10000);
 
 class Hello extends Service<string, void> {
   constructor() {
@@ -144,13 +151,24 @@ class Mhz19 extends Service<Mhz19Response, void> {
 }
 
 class Relay extends Service<null, boolean> {
-  constructor() {
-    super(Buffer.from([0xa0]));
+  constructor(index: number) {
+    super(Buffer.from([0xa0 + index]));
   }
 
   // eslint-disable-next-line class-methods-use-this
   protected encode(input: boolean): Buffer {
     return Buffer.from([input ? 1 : 0]);
+  }
+}
+
+class Led extends Service<null, number> {
+  constructor(index: number) {
+    super(Buffer.from([0xb0 + index]));
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  protected encode(input: number): Buffer {
+    return Buffer.from([input]);
   }
 }
 
@@ -162,8 +180,8 @@ type ButtonEvent = {
   repeat: number;
 };
 class Button extends Event<ButtonEvent> {
-  constructor() {
-    super(Buffer.from([0]));
+  constructor(index: number) {
+    super(Buffer.from([index]));
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -181,8 +199,8 @@ class Button extends Event<ButtonEvent> {
 }
 
 class MotionSensor extends Event<boolean> {
-  constructor() {
-    super(Buffer.from([0xa0]));
+  constructor(index: number) {
+    super(Buffer.from([0xa0 + index]));
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -201,6 +219,12 @@ shelly1.addService(hello1);
 
 const hello2 = new Hello(); // hello
 obiJack.addService(hello2);
+
+const hello3 = new Hello(); // hello
+h801.addService(hello3);
+
+const hello4 = new Hello(); // hello
+shellyi3.addService(hello4);
 
 const async = new Service<Buffer, void>(Buffer.from([3]), 32000); // async
 wt32TestBoard.addService(async);
@@ -229,19 +253,43 @@ wt32TestBoard.addService(sds011);
 const mhz19 = new Mhz19(); // mhz19
 wt32TestBoard.addService(mhz19);
 
-const relay0 = new Relay();
+const led0 = new Led(0);
+h801.addService(led0);
+
+const led1 = new Led(1);
+h801.addService(led1);
+
+const led2 = new Led(2);
+h801.addService(led2);
+
+const led3 = new Led(3);
+h801.addService(led3);
+
+const led4 = new Led(4);
+h801.addService(led4);
+
+const relay0 = new Relay(0);
 shelly1.addService(relay0);
 
-const button0 = new Button();
-shelly1.addEvent(button0);
-
-const relay1 = new Relay();
+const relay1 = new Relay(0);
 obiJack.addService(relay1);
 
-const button1 = new Button();
+const button0 = new Button(0);
+shelly1.addEvent(button0);
+
+const button1 = new Button(0);
 obiJack.addEvent(button1);
 
-const motion0 = new MotionSensor();
+const button2 = new Button(0);
+shellyi3.addEvent(button2);
+
+const button3 = new Button(1);
+shellyi3.addEvent(button3);
+
+const button4 = new Button(2);
+shellyi3.addEvent(button4);
+
+const motion0 = new MotionSensor(0);
 wt32TestBoard.addEvent(motion0);
 
 const every5Seconds = new Schedule(
@@ -316,6 +364,11 @@ every30Seconds.addTask(() => {
     .then((result) => onResolve('✅ hello', result))
     .catch(() => onReject('⛔️ hello'));
 
+  hello3
+    .request()
+    .then((result) => onResolve('✅ hello', result))
+    .catch(() => onReject('⛔️ hello'));
+
   mhz19
     .request()
     .then((result) => onResolve('✅ mhz19', result))
@@ -339,7 +392,14 @@ every2Minutes.addTask(() => {
 isOnline.observe((online) => {
   if (!online) {
     log.info(() => '❌ offline');
+    return;
+  }
 
+  log.info(() => '📶 online');
+});
+
+wt32TestBoard.isOnline.observe((online) => {
+  if (!online) {
     every5Seconds.stop();
     every30Seconds.stop();
     every2Minutes.stop();
@@ -347,31 +407,79 @@ isOnline.observe((online) => {
     return;
   }
 
-  log.info(() => '📶 online');
-
   every5Seconds.start();
   every30Seconds.start();
   every2Minutes.start();
 });
 
-const changeRelays = (force?: boolean) => {
-  if (!isOnline.value) return;
+const changeLeds = (dutyCycle: number) => {
+  if (!h801.isOnline.value) return;
 
+  led0
+    .request(dutyCycle)
+    .then((result) => {
+      onResolve('✅ led0', result);
+    })
+    .catch(() => onReject('⛔️ led0'));
+
+  led1
+    .request(dutyCycle)
+    .then((result) => {
+      onResolve('✅ led1', result);
+    })
+    .catch(() => onReject('⛔️ led1'));
+
+  led2
+    .request(dutyCycle)
+    .then((result) => {
+      onResolve('✅ led2', result);
+    })
+    .catch(() => onReject('⛔️ led2'));
+
+  led3
+    .request(dutyCycle)
+    .then((result) => {
+      onResolve('✅ led3', result);
+    })
+    .catch(() => onReject('⛔️ led3'));
+
+  led4
+    .request(dutyCycle)
+    .then((result) => {
+      onResolve('✅ led4', result);
+    })
+    .catch(() => onReject('⛔️ led4'));
+};
+
+const changeRelays = (force?: boolean) => {
   on = force === undefined ? !on : force;
 
-  relay0
-    .request(on)
-    .then(() => {
-      onResolve('✅ relay0', null);
-    })
-    .catch(() => onReject('⛔️ relay0'));
+  log.info(() => `button press ➡️ ${on ? '🟢' : '🔴'}`);
 
-  relay1
-    .request(on)
-    .then(() => {
-      onResolve('✅ relay1', null);
-    })
-    .catch(() => onReject('⛔️ relay1'));
+  if (shelly1.isOnline.value) {
+    relay0
+      .request(on)
+      .then((result) => {
+        onResolve('✅ relay0', result);
+      })
+      .catch(() => onReject('⛔️ relay0'));
+  }
+
+  if (obiJack.isOnline.value) {
+    relay1
+      .request(on)
+      .then((result) => {
+        onResolve('✅ relay1', result);
+      })
+      .catch(() => onReject('⛔️ relay1'));
+  }
+
+  if (on) {
+    changeLeds(255);
+    return;
+  }
+
+  changeLeds(timer.isRunning ? 64 : 0);
 };
 
 button0.observe((data) => {
@@ -393,6 +501,40 @@ button1.observe((data) => {
   }
 });
 
+button2.observe((data) => {
+  log.info(() => `event button2 ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
+button3.observe((data) => {
+  log.info(() => `event button3 ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
+button4.observe((data) => {
+  log.info(() => `event button4 ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
 motion0.observe((data) => {
-  log.info(() => `event motion0 ${data ? '👍' : '🚫'}`);
+  log.info(() => `event motion0 ${data ? '🟡' : '🔵'}`);
+
+  if (on || !data) return;
+
+  changeLeds(64);
+  timer.start();
+});
+
+timer.observe(() => {
+  if (on) return;
+  changeLeds(0);
 });

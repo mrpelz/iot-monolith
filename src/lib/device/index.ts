@@ -97,6 +97,7 @@ export class Event<T> extends Property {
 
   // eslint-disable-next-line class-methods-use-this
   protected decode(input: Buffer): T | null {
+    if (!input.length) return null;
     return (input as unknown) as T;
   }
 
@@ -129,6 +130,7 @@ export class Service<T, S> extends Property {
 
   // eslint-disable-next-line class-methods-use-this
   protected decode(input: Buffer): T | null {
+    if (!input.length) return null;
     return (input as unknown) as T;
   }
 
