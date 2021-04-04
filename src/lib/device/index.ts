@@ -18,8 +18,8 @@ import { Timer } from '../timer/index.js';
 import { logger } from '../../app/logging.js';
 import { rebind } from '../utils/oop.js';
 
-type DeviceEvents = Set<Event>;
-type DeviceServices = Set<Service>;
+type DeviceEvents = Set<Event<unknown>>;
+type DeviceServices = Set<Service<unknown, unknown>>;
 
 type Request<T = Buffer> = Promise<T>;
 
@@ -92,7 +92,7 @@ export class Property {
   }
 }
 
-export class Event<T = unknown> extends Property {
+export class Event<T> extends Property {
   private readonly _observable = new NullState<T>();
 
   // eslint-disable-next-line class-methods-use-this
@@ -118,7 +118,7 @@ export class Event<T = unknown> extends Property {
   }
 }
 
-export class Service<T = unknown, S = unknown | void> extends Property {
+export class Service<T, S> extends Property {
   private readonly _timeout: number;
 
   constructor(identifier: Buffer, timeout = 5000) {
@@ -140,17 +140,13 @@ export class Service<T = unknown, S = unknown | void> extends Property {
   /**
    * issue request on Device instance
    */
-  request(payload: S | null = null): Request<T | null> {
+  request(payload: S): Request<T | null> {
     if (!this._device) {
       throw new Error('no device is present on this proerty');
     }
 
     return this._device
-      .request(
-        this.identifier,
-        payload ? this.encode(payload) : null,
-        this._timeout
-      )
+      .request(this.identifier, this.encode(payload), this._timeout)
       .then((result) => this.decode(result));
   }
 }
@@ -164,7 +160,7 @@ export class Device {
     );
   }
 
-  private readonly _events = new Set<Event>();
+  private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
   private readonly _keepAliveReceiveTimer: Timer;
   private readonly _keepAliveSendSchedule: Schedule;
@@ -177,7 +173,7 @@ export class Device {
   );
 
   private readonly _requests = new Map<number, RequestResolver>();
-  private readonly _services = new Set<Service>();
+  private readonly _services = new Set<Service<unknown, unknown>>();
   private readonly _transport: TransportDevice;
 
   readonly identifier: DeviceIdentifier;
@@ -287,7 +283,7 @@ export class Device {
   /**
    * add an instance of Event to this device
    */
-  addEvent(event: Event): void {
+  addEvent(event: Event<unknown>): void {
     Event.isValidPropertyIdentifier(this._events, event.identifier);
 
     event._setDevice(this);
@@ -297,7 +293,7 @@ export class Device {
   /**
    * add an instance of Service to this device
    */
-  addService(service: Service): void {
+  addService(service: Service<unknown, unknown>): void {
     Service.isValidPropertyIdentifier(this._services, service.identifier);
 
     service._setDevice(this);

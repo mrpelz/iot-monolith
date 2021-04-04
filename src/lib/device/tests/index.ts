@@ -25,7 +25,7 @@ const isOnline = new BooleanStateGroup(
 
 let on = false;
 
-class Hello extends Service<string> {
+class Hello extends Service<string, void> {
   constructor() {
     super(Buffer.from([1]));
   }
@@ -36,7 +36,7 @@ class Hello extends Service<string> {
   }
 }
 
-class Mcp9808 extends Service<number> {
+class Mcp9808 extends Service<number, void> {
   constructor() {
     super(Buffer.from([4]));
   }
@@ -54,7 +54,7 @@ type Bme280Response = {
   pressure: number;
   temperature: number;
 };
-class Bme280 extends Service<Bme280Response> {
+class Bme280 extends Service<Bme280Response, void> {
   constructor() {
     super(Buffer.from([5]));
   }
@@ -71,7 +71,7 @@ class Bme280 extends Service<Bme280Response> {
   }
 }
 
-class Tsl2561 extends Service<number> {
+class Tsl2561 extends Service<number, void> {
   constructor() {
     super(Buffer.from([6]));
   }
@@ -84,7 +84,7 @@ class Tsl2561 extends Service<number> {
   }
 }
 
-class Veml6070 extends Service<number> {
+class Veml6070 extends Service<number, void> {
   constructor() {
     super(Buffer.from([9]));
   }
@@ -101,7 +101,7 @@ type Sds011Response = {
   pm025: number;
   pm10: number;
 };
-class Sds011280 extends Service<Sds011Response> {
+class Sds011280 extends Service<Sds011Response, void> {
   constructor() {
     super(Buffer.from([10]), 35000);
   }
@@ -124,7 +124,7 @@ type Mhz19Response = {
   temperature: number;
   transmittance: number;
 };
-class Mhz19 extends Service<Mhz19Response> {
+class Mhz19 extends Service<Mhz19Response, void> {
   constructor() {
     super(Buffer.from([11]));
   }
@@ -143,7 +143,7 @@ class Mhz19 extends Service<Mhz19Response> {
   }
 }
 
-class Relay extends Service<null> {
+class Relay extends Service<null, boolean> {
   constructor() {
     super(Buffer.from([0xa0]));
   }
@@ -202,7 +202,7 @@ shelly1.addService(hello1);
 const hello2 = new Hello(); // hello
 obiJack.addService(hello2);
 
-const async = new Service(Buffer.from([3]), 32000); // async
+const async = new Service<Buffer, void>(Buffer.from([3]), 32000); // async
 wt32TestBoard.addService(async);
 
 const mcp9808 = new Mcp9808(); // mcp9808
