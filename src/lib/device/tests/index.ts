@@ -13,11 +13,11 @@ const log = logger.getInput({
   head: 'device-test',
 });
 
-const wt32TestBoard = new UDPDevice('10.97.0.198', 8266);
+const wt32TestBoard = new UDPDevice('10.97.0.198', 1337);
 const shelly1 = new UDPDevice('10.97.0.199', 8266);
 const obiJack = new UDPDevice('10.97.0.159', 8266);
 const h801 = new UDPDevice('10.97.0.154', 8266);
-const shellyi3 = new UDPDevice('10.97.0.187', 8266);
+const shellyi3 = new UDPDevice('10.97.0.187', 1337);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
