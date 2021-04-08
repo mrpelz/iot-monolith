@@ -13,7 +13,7 @@ const log = logger.getInput({
   head: 'device-test',
 });
 
-const wt32TestBoard = new UDPDevice('10.97.0.198', 1337);
+const testDevice = new UDPDevice('10.97.0.198', 1337);
 const shelly1 = new UDPDevice('10.97.0.199', 1337);
 const obiJack = new UDPDevice('10.97.0.159', 1337);
 const h801 = new UDPDevice('10.97.0.154', 1337);
@@ -21,7 +21,7 @@ const shellyi3 = new UDPDevice('10.97.0.187', 1337);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-  wt32TestBoard.isOnline,
+  testDevice.isOnline,
   shelly1.isOnline,
   obiJack.isOnline,
   h801.isOnline,
@@ -211,47 +211,59 @@ class MotionSensor extends Event<boolean> {
   }
 }
 
-const hello0 = new Hello(); // hello
-wt32TestBoard.addService(hello0);
-
-const hello1 = new Hello(); // hello
-shelly1.addService(hello1);
-
-const hello2 = new Hello(); // hello
-obiJack.addService(hello2);
-
-const hello3 = new Hello(); // hello
-h801.addService(hello3);
-
-const hello4 = new Hello(); // hello
-shellyi3.addService(hello4);
+const helloTestDevice = new Hello(); // hello
+testDevice.addService(helloTestDevice);
 
 const async = new Service<Buffer, void>(Buffer.from([3]), 32000); // async
-wt32TestBoard.addService(async);
+testDevice.addService(async);
 
 const mcp9808 = new Mcp9808(); // mcp9808
-wt32TestBoard.addService(mcp9808);
+testDevice.addService(mcp9808);
 
 const bme280 = new Bme280(); // bme280
-wt32TestBoard.addService(bme280);
+testDevice.addService(bme280);
 
 const tsl2561 = new Tsl2561(); // tsl2561
-wt32TestBoard.addService(tsl2561);
+testDevice.addService(tsl2561);
 
 const sgp30 = new Service(Buffer.from([7])); // sgp30
-wt32TestBoard.addService(sgp30);
+testDevice.addService(sgp30);
 
 const ccs811 = new Service(Buffer.from([8])); // ccs811
-wt32TestBoard.addService(ccs811);
+testDevice.addService(ccs811);
 
 const veml6070 = new Veml6070(); // veml6070
-wt32TestBoard.addService(veml6070);
+testDevice.addService(veml6070);
 
 const sds011 = new Sds011280(); // sds011
-wt32TestBoard.addService(sds011);
+testDevice.addService(sds011);
 
 const mhz19 = new Mhz19(); // mhz19
-wt32TestBoard.addService(mhz19);
+testDevice.addService(mhz19);
+
+const motionTestDevice = new MotionSensor(0);
+testDevice.addEvent(motionTestDevice);
+
+const helloShelly1 = new Hello(); // hello
+shelly1.addService(helloShelly1);
+
+const relayShelly1 = new Relay(0);
+shelly1.addService(relayShelly1);
+
+const buttonShelly1 = new Button(0);
+shelly1.addEvent(buttonShelly1);
+
+const helloObiJack = new Hello(); // hello
+obiJack.addService(helloObiJack);
+
+const relayObiJack = new Relay(0);
+obiJack.addService(relayObiJack);
+
+const buttonObiJack = new Button(0);
+obiJack.addEvent(buttonObiJack);
+
+const helloH801 = new Hello(); // hello
+h801.addService(helloH801);
 
 const led0 = new Led(0);
 h801.addService(led0);
@@ -268,29 +280,17 @@ h801.addService(led3);
 const led4 = new Led(4);
 h801.addService(led4);
 
-const relay0 = new Relay(0);
-shelly1.addService(relay0);
+const helloShellyi3 = new Hello(); // hello
+shellyi3.addService(helloShellyi3);
 
-const relay1 = new Relay(0);
-obiJack.addService(relay1);
+const button0Shellyi3 = new Button(0);
+shellyi3.addEvent(button0Shellyi3);
 
-const button0 = new Button(0);
-shelly1.addEvent(button0);
+const button1Shellyi3 = new Button(1);
+shellyi3.addEvent(button1Shellyi3);
 
-const button1 = new Button(0);
-obiJack.addEvent(button1);
-
-const button2 = new Button(0);
-shellyi3.addEvent(button2);
-
-const button3 = new Button(1);
-shellyi3.addEvent(button3);
-
-const button4 = new Button(2);
-shellyi3.addEvent(button4);
-
-const motion0 = new MotionSensor(0);
-wt32TestBoard.addEvent(motion0);
+const button2Shellyi3 = new Button(2);
+shellyi3.addEvent(button2Shellyi3);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -325,73 +325,87 @@ const onReject = (description: string) => {
 every5Seconds.addTask(() => {
   log.info(() => '⏲ every5Seconds');
 
-  mcp9808
-    .request()
-    .then((result) => onResolve('✅ mcp9808', result))
-    .catch(() => onReject('⛔️ mcp9808'));
+  if (testDevice.isOnline.value) {
+    mcp9808
+      .request()
+      .then((result) => onResolve('✅ mcp9808', result))
+      .catch(() => onReject('⛔️ mcp9808'));
 
-  bme280
-    .request()
-    .then((result) => onResolve('✅ bme280', result))
-    .catch(() => onReject('⛔️ bme280'));
+    bme280
+      .request()
+      .then((result) => onResolve('✅ bme280', result))
+      .catch(() => onReject('⛔️ bme280'));
 
-  tsl2561
-    .request()
-    .then((result) => onResolve('✅ tsl2561', result))
-    .catch(() => onReject('⛔️ tsl256'));
+    tsl2561
+      .request()
+      .then((result) => onResolve('✅ tsl2561', result))
+      .catch(() => onReject('⛔️ tsl256'));
 
-  veml6070
-    .request()
-    .then((result) => onResolve('✅ veml6070', result))
-    .catch(() => onReject('⛔️ veml60'));
+    veml6070
+      .request()
+      .then((result) => onResolve('✅ veml6070', result))
+      .catch(() => onReject('⛔️ veml60'));
+  }
 });
 
 every30Seconds.addTask(() => {
   log.info(() => '⏲ every30Seconds');
 
-  hello0
-    .request()
-    .then((result) => onResolve('✅ hello', result))
-    .catch(() => onReject('⛔️ hello'));
+  if (testDevice.isOnline.value) {
+    helloTestDevice
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
 
-  hello1
-    .request()
-    .then((result) => onResolve('✅ hello', result))
-    .catch(() => onReject('⛔️ hello'));
+    mhz19
+      .request()
+      .then((result) => onResolve('✅ mhz19', result))
+      .catch(() => onReject('⛔️ mhz19'));
+  }
 
-  hello2
-    .request()
-    .then((result) => onResolve('✅ hello', result))
-    .catch(() => onReject('⛔️ hello'));
+  if (shelly1.isOnline.value) {
+    helloShelly1
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
 
-  hello3
-    .request()
-    .then((result) => onResolve('✅ hello', result))
-    .catch(() => onReject('⛔️ hello'));
+  if (obiJack.isOnline.value) {
+    helloObiJack
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
 
-  hello4
-    .request()
-    .then((result) => onResolve('✅ hello', result))
-    .catch(() => onReject('⛔️ hello'));
+  if (h801.isOnline.value) {
+    helloH801
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
 
-  mhz19
-    .request()
-    .then((result) => onResolve('✅ mhz19', result))
-    .catch(() => onReject('⛔️ mhz19'));
+  if (shellyi3.isOnline.value) {
+    helloShellyi3
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
 });
 
 every2Minutes.addTask(() => {
   log.info(() => '⏲ every2Minutes');
 
-  async
-    .request()
-    .then((result) => onResolve('✅ async', result))
-    .catch(() => onReject('⛔️ async'));
+  if (testDevice.isOnline.value) {
+    async
+      .request()
+      .then((result) => onResolve('✅ async', result))
+      .catch(() => onReject('⛔️ async'));
 
-  sds011
-    .request()
-    .then((result) => onResolve('✅ sds011', result))
-    .catch(() => onReject('⛔️ sds011'));
+    sds011
+      .request()
+      .then((result) => onResolve('✅ sds011', result))
+      .catch(() => onReject('⛔️ sds011'));
+  }
 });
 
 isOnline.observe((online) => {
@@ -403,7 +417,7 @@ isOnline.observe((online) => {
   log.info(() => '📶 online');
 });
 
-wt32TestBoard.isOnline.observe((online) => {
+testDevice.isOnline.observe((online) => {
   if (!online) {
     every5Seconds.stop();
     every30Seconds.stop();
@@ -462,7 +476,7 @@ const changeRelays = (force?: boolean) => {
   log.info(() => `button press ➡️ ${on ? '🟢' : '🔴'}`);
 
   if (shelly1.isOnline.value) {
-    relay0
+    relayShelly1
       .request(on)
       .then((result) => {
         onResolve('✅ relay0', result);
@@ -471,7 +485,7 @@ const changeRelays = (force?: boolean) => {
   }
 
   if (obiJack.isOnline.value) {
-    relay1
+    relayObiJack
       .request(on)
       .then((result) => {
         onResolve('✅ relay1', result);
@@ -487,7 +501,7 @@ const changeRelays = (force?: boolean) => {
   changeLeds(timer.isRunning ? 64 : 0);
 };
 
-button0.observe((data) => {
+buttonShelly1.observe((data) => {
   log.info(() => `event button0 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -495,7 +509,7 @@ button0.observe((data) => {
   }
 });
 
-button1.observe((data) => {
+buttonObiJack.observe((data) => {
   log.info(() => `event button1 ${JSON.stringify(data)}`);
 
   if (
@@ -506,7 +520,7 @@ button1.observe((data) => {
   }
 });
 
-button2.observe((data) => {
+button0Shellyi3.observe((data) => {
   log.info(() => `event button2 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -514,7 +528,7 @@ button2.observe((data) => {
   }
 });
 
-button3.observe((data) => {
+button1Shellyi3.observe((data) => {
   log.info(() => `event button3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -522,7 +536,7 @@ button3.observe((data) => {
   }
 });
 
-button4.observe((data) => {
+button2Shellyi3.observe((data) => {
   log.info(() => `event button4 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -530,7 +544,7 @@ button4.observe((data) => {
   }
 });
 
-motion0.observe((data) => {
+motionTestDevice.observe((data) => {
   log.info(() => `event motion0 ${data ? '🟡' : '🔵'}`);
 
   if (on || !data) return;
