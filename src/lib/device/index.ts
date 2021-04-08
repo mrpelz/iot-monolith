@@ -38,16 +38,6 @@ const KEEPALIVE_PAYLOAD = Buffer.from([
   KEEPALIVE_COMMAND,
 ]);
 
-const EVENT_PEER_COMMAND = 0x00;
-const EVENT_PEER_PRIORITY = 0x01;
-const EVENT_PEER_SET = 0x01;
-const EVENT_PEER_PAYLOAD = Buffer.from([
-  KEEPALIVE_IDENTIFIER,
-  EVENT_PEER_COMMAND,
-  EVENT_PEER_PRIORITY,
-  EVENT_PEER_SET,
-]);
-
 const EVENT_IDENTIFIER = 0x00;
 
 export class Property {
@@ -154,10 +144,9 @@ export class Service<T, S> extends Property {
 }
 
 export class Device {
-  private static _setUpSchedule(keepAlive: number): Schedule {
-    const delaySeconds = Math.round(keepAlive / 2000);
+  private static _setUpSchedule(): Schedule {
     return new Schedule(
-      () => new ModifiableDate().set().ceil(Unit.SECOND, delaySeconds).date,
+      () => new ModifiableDate().set().truncateToNext(Unit.SECOND).date,
       false
     );
   }
@@ -184,7 +173,7 @@ export class Device {
   constructor(
     transport: Transport,
     identifier: DeviceIdentifier = null,
-    keepAlive = 30000
+    keepAlive = 5000
   ) {
     rebind(this, '_sendKeepAlive');
 
@@ -205,7 +194,7 @@ export class Device {
 
     this._keepAliveReceiveTimer = new Timer(keepAlive);
 
-    this._keepAliveSendSchedule = Device._setUpSchedule(keepAlive);
+    this._keepAliveSendSchedule = Device._setUpSchedule();
     this._keepAliveSendSchedule.addTask(this._sendKeepAlive);
 
     transport.isConnected.observe((transportConnected) => {
@@ -255,7 +244,6 @@ export class Device {
     if (!this._transport.isConnected.value) return;
 
     try {
-      this._transport._writeToTransport(EVENT_PEER_PAYLOAD);
       this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
     } catch (_) {
       // noop

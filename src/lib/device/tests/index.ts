@@ -14,9 +14,9 @@ const log = logger.getInput({
 });
 
 const wt32TestBoard = new UDPDevice('10.97.0.198', 1337);
-const shelly1 = new UDPDevice('10.97.0.199', 8266);
-const obiJack = new UDPDevice('10.97.0.159', 8266);
-const h801 = new UDPDevice('10.97.0.154', 8266);
+const shelly1 = new UDPDevice('10.97.0.199', 1337);
+const obiJack = new UDPDevice('10.97.0.159', 1337);
+const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
 
 const isOnline = new BooleanStateGroup(
@@ -365,6 +365,11 @@ every30Seconds.addTask(() => {
     .catch(() => onReject('⛔️ hello'));
 
   hello3
+    .request()
+    .then((result) => onResolve('✅ hello', result))
+    .catch(() => onReject('⛔️ hello'));
+
+  hello4
     .request()
     .then((result) => onResolve('✅ hello', result))
     .catch(() => onReject('⛔️ hello'));
