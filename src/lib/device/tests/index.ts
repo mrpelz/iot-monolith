@@ -18,6 +18,7 @@ const shelly1 = new UDPDevice('10.97.0.199', 1337);
 const obiJack = new UDPDevice('10.97.0.159', 1337);
 const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
+const olimex = new UDPDevice('10.97.0.169', 1337);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
@@ -25,7 +26,8 @@ const isOnline = new BooleanStateGroup(
   shelly1.isOnline,
   obiJack.isOnline,
   h801.isOnline,
-  shellyi3.isOnline
+  shellyi3.isOnline,
+  olimex.isOnline
 );
 
 let on = false;
@@ -292,6 +294,12 @@ shellyi3.addEvent(button1Shellyi3);
 const button2Shellyi3 = new Button(2);
 shellyi3.addEvent(button2Shellyi3);
 
+const helloOlimex = new Hello(); // hello
+olimex.addService(helloOlimex);
+
+const espNow = new Event<Buffer>(Buffer.from([0xfe]));
+olimex.addEvent(espNow);
+
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
   false
@@ -386,6 +394,13 @@ every30Seconds.addTask(() => {
 
   if (shellyi3.isOnline.value) {
     helloShellyi3
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
+
+  if (olimex.isOnline.value) {
+    helloOlimex
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -551,6 +566,13 @@ motionTestDevice.observe((data) => {
 
   changeLeds(64);
   timer.start();
+});
+
+espNow.observe((data) => {
+  const test = [...data].map((value) => value.toString(16)).join(',');
+  log.info(() => `event espNow ${test}`);
+
+  changeRelays();
 });
 
 timer.observe(() => {
