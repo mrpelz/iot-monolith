@@ -19,6 +19,7 @@ const obiJack = new UDPDevice('10.97.0.159', 1337);
 const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
 const olimex = new UDPDevice('10.97.0.169', 1337);
+const espNowTestNode = new UDPDevice('10.97.0.163', 1337);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
@@ -27,7 +28,8 @@ const isOnline = new BooleanStateGroup(
   obiJack.isOnline,
   h801.isOnline,
   shellyi3.isOnline,
-  olimex.isOnline
+  olimex.isOnline,
+  espNowTestNode.isOnline
 );
 
 let on = false;
@@ -300,6 +302,12 @@ olimex.addService(helloOlimex);
 const espNow = new Event<Buffer>(Buffer.from([0xfe]));
 olimex.addEvent(espNow);
 
+const helloEspNowTestNode = new Hello(); // hello
+espNowTestNode.addService(helloEspNowTestNode);
+
+const espNowTestNodeButton = new Button(0);
+espNowTestNode.addEvent(espNowTestNodeButton);
+
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
   false
@@ -405,6 +413,13 @@ every30Seconds.addTask(() => {
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
   }
+
+  if (espNowTestNode.isOnline.value) {
+    helloEspNowTestNode
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
 });
 
 every2Minutes.addTask(() => {
@@ -494,18 +509,18 @@ const changeRelays = (force?: boolean) => {
     relayShelly1
       .request(on)
       .then((result) => {
-        onResolve('✅ relay0', result);
+        onResolve('✅ relayShelly1', result);
       })
-      .catch(() => onReject('⛔️ relay0'));
+      .catch(() => onReject('⛔️ relayShelly1'));
   }
 
   if (obiJack.isOnline.value) {
     relayObiJack
       .request(on)
       .then((result) => {
-        onResolve('✅ relay1', result);
+        onResolve('✅ relayObiJack', result);
       })
-      .catch(() => onReject('⛔️ relay1'));
+      .catch(() => onReject('⛔️ relayObiJack'));
   }
 
   if (on) {
@@ -517,7 +532,7 @@ const changeRelays = (force?: boolean) => {
 };
 
 buttonShelly1.observe((data) => {
-  log.info(() => `event button0 ${JSON.stringify(data)}`);
+  log.info(() => `event buttonShelly1 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
@@ -525,7 +540,7 @@ buttonShelly1.observe((data) => {
 });
 
 buttonObiJack.observe((data) => {
-  log.info(() => `event button1 ${JSON.stringify(data)}`);
+  log.info(() => `event buttonObiJack ${JSON.stringify(data)}`);
 
   if (
     (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
@@ -536,7 +551,7 @@ buttonObiJack.observe((data) => {
 });
 
 button0Shellyi3.observe((data) => {
-  log.info(() => `event button2 ${JSON.stringify(data)}`);
+  log.info(() => `event button0Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
@@ -544,7 +559,7 @@ button0Shellyi3.observe((data) => {
 });
 
 button1Shellyi3.observe((data) => {
-  log.info(() => `event button3 ${JSON.stringify(data)}`);
+  log.info(() => `event button1Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
@@ -552,7 +567,7 @@ button1Shellyi3.observe((data) => {
 });
 
 button2Shellyi3.observe((data) => {
-  log.info(() => `event button4 ${JSON.stringify(data)}`);
+  log.info(() => `event button2Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
@@ -560,7 +575,7 @@ button2Shellyi3.observe((data) => {
 });
 
 motionTestDevice.observe((data) => {
-  log.info(() => `event motion0 ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event motionTestDevice ${data ? '🟡' : '🔵'}`);
 
   if (on || !data) return;
 
@@ -572,7 +587,15 @@ espNow.observe((data) => {
   const test = [...data].map((value) => value.toString(16)).join(',');
   log.info(() => `event espNow ${test}`);
 
-  changeRelays();
+  // changeRelays();
+});
+
+espNowTestNodeButton.observe((data) => {
+  log.info(() => `event espNowTestNodeButton ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
 });
 
 timer.observe(() => {
