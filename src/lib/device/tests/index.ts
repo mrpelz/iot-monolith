@@ -584,10 +584,32 @@ motionTestDevice.observe((data) => {
 });
 
 espNow.observe((data) => {
-  const test = [...data].map((value) => value.toString(16)).join(',');
-  log.info(() => `event espNow ${test}`);
+  const input = data.subarray(7);
+  const macAddress = data.subarray(0, 6);
 
-  // changeRelays();
+  const decoded = {
+    down: input.subarray(0, 1).readUInt8() !== 0, // 1.
+    downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
+    longpress: input.subarray(3, 4).readUInt8(), // 4.
+    previousDuration: input.subarray(4, 10).readUInt32LE(), // 5.
+    repeat: input.subarray(2, 3).readUInt8(), // 3.
+  };
+
+  log.info(
+    () =>
+      `event espNow ${[...macAddress].map((byte) =>
+        byte.toString(16)
+      )}: ${JSON.stringify(decoded)}`
+  );
+
+  if (
+    (!decoded.down &&
+      decoded.downChanged &&
+      decoded.previousDuration < 125 * 5) ||
+    decoded.longpress === 5
+  ) {
+    changeRelays();
+  }
 });
 
 espNowTestNodeButton.observe((data) => {
