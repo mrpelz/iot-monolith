@@ -18,8 +18,8 @@ const shelly1 = new UDPDevice('10.97.0.199', 1337);
 const obiJack = new UDPDevice('10.97.0.159', 1337);
 const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
-const olimex = new UDPDevice('10.97.0.169', 1337);
 const espNowTestNode = new UDPDevice('10.97.0.163', 1337);
+const olimexEspNowGw = new UDPDevice('10.97.0.177', 1337);
 
 const isOnline = new BooleanStateGroup(
   BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
@@ -28,8 +28,8 @@ const isOnline = new BooleanStateGroup(
   obiJack.isOnline,
   h801.isOnline,
   shellyi3.isOnline,
-  olimex.isOnline,
-  espNowTestNode.isOnline
+  espNowTestNode.isOnline,
+  olimexEspNowGw.isOnline
 );
 
 let on = false;
@@ -296,17 +296,17 @@ shellyi3.addEvent(button1Shellyi3);
 const button2Shellyi3 = new Button(2);
 shellyi3.addEvent(button2Shellyi3);
 
-const helloOlimex = new Hello(); // hello
-olimex.addService(helloOlimex);
-
-const espNow = new Event<Buffer>(Buffer.from([0xfe]));
-olimex.addEvent(espNow);
-
 const helloEspNowTestNode = new Hello(); // hello
 espNowTestNode.addService(helloEspNowTestNode);
 
 const espNowTestNodeButton = new Button(0);
 espNowTestNode.addEvent(espNowTestNodeButton);
+
+const helloOlimex = new Hello(); // hello
+olimexEspNowGw.addService(helloOlimex);
+
+const espNow = new Event<Buffer>(Buffer.from([0xfe]));
+olimexEspNowGw.addEvent(espNow);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -407,15 +407,15 @@ every30Seconds.addTask(() => {
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (olimex.isOnline.value) {
-    helloOlimex
+  if (espNowTestNode.isOnline.value) {
+    helloEspNowTestNode
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (espNowTestNode.isOnline.value) {
-    helloEspNowTestNode
+  if (olimexEspNowGw.isOnline.value) {
+    helloOlimex
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -583,6 +583,14 @@ motionTestDevice.observe((data) => {
   timer.start();
 });
 
+espNowTestNodeButton.observe((data) => {
+  log.info(() => `event espNowTestNodeButton ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
 espNow.observe((data) => {
   const input = data.subarray(7);
   const macAddress = data.subarray(0, 6);
@@ -608,14 +616,6 @@ espNow.observe((data) => {
       decoded.previousDuration < 125 * 5) ||
     decoded.longpress === 5
   ) {
-    changeRelays();
-  }
-});
-
-espNowTestNodeButton.observe((data) => {
-  log.info(() => `event espNowTestNodeButton ${JSON.stringify(data)}`);
-
-  if (!data.down && data.downChanged) {
     changeRelays();
   }
 });
