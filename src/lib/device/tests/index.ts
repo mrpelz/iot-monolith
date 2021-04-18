@@ -180,6 +180,7 @@ type ButtonEvent = {
   down: boolean;
   downChanged: boolean;
   longpress: number;
+  pressedMap: boolean[];
   previousDuration: number;
   repeat: number;
 };
@@ -196,7 +197,8 @@ class Button extends Event<ButtonEvent> {
       down: input.subarray(0, 1).readUInt8() !== 0, // 1.
       downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
       longpress: input.subarray(3, 4).readUInt8(), // 4.
-      previousDuration: input.subarray(4, 10).readUInt32LE(), // 5.
+      pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
+      previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
       repeat: input.subarray(2, 3).readUInt8(), // 3.
     };
   }
@@ -592,14 +594,16 @@ espNowTestNodeButton.observe((data) => {
 });
 
 espNow.observe((data) => {
-  const input = data.subarray(7);
   const macAddress = data.subarray(0, 6);
+  const index = data.subarray(6, 7).readUInt8();
+  const input = data.subarray(7);
 
-  const decoded = {
+  const decoded: ButtonEvent = {
     down: input.subarray(0, 1).readUInt8() !== 0, // 1.
     downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
     longpress: input.subarray(3, 4).readUInt8(), // 4.
-    previousDuration: input.subarray(4, 10).readUInt32LE(), // 5.
+    pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
+    previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
     repeat: input.subarray(2, 3).readUInt8(), // 3.
   };
 
@@ -607,7 +611,7 @@ espNow.observe((data) => {
     () =>
       `event espNow ${[...macAddress].map((byte) =>
         byte.toString(16)
-      )}: ${JSON.stringify(decoded)}`
+      )} (${index}): ${JSON.stringify(decoded)}`
   );
 
   if (
