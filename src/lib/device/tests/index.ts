@@ -598,6 +598,18 @@ espNow.observe((data) => {
   const index = data.subarray(6, 7).readUInt8();
   const input = data.subarray(7);
 
+  if (input.length < 8) {
+    log.info(
+      () =>
+        `event espNow ${[...macAddress].map((byte) =>
+          byte.toString(16)
+        )}: ${JSON.stringify(
+          [index, ...input].map((byte) => byte.toString(16))
+        )}`
+    );
+    return;
+  }
+
   const decoded: ButtonEvent = {
     down: input.subarray(0, 1).readUInt8() !== 0, // 1.
     downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
