@@ -301,8 +301,11 @@ shellyi3.addEvent(button2Shellyi3);
 const helloEspNowTestNode = new Hello(); // hello
 espNowTestNode.addService(helloEspNowTestNode);
 
-const espNowTestNodeButton = new Button(0);
-espNowTestNode.addEvent(espNowTestNodeButton);
+const button0espNowTestNode = new Button(0);
+espNowTestNode.addEvent(button0espNowTestNode);
+
+const button1espNowTestNode = new Button(1);
+espNowTestNode.addEvent(button1espNowTestNode);
 
 const helloOlimex = new Hello(); // hello
 olimexEspNowGw.addService(helloOlimex);
@@ -585,8 +588,16 @@ motionTestDevice.observe((data) => {
   timer.start();
 });
 
-espNowTestNodeButton.observe((data) => {
-  log.info(() => `event espNowTestNodeButton ${JSON.stringify(data)}`);
+button0espNowTestNode.observe((data) => {
+  log.info(() => `event button0espNowTestNode ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
+
+button1espNowTestNode.observe((data) => {
+  log.info(() => `event button1espNowTestNode ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
