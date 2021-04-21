@@ -204,7 +204,7 @@ class Button extends Event<ButtonEvent> {
   }
 }
 
-class MotionSensor extends Event<boolean> {
+class Input extends Event<boolean> {
   constructor(index: number) {
     super(Buffer.from([0xa0 + index]));
   }
@@ -247,7 +247,7 @@ testDevice.addService(sds011);
 const mhz19 = new Mhz19(); // mhz19
 testDevice.addService(mhz19);
 
-const motionTestDevice = new MotionSensor(0);
+const motionTestDevice = new Input(0);
 testDevice.addEvent(motionTestDevice);
 
 const helloShelly1 = new Hello(); // hello
