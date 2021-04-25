@@ -14,8 +14,9 @@ const shelly1 = new UDPDevice('10.97.0.199', 1337);
 const obiJack = new UDPDevice('10.97.0.159', 1337);
 const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
-const espNowTestNode = new UDPDevice('10.97.0.163', 1337);
+const espNowTestButton = new UDPDevice('10.97.0.163', 1337);
 const olimexEspNowGw = new UDPDevice('10.97.0.177', 1337);
+const espNowTestWindowSensor = new UDPDevice('10.97.0.181', 1337);
 
 let on = false;
 
@@ -283,20 +284,32 @@ shellyi3.addEvent(button1Shellyi3);
 const button2Shellyi3 = new Button(2);
 shellyi3.addEvent(button2Shellyi3);
 
-const helloEspNowTestNode = new Hello(); // hello
-espNowTestNode.addService(helloEspNowTestNode);
+const helloEspNowTestButton = new Hello(); // hello
+espNowTestButton.addService(helloEspNowTestButton);
 
-const button0espNowTestNode = new Button(0);
-espNowTestNode.addEvent(button0espNowTestNode);
+const button0espNowTestButton = new Button(0);
+espNowTestButton.addEvent(button0espNowTestButton);
 
-const button1espNowTestNode = new Button(1);
-espNowTestNode.addEvent(button1espNowTestNode);
+const button1espNowTestButton = new Button(1);
+espNowTestButton.addEvent(button1espNowTestButton);
 
 const helloOlimex = new Hello(); // hello
 olimexEspNowGw.addService(helloOlimex);
 
 const espNow = new Event<Buffer>(Buffer.from([0xfe]));
 olimexEspNowGw.addEvent(espNow);
+
+const helloEspNowTestWindowSensor = new Hello(); // hello
+espNowTestWindowSensor.addService(helloEspNowTestWindowSensor);
+
+const windowOpenSensor = new Input(0);
+espNowTestWindowSensor.addEvent(windowOpenSensor);
+
+const windowOpenFullySensor = new Input(1);
+espNowTestWindowSensor.addEvent(windowOpenFullySensor);
+
+const windowAdditionalInput = new Input(2);
+espNowTestWindowSensor.addEvent(windowAdditionalInput);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -397,8 +410,8 @@ every30Seconds.addTask(() => {
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (espNowTestNode.isOnline.value) {
-    helloEspNowTestNode
+  if (espNowTestButton.isOnline.value) {
+    helloEspNowTestButton
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -406,6 +419,13 @@ every30Seconds.addTask(() => {
 
   if (olimexEspNowGw.isOnline.value) {
     helloOlimex
+      .request()
+      .then((result) => onResolve('✅ hello', result))
+      .catch(() => onReject('⛔️ hello'));
+  }
+
+  if (espNowTestWindowSensor.isOnline.value) {
+    helloEspNowTestWindowSensor
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -468,13 +488,13 @@ shellyi3.isOnline.observe((online) => {
 
   log.info(() => '📶 shellyi3 online');
 });
-espNowTestNode.isOnline.observe((online) => {
+espNowTestButton.isOnline.observe((online) => {
   if (!online) {
-    log.info(() => '❌ espNowTestNode offline');
+    log.info(() => '❌ espNowTestButton offline');
     return;
   }
 
-  log.info(() => '📶 espNowTestNode online');
+  log.info(() => '📶 espNowTestButton online');
 });
 olimexEspNowGw.isOnline.observe((online) => {
   if (!online) {
@@ -483,6 +503,14 @@ olimexEspNowGw.isOnline.observe((online) => {
   }
 
   log.info(() => '📶 olimexEspNowGw online');
+});
+espNowTestWindowSensor.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ espNowTestWindowSensor offline');
+    return;
+  }
+
+  log.info(() => '📶 espNowTestWindowSensor online');
 });
 
 testDevice.isOnline.observe((online) => {
@@ -621,20 +649,32 @@ motionTestDevice.observe((data) => {
   timer.start();
 });
 
-button0espNowTestNode.observe((data) => {
-  log.info(() => `event button0espNowTestNode ${JSON.stringify(data)}`);
+button0espNowTestButton.observe((data) => {
+  log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
   }
 });
 
-button1espNowTestNode.observe((data) => {
-  log.info(() => `event button1espNowTestNode ${JSON.stringify(data)}`);
+button1espNowTestButton.observe((data) => {
+  log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
   }
+});
+
+windowOpenSensor.observe((data) => {
+  log.info(() => `event windowOpenSensor ${data ? '🟡' : '🔵'}`);
+});
+
+windowOpenFullySensor.observe((data) => {
+  log.info(() => `event windowOpenFullySensor ${data ? '🟡' : '🔵'}`);
+});
+
+windowAdditionalInput.observe((data) => {
+  log.info(() => `event windowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
 
 espNow.observe((data) => {
