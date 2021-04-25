@@ -1,7 +1,3 @@
-import {
-  BooleanGroupStrategy,
-  BooleanStateGroup,
-} from '../../state-group/index.js';
 import { Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Schedule } from '../../schedule/index.js';
@@ -20,17 +16,6 @@ const h801 = new UDPDevice('10.97.0.154', 1337);
 const shellyi3 = new UDPDevice('10.97.0.187', 1337);
 const espNowTestNode = new UDPDevice('10.97.0.163', 1337);
 const olimexEspNowGw = new UDPDevice('10.97.0.177', 1337);
-
-const isOnline = new BooleanStateGroup(
-  BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-  testDevice.isOnline,
-  shelly1.isOnline,
-  obiJack.isOnline,
-  h801.isOnline,
-  shellyi3.isOnline,
-  espNowTestNode.isOnline,
-  olimexEspNowGw.isOnline
-);
 
 let on = false;
 
@@ -443,13 +428,61 @@ every2Minutes.addTask(() => {
   }
 });
 
-isOnline.observe((online) => {
+testDevice.isOnline.observe((online) => {
   if (!online) {
-    log.info(() => '❌ offline');
+    log.info(() => '❌ testDevice offline');
     return;
   }
 
-  log.info(() => '📶 online');
+  log.info(() => '📶 testDevice online');
+});
+shelly1.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ shelly1 offline');
+    return;
+  }
+
+  log.info(() => '📶 shelly1 online');
+});
+obiJack.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ obiJack offline');
+    return;
+  }
+
+  log.info(() => '📶 obiJack online');
+});
+h801.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ h801 offline');
+    return;
+  }
+
+  log.info(() => '📶 h801 online');
+});
+shellyi3.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ shellyi3 offline');
+    return;
+  }
+
+  log.info(() => '📶 shellyi3 online');
+});
+espNowTestNode.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ espNowTestNode offline');
+    return;
+  }
+
+  log.info(() => '📶 espNowTestNode online');
+});
+olimexEspNowGw.isOnline.observe((online) => {
+  if (!online) {
+    log.info(() => '❌ olimexEspNowGw offline');
+    return;
+  }
+
+  log.info(() => '📶 olimexEspNowGw online');
 });
 
 testDevice.isOnline.observe((online) => {
