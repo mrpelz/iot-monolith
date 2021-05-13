@@ -679,45 +679,53 @@ windowAdditionalInput.observe((data) => {
 
 espNow.observe((data) => {
   const macAddress = data.subarray(0, 6);
-  const index = data.subarray(6, 7).readUInt8();
+  const cmd = data.subarray(6, 7).readUInt8();
   const input = data.subarray(7);
 
-  if (input.length < 8) {
+  if ([0, 1].includes(cmd)) {
+    const decoded: ButtonEvent = {
+      down: input.subarray(0, 1).readUInt8() !== 0, // 1.
+      downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
+      longpress: input.subarray(3, 4).readUInt8(), // 4.
+      pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
+      previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
+      repeat: input.subarray(2, 3).readUInt8(), // 3.
+    };
+
     log.info(
       () =>
-        `event espNow ${[...macAddress].map((byte) =>
+        `event espNow button ${[...macAddress].map((byte) =>
           byte.toString(16)
-        )}: ${JSON.stringify(
-          [index, ...input].map((byte) => byte.toString(16))
-        )}`
+        )} (${cmd}): ${JSON.stringify(decoded)}`
     );
+
+    if (
+      (!decoded.down &&
+        decoded.downChanged &&
+        decoded.previousDuration < 125 * 5) ||
+      decoded.longpress === 5
+    ) {
+      changeRelays();
+    }
+
     return;
   }
 
-  const decoded: ButtonEvent = {
-    down: input.subarray(0, 1).readUInt8() !== 0, // 1.
-    downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
-    longpress: input.subarray(3, 4).readUInt8(), // 4.
-    pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
-    previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
-    repeat: input.subarray(2, 3).readUInt8(), // 3.
-  };
+  if (cmd === 0xfd && input.length >= 2) {
+    log.info(
+      () =>
+        `event espNow vcc ${[...macAddress].map((byte) =>
+          byte.toString(16)
+        )}: ${input.readUInt16LE()}`
+    );
+  }
 
   log.info(
     () =>
-      `event espNow ${[...macAddress].map((byte) =>
+      `event espNow other ${[...macAddress].map((byte) =>
         byte.toString(16)
-      )} (${index}): ${JSON.stringify(decoded)}`
+      )}: ${JSON.stringify([cmd, ...input].map((byte) => byte.toString(16)))}`
   );
-
-  if (
-    (!decoded.down &&
-      decoded.downChanged &&
-      decoded.previousDuration < 125 * 5) ||
-    decoded.longpress === 5
-  ) {
-    changeRelays();
-  }
 });
 
 timer.observe(() => {
