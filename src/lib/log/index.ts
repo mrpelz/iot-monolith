@@ -1,5 +1,3 @@
-import { telegramSend } from '../telegram/simple.js';
-
 export enum Level {
   EMERGENCY,
   ALERT,
@@ -116,31 +114,31 @@ export class JournaldOutput extends Output {
   }
 }
 
-export class TelegramOutput extends Output {
-  private static _callback(log: LogWithLevel) {
-    return telegramSend(
-      [`*${logLevelNames[log.level]}*`, log.head, `\`${log.body}\``]
-        .filter(Boolean)
-        .join('  \n')
-    ).catch((reason) => {
-      // eslint-disable-next-line no-console
-      console.log(`<${Level.ERROR}>failed to log to Telegram: ${reason}`);
-    });
-  }
+// export class TelegramOutput extends Output {
+//   private static _callback(log: LogWithLevel) {
+//     return telegramSend(
+//       [`*${logLevelNames[log.level]}*`, log.head, `\`${log.body}\``]
+//         .filter(Boolean)
+//         .join('  \n')
+//     ).catch((reason) => {
+//       // eslint-disable-next-line no-console
+//       console.log(`<${Level.ERROR}>failed to log to Telegram: ${reason}`);
+//     });
+//   }
 
-  constructor() {
-    super(
-      [
-        Level.EMERGENCY,
-        Level.ALERT,
-        Level.CRITICAL,
-        Level.ERROR,
-        Level.WARNING,
-      ],
-      TelegramOutput._callback
-    );
-  }
-}
+//   constructor() {
+//     super(
+//       [
+//         Level.EMERGENCY,
+//         Level.ALERT,
+//         Level.CRITICAL,
+//         Level.ERROR,
+//         Level.WARNING,
+//       ],
+//       TelegramOutput._callback
+//     );
+//   }
+// }
 
 export class Input {
   private _logger: Logger;

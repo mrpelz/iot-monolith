@@ -1,11 +1,11 @@
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number/index.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
+import { humanPayload, readNumber } from '../data/index.js';
 import { BooleanState } from '../state/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 import { Transport } from './index.js';
-import { humanPayload } from '../utils/data.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../utils/oop.js';
+import { rebind } from '../oop/index.js';
 
 // PACKET FORMAT
 //
@@ -74,13 +74,7 @@ export class UDPTransport extends Transport {
   ) {
     super();
 
-    rebind(
-      this,
-      '_connect',
-      '_handleMessage',
-      '_onConnection',
-      '_onDisconnection'
-    );
+    rebind(this, '_handleMessage', '_onConnection', '_onDisconnection');
 
     this._host = host;
     this._keepAlive = keepAlive;
@@ -91,7 +85,7 @@ export class UDPTransport extends Transport {
 
     this._shouldBeConnected.observe(() => this._connect());
 
-    setInterval(this._connect, Math.round(keepAlive / 2));
+    setInterval(() => this._connect(), Math.round(keepAlive / 2));
   }
 
   /**
@@ -137,7 +131,7 @@ export class UDPTransport extends Transport {
       const sequence = message.subarray(0, 1);
       payload = message.subarray(1);
 
-      if (!this._checkIncomingSequence(sequence.readUInt8(0))) return;
+      if (!this._checkIncomingSequence(readNumber(sequence))) return;
     } else {
       payload = message;
     }

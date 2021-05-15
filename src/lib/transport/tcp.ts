@@ -1,11 +1,11 @@
-import { humanPayload, readNumber, writeNumber } from '../utils/data.js';
+import { humanPayload, readNumber, writeNumber } from '../data/index.js';
 import { BooleanState } from '../state/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 import { Socket } from 'net';
 import { Timer } from '../timer/index.js';
 import { Transport } from './index.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../utils/oop.js';
+import { rebind } from '../oop/index.js';
 
 // PACKET FORMAT
 //
@@ -54,13 +54,7 @@ export class TCPTransport extends Transport {
 
     super();
 
-    rebind(
-      this,
-      '_connect',
-      '_handleReadable',
-      '_onConnection',
-      '_onDisconnection'
-    );
+    rebind(this, '_handleReadable', '_onConnection', '_onDisconnection');
 
     this._host = host;
     this._keepAlive = keepAlive;
@@ -72,7 +66,7 @@ export class TCPTransport extends Transport {
 
     this._shouldBeConnected.observe(() => this._connect());
 
-    setInterval(this._connect, Math.round(keepAlive / 2));
+    setInterval(() => this._connect(), Math.round(keepAlive / 2));
     this._messageTimer.observe(this._onDisconnection);
   }
 

@@ -11,12 +11,11 @@ import {
   ReadOnlyObservable,
 } from '../observable/index.js';
 import { Transport, TransportDevice } from '../transport/index.js';
-import { readNumber, writeNumber } from '../utils/data.js';
+import { readNumber, writeNumber } from '../data/index.js';
 import { Input } from '../log/index.js';
 import { Schedule } from '../schedule/index.js';
 import { Timer } from '../timer/index.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../utils/oop.js';
 
 type DeviceEvents = Set<Event<unknown>>;
 type DeviceServices = Set<Service<unknown, unknown>>;
@@ -82,7 +81,7 @@ export class Property {
   }
 }
 
-export class Event<T> extends Property {
+export class Event<T = void> extends Property {
   private readonly _observable = new NullState<T>();
 
   // eslint-disable-next-line class-methods-use-this
@@ -109,7 +108,7 @@ export class Event<T> extends Property {
   }
 }
 
-export class Service<T, S> extends Property {
+export class Service<T = void, S = void> extends Property {
   private readonly _timeout: number;
 
   constructor(identifier: Buffer, timeout = 5000) {
@@ -175,8 +174,6 @@ export class Device {
     identifier: DeviceIdentifier = null,
     keepAlive = 5000
   ) {
-    rebind(this, '_sendKeepAlive');
-
     this._log = logger.getInput({
       head: `Device ${identifier}`,
     });
@@ -195,7 +192,7 @@ export class Device {
     this._keepAliveReceiveTimer = new Timer(keepAlive);
 
     this._keepAliveSendSchedule = Device._setUpSchedule();
-    this._keepAliveSendSchedule.addTask(this._sendKeepAlive);
+    this._keepAliveSendSchedule.addTask(() => this._sendKeepAlive());
 
     transport.isConnected.observe((transportConnected) => {
       if (transportConnected) {

@@ -1,5 +1,4 @@
 import { NullState } from '../state/index.js';
-import { rebind } from '../utils/oop.js';
 
 export class Timer extends NullState {
   private _enabled = false;
@@ -10,8 +9,6 @@ export class Timer extends NullState {
     super();
 
     this._time = time;
-
-    rebind(this, '_handleFire');
 
     this.enable();
   }
@@ -45,7 +42,7 @@ export class Timer extends NullState {
     if (this.isRunning && !restart) return;
 
     this.stop();
-    this._timeout = setTimeout(this._handleFire, this._time);
+    this._timeout = setTimeout(() => this._handleFire(), this._time);
   }
 
   stop(): void {

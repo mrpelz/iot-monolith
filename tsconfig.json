@@ -3,11 +3,13 @@
     "allowJs": true,
     "alwaysStrict": true,
     "checkJs": false,
+    "esModuleInterop": true,
     "lib": [
       "esnext",
       "dom"
     ],
     "module": "esnext",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "outDir": "./dist",

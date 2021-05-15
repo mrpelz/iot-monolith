@@ -45,6 +45,7 @@ export const epochs = (() => {
     month: (m: number, y: number) => {
       return daysInMonth(m, y) * day;
     },
+    nonLeapYear,
     second,
     week,
     year: (y: number) => {

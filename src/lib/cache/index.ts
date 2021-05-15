@@ -1,4 +1,4 @@
-import { isPromise, rebind } from '../utils/oop.js';
+import { isPromise } from '../oop/index.js';
 
 type PromiseResolver<T> = (value: T | PromiseLike<T>) => void;
 type PromiseRejector = (reason: Error) => void;
@@ -32,18 +32,18 @@ export class Cache<T> {
 }
 
 export class CachePromise<T> {
-  private deferred: {
+  private _deferred: {
     reject: PromiseRejector;
     resolve: PromiseResolver<T>;
   }[];
 
-  private fulfilled: boolean;
+  private _fulfilled: boolean;
 
-  private promised: Promise<T> | null;
+  private _promised: Promise<T> | null;
 
-  private timer: NodeJS.Timeout | null;
+  private _timeout: number;
 
-  private timeout: number;
+  private _timer: NodeJS.Timeout | null;
 
   requestTime: Date | null;
 
@@ -52,78 +52,69 @@ export class CachePromise<T> {
   value: T | null;
 
   constructor(timeout = 0) {
-    this.deferred = [];
-    this.fulfilled = false;
-    this.promised = null;
-    this.timer = null;
-    this.timeout = timeout;
+    this._deferred = [];
+    this._fulfilled = false;
+    this._promised = null;
+    this._timeout = timeout;
+    this._timer = null;
     this.requestTime = null;
     this.resultTime = null;
     this.value = null;
-
-    rebind(this, '_onResolve', '_onReject');
   }
 
-  _onResolve(value: T): void {
-    this.fulfilled = true;
+  private _onReject(error: Error): void {
+    this._fulfilled = true;
 
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
+    }
+
+    this.value = null;
+    this.resultTime = null;
+
+    this._deferred.forEach(({ reject }) => {
+      reject(error);
+    });
+  }
+
+  private _onResolve(value: T): void {
+    this._fulfilled = true;
+
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
     }
 
     this.value = value;
     this.resultTime = new Date();
 
-    this.deferred.forEach(({ resolve }) => {
+    this._deferred.forEach(({ resolve }) => {
       resolve(value);
     });
   }
 
-  _onReject(error: Error): void {
-    this.fulfilled = true;
-
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
+  private _reTime(): void {
+    if (this._timer) {
+      clearTimeout(this._timer);
+      this._timer = null;
     }
 
-    this.value = null;
-    this.resultTime = null;
-
-    this.deferred.forEach(({ reject }) => {
-      reject(error);
-    });
-  }
-
-  _reTime(): void {
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    this.timer = setTimeout(() => {
+    this._timer = setTimeout(() => {
       this.value = null;
-      this.timer = null;
-    }, this.timeout);
-  }
-
-  hit(): boolean {
-    if (this.requestTime === null) return false;
-    if (!this.fulfilled) return true;
-
-    return Boolean(this.timer);
+      this._timer = null;
+    }, this._timeout);
   }
 
   defer(): Promise<T> {
-    const executor = this.fulfilled
+    const executor = this._fulfilled
       ? (resolve: PromiseResolver<T>, reject: PromiseRejector) => {
-          if (!this.promised) return;
+          if (!this._promised) return;
 
-          this.promised.then(resolve).catch(reject);
+          this._promised.then(resolve).catch(reject);
         }
       : (resolve: PromiseResolver<T>, reject: PromiseRejector) => {
-          this.deferred.push({
+          this._deferred.push({
             reject,
             resolve,
           });
@@ -132,19 +123,28 @@ export class CachePromise<T> {
     return new Promise(executor);
   }
 
+  hit(): boolean {
+    if (this.requestTime === null) return false;
+    if (!this._fulfilled) return true;
+
+    return Boolean(this._timer);
+  }
+
   promise(promise: Promise<T>, time = new Date()): Promise<T> {
     if (!isPromise(promise)) throw new Error('not a promise');
 
-    this.fulfilled = false;
-    this.deferred.length = 0;
+    this._fulfilled = false;
+    this._deferred.length = 0;
 
     this.requestTime = time;
     this.resultTime = null;
     const result = this.defer();
 
-    promise.then(this._onResolve).catch(this._onReject);
+    promise
+      .then((value) => this._onResolve(value))
+      .catch((value) => this._onReject(value));
 
-    this.promised = promise;
+    this._promised = promise;
 
     this._reTime();
 
