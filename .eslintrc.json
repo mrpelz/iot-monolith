@@ -34,7 +34,9 @@
       "node": {
         "extensions": [
           ".js",
-          ".ts"
+          ".ts",
+          ".jsx",
+          ".tsx"
         ]
       }
     }
@@ -63,10 +65,10 @@
     "@typescript-eslint/no-non-null-assertion": "warn",
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-this-alias": "error",
-    "@typescript-eslint/no-unused-vars-experimental": [
+    "@typescript-eslint/no-unused-vars": [
       "warn",
       {
-        "ignoredNamesRegex": "(?:^_|^h$)"
+        "varsIgnorePattern": "(?:^_|^h$)"
       }
     ],
     "@typescript-eslint/no-use-before-define": "error",

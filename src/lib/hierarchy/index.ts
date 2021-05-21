@@ -1,11 +1,57 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import { Constructor } from '../oop/index.js';
 
 export type StringOrSymbol = string | symbol;
 
-export class Content<T> {
-  content: T;
+enum MatchStrategy {
+  ALL,
+  NONE,
+  SOME,
+}
 
-  constructor(content: T) {
+type Child = Content | Property | Node;
+
+type MatchCb<R> = (matchStrategy: MatchStrategy, children: Child[]) => R;
+
+type MatchesMember<R> = (...children: Child[]) => R;
+type Matches<R> = MatchesMember<R> & {
+  all: MatchesMember<R>;
+  none: MatchesMember<R>;
+  some: MatchesMember<R>;
+};
+
+type MatchNodesMemberSingle = Matches<Node | null>;
+type MatchNodesMemberAll = Matches<Set<Node>>;
+type MatchNodes = {
+  allNodes: MatchNodesMemberAll;
+  firstNode: MatchNodesMemberSingle;
+  lastNode: MatchNodesMemberSingle;
+};
+
+type Levels =
+  | 'root'
+  | 'section'
+  | 'home'
+  | 'building'
+  | 'floor'
+  | 'room'
+  | 'place'
+  | 'item';
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace JSX {
+    type Element = Node;
+    type IntrinsicElements = Record<Levels, Record<string, string | true>>;
+  }
+}
+
+const tagName = Symbol('property key given for JSX-tagNames');
+
+export class Content {
+  content: unknown;
+
+  constructor(content: unknown) {
     this.content = content;
   }
 }
@@ -20,38 +66,16 @@ export class Property {
   }
 }
 
-enum MatchStrategy {
-  ALL,
-  NONE,
-  SOME,
+export class TagName extends Property {
+  constructor(value: Levels) {
+    super(tagName, value);
+  }
 }
 
-type Child<T> = Content<T> | Property | Node<unknown>;
-
-type MatchCb<R> = (
-  matchStrategy: MatchStrategy,
-  children: Child<unknown>[]
-) => R;
-
-type MatchesMember<T, R> = (...children: Child<T>[]) => R;
-type Matches<T, R> = MatchesMember<T, R> & {
-  all: MatchesMember<T, R>;
-  none: MatchesMember<T, R>;
-  some: MatchesMember<T, R>;
-};
-
-type MatchNodesMemberSingle = Matches<unknown, Node | null>;
-type MatchNodesMemberAll = Matches<unknown, Set<Node>>;
-type MatchNodes = {
-  allNodes: MatchNodesMemberAll;
-  firstNode: MatchNodesMemberSingle;
-  lastNode: MatchNodesMemberSingle;
-};
-
-export class Node<T = unknown> {
+export class Node {
   private static _matchNodes(collection: Node[]): MatchNodes {
     return {
-      allNodes: Node._matches<unknown, Set<Node>>(
+      allNodes: Node._matches<Set<Node>>(
         (matchStrategy, children) =>
           new Set(
             collection.filter((node) =>
@@ -59,13 +83,13 @@ export class Node<T = unknown> {
             )
           )
       ),
-      firstNode: Node._matches<unknown, Node | null>(
+      firstNode: Node._matches<Node | null>(
         (matchStrategy, children) =>
           collection.find((node) =>
             node._matchChildren(matchStrategy, children)
           ) || null
       ),
-      lastNode: Node._matches<unknown, Node | null>(
+      lastNode: Node._matches<Node | null>(
         (matchStrategy, children) =>
           collection
             .reverse()
@@ -75,8 +99,8 @@ export class Node<T = unknown> {
     };
   }
 
-  private static _matches<M, R>(matchCb: MatchCb<R>) {
-    const matches: Matches<M, R> = (...matchChildren) =>
+  private static _matches<R>(matchCb: MatchCb<R>) {
+    const matches: Matches<R> = (...matchChildren) =>
       matchCb(MatchStrategy.ALL, matchChildren);
 
     matches.all = (...matchChildren) =>
@@ -89,13 +113,13 @@ export class Node<T = unknown> {
     return matches;
   }
 
-  private _children = new Set<Child<T>>();
-  private _content: Content<T> | null = null;
+  private _children = new Set<Child>();
+  private _content: Content | null = null;
 
-  matches: Matches<T, boolean>;
+  matches: Matches<boolean>;
   parent: Node | null = null;
 
-  constructor(...children: Child<T>[]) {
+  constructor(...children: Child[]) {
     for (const child of children) {
       this.add(child);
 
@@ -118,7 +142,7 @@ export class Node<T = unknown> {
     return result;
   }
 
-  private _matches(child: Child<unknown>): boolean {
+  private _matches(child: Child): boolean {
     if (child instanceof Content) {
       return Boolean(this.content?.content === child.content);
     } else if (child instanceof Property) {
@@ -144,7 +168,7 @@ export class Node<T = unknown> {
     return this._get<Node>(Node);
   }
 
-  get content(): Content<T> | null {
+  get content(): Content | null {
     return this._content;
   }
 
@@ -162,7 +186,7 @@ export class Node<T = unknown> {
 
   _matchChildren(
     matchStrategy: MatchStrategy = MatchStrategy.ALL,
-    children: Child<unknown>[]
+    children: Child[]
   ): boolean {
     const result = new Set<boolean>();
 
@@ -182,7 +206,7 @@ export class Node<T = unknown> {
     }
   }
 
-  add(child: Child<T>): this {
+  add(child: Child): this {
     if (child instanceof Content) {
       if (this._content) {
         throw new Error('content already set');
@@ -231,4 +255,23 @@ export class Node<T = unknown> {
 
     return Array.from(deepParents);
   }
+}
+
+export function h(
+  tag: Levels,
+  props: JSX.IntrinsicElements[Levels] | null,
+  ...children: (Node | unknown)[]
+): Node {
+  return new Node(
+    new Property(tagName, tag),
+    ...(props
+      ? Object.entries(props).map(
+          ([key, value]) =>
+            new Property(key, value === true ? undefined : value)
+        )
+      : []),
+    ...children.map((child) => {
+      return child instanceof Node ? child : new Content(child);
+    })
+  );
 }
