@@ -1,7 +1,16 @@
-/* eslint-disable @typescript-eslint/ban-types */
-import { Constructor } from '../oop/index.js';
-
 export type StringOrSymbol = string | symbol;
+
+enum ItemType {
+  CONTENT,
+  NODE,
+  PROPERTY,
+}
+
+type ItemContent = [ItemType.CONTENT, unknown];
+type ItemNode = [ItemType.NODE, Node];
+type ItemProperty = [ItemType.PROPERTY, StringOrSymbol, string | undefined];
+
+type Item = ItemContent | ItemNode | ItemProperty;
 
 enum MatchStrategy {
   ALL,
@@ -9,11 +18,9 @@ enum MatchStrategy {
   SOME,
 }
 
-type Child = Content | Property | Node;
+type MatchCb<R> = (matchStrategy: MatchStrategy, items: Item[]) => R;
 
-type MatchCb<R> = (matchStrategy: MatchStrategy, children: Child[]) => R;
-
-type MatchesMember<R> = (...children: Child[]) => R;
+type MatchesMember<R> = (...items: Item[]) => R;
 type Matches<R> = MatchesMember<R> & {
   all: MatchesMember<R>;
   none: MatchesMember<R>;
@@ -28,170 +35,161 @@ type MatchNodes = {
   lastNode: MatchNodesMemberSingle;
 };
 
-type Levels =
+type TagNames =
   | 'root'
   | 'section'
   | 'home'
   | 'building'
   | 'floor'
   | 'room'
-  | 'place'
   | 'item';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     type Element = Node;
-    type IntrinsicElements = Record<Levels, Record<string, string | true>>;
+    type IntrinsicElements = Record<TagNames, Record<string, string | true>>;
   }
 }
 
-const tagName = Symbol('property key given for JSX-tagNames');
+const tagNameSymbol = Symbol('property key given for JSX-tagNames');
 
-export class Content {
-  content: unknown;
+export const content = (_content: unknown): ItemContent => [
+  ItemType.CONTENT,
+  _content,
+];
 
-  constructor(content: unknown) {
-    this.content = content;
-  }
-}
+export const node = (_node: Node): ItemNode => [ItemType.NODE, _node];
 
-export class Property {
-  key: StringOrSymbol;
-  value?: string;
+export const property = (
+  _key: StringOrSymbol,
+  _value?: string
+): ItemProperty => [ItemType.PROPERTY, _key, _value || undefined];
 
-  constructor(key: StringOrSymbol, value?: string) {
-    this.key = key;
-    this.value = value;
-  }
-}
+export const tagName = (_value: TagNames): ItemProperty => [
+  ItemType.PROPERTY,
+  tagNameSymbol,
+  _value,
+];
 
-export class TagName extends Property {
-  constructor(value: Levels) {
-    super(tagName, value);
-  }
-}
-
-export class Node {
-  private static _matchNodes(collection: Node[]): MatchNodes {
+class Node {
+  private static _matchNodes(nodes: Node[]): MatchNodes {
     return {
       allNodes: Node._matches<Set<Node>>(
-        (matchStrategy, children) =>
+        (matchStrategy, items) =>
           new Set(
-            collection.filter((node) =>
-              node._matchChildren(matchStrategy, children)
-            )
+            nodes.filter((_node) => _node._matchItems(matchStrategy, items))
           )
       ),
       firstNode: Node._matches<Node | null>(
-        (matchStrategy, children) =>
-          collection.find((node) =>
-            node._matchChildren(matchStrategy, children)
-          ) || null
+        (matchStrategy, items) =>
+          nodes.find((_node) => _node._matchItems(matchStrategy, items)) || null
       ),
       lastNode: Node._matches<Node | null>(
-        (matchStrategy, children) =>
-          collection
+        (matchStrategy, items) =>
+          nodes
             .reverse()
-            .find((node) => node._matchChildren(matchStrategy, children)) ||
-          null
+            .find((_node) => _node._matchItems(matchStrategy, items)) || null
       ),
     };
   }
 
   private static _matches<R>(matchCb: MatchCb<R>) {
-    const matches: Matches<R> = (...matchChildren) =>
-      matchCb(MatchStrategy.ALL, matchChildren);
+    const matches: Matches<R> = (...items) => matchCb(MatchStrategy.ALL, items);
 
-    matches.all = (...matchChildren) =>
-      matchCb(MatchStrategy.ALL, matchChildren);
-    matches.none = (...matchChildren) =>
-      matchCb(MatchStrategy.NONE, matchChildren);
-    matches.some = (...matchChildren) =>
-      matchCb(MatchStrategy.SOME, matchChildren);
+    matches.all = (...items) => matchCb(MatchStrategy.ALL, items);
+    matches.none = (...items) => matchCb(MatchStrategy.NONE, items);
+    matches.some = (...items) => matchCb(MatchStrategy.SOME, items);
 
     return matches;
   }
 
-  private _children = new Set<Child>();
-  private _content: Content | null = null;
+  private readonly _children = new Set<Node>();
+  private readonly _content = new Set<unknown>();
+  private _parent: Node | null = null;
+  private readonly _properies = new Map<StringOrSymbol, string | undefined>();
 
   matches: Matches<boolean>;
-  parent: Node | null = null;
 
-  constructor(...children: Child[]) {
-    for (const child of children) {
-      this.add(child);
-
-      if (!(child instanceof Node)) continue;
-      child._setParent(this);
+  constructor(...items: Item[]) {
+    for (const item of items) {
+      this.add(item);
     }
 
-    this.matches = Node._matches((...args) => this._matchChildren(...args));
+    this.matches = Node._matches((...args) => this._matchItems(...args));
   }
 
-  private _get<R>(constructor: Constructor<R>): Set<R> {
-    const result = new Set<R>();
+  private _matches(item: Item): boolean {
+    const [type] = item;
 
-    for (const child of this._children) {
-      if (child instanceof constructor) {
-        result.add(child);
+    if (type === ItemType.CONTENT) {
+      const [_, _content] = item as ItemContent;
+
+      return this._content.has(_content);
+    }
+
+    if (type === ItemType.NODE) {
+      const [_, _node] = item as ItemNode;
+
+      return this._children.has(_node);
+    }
+
+    if (type === ItemType.PROPERTY) {
+      const [_, _key, _value] = item as ItemProperty;
+
+      const keyMatch = this._properies.has(_key);
+      const hasValue = _value !== null;
+
+      if (!hasValue) {
+        return keyMatch;
       }
+
+      if (keyMatch && hasValue) {
+        return this._properies.get(_key) === _value;
+      }
+
+      return false;
     }
 
-    return result;
+    return false;
   }
 
-  private _matches(child: Child): boolean {
-    if (child instanceof Content) {
-      return Boolean(this.content?.content === child.content);
-    } else if (child instanceof Property) {
-      return Boolean(
-        Array.from(this.properties).find((matchChild) => {
-          const keyMatches = matchChild.key === child.key;
-          if (!child.value) return keyMatches;
-
-          return keyMatches && matchChild.value === child.value;
-        })
-      );
-    }
-
-    return this._children.has(child);
+  private _setParent(parentNode: Node): void {
+    this._parent = parentNode;
   }
 
-  private _setParent(parentNode: Node): this {
-    this.parent = parentNode;
-    return this;
+  get children(): Set<Node> {
+    return new Set(this._children);
   }
 
-  get childNodes(): Set<Node> {
-    return this._get<Node>(Node);
-  }
-
-  get content(): Content | null {
-    return this._content;
+  get content(): Set<unknown> {
+    return new Set(this._content);
   }
 
   get matchChildren(): MatchNodes {
-    return Node._matchNodes(this.deepChildNodes());
+    return Node._matchNodes(this.deepChildren());
   }
 
   get matchParents(): MatchNodes {
-    return Node._matchNodes(this.deepParentNodes());
+    return Node._matchNodes(this.deepParents());
   }
 
-  get properties(): Set<Property> {
-    return this._get<Property>(Property);
+  get parent(): Node | null {
+    return this._parent;
   }
 
-  _matchChildren(
+  get properties(): Map<StringOrSymbol, string | undefined> {
+    return new Map(this._properies);
+  }
+
+  _matchItems(
     matchStrategy: MatchStrategy = MatchStrategy.ALL,
-    children: Child[]
+    items: Item[]
   ): boolean {
     const result = new Set<boolean>();
 
-    for (const child of children) {
-      result.add(this._matches(child));
+    for (const item of items) {
+      result.add(this._matches(item));
     }
 
     switch (matchStrategy) {
@@ -206,72 +204,92 @@ export class Node {
     }
   }
 
-  add(child: Child): this {
-    if (child instanceof Content) {
-      if (this._content) {
-        throw new Error('content already set');
-      }
+  add(item: Item): void {
+    const [type] = item;
 
-      this._content = child;
-      return this;
+    if (type === ItemType.CONTENT) {
+      const [_, _content] = item as ItemContent;
+
+      this._content.add(_content);
+
+      return;
     }
 
-    if (child instanceof Node) {
-      child._setParent(this);
+    if (type === ItemType.NODE) {
+      const [_, _node] = item as ItemNode;
+
+      _node._setParent(this);
+      this._children.add(_node);
+
+      return;
     }
 
-    this._children.add(child);
-    return this;
+    if (type === ItemType.PROPERTY) {
+      const [_, key, value] = item as ItemProperty;
+
+      this._properies.set(key, value);
+    }
   }
 
-  deepChildNodes(): Node[] {
-    const deepChildren = new Set<Node>();
+  chainOfParentsUntilMatch(item: Item): Node[] {
+    return this.deepParents(undefined, (_node: Node) => _node.matches(item));
+  }
 
-    const gatherChildren = (node: Node, collection: Set<Node>) => {
-      collection.add(node);
+  deepChildren(depth = Infinity): Node[] {
+    const collection = new Set<Node>();
 
-      for (const child of node.childNodes) {
-        gatherChildren(child, collection);
+    const gatherChildren = (_node: Node, _depth: number) => {
+      collection.add(_node);
+
+      const subtractDepth = _depth - 1;
+      if (!subtractDepth) return;
+
+      for (const child of _node.children) {
+        gatherChildren(child, subtractDepth);
       }
     };
 
-    gatherChildren(this, deepChildren);
+    gatherChildren(this, depth);
 
-    return Array.from(deepChildren);
+    return Array.from(collection);
   }
 
-  deepParentNodes(): Node[] {
-    const deepParents = new Set<Node>();
+  deepParents(depth = Infinity, until?: (node: Node) => boolean): Node[] {
+    const collection = new Set<Node>();
+    let conditionalMatch = false;
 
-    const gatherParents = (node: Node, collection: Set<Node>) => {
-      collection.add(node);
+    const gatherParents = (_node: Node, _depth: number) => {
+      if (until) conditionalMatch = until(_node);
 
-      if (!node.parent) return;
+      collection.add(_node);
 
-      gatherParents(node.parent, collection);
+      const subtractDepth = _depth - 1;
+
+      if (conditionalMatch || !_node.parent || !subtractDepth) return;
+
+      gatherParents(_node.parent, subtractDepth);
     };
 
-    gatherParents(this, deepParents);
+    gatherParents(this, depth);
 
-    return Array.from(deepParents);
+    return Array.from(collection);
   }
 }
 
 export function h(
-  tag: Levels,
-  props: JSX.IntrinsicElements[Levels] | null,
+  tag: TagNames,
+  props: Record<string, string | true> | null,
   ...children: (Node | unknown)[]
 ): Node {
   return new Node(
-    new Property(tagName, tag),
+    property(tagNameSymbol, tag),
     ...(props
-      ? Object.entries(props).map(
-          ([key, value]) =>
-            new Property(key, value === true ? undefined : value)
+      ? Object.entries(props).map(([key, value]) =>
+          property(key, value === true ? undefined : value)
         )
       : []),
     ...children.map((child) => {
-      return child instanceof Node ? child : new Content(child);
+      return child instanceof Node ? node(child) : content(child);
     })
   );
 }

@@ -8,7 +8,7 @@ export const root = (
       </floor>
       <floor name="0">
         <room name="lobby">
-          <place name="mailbox"></place>
+          <section name="mailbox"></section>
         </room>
       </floor>
       <floor name="1_OG">

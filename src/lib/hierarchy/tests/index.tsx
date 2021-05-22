@@ -1,12 +1,12 @@
 /* eslint-disable no-invalid-this,func-names */
-import { Property, TagName, h } from '../index.js';
+import { h, property, tagName } from '../index.js';
 
 const tree = (
   <root>
     <home name="wursthome">
-      <floor name="main">
-        <room name="hallway">
-          <place name="entryDoor">
+      <floor name="main" friendlyName="Hauptgeschoss">
+        <room name="hallway" friendlyName="Flur">
+          <section name="entryDoor">
             <item
               name="entryDoorOpen"
               sensor
@@ -29,10 +29,11 @@ const tree = (
             >
               thisIsTheTestContentFor:entryDoorLocked
             </item>
-          </place>
-          <place name="ceiling">
+          </section>
+          <section name="ceiling" friendlyName="Decke">
             <item
               name="ceilingLightFront"
+              friendlyName="Lampe (vorn)"
               light
               binary-light
               secondary
@@ -43,7 +44,7 @@ const tree = (
             <item name="ceilingLightBack" light binary-light primary entry-door>
               thisIsTheTestContentFor:ceilingLightFront
             </item>
-          </place>
+          </section>
         </room>
       </floor>
     </home>
@@ -51,20 +52,31 @@ const tree = (
 );
 
 // eslint-disable-next-line no-console
-console.log(tree.matches(new TagName('root'), new Property('notSet')));
+console.log(tree.matches(tagName('root'), property('notSet')));
 
 // eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(new Property('security-relevant')));
+console.log(tree.matchChildren.allNodes(property('security-relevant')));
 
 // eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(new TagName('room')));
+console.log(tree.matchChildren.allNodes(tagName('room')));
 
 // eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(new TagName('place')));
+console.log(tree.matchChildren.allNodes(tagName('section')));
 
 // eslint-disable-next-line no-console
 console.log(
   tree.matchChildren
-    .firstNode(new Property('name', 'ceilingLightBack'))
-    ?.matchParents.firstNode(new TagName('room'))
+    .firstNode(property('name', 'ceilingLightBack'))
+    ?.matchParents.firstNode(tagName('floor'))
+);
+
+// eslint-disable-next-line no-console
+console.log(
+  tree.matchChildren
+    .firstNode(property('name', 'ceilingLightFront'))
+    ?.chainOfParentsUntilMatch(tagName('room'))
+    .reverse()
+    .map((node) => node.properties.get('friendlyName'))
+    .filter(Boolean)
+    .join(' ')
 );
