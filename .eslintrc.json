@@ -68,7 +68,7 @@
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
-        "varsIgnorePattern": "(?:^_|^h$)"
+        "varsIgnorePattern": "(?:^_.*|^h$)"
       }
     ],
     "@typescript-eslint/no-use-before-define": "error",

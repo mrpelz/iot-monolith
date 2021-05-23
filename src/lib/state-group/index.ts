@@ -12,21 +12,33 @@ export class StateGroup<T> {
   protected readonly _children: AnyObservable<T>[];
   protected readonly _observers = new Set<MetaObserverCallback<T>>();
 
-  protected _value: T;
-
   constructor(...children: AnyObservable<T>[]) {
     this._children = children;
 
     for (const child of this._children) {
-      child.observe((value) => this._forwardObservers(value));
+      child.observe((value) => {
+        this.value = value;
+      });
     }
   }
 
   get value(): T {
-    return this._value;
+    const result = new Set<T>();
+
+    for (const child of this._children) {
+      result.add(child.value);
+    }
+
+    if (result.size !== 1) {
+      throw new Error('StateGroup failed to reconcile member values');
+    }
+
+    return [...result][0];
   }
 
   set value(value: T) {
+    if (this._locked) return;
+
     this._locked = true;
 
     for (const child of this._children) {
@@ -34,18 +46,11 @@ export class StateGroup<T> {
       child.value = value;
     }
 
-    this._locked = false;
-    this._forwardObservers(value);
-  }
-
-  private _forwardObservers(_: T) {
-    if (this._locked) return;
-
-    const value = this.value;
-
     for (const observer of this._observers) {
-      observer(value);
+      observer(this.value);
     }
+
+    this._locked = false;
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {
@@ -89,6 +94,10 @@ export class BooleanStateGroup extends StateGroup<boolean> {
     }
 
     return this.allTrue();
+  }
+
+  set value(value: boolean) {
+    super.value = value;
   }
 
   allTrue(): boolean {
