@@ -1,3 +1,5 @@
+import { BooleanState } from '../state/index.js';
+
 export type StringOrSymbol = string | symbol;
 
 enum ItemType {
@@ -76,20 +78,15 @@ class Node {
   private static _matchNodes(nodes: Node[]): MatchNodes {
     return {
       allNodes: Node._matches<Set<Node>>(
-        (matchStrategy, items) =>
-          new Set(
-            nodes.filter((_node) => _node._matchItems(matchStrategy, items))
-          )
+        (...args) =>
+          new Set(nodes.filter((_node) => _node._matchItems(...args)))
       ),
       firstNode: Node._matches<Node | null>(
-        (matchStrategy, items) =>
-          nodes.find((_node) => _node._matchItems(matchStrategy, items)) || null
+        (...args) => nodes.find((_node) => _node._matchItems(...args)) || null
       ),
       lastNode: Node._matches<Node | null>(
-        (matchStrategy, items) =>
-          nodes
-            .reverse()
-            .find((_node) => _node._matchItems(matchStrategy, items)) || null
+        (...args) =>
+          nodes.reverse().find((_node) => _node._matchItems(...args)) || null
       ),
     };
   }
@@ -106,9 +103,11 @@ class Node {
 
   private readonly _children = new Set<Node>();
   private readonly _content = new Set<unknown>();
+  private readonly _matchObservers = new Set<() => void>();
   private _parent: Node | null = null;
   private readonly _properies = new Map<StringOrSymbol, string | undefined>();
 
+  matchObserve: Matches<BooleanState>;
   matches: Matches<boolean>;
 
   constructor(...items: Item[]) {
@@ -117,6 +116,23 @@ class Node {
     }
 
     this.matches = Node._matches((...args) => this._matchItems(...args));
+    this.matchObserve = Node._matches((...args) =>
+      this._matchItemsObserve(...args)
+    );
+  }
+
+  private _matchItemsObserve(
+    matchStrategy: MatchStrategy = MatchStrategy.ALL,
+    items: Item[]
+  ): BooleanState {
+    const match = () => this._matchItems(matchStrategy, items);
+    const observer = new BooleanState(match());
+
+    this._matchObservers.add(() => {
+      observer.value = match();
+    });
+
+    return observer;
   }
 
   private _matches(item: Item): boolean {
@@ -154,7 +170,7 @@ class Node {
     return false;
   }
 
-  private _setParent(parentNode: Node): void {
+  private _setParent(parentNode: Node | null): void {
     this._parent = parentNode;
   }
 
@@ -225,9 +241,13 @@ class Node {
     }
 
     if (type === ItemType.PROPERTY) {
-      const [_, key, value] = item as ItemProperty;
+      const [_, _key, _value] = item as ItemProperty;
 
-      this._properies.set(key, value);
+      this._properies.set(_key, _value);
+    }
+
+    for (const fn of this._matchObservers) {
+      fn();
     }
   }
 
@@ -273,6 +293,37 @@ class Node {
     gatherParents(this, depth);
 
     return Array.from(collection);
+  }
+
+  remove(item: Item): void {
+    const [type] = item;
+
+    if (type === ItemType.CONTENT) {
+      const [_, _content] = item as ItemContent;
+
+      this._content.delete(_content);
+
+      return;
+    }
+
+    if (type === ItemType.NODE) {
+      const [_, _node] = item as ItemNode;
+
+      _node._setParent(null);
+      this._children.delete(_node);
+
+      return;
+    }
+
+    if (type === ItemType.PROPERTY) {
+      const [_, _key] = item as ItemProperty;
+
+      this._properies.delete(_key);
+    }
+
+    for (const fn of this._matchObservers) {
+      fn();
+    }
   }
 }
 
