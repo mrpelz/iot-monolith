@@ -7,7 +7,7 @@ import {
 } from '../observable/index.js';
 
 export class StateGroup<T> {
-  private _locked = false;
+  private _locked: AnyObservable<T> | null = null;
 
   protected readonly _children: AnyObservable<T>[];
   protected readonly _observers = new Set<MetaObserverCallback<T>>();
@@ -17,7 +17,12 @@ export class StateGroup<T> {
 
     for (const child of this._children) {
       child.observe((value) => {
+        if (this._locked) return;
+        this._locked = child;
+
         this.value = value;
+
+        this._locked = null;
       });
     }
   }
@@ -37,20 +42,17 @@ export class StateGroup<T> {
   }
 
   set value(value: T) {
-    if (this._locked) return;
-
-    this._locked = true;
-
     for (const child of this._children) {
-      if (child instanceof ReadOnlyObservable) continue;
+      if (this._locked === child || child instanceof ReadOnlyObservable) {
+        continue;
+      }
+
       child.value = value;
     }
 
     for (const observer of this._observers) {
       observer(this.value);
     }
-
-    this._locked = false;
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {
