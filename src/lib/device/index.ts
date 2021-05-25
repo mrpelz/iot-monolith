@@ -185,7 +185,7 @@ export class Device {
       new BooleanStateGroup(
         BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
         transport.isConnected,
-        this._isOnline
+        new ReadOnlyObservable(this._isOnline)
       )
     );
 

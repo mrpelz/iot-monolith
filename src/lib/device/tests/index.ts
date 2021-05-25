@@ -9,14 +9,26 @@ const log = logger.getInput({
   head: 'device-test',
 });
 
-const testDevice = new UDPDevice('10.97.0.198', 1337);
-const shelly1 = new UDPDevice('10.97.0.199', 1337);
-const obiJack = new UDPDevice('10.97.0.159', 1337);
-const h801 = new UDPDevice('10.97.0.154', 1337);
-const shellyi3 = new UDPDevice('10.97.0.187', 1337);
-const espNowTestButton = new UDPDevice('10.97.0.163', 1337);
-const olimexEspNowGw = new UDPDevice('10.97.0.177', 1337);
-const espNowTestWindowSensor = new UDPDevice('10.97.0.181', 1337);
+const testDevice = new UDPDevice(
+  'test-device.iot-ng.net.wurstsalat.cloud',
+  1337
+);
+const shelly1 = new UDPDevice('shelly1.iot-ng.net.wurstsalat.cloud', 1337);
+const obiJack = new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337);
+const h801 = new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337);
+const shellyi3 = new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337);
+const espNowTestButton = new UDPDevice(
+  'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
+  1337
+);
+const olimexEspNowGw = new UDPDevice(
+  'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
+  1337
+);
+const espNowTestWindowSensor = new UDPDevice(
+  'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
+  1337
+);
 
 let on = false;
 
