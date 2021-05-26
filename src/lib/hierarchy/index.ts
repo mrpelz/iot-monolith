@@ -1,28 +1,23 @@
 import { BooleanState } from '../state/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 
-export type StringOrSymbol = string | symbol;
+export type PropertyKey = string | symbol;
+export type PropertyValue = string | number | undefined;
 
 enum ItemType {
-  CONTENT_CALLBACK,
   CONTENT,
   NODE,
   PROPERTY,
 }
 
-type ContentCallback = (node: Node) => unknown;
+type ContentCallback = (node: Node) => void;
 
-type ItemContent = [ItemType.CONTENT, unknown];
-type ItemContentCallback = [ItemType.CONTENT_CALLBACK, ContentCallback];
+type ItemContent = [ItemType.CONTENT, ContentCallback];
 type ItemNode = [ItemType.NODE, Node];
-type ItemProperty = [ItemType.PROPERTY, StringOrSymbol, string | undefined];
+type ItemProperty = [ItemType.PROPERTY, PropertyKey, PropertyValue];
 
-type Item = ItemContent | ItemNode | ItemProperty;
-type ItemOrCallback =
-  | ItemContent
-  | ItemContentCallback
-  | ItemNode
-  | ItemProperty;
+type Item = ItemNode | ItemProperty;
+type ItemOrContent = ItemContent | Item;
 
 enum MatchStrategy {
   ALL,
@@ -56,22 +51,29 @@ type TagNames =
   | 'room'
   | 'item';
 
+type CommonProps =
+  | Record<string, string | true>
+  | {
+      children?: unknown;
+    };
+
+type FCProps = CommonProps & {
+  children?: never;
+};
+
+type FunctionComponent = (props: FCProps) => Node;
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     type Element = Node;
-    type ElementChildrenAttribute = {
-      children: unknown;
-    };
-    type IntrinsicElements = Record<
-      TagNames,
-      | Record<string, string | true>
-      | {
-          children?: unknown;
-        }
-    >;
+    type IntrinsicElements = Record<TagNames, CommonProps>;
   }
 }
+
+const isFunctionComponent = (
+  input: TagNames | FunctionComponent
+): input is FunctionComponent => input instanceof Function;
 
 const tagNameSymbol = Symbol('property key given for JSX-tagNames');
 
@@ -79,18 +81,16 @@ const isItem = (input: unknown): input is Item => {
   if (!Array.isArray(input)) return false;
   const [type] = input;
 
-  if (type === ItemType.CONTENT) return true;
   if (type === ItemType.NODE) return true;
   if (type === ItemType.PROPERTY) return true;
 
   return false;
 };
 
-const isItemOrCallback = (input: unknown): input is ItemOrCallback => {
+const isItemOrContent = (input: unknown): input is ItemOrContent => {
   if (!Array.isArray(input)) return false;
   const [type] = input;
 
-  if (type === ItemType.CONTENT_CALLBACK) return true;
   if (type === ItemType.CONTENT) return true;
   if (type === ItemType.NODE) return true;
   if (type === ItemType.PROPERTY) return true;
@@ -98,25 +98,14 @@ const isItemOrCallback = (input: unknown): input is ItemOrCallback => {
   return false;
 };
 
-const mkContent = (content: unknown): ItemContent => [
+const mkContent = (contentCallback: ContentCallback): ItemContent => [
   ItemType.CONTENT,
-  content,
+  contentCallback,
 ];
 
-const isContent = (input: Item): input is ItemContent => {
+const isContent = (input: ItemOrContent): input is ItemContent => {
   const [type] = input;
   return type === ItemType.CONTENT;
-};
-
-const mkContentCallback = (
-  contentCallback: ContentCallback
-): ItemContentCallback => [ItemType.CONTENT_CALLBACK, contentCallback];
-
-const isContentCallback = (
-  input: ItemOrCallback
-): input is ItemContentCallback => {
-  const [type] = input;
-  return type === ItemType.CONTENT_CALLBACK;
 };
 
 const mkNode = (node: Node): ItemNode => [ItemType.NODE, node];
@@ -126,7 +115,7 @@ const isNode = (input: Item): input is ItemNode => {
   return type === ItemType.NODE;
 };
 
-const mkProperty = (key: StringOrSymbol, value?: string): ItemProperty => [
+const mkProperty = (key: PropertyKey, value?: string): ItemProperty => [
   ItemType.PROPERTY,
   key,
   value || undefined,
@@ -143,7 +132,7 @@ const isProperty = (input: Item): input is ItemProperty => {
   return type === ItemType.PROPERTY;
 };
 
-class Node {
+export class Node {
   private static _matchNodes(nodes: Node[]): MatchNodes {
     return {
       allNodes: Node._matches<Set<Node>>(
@@ -170,15 +159,14 @@ class Node {
   }
 
   private readonly _children = new Set<Node>();
-  private readonly _content = new Set<unknown>();
   private readonly _matchObservers = new Set<() => void>();
   private _parent: Node | null = null;
-  private readonly _properies = new Map<StringOrSymbol, string | undefined>();
+  private readonly _properies = new Map<PropertyKey, PropertyValue>();
 
   matchObserve: Matches<ReadOnlyObservable<boolean>>;
   matches: Matches<boolean>;
 
-  constructor(...items: ItemOrCallback[]) {
+  constructor(...items: ItemOrContent[]) {
     this.matches = Node._matches((...args) => this._matchItems(...args));
     this.matchObserve = Node._matches((...args) =>
       this._matchItemsObserve(...args)
@@ -204,12 +192,6 @@ class Node {
   }
 
   private _matches(item: Item): boolean {
-    if (isContent(item)) {
-      const [_, content] = item;
-
-      return this._content.has(content);
-    }
-
     if (isNode(item)) {
       const [_, node] = item;
 
@@ -244,10 +226,6 @@ class Node {
     return new Set(this._children);
   }
 
-  get content(): Set<unknown> {
-    return new Set(this._content);
-  }
-
   get matchChildren(): MatchNodes {
     return Node._matchNodes(this.deepChildren());
   }
@@ -260,7 +238,7 @@ class Node {
     return this._parent;
   }
 
-  get properties(): Map<StringOrSymbol, string | undefined> {
+  get properties(): Map<PropertyKey, PropertyValue> {
     return new Map(this._properies);
   }
 
@@ -286,21 +264,13 @@ class Node {
     }
   }
 
-  add(item: ItemOrCallback): void {
+  add(item: ItemOrContent): void {
     if (!isItem(item)) {
-      if (isContentCallback(item)) {
+      if (isContent(item)) {
         const [_, contentCallback] = item;
 
-        this._content.add(contentCallback(this));
+        contentCallback(this);
       }
-
-      return;
-    }
-
-    if (isContent(item)) {
-      const [_, content] = item;
-
-      this._content.add(content);
 
       return;
     }
@@ -370,14 +340,6 @@ class Node {
   }
 
   remove(item: Item): void {
-    if (isContent(item)) {
-      const [_, content] = item;
-
-      this._content.delete(content);
-
-      return;
-    }
-
     if (isNode(item)) {
       const [_, node] = item;
 
@@ -405,7 +367,6 @@ class Node {
   toObject(): unknown {
     return {
       children: [...this._children].map((child) => child.toObject()),
-      content: [...this._content],
       matchObservers: this._matchObservers.size,
       parent: Boolean(this._parent),
       properties: Object.fromEntries(this._properies),
@@ -414,27 +375,36 @@ class Node {
 }
 
 export function h(
-  tag: TagNames,
+  tag: TagNames | FunctionComponent,
   props: Record<string, string | true> | null,
-  ...children: unknown[]
+  ...children: (ItemOrContent | Node | ContentCallback)[]
 ): Node {
-  return new Node(
-    mkProperty(tagNameSymbol, tag),
-    ...(props
-      ? Object.entries(props).map(([key, value]) =>
-          mkProperty(key, value === true ? undefined : value)
-        )
-      : []),
-    ...children.map((child) => {
-      if (isItemOrCallback(child)) {
-        return child;
-      }
+  if (isFunctionComponent(tag)) {
+    return tag(props || {});
+  }
 
-      return child instanceof Node ? mkNode(child) : mkContent(child);
-    })
-  );
+  const items: ItemOrContent[] = [];
+
+  if (props) {
+    for (const [key, value] of Object.entries(props)) {
+      items.push(mkProperty(key, value === true ? undefined : value));
+    }
+  }
+
+  for (const child of children) {
+    if (isItemOrContent(child)) {
+      items.push(child);
+      continue;
+    }
+
+    if (child instanceof Node) {
+      items.push(mkNode(child));
+    }
+  }
+
+  return new Node(mkProperty(tagNameSymbol, tag), ...items);
 }
 
-export { mkContentCallback as cb };
+export { mkContent as cb };
 export { mkProperty as prop };
 export { mkTagName as tag };

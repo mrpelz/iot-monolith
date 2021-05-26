@@ -1,7 +1,20 @@
-/* eslint-disable no-invalid-this,func-names */
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { cb, h, prop, tag } from '../index.js';
 import { Schedule } from '../../schedule/index.js';
+
+function EntryDoorOpen(props: { name: string }) {
+  return (
+    <item
+      name={props.name}
+      sensor
+      binary-sensor
+      door-sensor
+      door-sensor-open
+      security-relevant
+      entry-door
+    ></item>
+  );
+}
 
 const tree = (
   <root>
@@ -9,17 +22,7 @@ const tree = (
       <floor name="main" friendlyName="Hauptgeschoss">
         <room name="hallway" friendlyName="Flur">
           <section name="entryDoor">
-            <item
-              name="entryDoorOpen"
-              sensor
-              binary-sensor
-              door-sensor
-              door-sensor-open
-              security-relevant
-              entry-door
-            >
-              thisIsTheTestContentFor:entryDoorOpen
-            </item>
+            <EntryDoorOpen name="entryDoorOpen" />
             <item
               name="entryDoorLocked"
               sensor
@@ -28,9 +31,7 @@ const tree = (
               door-sensor-locked
               security-relevant
               entry-door
-            >
-              thisIsTheTestContentFor:entryDoorLocked
-            </item>
+            ></item>
           </section>
           <section name="ceiling" friendlyName="Decke">
             <item
@@ -40,9 +41,7 @@ const tree = (
               binary-light
               secondary
               entry-door
-            >
-              thisIsTheTestContentFor:ceilingLightFront
-            </item>
+            ></item>
             <item name="ceilingLightBack" light binary-light primary entry-door>
               {cb((node) => {
                 const schedule = new Schedule(
@@ -60,8 +59,6 @@ const tree = (
                   // eslint-disable-next-line no-console
                   console.log(`it's ${isOn ? 'inner on' : 'inner off'}`)
                 );
-
-                return 'thisIsTheTestContentFor:ceilingLightBack';
               })}
             </item>
           </section>
