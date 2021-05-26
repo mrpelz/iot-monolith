@@ -1,5 +1,7 @@
 /* eslint-disable no-invalid-this,func-names */
-import { h, property, tagName } from '../index.js';
+import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
+import { cb, h, prop, tag } from '../index.js';
+import { Schedule } from '../../schedule/index.js';
 
 const tree = (
   <root>
@@ -42,7 +44,25 @@ const tree = (
               thisIsTheTestContentFor:ceilingLightFront
             </item>
             <item name="ceilingLightBack" light binary-light primary entry-door>
-              thisIsTheTestContentFor:ceilingLightFront
+              {cb((node) => {
+                const schedule = new Schedule(
+                  () => new ModifiableDate().ceil(Unit.SECOND, 10).date
+                );
+
+                let on = false;
+
+                schedule.addTask(() => {
+                  on = !on;
+                  node[on ? 'add' : 'remove'](prop('on'));
+                });
+
+                node.matchObserve(prop('on')).observe((isOn) =>
+                  // eslint-disable-next-line no-console
+                  console.log(`it's ${isOn ? 'inner on' : 'inner off'}`)
+                );
+
+                return 'thisIsTheTestContentFor:ceilingLightBack';
+              })}
             </item>
           </section>
         </room>
@@ -52,31 +72,48 @@ const tree = (
 );
 
 // eslint-disable-next-line no-console
-console.log(tree.matches(tagName('root'), property('notSet')));
-
-// eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(property('security-relevant')));
-
-// eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(tagName('room')));
-
-// eslint-disable-next-line no-console
-console.log(tree.matchChildren.allNodes(tagName('section')));
+console.log(tree.matches(tag('root'), prop('notSet')));
 
 // eslint-disable-next-line no-console
 console.log(
-  tree.matchChildren
-    .firstNode(property('name', 'ceilingLightBack'))
-    ?.matchParents.firstNode(tagName('floor'))
+  [...tree.matchChildren.allNodes(prop('security-relevant'))].map((node) =>
+    node.toObject()
+  )
+);
+
+// eslint-disable-next-line no-console
+console.log(
+  [...tree.matchChildren.allNodes(tag('room'))].map((node) => node.toObject())
+);
+
+// eslint-disable-next-line no-console
+console.log(
+  [...tree.matchChildren.allNodes(tag('section'))].map((node) =>
+    node.toObject()
+  )
 );
 
 // eslint-disable-next-line no-console
 console.log(
   tree.matchChildren
-    .firstNode(property('name', 'ceilingLightFront'))
-    ?.chainOfParentsUntilMatch(tagName('room'))
+    .firstNode(prop('name', 'ceilingLightBack'))
+    ?.matchParents.firstNode(tag('floor'))
+    ?.toObject()
+);
+
+// eslint-disable-next-line no-console
+console.log(
+  tree.matchChildren
+    .firstNode(prop('name', 'ceilingLightFront'))
+    ?.chainOfParentsUntilMatch(tag('room'))
     .reverse()
     .map((node) => node.properties.get('friendlyName'))
     .filter(Boolean)
     .join(' ')
 );
+
+tree.matchChildren
+  .firstNode(prop('name', 'ceilingLightBack'))
+  ?.matchObserve(prop('on'))
+  // eslint-disable-next-line no-console
+  .observe((on) => console.log(`it's ${on ? 'on' : 'off'}`));
