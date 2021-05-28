@@ -14,6 +14,7 @@ import { Sds011 } from '../../sds011/index.js';
 import { Timer } from '../../timer/index.js';
 import { Tsl2561 } from '../../tsl2561/index.js';
 import { UDPDevice } from '../udp.js';
+import { VCC } from '../../vcc/index.js';
 import { Veml6070 } from '../../veml6070/index.js';
 import { logger } from '../../../app/logging.js';
 
@@ -158,6 +159,9 @@ wifiTestButton.addEvent(button1wifiTestButton);
 const button1espNowTestButton = new Button(1);
 espNowTestButton.addEvent(button1espNowTestButton);
 
+const vccEspNowTestButton = new VCC();
+espNowTestButton.addEvent(vccEspNowTestButton);
+
 const helloOlimex = new Hello(); // hello
 olimexEspNowGw.addService(helloOlimex);
 
@@ -181,6 +185,9 @@ wifiTestWindowSensor.addEvent(wifiWindowAdditionalInput);
 
 const espNowWindowAdditionalInput = new Input(2);
 espNowTestWindowSensor.addEvent(espNowWindowAdditionalInput);
+
+const espNowWindowVcc = new VCC();
+espNowTestWindowSensor.addEvent(espNowWindowVcc);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -521,22 +528,28 @@ motionTestDevice.observe((data) => {
 });
 
 button0wifiTestButton.observe((data) => {
-  log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
+  log.info(() => `event button0wifiTestButton ${JSON.stringify(data)}`);
 
-  if (!data.down && data.downChanged) {
+  if (
+    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
+    data.longpress === 5
+  ) {
     changeRelays();
   }
 });
 button0espNowTestButton.observe((data) => {
   log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
 
-  if (!data.down && data.downChanged) {
+  if (
+    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
+    data.longpress === 5
+  ) {
     changeRelays();
   }
 });
 
 button1wifiTestButton.observe((data) => {
-  log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
+  log.info(() => `event button1wifiTestButton ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
@@ -549,26 +562,32 @@ button1espNowTestButton.observe((data) => {
     changeRelays();
   }
 });
+vccEspNowTestButton.observe((data) => {
+  log.info(() => `event vccEspNowTestButton "${data}"`);
+});
 
 wifiWindowOpenSensor.observe((data) => {
-  log.info(() => `event windowOpenSensor ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event wifiWindowOpenSensor ${data ? '🟡' : '🔵'}`);
 });
 espNowWindowOpenSensor.observe((data) => {
-  log.info(() => `event windowOpenSensor ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event espNowWindowOpenSensor ${data ? '🟡' : '🔵'}`);
 });
 
 wifiWindowOpenFullySensor.observe((data) => {
-  log.info(() => `event windowOpenFullySensor ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event wifiWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
 });
 espNowWindowOpenFullySensor.observe((data) => {
-  log.info(() => `event windowOpenFullySensor ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event espNowWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
 });
 
 wifiWindowAdditionalInput.observe((data) => {
-  log.info(() => `event windowAdditionalInput ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event wifiWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
 espNowWindowAdditionalInput.observe((data) => {
-  log.info(() => `event windowAdditionalInput ${data ? '🟡' : '🔵'}`);
+  log.info(() => `event espNowWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
+});
+espNowWindowVcc.observe((data) => {
+  log.info(() => `event espNowWindowVcc "${data}"`);
 });
 
 timer.observe(() => {

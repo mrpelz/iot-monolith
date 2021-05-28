@@ -163,13 +163,26 @@ export class Node {
   private _parent: Node | null = null;
   private readonly _properies = new Map<PropertyKey, PropertyValue>();
 
-  matchObserve: Matches<ReadOnlyObservable<boolean>>;
-  matches: Matches<boolean>;
+  readonly matchObserve: Matches<ReadOnlyObservable<boolean>>;
+  readonly matches: Matches<boolean>;
+  readonly properties: Record<PropertyKey, PropertyValue>;
 
   constructor(...items: ItemOrContent[]) {
     this.matches = Node._matches((...args) => this._matchItems(...args));
     this.matchObserve = Node._matches((...args) =>
       this._matchItemsObserve(...args)
+    );
+
+    this.properties = new Proxy<Record<PropertyKey, PropertyValue>>(
+      {},
+      {
+        get: (_, key) => this._properies.get(key),
+        has: (_, key) => this._properies.has(key),
+        set: (_, key, value) => {
+          this.add(mkProperty(key, value));
+          return true;
+        },
+      }
     );
 
     for (const item of items) {
@@ -238,9 +251,9 @@ export class Node {
     return this._parent;
   }
 
-  get properties(): Map<PropertyKey, PropertyValue> {
-    return new Map(this._properies);
-  }
+  // get properties(): Map<PropertyKey, PropertyValue> {
+  //   return new Map(this._properies);
+  // }
 
   _matchItems(
     matchStrategy: MatchStrategy = MatchStrategy.ALL,

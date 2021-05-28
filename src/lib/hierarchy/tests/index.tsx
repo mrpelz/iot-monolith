@@ -104,7 +104,7 @@ console.log(
     .firstNode(prop('name', 'ceilingLightFront'))
     ?.chainOfParentsUntilMatch(tag('room'))
     .reverse()
-    .map((node) => node.properties.get('friendlyName'))
+    .map((node) => node.properties.friendlyName)
     .filter(Boolean)
     .join(' ')
 );
