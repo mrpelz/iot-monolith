@@ -84,7 +84,6 @@ export class Property {
 export class Event<T = void> extends Property {
   private readonly _observable = new NullState<T>();
 
-  // eslint-disable-next-line class-methods-use-this
   protected decode(input: Buffer): T | null {
     if (!input.length) return null;
     return (input as unknown) as T;
@@ -117,13 +116,11 @@ export class Service<T = void, S = void> extends Property {
     this._timeout = timeout;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected decode(input: Buffer): T | null {
     if (!input.length) return null;
     return (input as unknown) as T;
   }
 
-  // eslint-disable-next-line class-methods-use-this
   protected encode(input: S): Buffer {
     return (input as unknown) as Buffer;
   }

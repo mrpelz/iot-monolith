@@ -1,8 +1,19 @@
+import { Button, ButtonEvent } from '../../button/index.js';
 import { Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
+import { Bme280 } from '../../bme280/index.js';
+import { Hello } from '../../hello/index.js';
+import { Input } from '../../input/index.js';
+import { Led } from '../../led/index.js';
+import { Mcp9808 } from '../../mcp9808/index.js';
+import { Mhz19 } from '../../mhz19/index.js';
+import { Output } from '../../output/index.js';
 import { Schedule } from '../../schedule/index.js';
+import { Sds011 } from '../../sds011/index.js';
 import { Timer } from '../../timer/index.js';
+import { Tsl2561 } from '../../tsl2561/index.js';
 import { UDPDevice } from '../udp.js';
+import { Veml6070 } from '../../veml6070/index.js';
 import { logger } from '../../../app/logging.js';
 
 const log = logger.getInput({
@@ -34,187 +45,6 @@ let on = false;
 
 const timer = new Timer(10000);
 
-class Hello extends Service<string, void> {
-  constructor() {
-    super(Buffer.from([1]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): string {
-    return input.toString('ascii');
-  }
-}
-
-class Mcp9808 extends Service<number, void> {
-  constructor() {
-    super(Buffer.from([4]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): number | null {
-    if (input.length < 4) return null;
-
-    return input.readFloatLE();
-  }
-}
-
-type Bme280Response = {
-  humidity: number;
-  pressure: number;
-  temperature: number;
-};
-class Bme280 extends Service<Bme280Response, void> {
-  constructor() {
-    super(Buffer.from([5]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): Bme280Response | null {
-    if (input.length < 12) return null;
-
-    return {
-      humidity: input.subarray(4, 8).readFloatLE(), // 2.
-      pressure: input.subarray(8, 12).readFloatLE(), // 3.
-      temperature: input.subarray(0, 4).readFloatLE(), // 1.
-    };
-  }
-}
-
-class Tsl2561 extends Service<number, void> {
-  constructor() {
-    super(Buffer.from([6]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): number | null {
-    if (input.length < 4) return null;
-
-    return input.readFloatLE();
-  }
-}
-
-class Veml6070 extends Service<number, void> {
-  constructor() {
-    super(Buffer.from([9]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): number | null {
-    if (input.length < 2) return null;
-
-    return input.readUInt16LE();
-  }
-}
-
-type Sds011Response = {
-  pm025: number;
-  pm10: number;
-};
-class Sds011280 extends Service<Sds011Response, void> {
-  constructor() {
-    super(Buffer.from([10]), 35000);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): Sds011Response | null {
-    if (input.length < 8) return null;
-
-    return {
-      pm025: input.subarray(0, 4).readFloatLE(), // 1.
-      pm10: input.subarray(4, 8).readFloatLE(), // 2.
-    };
-  }
-}
-
-type Mhz19Response = {
-  abc: boolean;
-  accuracy: number;
-  co2: number;
-  temperature: number;
-  transmittance: number;
-};
-class Mhz19 extends Service<Mhz19Response, void> {
-  constructor() {
-    super(Buffer.from([11]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): Mhz19Response | null {
-    if (input.length < 14) return null;
-
-    return {
-      abc: input.subarray(1, 2).readUInt8() !== 0, // 2.
-      accuracy: input.subarray(0, 1).readUInt8(), // 1.
-      co2: input.subarray(2, 6).readInt32LE(), // 3.
-      temperature: input.subarray(6, 10).readFloatLE(), // 4.
-      transmittance: input.subarray(10, 14).readFloatLE(), // 5.
-    };
-  }
-}
-
-class Relay extends Service<null, boolean> {
-  constructor(index: number) {
-    super(Buffer.from([0xa0 + index]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected encode(input: boolean): Buffer {
-    return Buffer.from([input ? 1 : 0]);
-  }
-}
-
-class Led extends Service<null, number> {
-  constructor(index: number) {
-    super(Buffer.from([0xb0 + index]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected encode(input: number): Buffer {
-    return Buffer.from([input]);
-  }
-}
-
-type ButtonEvent = {
-  down: boolean;
-  downChanged: boolean;
-  longpress: number;
-  pressedMap: boolean[];
-  previousDuration: number;
-  repeat: number;
-};
-class Button extends Event<ButtonEvent> {
-  constructor(index: number) {
-    super(Buffer.from([index]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): ButtonEvent | null {
-    if (input.length < 8) return null;
-
-    return {
-      down: input.subarray(0, 1).readUInt8() !== 0, // 1.
-      downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
-      longpress: input.subarray(3, 4).readUInt8(), // 4.
-      pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
-      previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
-      repeat: input.subarray(2, 3).readUInt8(), // 3.
-    };
-  }
-}
-
-class Input extends Event<boolean> {
-  constructor(index: number) {
-    super(Buffer.from([0xa0 + index]));
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected decode(input: Buffer): boolean | null {
-    if (!input.length) return null;
-
-    return input[0] !== 0;
-  }
-}
-
 const helloTestDevice = new Hello(); // hello
 testDevice.addService(helloTestDevice);
 
@@ -239,7 +69,7 @@ testDevice.addService(ccs811);
 const veml6070 = new Veml6070(); // veml6070
 testDevice.addService(veml6070);
 
-const sds011 = new Sds011280(); // sds011
+const sds011 = new Sds011(); // sds011
 testDevice.addService(sds011);
 
 const mhz19 = new Mhz19(); // mhz19
@@ -251,7 +81,7 @@ testDevice.addEvent(motionTestDevice);
 const helloShelly1 = new Hello(); // hello
 shelly1.addService(helloShelly1);
 
-const relayShelly1 = new Relay(0);
+const relayShelly1 = new Output(0);
 shelly1.addService(relayShelly1);
 
 const buttonShelly1 = new Button(0);
@@ -260,7 +90,7 @@ shelly1.addEvent(buttonShelly1);
 const helloObiJack = new Hello(); // hello
 obiJack.addService(helloObiJack);
 
-const relayObiJack = new Relay(0);
+const relayObiJack = new Output(0);
 obiJack.addService(relayObiJack);
 
 const buttonObiJack = new Button(0);
