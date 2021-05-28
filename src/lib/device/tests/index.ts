@@ -1,7 +1,8 @@
-import { Button, ButtonEvent } from '../../button/index.js';
-import { Event, Service } from '../index.js';
+import { Device, Service } from '../index.js';
+import { ESPNowEvent, ESPNowTransport } from '../../transport/esp-now.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Bme280 } from '../../bme280/index.js';
+import { Button } from '../../button/index.js';
 import { Hello } from '../../hello/index.js';
 import { Input } from '../../input/index.js';
 import { Led } from '../../led/index.js';
@@ -28,17 +29,33 @@ const shelly1 = new UDPDevice('shelly1.iot-ng.net.wurstsalat.cloud', 1337);
 const obiJack = new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337);
 const h801 = new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337);
 const shellyi3 = new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337);
-const espNowTestButton = new UDPDevice(
-  'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
-  1337
-);
+
 const olimexEspNowGw = new UDPDevice(
   'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
   1337
 );
-const espNowTestWindowSensor = new UDPDevice(
+const espNowEvent = new ESPNowEvent();
+olimexEspNowGw.addEvent(espNowEvent);
+const espNowTransport = new ESPNowTransport(espNowEvent);
+
+const wifiTestButton = new UDPDevice(
+  'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
+  1337
+);
+const espNowTestButton = new Device(
+  espNowTransport,
+  Buffer.from([0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]),
+  0
+);
+
+const wifiTestWindowSensor = new UDPDevice(
   'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
   1337
+);
+const espNowTestWindowSensor = new Device(
+  espNowTransport,
+  Buffer.from([0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]),
+  0
 );
 
 let on = false;
@@ -126,11 +143,17 @@ shellyi3.addEvent(button1Shellyi3);
 const button2Shellyi3 = new Button(2);
 shellyi3.addEvent(button2Shellyi3);
 
-const helloEspNowTestButton = new Hello(); // hello
-espNowTestButton.addService(helloEspNowTestButton);
+const helloWifiTestButton = new Hello(); // hello
+wifiTestButton.addService(helloWifiTestButton);
+
+const button0wifiTestButton = new Button(0);
+wifiTestButton.addEvent(button0wifiTestButton);
 
 const button0espNowTestButton = new Button(0);
 espNowTestButton.addEvent(button0espNowTestButton);
+
+const button1wifiTestButton = new Button(1);
+wifiTestButton.addEvent(button1wifiTestButton);
 
 const button1espNowTestButton = new Button(1);
 espNowTestButton.addEvent(button1espNowTestButton);
@@ -138,20 +161,26 @@ espNowTestButton.addEvent(button1espNowTestButton);
 const helloOlimex = new Hello(); // hello
 olimexEspNowGw.addService(helloOlimex);
 
-const espNow = new Event<Buffer>(Buffer.from([0xfe]));
-olimexEspNowGw.addEvent(espNow);
+const helloWiFiTestWindowSensor = new Hello(); // hello
+wifiTestWindowSensor.addService(helloWiFiTestWindowSensor);
 
-const helloEspNowTestWindowSensor = new Hello(); // hello
-espNowTestWindowSensor.addService(helloEspNowTestWindowSensor);
+const wifiWindowOpenSensor = new Input(0);
+wifiTestWindowSensor.addEvent(wifiWindowOpenSensor);
 
-const windowOpenSensor = new Input(0);
-espNowTestWindowSensor.addEvent(windowOpenSensor);
+const espNowWindowOpenSensor = new Input(0);
+espNowTestWindowSensor.addEvent(espNowWindowOpenSensor);
 
-const windowOpenFullySensor = new Input(1);
-espNowTestWindowSensor.addEvent(windowOpenFullySensor);
+const wifiWindowOpenFullySensor = new Input(1);
+wifiTestWindowSensor.addEvent(wifiWindowOpenFullySensor);
 
-const windowAdditionalInput = new Input(2);
-espNowTestWindowSensor.addEvent(windowAdditionalInput);
+const espNowWindowOpenFullySensor = new Input(1);
+espNowTestWindowSensor.addEvent(espNowWindowOpenFullySensor);
+
+const wifiWindowAdditionalInput = new Input(2);
+wifiTestWindowSensor.addEvent(wifiWindowAdditionalInput);
+
+const espNowWindowAdditionalInput = new Input(2);
+espNowTestWindowSensor.addEvent(espNowWindowAdditionalInput);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -252,8 +281,8 @@ every30Seconds.addTask(() => {
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (espNowTestButton.isOnline.value) {
-    helloEspNowTestButton
+  if (wifiTestButton.isOnline.value) {
+    helloWifiTestButton
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -266,8 +295,8 @@ every30Seconds.addTask(() => {
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (espNowTestWindowSensor.isOnline.value) {
-    helloEspNowTestWindowSensor
+  if (wifiTestWindowSensor.isOnline.value) {
+    helloWiFiTestWindowSensor
       .request()
       .then((result) => onResolve('✅ hello', result))
       .catch(() => onReject('⛔️ hello'));
@@ -330,7 +359,7 @@ shellyi3.isOnline.observe((online) => {
 
   log.info(() => '📶 shellyi3 online');
 });
-espNowTestButton.isOnline.observe((online) => {
+wifiTestButton.isOnline.observe((online) => {
   if (!online) {
     log.info(() => '❌ espNowTestButton offline');
     return;
@@ -346,7 +375,7 @@ olimexEspNowGw.isOnline.observe((online) => {
 
   log.info(() => '📶 olimexEspNowGw online');
 });
-espNowTestWindowSensor.isOnline.observe((online) => {
+wifiTestWindowSensor.isOnline.observe((online) => {
   if (!online) {
     log.info(() => '❌ espNowTestWindowSensor offline');
     return;
@@ -491,6 +520,13 @@ motionTestDevice.observe((data) => {
   timer.start();
 });
 
+button0wifiTestButton.observe((data) => {
+  log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
 button0espNowTestButton.observe((data) => {
   log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
 
@@ -499,6 +535,13 @@ button0espNowTestButton.observe((data) => {
   }
 });
 
+button1wifiTestButton.observe((data) => {
+  log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
+
+  if (!data.down && data.downChanged) {
+    changeRelays();
+  }
+});
 button1espNowTestButton.observe((data) => {
   log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
 
@@ -507,67 +550,25 @@ button1espNowTestButton.observe((data) => {
   }
 });
 
-windowOpenSensor.observe((data) => {
+wifiWindowOpenSensor.observe((data) => {
+  log.info(() => `event windowOpenSensor ${data ? '🟡' : '🔵'}`);
+});
+espNowWindowOpenSensor.observe((data) => {
   log.info(() => `event windowOpenSensor ${data ? '🟡' : '🔵'}`);
 });
 
-windowOpenFullySensor.observe((data) => {
+wifiWindowOpenFullySensor.observe((data) => {
+  log.info(() => `event windowOpenFullySensor ${data ? '🟡' : '🔵'}`);
+});
+espNowWindowOpenFullySensor.observe((data) => {
   log.info(() => `event windowOpenFullySensor ${data ? '🟡' : '🔵'}`);
 });
 
-windowAdditionalInput.observe((data) => {
+wifiWindowAdditionalInput.observe((data) => {
   log.info(() => `event windowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
-
-espNow.observe((data) => {
-  const macAddress = data.subarray(0, 6);
-  const cmd = data.subarray(6, 7).readUInt8();
-  const input = data.subarray(7);
-
-  if ([0, 1].includes(cmd)) {
-    const decoded: ButtonEvent = {
-      down: input.subarray(0, 1).readUInt8() !== 0, // 1.
-      downChanged: input.subarray(1, 2).readUInt8() !== 0, // 2.
-      longpress: input.subarray(3, 4).readUInt8(), // 4.
-      pressedMap: [...input.subarray(8)].map((value) => value !== 0), // 6.
-      previousDuration: input.subarray(4, 8).readUInt32LE(), // 5.
-      repeat: input.subarray(2, 3).readUInt8(), // 3.
-    };
-
-    log.info(
-      () =>
-        `event espNow button ${[...macAddress].map((byte) =>
-          byte.toString(16)
-        )} (${cmd}): ${JSON.stringify(decoded)}`
-    );
-
-    if (
-      (!decoded.down &&
-        decoded.downChanged &&
-        decoded.previousDuration < 125 * 5) ||
-      decoded.longpress === 5
-    ) {
-      changeRelays();
-    }
-
-    return;
-  }
-
-  if (cmd === 0xfd && input.length >= 2) {
-    log.info(
-      () =>
-        `event espNow vcc ${[...macAddress].map((byte) =>
-          byte.toString(16)
-        )}: ${input.readUInt16LE()}`
-    );
-  }
-
-  log.info(
-    () =>
-      `event espNow other ${[...macAddress].map((byte) =>
-        byte.toString(16)
-      )}: ${JSON.stringify([cmd, ...input].map((byte) => byte.toString(16)))}`
-  );
+espNowWindowAdditionalInput.observe((data) => {
+  log.info(() => `event windowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
 
 timer.observe(() => {

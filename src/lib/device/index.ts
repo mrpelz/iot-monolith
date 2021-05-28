@@ -37,7 +37,7 @@ const KEEPALIVE_PAYLOAD = Buffer.from([
   KEEPALIVE_COMMAND,
 ]);
 
-const EVENT_IDENTIFIER = 0x00;
+export const EVENT_IDENTIFIER = 0x00;
 
 export class Property {
   static isValidPropertyIdentifier(
@@ -185,6 +185,8 @@ export class Device {
         new ReadOnlyObservable(this._isOnline)
       )
     );
+
+    if (!keepAlive) return;
 
     this._keepAliveReceiveTimer = new Timer(keepAlive);
 
