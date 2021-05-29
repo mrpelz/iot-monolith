@@ -1,4 +1,4 @@
-import { Service } from '../device/index.js';
+import { Service } from '../../device/index.js';
 
 export class Veml6070 extends Service<number, void> {
   constructor() {

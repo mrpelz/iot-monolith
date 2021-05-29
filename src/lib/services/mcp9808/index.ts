@@ -1,4 +1,4 @@
-import { Service } from '../device/index.js';
+import { Service } from '../../device/index.js';
 
 export class Mcp9808 extends Service<number, void> {
   constructor() {

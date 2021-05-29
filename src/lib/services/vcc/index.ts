@@ -1,4 +1,4 @@
-import { Event } from '../device/index.js';
+import { Event } from '../../device/index.js';
 
 export class VCC extends Event<number> {
   constructor() {

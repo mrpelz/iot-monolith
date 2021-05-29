@@ -1,4 +1,4 @@
-import { Service } from '../device/index.js';
+import { Service } from '../../device/index.js';
 
 export class Led extends Service<null, number> {
   constructor(index: number) {

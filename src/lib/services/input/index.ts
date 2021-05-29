@@ -1,4 +1,4 @@
-import { Event } from '../device/index.js';
+import { Event } from '../../device/index.js';
 
 export class Input extends Event<boolean> {
   constructor(index: number) {
