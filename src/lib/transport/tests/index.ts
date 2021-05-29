@@ -11,7 +11,7 @@ const service = new Service(Buffer.from([1]), 2000);
 device.addService(service);
 
 // eslint-disable-next-line no-console
-event.observe(console.log);
+event.observable.observe(console.log);
 
 service
   .request()

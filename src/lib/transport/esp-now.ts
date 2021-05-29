@@ -43,7 +43,7 @@ export class ESPNowTransport extends Transport {
   constructor(event: ESPNowEvent) {
     super(6, false);
 
-    event.observe(({ deviceIdentifier, payload }) =>
+    event.observable.observe(({ deviceIdentifier, payload }) =>
       this._handleMessage(deviceIdentifier, payload)
     );
   }

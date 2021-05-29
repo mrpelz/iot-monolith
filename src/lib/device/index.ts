@@ -2,17 +2,13 @@ import {
   BooleanGroupStrategy,
   BooleanStateGroup,
 } from '../state-group/index.js';
-import { BooleanState, NullState } from '../state/index.js';
+import { BooleanState, NullState, ReadOnlyNullState } from '../state/index.js';
 import { ModifiableDate, Unit } from '../modifiable-date/index.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number/index.js';
-import {
-  Observer,
-  ObserverCallback,
-  ReadOnlyObservable,
-} from '../observable/index.js';
 import { Transport, TransportDevice } from '../transport/index.js';
 import { readNumber, writeNumber } from '../data/index.js';
 import { Input } from '../log/index.js';
+import { ReadOnlyObservable } from '../observable/index.js';
 import { Schedule } from '../schedule/index.js';
 import { Timer } from '../timer/index.js';
 import { logger } from '../../app/logging.js';
@@ -84,6 +80,14 @@ export class Property {
 export class Event<T = void> extends Property {
   private readonly _observable = new NullState<T>();
 
+  readonly observable: ReadOnlyNullState<T>;
+
+  constructor(identifier: Buffer) {
+    super(identifier);
+
+    this.observable = new ReadOnlyNullState<T>(this._observable);
+  }
+
   protected decode(input: Buffer): T | null {
     if (!input.length) return null;
     return (input as unknown) as T;
@@ -100,10 +104,6 @@ export class Event<T = void> extends Property {
 
     if (eventData === null) return;
     this._observable.trigger(eventData);
-  }
-
-  observe(observer: ObserverCallback<T>): Observer {
-    return this._observable.observe(observer);
   }
 }
 

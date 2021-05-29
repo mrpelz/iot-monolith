@@ -476,7 +476,7 @@ const changeRelays = (force?: boolean) => {
   changeLeds(timer.isRunning ? 64 : 0);
 };
 
-buttonShelly1.observe((data) => {
+buttonShelly1.observable.observe((data) => {
   log.info(() => `event buttonShelly1 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -484,7 +484,7 @@ buttonShelly1.observe((data) => {
   }
 });
 
-buttonObiJack.observe((data) => {
+buttonObiJack.observable.observe((data) => {
   log.info(() => `event buttonObiJack ${JSON.stringify(data)}`);
 
   if (
@@ -495,7 +495,7 @@ buttonObiJack.observe((data) => {
   }
 });
 
-button0Shellyi3.observe((data) => {
+button0Shellyi3.observable.observe((data) => {
   log.info(() => `event button0Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -503,7 +503,7 @@ button0Shellyi3.observe((data) => {
   }
 });
 
-button1Shellyi3.observe((data) => {
+button1Shellyi3.observable.observe((data) => {
   log.info(() => `event button1Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -511,7 +511,7 @@ button1Shellyi3.observe((data) => {
   }
 });
 
-button2Shellyi3.observe((data) => {
+button2Shellyi3.observable.observe((data) => {
   log.info(() => `event button2Shellyi3 ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
@@ -519,7 +519,7 @@ button2Shellyi3.observe((data) => {
   }
 });
 
-motionTestDevice.observe((data) => {
+motionTestDevice.observable.observe((data) => {
   log.info(() => `event motionTestDevice ${data ? '🟡' : '🔵'}`);
 
   if (on || !data) return;
@@ -528,7 +528,7 @@ motionTestDevice.observe((data) => {
   timer.start();
 });
 
-button0wifiTestButton.observe((data) => {
+button0wifiTestButton.observable.observe((data) => {
   log.info(() => `event button0wifiTestButton ${JSON.stringify(data)}`);
 
   if (
@@ -538,7 +538,7 @@ button0wifiTestButton.observe((data) => {
     changeRelays();
   }
 });
-button0espNowTestButton.observe((data) => {
+button0espNowTestButton.observable.observe((data) => {
   log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
 
   if (
@@ -549,45 +549,45 @@ button0espNowTestButton.observe((data) => {
   }
 });
 
-button1wifiTestButton.observe((data) => {
+button1wifiTestButton.observable.observe((data) => {
   log.info(() => `event button1wifiTestButton ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
   }
 });
-button1espNowTestButton.observe((data) => {
+button1espNowTestButton.observable.observe((data) => {
   log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
 
   if (!data.down && data.downChanged) {
     changeRelays();
   }
 });
-vccEspNowTestButton.observe((data) => {
+vccEspNowTestButton.observable.observe((data) => {
   log.info(() => `event vccEspNowTestButton "${data}"`);
 });
 
-wifiWindowOpenSensor.observe((data) => {
+wifiWindowOpenSensor.observable.observe((data) => {
   log.info(() => `event wifiWindowOpenSensor ${data ? '🟡' : '🔵'}`);
 });
-espNowWindowOpenSensor.observe((data) => {
+espNowWindowOpenSensor.observable.observe((data) => {
   log.info(() => `event espNowWindowOpenSensor ${data ? '🟡' : '🔵'}`);
 });
 
-wifiWindowOpenFullySensor.observe((data) => {
+wifiWindowOpenFullySensor.observable.observe((data) => {
   log.info(() => `event wifiWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
 });
-espNowWindowOpenFullySensor.observe((data) => {
+espNowWindowOpenFullySensor.observable.observe((data) => {
   log.info(() => `event espNowWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
 });
 
-wifiWindowAdditionalInput.observe((data) => {
+wifiWindowAdditionalInput.observable.observe((data) => {
   log.info(() => `event wifiWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
-espNowWindowAdditionalInput.observe((data) => {
+espNowWindowAdditionalInput.observable.observe((data) => {
   log.info(() => `event espNowWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
 });
-espNowWindowVcc.observe((data) => {
+espNowWindowVcc.observable.observe((data) => {
   log.info(() => `event espNowWindowVcc "${data}"`);
 });
 
