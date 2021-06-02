@@ -1,4 +1,5 @@
-import { ESPNowEvent, ESPNowTransport } from '../../lib/transport/esp-now.js';
+import { ESPNow as ESPNowEvent } from '../../lib/events/esp-now/index.js';
+import { ESPNowTransport } from '../../lib/transport/esp-now.js';
 import { UDPDevice } from '../../lib/device/udp.js';
 
 export const gateway = new UDPDevice(

@@ -1,4 +1,5 @@
 import { StateGroup } from '../state-group/index.js';
+import { promiseGuard } from '../oop/index.js';
 
 export type Observer = {
   remove: () => void;
@@ -11,6 +12,9 @@ export type AnyObservable<T> =
   | Observable<T>
   | ReadOnlyObservable<T>
   | StateGroup<T>;
+
+export type ObservifyResult<T> = [ReadOnlyObservable<T | null>, () => void];
+export type ObservifyGetter<T> = () => Promise<T | null>;
 
 export class Observable<T> {
   protected readonly _observers: Set<MetaObserverCallback<T>>;
@@ -70,4 +74,14 @@ export class ReadOnlyObservable<T> {
   observe(observerCallback: ObserverCallback<T>): Observer {
     return this._observable.observe(observerCallback);
   }
+}
+
+export function observify<T>(fn: ObservifyGetter<T>): ObservifyResult<T> {
+  const observable = new Observable<T | null>(null);
+  const trigger = async () => {
+    const result = await promiseGuard(fn());
+    observable.value = result;
+  };
+
+  return [new ReadOnlyObservable(observable), trigger];
 }

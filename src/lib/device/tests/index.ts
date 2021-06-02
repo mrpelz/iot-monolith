@@ -1,21 +1,23 @@
-import { Device, Service } from '../index.js';
-import { ESPNowEvent, ESPNowTransport } from '../../transport/esp-now.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import { Async } from '../../services/async/index.js';
 import { Bme280 } from '../../services/bme280/index.js';
-import { Button } from '../../services/button/index.js';
+import { Button } from '../../events/button/index.js';
+import { ESPNowDevice } from '../esp-now.js';
+import { ESPNow as ESPNowEvent } from '../../events/esp-now/index.js';
+import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Hello } from '../../services/hello/index.js';
-import { Input } from '../../services/input/index.js';
+import { Input } from '../../events/input/index.js';
 import { Led } from '../../services/led/index.js';
 import { Mcp9808 } from '../../services/mcp9808/index.js';
 import { Mhz19 } from '../../services/mhz19/index.js';
 import { Output } from '../../services/output/index.js';
 import { Schedule } from '../../schedule/index.js';
 import { Sds011 } from '../../services/sds011/index.js';
+import { Service } from '../index.js';
 import { Timer } from '../../timer/index.js';
 import { Tsl2561 } from '../../services/tsl2561/index.js';
 import { UDPDevice } from '../udp.js';
-import { VCC } from '../../services/vcc/index.js';
+import { VCC } from '../../events/vcc/index.js';
 import { Veml6070 } from '../../services/veml6070/index.js';
 import { logger } from '../../../app/logging.js';
 
@@ -44,20 +46,20 @@ const wifiTestButton = new UDPDevice(
   'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
   1337
 );
-const espNowTestButton = new Device(
+const espNowTestButton = new ESPNowDevice(
   espNowTransport,
-  Buffer.from([0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]),
-  0
+  // prettier-ignore
+  [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]
 );
 
 const wifiTestWindowSensor = new UDPDevice(
   'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
   1337
 );
-const espNowTestWindowSensor = new Device(
+const espNowTestWindowSensor = new ESPNowDevice(
   espNowTransport,
-  Buffer.from([0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]),
-  0
+  // prettier-ignore
+  [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]
 );
 
 let on = false;

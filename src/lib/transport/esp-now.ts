@@ -1,4 +1,5 @@
-import { EVENT_IDENTIFIER, Event } from '../device/index.js';
+import { ESPNow as ESPNowEvent } from '../events/esp-now/index.js';
+import { EVENT_IDENTIFIER } from '../device/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 import { Transport } from './index.js';
 import { humanPayload } from '../data/index.js';
@@ -11,29 +12,6 @@ import { logger } from '../../app/logging.js';
 // | MAC address (6 octets) | event id (1–n octets, default 1) | payload (0–n octets) |
 // |                        |                        0x00–0xFF |                      |                      |
 // |                        |                                  |                      |                      |
-
-export type ESPNowEventPayload = {
-  deviceIdentifier: Buffer;
-  payload: Buffer;
-};
-
-export class ESPNowEvent extends Event<ESPNowEventPayload> {
-  constructor() {
-    super(Buffer.from([0xfe]));
-  }
-
-  protected decode(input: Buffer): ESPNowEventPayload | null {
-    if (input.length < 6) return null;
-
-    const deviceIdentifier = input.subarray(0, 6);
-    const payload = input.subarray(6);
-
-    return {
-      deviceIdentifier,
-      payload,
-    };
-  }
-}
 
 export class ESPNowTransport extends Transport {
   private readonly _espNowLog = logger.getInput({ head: 'ESPNowTransport' });

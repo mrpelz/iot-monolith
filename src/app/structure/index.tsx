@@ -1,3 +1,4 @@
+import { TestSensor } from '../instances/test-sensor.js';
 import { h } from '../../lib/hierarchy/index.js';
 
 export const root = (
@@ -14,7 +15,12 @@ export const root = (
       <floor name="1_OG">
         <section inside>
           <room name="hallway"></room>
-          <room name="office"></room>
+          <room name="office">
+            <TestSensor
+              host="test-device.iot-ng.net.wurstsalat.cloud"
+              port={1337}
+            />
+          </room>
           <room name="bedroom"></room>
           <room name="kitchen"></room>
           <room name="dining"></room>

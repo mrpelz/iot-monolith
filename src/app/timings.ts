@@ -15,3 +15,7 @@ export const every2Minutes = new Schedule(
   () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
   false
 );
+
+every5Seconds.start();
+every30Seconds.start();
+every2Minutes.start();

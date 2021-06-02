@@ -33,7 +33,7 @@ export function rebind(context: any, ...names: string[]): void {
   }
 }
 
-export function resolveAlways<T>(promise: T | Promise<T>): Promise<T | null> {
+export function promiseGuard<T>(promise: T | Promise<T>): Promise<T | null> {
   if (!isPromise(promise)) {
     return Promise.resolve(null);
   }

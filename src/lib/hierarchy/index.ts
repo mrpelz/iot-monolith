@@ -1,8 +1,10 @@
+import { AnyObservable, ReadOnlyObservable } from '../observable/index.js';
 import { BooleanState } from '../state/index.js';
-import { ReadOnlyObservable } from '../observable/index.js';
 
 export type PropertyKey = string | symbol;
-export type PropertyValue = string | number | undefined;
+
+export type PropertyValue = string | number | null;
+export type PropertyObservableValue = AnyObservable<string | number | boolean>;
 
 enum ItemType {
   CONTENT,
@@ -16,8 +18,8 @@ type ItemContent = [ItemType.CONTENT, ContentCallback];
 type ItemNode = [ItemType.NODE, Node];
 type ItemProperty = [ItemType.PROPERTY, PropertyKey, PropertyValue];
 
-type Item = ItemNode | ItemProperty;
-type ItemOrContent = ItemContent | Item;
+type MatchableItem = ItemNode | ItemProperty;
+type ConstructiveItem = ItemContent | MatchableItem;
 
 enum MatchStrategy {
   ALL,
@@ -25,9 +27,9 @@ enum MatchStrategy {
   SOME,
 }
 
-type MatchCb<R> = (matchStrategy: MatchStrategy, items: Item[]) => R;
+type MatchCb<R> = (matchStrategy: MatchStrategy, items: MatchableItem[]) => R;
 
-type MatchesMember<R> = (...items: Item[]) => R;
+type MatchesMember<R> = (...items: MatchableItem[]) => R;
 type Matches<R> = MatchesMember<R> & {
   all: MatchesMember<R>;
   none: MatchesMember<R>;
@@ -77,7 +79,7 @@ const isFunctionComponent = (
 
 const tagNameSymbol = Symbol('property key given for JSX-tagNames');
 
-const isItem = (input: unknown): input is Item => {
+const isMatchableItem = (input: unknown): input is MatchableItem => {
   if (!Array.isArray(input)) return false;
   const [type] = input;
 
@@ -87,7 +89,7 @@ const isItem = (input: unknown): input is Item => {
   return false;
 };
 
-const isItemOrContent = (input: unknown): input is ItemOrContent => {
+const isConstructiveItem = (input: unknown): input is ConstructiveItem => {
   if (!Array.isArray(input)) return false;
   const [type] = input;
 
@@ -103,22 +105,22 @@ const mkContent = (contentCallback: ContentCallback): ItemContent => [
   contentCallback,
 ];
 
-const isContent = (input: ItemOrContent): input is ItemContent => {
+const isContent = (input: ConstructiveItem): input is ItemContent => {
   const [type] = input;
   return type === ItemType.CONTENT;
 };
 
 const mkNode = (node: Node): ItemNode => [ItemType.NODE, node];
 
-const isNode = (input: Item): input is ItemNode => {
+const isNode = (input: MatchableItem): input is ItemNode => {
   const [type] = input;
   return type === ItemType.NODE;
 };
 
-const mkProperty = (key: PropertyKey, value?: string): ItemProperty => [
+const mkProperty = (key: PropertyKey, value?: PropertyValue): ItemProperty => [
   ItemType.PROPERTY,
   key,
-  value || undefined,
+  value === undefined ? null : value,
 ];
 
 const mkTagName = (value: TagNames): ItemProperty => [
@@ -127,7 +129,7 @@ const mkTagName = (value: TagNames): ItemProperty => [
   value,
 ];
 
-const isProperty = (input: Item): input is ItemProperty => {
+const isProperty = (input: MatchableItem): input is ItemProperty => {
   const [type] = input;
   return type === ItemType.PROPERTY;
 };
@@ -165,24 +167,11 @@ export class Node {
 
   readonly matchObserve: Matches<ReadOnlyObservable<boolean>>;
   readonly matches: Matches<boolean>;
-  readonly properties: Record<PropertyKey, PropertyValue>;
 
-  constructor(...items: ItemOrContent[]) {
+  constructor(...items: ConstructiveItem[]) {
     this.matches = Node._matches((...args) => this._matchItems(...args));
     this.matchObserve = Node._matches((...args) =>
       this._matchItemsObserve(...args)
-    );
-
-    this.properties = new Proxy<Record<PropertyKey, PropertyValue>>(
-      {},
-      {
-        get: (_, key) => this._properies.get(key),
-        has: (_, key) => this._properies.has(key),
-        set: (_, key, value) => {
-          this.add(mkProperty(key, value));
-          return true;
-        },
-      }
     );
 
     for (const item of items) {
@@ -192,7 +181,7 @@ export class Node {
 
   private _matchItemsObserve(
     matchStrategy: MatchStrategy = MatchStrategy.ALL,
-    items: Item[]
+    items: MatchableItem[]
   ): ReadOnlyObservable<boolean> {
     const match = () => this._matchItems(matchStrategy, items);
     const observer = new BooleanState(match());
@@ -204,7 +193,7 @@ export class Node {
     return new ReadOnlyObservable(observer);
   }
 
-  private _matches(item: Item): boolean {
+  private _matches(item: MatchableItem): boolean {
     if (isNode(item)) {
       const [_, node] = item;
 
@@ -251,13 +240,13 @@ export class Node {
     return this._parent;
   }
 
-  // get properties(): Map<PropertyKey, PropertyValue> {
-  //   return new Map(this._properies);
-  // }
+  get properties(): Record<PropertyKey, PropertyValue> {
+    return Object.fromEntries(this._properies.entries());
+  }
 
   _matchItems(
     matchStrategy: MatchStrategy = MatchStrategy.ALL,
-    items: Item[]
+    items: MatchableItem[]
   ): boolean {
     const result = new Set<boolean>();
 
@@ -277,27 +266,19 @@ export class Node {
     }
   }
 
-  add(item: ItemOrContent): void {
-    if (!isItem(item)) {
+  add(item: ConstructiveItem): void {
+    if (!isMatchableItem(item)) {
       if (isContent(item)) {
         const [_, contentCallback] = item;
 
         contentCallback(this);
       }
-
-      return;
-    }
-
-    if (isNode(item)) {
+    } else if (isNode(item)) {
       const [_, node] = item;
 
       node._setParent(this);
       this._children.add(node);
-
-      return;
-    }
-
-    if (isProperty(item)) {
+    } else if (isProperty(item)) {
       const [_, key, value] = item;
 
       this._properies.set(key, value);
@@ -308,7 +289,7 @@ export class Node {
     }
   }
 
-  chainOfParentsUntilMatch(item: Item): Node[] {
+  chainOfParentsUntilMatch(item: MatchableItem): Node[] {
     return this.deepParents(undefined, (node: Node) => node.matches(item));
   }
 
@@ -352,17 +333,13 @@ export class Node {
     return Array.from(collection);
   }
 
-  remove(item: Item): void {
+  remove(item: MatchableItem): void {
     if (isNode(item)) {
       const [_, node] = item;
 
       node._setParent(null);
       this._children.delete(node);
-
-      return;
-    }
-
-    if (isProperty(item)) {
+    } else if (isProperty(item)) {
       const [_, key] = item;
 
       this._properies.delete(key);
@@ -390,13 +367,13 @@ export class Node {
 export function h(
   tag: TagNames | FunctionComponent,
   props: Record<string, string | true> | null,
-  ...children: (ItemOrContent | Node | ContentCallback)[]
+  ...children: (ConstructiveItem | Node | ContentCallback)[]
 ): Node {
   if (isFunctionComponent(tag)) {
     return tag(props || {});
   }
 
-  const items: ItemOrContent[] = [];
+  const items: ConstructiveItem[] = [];
 
   if (props) {
     for (const [key, value] of Object.entries(props)) {
@@ -405,7 +382,7 @@ export function h(
   }
 
   for (const child of children) {
-    if (isItemOrContent(child)) {
+    if (isConstructiveItem(child)) {
       items.push(child);
       continue;
     }
@@ -421,3 +398,32 @@ export function h(
 export { mkContent as cb };
 export { mkProperty as prop };
 export { mkTagName as tag };
+
+export function monitorPrimitive(
+  propertyKey: PropertyKey,
+  observable: AnyObservable<PropertyValue>
+): ItemContent {
+  return mkContent((node) => {
+    observable.observe((value) => node.add(mkProperty(propertyKey, value)));
+  });
+}
+
+export function monitorObject<
+  T extends Record<K, PropertyValue>,
+  K extends keyof T
+>(
+  propertyKey: PropertyKey,
+  observable: AnyObservable<T | null>,
+  valueKey: K
+): ItemContent {
+  return mkContent((node) => {
+    observable.observe((value) => {
+      if (!value) {
+        node.remove(mkProperty(propertyKey));
+        return;
+      }
+
+      node.add(mkProperty(propertyKey, value[valueKey]));
+    });
+  });
+}

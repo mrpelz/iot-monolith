@@ -1,10 +1,10 @@
-import { Button } from '../../../lib/services/button/index.js';
+import { Button } from '../../../lib/events/button/index.js';
 import { Hello } from '../../../lib/services/hello/index.js';
 import { Output } from '../../../lib/services/output/index.js';
 import { UDPDevice } from '../../../lib/device/udp.js';
 import { join } from 'path';
 import { logger } from '../../logging.js';
-import { resolveAlways } from '../../../lib/oop/index.js';
+import { promiseGuard } from '../../../lib/oop/index.js';
 
 let on = false;
 
@@ -37,7 +37,7 @@ button.observe((event) => {
   if (event.down) return;
 
   on = !on;
-  resolveAlways(relayService.request(on));
+  promiseGuard(relayService.request(on));
 });
 
 // AUOTMATION
@@ -45,5 +45,5 @@ device.isOnline.observe((online) => {
   log.info(() => (online ? 'offline' : 'offline'));
 
   if (!online) return;
-  resolveAlways(relayService.request(on));
+  promiseGuard(relayService.request(on));
 });
