@@ -10,7 +10,7 @@ Environment="PROD_ENV=1"
 WorkingDirectory=/opt/iot-monolith/
 ExecStartPre=/bin/cp -f /var/cache/iot-monolith/iot-db.json /tmp/iot-db.json
 ExecStartPre=/usr/bin/npm run build
-ExecStart=/usr/bin/node --use_strict --experimental-modules dist/src/index.js
+ExecStart=/usr/bin/node --use_strict --experimental-modules dist/index.js
 ExecStopPost=/bin/mkdir -p /var/cache/iot-monolith
 ExecStopPost=/bin/cp -f /tmp/iot-db.json /var/cache/iot-monolith/iot-db.json
 Restart=always

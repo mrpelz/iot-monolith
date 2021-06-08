@@ -475,7 +475,7 @@ const changeRelays = (force?: boolean) => {
     return;
   }
 
-  changeLeds(timer.isRunning ? 64 : 0);
+  changeLeds(timer.isRunning ? 32 : 0);
 };
 
 buttonShelly1.observable.observe((data) => {
@@ -526,7 +526,7 @@ motionTestDevice.observable.observe((data) => {
 
   if (on || !data) return;
 
-  changeLeds(64);
+  changeLeds(32);
   timer.start();
 });
 
