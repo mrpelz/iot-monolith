@@ -34,10 +34,10 @@ const shelly1 = new UDPDevice('shelly1.iot-ng.net.wurstsalat.cloud', 1337);
 const obiJack = new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337);
 const h801 = new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337);
 const shellyi3 = new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337);
-const olimexRf433Gw = new UDPDevice(
-  'olimex-esp32-poe.iot-ng.net.wurstsalat.cloud',
-  1337
-);
+// const olimexRf433Gw = new UDPDevice(
+//   'olimex-esp32-poe.iot-ng.net.wurstsalat.cloud',
+//   1337
+// );
 
 const olimexEspNowGw = new UDPDevice(
   'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
@@ -173,6 +173,9 @@ espNowTestButton.addEvent(vccEspNowTestButton);
 const helloOlimexEspNowGw = new Hello(); // hello
 olimexEspNowGw.addService(helloOlimexEspNowGw);
 
+const rf433TestEvent = new Rf433();
+olimexEspNowGw.addEvent(rf433TestEvent);
+
 const helloWiFiTestWindowSensor = new Hello(); // hello
 wifiTestWindowSensor.addService(helloWiFiTestWindowSensor);
 
@@ -197,11 +200,11 @@ espNowTestWindowSensor.addEvent(espNowWindowAdditionalInput);
 const espNowWindowVcc = new VCC();
 espNowTestWindowSensor.addEvent(espNowWindowVcc);
 
-const helloOlimexRf433Gw = new Hello(); // hello
-olimexRf433Gw.addService(helloOlimexRf433Gw);
+// const helloOlimexRf433Gw = new Hello(); // hello
+// olimexRf433Gw.addService(helloOlimexRf433Gw);
 
-const rf433TestEvent = new Rf433();
-olimexRf433Gw.addEvent(rf433TestEvent);
+// const rf433TestEvent = new Rf433();
+// olimexRf433Gw.addEvent(rf433TestEvent);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
@@ -323,12 +326,12 @@ every30Seconds.addTask(() => {
       .catch(() => onReject('⛔️ hello'));
   }
 
-  if (olimexRf433Gw.isOnline.value) {
-    helloOlimexRf433Gw
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
+  // if (olimexRf433Gw.isOnline.value) {
+  //   helloOlimexRf433Gw
+  //     .request()
+  //     .then((result) => onResolve('✅ hello', result))
+  //     .catch(() => onReject('⛔️ hello'));
+  // }
 });
 
 every2Minutes.addTask(() => {
@@ -411,14 +414,14 @@ wifiTestWindowSensor.isOnline.observe((online) => {
 
   log.info(() => '📶 espNowTestWindowSensor online');
 });
-olimexRf433Gw.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ olimexRf433Gw offline');
-    return;
-  }
+// olimexRf433Gw.isOnline.observe((online) => {
+//   if (!online) {
+//     log.info(() => '❌ olimexRf433Gw offline');
+//     return;
+//   }
 
-  log.info(() => '📶 olimexRf433Gw online');
-});
+//   log.info(() => '📶 olimexRf433Gw online');
+// });
 
 testDevice.isOnline.observe((online) => {
   if (!online) {
@@ -620,7 +623,28 @@ espNowWindowVcc.observable.observe((data) => {
 });
 
 rf433TestEvent.observable.observe((data) => {
-  log.info(() => `event rf433 "${JSON.stringify(data)}"`);
+  const binaryRepresentation = data.value.toString(2);
+  const bitLengthPadded = Math.ceil(binaryRepresentation.length / 8) * 8;
+  const binaryRepresentationPadded = binaryRepresentation.padStart(
+    bitLengthPadded,
+    '0'
+  );
+  const binaryRepresentationBytes = binaryRepresentationPadded
+    .split('')
+    .map((value, _index) => {
+      const index = _index + 1;
+
+      if (index % 8) return value;
+      if (index === bitLengthPadded) return value;
+
+      return `${value}, `;
+    })
+    .join('');
+
+  log.info(
+    () =>
+      `event rf433: protocol=${data.protocol}; bytes=[ ${binaryRepresentationBytes} ]`
+  );
 });
 
 timer.observe(() => {
