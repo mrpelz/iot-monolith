@@ -13,10 +13,10 @@ export class BooleanState extends Observable<boolean> {
   }
 }
 
-export class EnumState<T> extends Observable<T> {
-  private readonly _enum: T[];
+export class EnumState<T = unknown> extends Observable<T> {
+  private readonly _enum: readonly T[];
 
-  constructor(_enum: T[], initialValue: T) {
+  constructor(_enum: readonly T[], initialValue: T) {
     if (!_enum.includes(initialValue)) {
       throw new RangeError(`"${initialValue}" is not an allowed value`);
     }

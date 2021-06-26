@@ -24,6 +24,7 @@ export class TransportDevice {
     }
   }
 
+  private readonly _log = logger.getInput({ head: 'Device' });
   private readonly _transport: Transport;
 
   readonly device: Device;
@@ -44,9 +45,11 @@ export class TransportDevice {
         !identifier ||
         this._transport.identifierLength !== identifier.length
       ) {
-        throw new Error(
-          'incoming message identifier has wrong length for device'
+        this._log.error(
+          () => 'incoming message identifier has wrong length for device'
         );
+
+        return;
       }
 
       if (

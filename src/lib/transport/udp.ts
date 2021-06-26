@@ -231,7 +231,7 @@ export class UDPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      throw new Error('socket is not connected!');
+      this._udpLog.error(() => 'socket is not connected!');
     }
 
     this._udpLog.debug(() => `send ${payload.length} byte payload`);

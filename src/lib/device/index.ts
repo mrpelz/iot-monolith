@@ -62,7 +62,7 @@ export class Property {
    */
   get isOnline(): ReadOnlyObservable<boolean> {
     if (!this._device) {
-      throw new Error('no device is present on this proerty');
+      throw new Error('no device is present on this property');
     }
 
     return this._device.isOnline;
@@ -130,7 +130,7 @@ export class Service<T = void, S = void> extends Property {
    */
   request(payload: S): Request<T | null> {
     if (!this._device) {
-      throw new Error('no device is present on this proerty');
+      throw new Error('no device is present on this property');
     }
 
     return this._device
@@ -328,7 +328,10 @@ export class Device {
     timeout: number
   ): Request {
     if (!this._isOnline.value) {
-      throw new Error('device is not online');
+      const error = new Error('device is not online');
+      this._log.error(() => error.message);
+
+      return Promise.reject(error);
     }
 
     const id = this._requestIdentifier.get();
@@ -339,7 +342,10 @@ export class Device {
 
       timer.observe((_, observer) => {
         observer.remove();
-        reject(new Error('request timed out'));
+        const error = new Error('request timed out');
+        this._log.error(() => error.message);
+
+        reject(error);
       });
 
       timer.start();

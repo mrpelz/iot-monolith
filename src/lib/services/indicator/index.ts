@@ -7,7 +7,7 @@ export enum IndicatorMode {
 }
 
 export type IndicatorRequest = {
-  blink: number;
+  blink?: number;
   mode: IndicatorMode;
 };
 
@@ -20,7 +20,7 @@ export class Indicator extends Service<null, IndicatorRequest> {
     const { blink, mode } = input;
     const request = Buffer.from([mode]);
 
-    if (mode !== IndicatorMode.BLINK) return request;
+    if (mode !== IndicatorMode.BLINK || !blink) return request;
     return Buffer.concat([request, Buffer.from([blink])]);
   }
 }

@@ -241,7 +241,7 @@ export class TCPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      throw new Error('socket is not connected!');
+      this._tcpLog.error(() => 'socket is not connected!');
     }
 
     this._tcpLog.debug(() => `send ${payload.length} byte payload`);
