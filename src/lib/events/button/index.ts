@@ -1,6 +1,6 @@
 import { Event } from '../../device/index.js';
 
-export type ButtonEvent = {
+export type ButtonPayload = {
   down: boolean;
   downChanged: boolean;
   longpress: number;
@@ -9,12 +9,12 @@ export type ButtonEvent = {
   repeat: number;
 };
 
-export class Button extends Event<ButtonEvent> {
+export class Button extends Event<ButtonPayload> {
   constructor(index: number) {
     super(Buffer.from([index]));
   }
 
-  protected decode(input: Buffer): ButtonEvent | null {
+  protected decode(input: Buffer): ButtonPayload | null {
     if (input.length < 8) return null;
 
     return {

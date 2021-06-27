@@ -11,7 +11,8 @@ import {
 import { Async } from '../../services/async/index.js';
 import { Bme280 } from '../../services/bme280/index.js';
 import { BooleanState } from '../../state/index.js';
-import { Button } from '../../events/button/index.js';
+import { Button } from '../../items/button/index.js';
+import { Button as ButtonEvent } from '../../events/button/index.js';
 import { ESPNowDevice } from '../esp-now.js';
 import { ESPNow as ESPNowEvent } from '../../events/esp-now/index.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
@@ -222,7 +223,7 @@ const doEvent = <T extends Event<unknown>>(
 
   on.observe((value) => (output.setState.value = value));
 
-  const button = doEvent(deviceLabel, 'button', new Button(0), device);
+  const button = doEvent(deviceLabel, 'button', new ButtonEvent(0), device);
   button.observable.observe((data) => {
     if (
       (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
@@ -291,21 +292,21 @@ const doEvent = <T extends Event<unknown>>(
     new SingleValueSensor(doService(new Hello(), device), every30Seconds)
   );
 
-  const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
+  const button0 = doEvent(deviceLabel, 'button0', new ButtonEvent(0), device);
   button0.observable.observe((data) => {
     if (!data.down && data.downChanged) {
       on.flip();
     }
   });
 
-  const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
+  const button1 = doEvent(deviceLabel, 'button1', new ButtonEvent(1), device);
   button1.observable.observe((data) => {
     if (!data.down && data.downChanged) {
       on.flip();
     }
   });
 
-  const button2 = doEvent(deviceLabel, 'button2', new Button(2), device);
+  const button2 = doEvent(deviceLabel, 'button2', new ButtonEvent(2), device);
   button2.observable.observe((data) => {
     if (!data.down && data.downChanged) {
       on.flip();
@@ -369,14 +370,14 @@ const espNowTransport = (() => {
       new SingleValueSensor(doService(new Hello(), device), every30Seconds)
     );
 
-    const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
+    const button0 = doEvent(deviceLabel, 'button0', new ButtonEvent(0), device);
     button0.observable.observe((data) => {
       if (!data.down && data.downChanged) {
         on.flip();
       }
     });
 
-    const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
+    const button1 = doEvent(deviceLabel, 'button1', new ButtonEvent(1), device);
     button1.observable.observe((data) => {
       if (!data.down && data.downChanged) {
         on.flip();
@@ -394,18 +395,18 @@ const espNowTransport = (() => {
       )
     );
 
-    const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
-    button0.observable.observe((data) => {
-      if (!data.down && data.downChanged) {
-        on.flip();
-      }
+    const button0 = new Button(
+      doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+    );
+    button0.longPress(() => {
+      on.flip();
     });
 
-    const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
-    button1.observable.observe((data) => {
-      if (!data.down && data.downChanged) {
-        on.flip();
-      }
+    const button1 = new Button(
+      doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+    );
+    button1.triplePress(() => {
+      on.flip();
     });
 
     doEvent(deviceLabel, 'VCC', new VCC(), device);

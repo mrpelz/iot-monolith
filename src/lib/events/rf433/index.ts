@@ -1,16 +1,16 @@
 import { Event } from '../../device/index.js';
 
-export type Rf433Event = {
+export type Rf433Payload = {
   protocol: number;
   value: number;
 };
 
-export class Rf433 extends Event<Rf433Event> {
+export class Rf433 extends Event<Rf433Payload> {
   constructor() {
     super(Buffer.from([0xfc]));
   }
 
-  protected decode(input: Buffer): Rf433Event | null {
+  protected decode(input: Buffer): Rf433Payload | null {
     if (input.length < 5) return null;
 
     return {
