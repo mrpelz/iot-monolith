@@ -1,3 +1,8 @@
+import {
+  BooleanGroupStrategy,
+  BooleanStateGroup,
+} from '../../state-group/index.js';
+import { Device, Event, Service } from '../index.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import {
   MultiValueSensor,
@@ -5,6 +10,7 @@ import {
 } from '../../items/sensor/index.js';
 import { Async } from '../../services/async/index.js';
 import { Bme280 } from '../../services/bme280/index.js';
+import { BooleanState } from '../../state/index.js';
 import { Button } from '../../events/button/index.js';
 import { ESPNowDevice } from '../esp-now.js';
 import { ESPNow as ESPNowEvent } from '../../events/esp-now/index.js';
@@ -18,6 +24,7 @@ import { Mcp9808 } from '../../services/mcp9808/index.js';
 import { Mhz19 } from '../../services/mhz19/index.js';
 import { Output } from '../../items/output/index.js';
 import { Output as OutputService } from '../../services/output/index.js';
+import { ReadOnlyObservable } from '../../observable/index.js';
 import { Rf433 } from '../../events/rf433/index.js';
 import { Schedule } from '../../schedule/index.js';
 import { Sds011 } from '../../services/sds011/index.js';
@@ -32,607 +39,416 @@ const log = logger.getInput({
   head: 'device-test',
 });
 
-const testDevice = new UDPDevice(
-  'test-device.iot-ng.net.wurstsalat.cloud',
-  1337
-);
-const shelly1 = new UDPDevice('shelly1.iot-ng.net.wurstsalat.cloud', 1337);
-const obiJack = new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337);
-const h801 = new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337);
-const shellyi3 = new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337);
-// const olimexRf433Gw = new UDPDevice(
-//   'olimex-esp32-poe.iot-ng.net.wurstsalat.cloud',
-//   1337
-// );
+const on = new BooleanState(false);
 
-const olimexEspNowGw = new UDPDevice(
-  'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
-  1337
-);
-const espNowEvent = new ESPNowEvent();
-olimexEspNowGw.addEvent(espNowEvent);
-const espNowTransport = new ESPNowTransport(espNowEvent);
-
-const wifiTestButton = new UDPDevice(
-  'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
-  1337
-);
-const espNowTestButton = new ESPNowDevice(
-  espNowTransport,
-  // prettier-ignore
-  [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]
-);
-
-const wifiTestWindowSensor = new UDPDevice(
-  'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
-  1337
-);
-const espNowTestWindowSensor = new ESPNowDevice(
-  espNowTransport,
-  // prettier-ignore
-  [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]
-);
-
-let on = false;
-
+const timedOn = new BooleanState(false);
 const timer = new Timer(10000);
+
+timedOn.observe((value) => {
+  if (!value) return;
+  timer.start();
+});
+timer.observe(() => (timedOn.value = false));
+
+const ledOn = new BooleanStateGroup(
+  BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+  new ReadOnlyObservable(on),
+  new ReadOnlyObservable(timedOn)
+);
 
 const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
   false
 );
+every5Seconds.start();
 
 const every30Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 30).date,
   false
 );
+every30Seconds.start();
 
 const every2Minutes = new Schedule(
   () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
   false
 );
+every2Minutes.start();
 
-const helloTestDeviceService = new Hello(); // hello
-testDevice.addService(helloTestDeviceService);
+const doLog = (labels: string[], value: unknown) => {
+  log.info(() => `${labels.join('/')}: ${JSON.stringify(value)}`);
+};
 
-const async = new Async();
-testDevice.addService(async);
-
-const mcp9808Service = new Mcp9808(); // mcp9808
-testDevice.addService(mcp9808Service);
-const mcp9808 = new SingleValueSensor(mcp9808Service, every5Seconds);
-
-const bme280Service = new Bme280(); // bme280
-testDevice.addService(bme280Service);
-const bme280 = new MultiValueSensor(
-  bme280Service,
-  ['humidity', 'pressure', 'temperature'],
-  every5Seconds
-);
-
-const tsl2561Service = new Tsl2561(); // tsl2561
-testDevice.addService(tsl2561Service);
-const tsl2561 = new SingleValueSensor(tsl2561Service, every5Seconds);
-
-const veml6070Service = new Veml6070(); // veml6070
-testDevice.addService(veml6070Service);
-const veml6070 = new SingleValueSensor(veml6070Service, every5Seconds);
-
-const sds011Service = new Sds011(); // sds011
-testDevice.addService(sds011Service);
-const sds011 = new MultiValueSensor(
-  sds011Service,
-  ['pm025', 'pm10'],
-  every2Minutes
-);
-
-const mhz19Service = new Mhz19(); // mhz19
-testDevice.addService(mhz19Service);
-const mhz19 = new MultiValueSensor(
-  mhz19Service,
-  ['abc', 'accuracy', 'co2', 'temperature', 'transmittance'],
-  every2Minutes
-);
-
-const motionTestDevice = new Input(0);
-testDevice.addEvent(motionTestDevice);
-
-const helloShelly1 = new Hello(); // hello
-shelly1.addService(helloShelly1);
-
-const relayShelly1 = new OutputService(0);
-shelly1.addService(relayShelly1);
-
-const buttonShelly1 = new Button(0);
-shelly1.addEvent(buttonShelly1);
-
-const helloObiJack = new Hello(); // hello
-obiJack.addService(helloObiJack);
-
-const indicatorObiJack = new Indicator(0);
-obiJack.addService(indicatorObiJack);
-
-const relayObiJack = new OutputService(0);
-obiJack.addService(relayObiJack);
-
-const buttonObiJack = new Button(0);
-obiJack.addEvent(buttonObiJack);
-
-const helloH801 = new Hello(); // hello
-h801.addService(helloH801);
-
-const indicatorH801 = new Indicator(0);
-h801.addService(indicatorH801);
-
-const led0Service = new LedService(0);
-h801.addService(led0Service);
-
-const led1Service = new LedService(1);
-h801.addService(led1Service);
-
-const led2Service = new LedService(2);
-h801.addService(led2Service);
-
-const led3Service = new LedService(3);
-h801.addService(led3Service);
-
-const led4Service = new LedService(4);
-h801.addService(led4Service);
-
-const helloShellyi3 = new Hello(); // hello
-shellyi3.addService(helloShellyi3);
-
-const button0Shellyi3 = new Button(0);
-shellyi3.addEvent(button0Shellyi3);
-
-const button1Shellyi3 = new Button(1);
-shellyi3.addEvent(button1Shellyi3);
-
-const button2Shellyi3 = new Button(2);
-shellyi3.addEvent(button2Shellyi3);
-
-const helloWifiTestButton = new Hello(); // hello
-wifiTestButton.addService(helloWifiTestButton);
-
-const button0wifiTestButton = new Button(0);
-wifiTestButton.addEvent(button0wifiTestButton);
-
-const button0espNowTestButton = new Button(0);
-espNowTestButton.addEvent(button0espNowTestButton);
-
-const button1wifiTestButton = new Button(1);
-wifiTestButton.addEvent(button1wifiTestButton);
-
-const button1espNowTestButton = new Button(1);
-espNowTestButton.addEvent(button1espNowTestButton);
-
-const vccEspNowTestButton = new VCC();
-espNowTestButton.addEvent(vccEspNowTestButton);
-
-const helloOlimexEspNowGw = new Hello(); // hello
-olimexEspNowGw.addService(helloOlimexEspNowGw);
-
-const rf433TestEvent = new Rf433();
-olimexEspNowGw.addEvent(rf433TestEvent);
-
-const helloWiFiTestWindowSensor = new Hello(); // hello
-wifiTestWindowSensor.addService(helloWiFiTestWindowSensor);
-
-const wifiWindowOpenSensor = new Input(0);
-wifiTestWindowSensor.addEvent(wifiWindowOpenSensor);
-
-const espNowWindowOpenSensor = new Input(0);
-espNowTestWindowSensor.addEvent(espNowWindowOpenSensor);
-
-const wifiWindowOpenFullySensor = new Input(1);
-wifiTestWindowSensor.addEvent(wifiWindowOpenFullySensor);
-
-const espNowWindowOpenFullySensor = new Input(1);
-espNowTestWindowSensor.addEvent(espNowWindowOpenFullySensor);
-
-const wifiWindowAdditionalInput = new Input(2);
-wifiTestWindowSensor.addEvent(wifiWindowAdditionalInput);
-
-const espNowWindowAdditionalInput = new Input(2);
-espNowTestWindowSensor.addEvent(espNowWindowAdditionalInput);
-
-const espNowWindowVcc = new VCC();
-espNowTestWindowSensor.addEvent(espNowWindowVcc);
-
-const obiJackOutput = new Output(relayObiJack, indicatorObiJack);
-
-const led0 = new Led(led0Service, indicatorH801);
-const led1 = new Led(led1Service);
-const led2 = new Led(led2Service);
-const led3 = new Led(led3Service);
-const led4 = new Led(led4Service);
-
-const onResolve = (description: string, result: unknown) => {
-  log.info(
-    () =>
-      `${description} ${JSON.stringify(
-        result instanceof Buffer
-          ? [...result].map((byte) => byte.toString(16)).join(',')
-          : result
-      )}`
+const doDevice = (deviceLabel: string, device: Device) => {
+  device.isOnline.observe((value) =>
+    doLog([deviceLabel], value ? 'online' : 'offline')
   );
+
+  return [deviceLabel, device] as const;
 };
 
-const onReject = (description: string) => {
-  log.info(() => `${description} failed`);
+const doService = <T extends Service<unknown, unknown>>(
+  service: T,
+  device: Device
+) => {
+  device.addService(service);
+
+  return service;
 };
 
-every30Seconds.addTask(() => {
-  log.info(() => '⏲ every30Seconds');
-
-  if (testDevice.isOnline.value) {
-    helloTestDeviceService
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (shelly1.isOnline.value) {
-    helloShelly1
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (obiJack.isOnline.value) {
-    helloObiJack
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (h801.isOnline.value) {
-    helloH801
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (shellyi3.isOnline.value) {
-    helloShellyi3
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (wifiTestButton.isOnline.value) {
-    helloWifiTestButton
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (olimexEspNowGw.isOnline.value) {
-    helloOlimexEspNowGw
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  if (wifiTestWindowSensor.isOnline.value) {
-    helloWiFiTestWindowSensor
-      .request()
-      .then((result) => onResolve('✅ hello', result))
-      .catch(() => onReject('⛔️ hello'));
-  }
-
-  // if (olimexRf433Gw.isOnline.value) {
-  //   helloOlimexRf433Gw
-  //     .request()
-  //     .then((result) => onResolve('✅ hello', result))
-  //     .catch(() => onReject('⛔️ hello'));
-  // }
-});
-
-every2Minutes.addTask(() => {
-  log.info(() => '⏲ every2Minutes');
-
-  if (testDevice.isOnline.value) {
-    async
-      .request()
-      .then((result) => onResolve('✅ async', result))
-      .catch(() => onReject('⛔️ async'));
-  }
-});
-
-testDevice.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ testDevice offline');
-    return;
-  }
-
-  log.info(() => '📶 testDevice online');
-});
-shelly1.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ shelly1 offline');
-    return;
-  }
-
-  log.info(() => '📶 shelly1 online');
-});
-obiJack.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ obiJack offline');
-    return;
-  }
-
-  log.info(() => '📶 obiJack online');
-});
-h801.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ h801 offline');
-    return;
-  }
-
-  log.info(() => '📶 h801 online');
-});
-shellyi3.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ shellyi3 offline');
-    return;
-  }
-
-  log.info(() => '📶 shellyi3 online');
-});
-wifiTestButton.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ espNowTestButton offline');
-    return;
-  }
-
-  log.info(() => '📶 espNowTestButton online');
-});
-olimexEspNowGw.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ olimexEspNowGw offline');
-    return;
-  }
-
-  log.info(() => '📶 olimexEspNowGw online');
-});
-wifiTestWindowSensor.isOnline.observe((online) => {
-  if (!online) {
-    log.info(() => '❌ espNowTestWindowSensor offline');
-    return;
-  }
-
-  log.info(() => '📶 espNowTestWindowSensor online');
-});
-// olimexRf433Gw.isOnline.observe((online) => {
-//   if (!online) {
-//     log.info(() => '❌ olimexRf433Gw offline');
-//     return;
-//   }
-
-//   log.info(() => '📶 olimexRf433Gw online');
-// });
-
-testDevice.isOnline.observe((online) => {
-  if (!online) {
-    every5Seconds.stop();
-    every30Seconds.stop();
-    every2Minutes.stop();
+const doItem = (
+  deviceLabel: string,
+  serviceLabel: string,
+  item: SingleValueSensor | MultiValueSensor<Record<string, unknown>, string>
+) => {
+  if (item instanceof SingleValueSensor) {
+    item.state.observe((value) => doLog([deviceLabel, serviceLabel], value));
 
     return;
   }
 
-  every5Seconds.start();
-  every30Seconds.start();
-  every2Minutes.start();
-});
-
-const changeLeds = (dutyCycle: number) => {
-  led0.setBrightness.value = dutyCycle;
-  led1.setBrightness.value = dutyCycle;
-  led2.setBrightness.value = dutyCycle;
-  led3.setBrightness.value = dutyCycle;
-  led4.setBrightness.value = dutyCycle;
+  for (const [property, value] of Object.entries(item.state)) {
+    value.observe((_value) =>
+      doLog([deviceLabel, serviceLabel, property], _value)
+    );
+  }
 };
 
-const changeRelays = (force?: boolean) => {
-  on = force === undefined ? !on : force;
+const doEvent = <T extends Event<unknown>>(
+  deviceLabel: string,
+  eventLabel: string,
+  event: T,
+  device: Device
+) => {
+  device.addEvent(event);
 
-  log.info(() => `button press ➡️ ${on ? '🟢' : '🔴'}`);
+  event.observable.observe((value) => doLog([deviceLabel, eventLabel], value));
 
-  if (shelly1.isOnline.value) {
-    relayShelly1
-      .request(on)
-      .then((result) => {
-        onResolve('✅ relayShelly1', result);
+  return event;
+};
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'testDevice',
+    new UDPDevice('test-device.iot-ng.net.wurstsalat.cloud', 1337)
+  );
+
+  doItem(
+    deviceLabel,
+    'hello',
+    new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+  );
+
+  doItem(
+    deviceLabel,
+    'async',
+    new SingleValueSensor(doService(new Async(), device), every2Minutes)
+  );
+
+  doItem(
+    deviceLabel,
+    'mcp9808',
+    new SingleValueSensor(doService(new Mcp9808(), device), every5Seconds)
+  );
+
+  doItem(
+    deviceLabel,
+    'bme280',
+    new MultiValueSensor(
+      doService(new Bme280(), device),
+      ['humidity', 'pressure', 'temperature'],
+      every5Seconds
+    )
+  );
+
+  doItem(
+    deviceLabel,
+    'tsl2561',
+    new SingleValueSensor(doService(new Tsl2561(), device), every5Seconds)
+  );
+
+  doItem(
+    deviceLabel,
+    'veml6070',
+    new SingleValueSensor(doService(new Veml6070(), device), every5Seconds)
+  );
+
+  doItem(
+    deviceLabel,
+    'sds011',
+    new MultiValueSensor(
+      doService(new Sds011(), device),
+      ['pm025', 'pm10'],
+      every2Minutes
+    )
+  );
+
+  doItem(
+    deviceLabel,
+    'mhz19',
+    new MultiValueSensor(
+      doService(new Mhz19(), device),
+      ['abc', 'accuracy', 'co2', 'temperature', 'transmittance'],
+      every2Minutes
+    )
+  );
+
+  const motion = doEvent(deviceLabel, 'motion', new Input(0), device);
+  motion.observable.observe((value) => {
+    if (!value) return;
+    timedOn.value = true;
+  });
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'obiJack',
+    new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337)
+  );
+
+  doItem(
+    deviceLabel,
+    'hello',
+    new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+  );
+
+  const output = new Output(
+    doService(new OutputService(0), device),
+    doService(new Indicator(0), device)
+  );
+
+  output.actualState.observe((value) =>
+    doLog([deviceLabel, 'output', 'actualState'], value)
+  );
+
+  on.observe((value) => (output.setState.value = value));
+
+  const button = doEvent(deviceLabel, 'button', new Button(0), device);
+  button.observable.observe((data) => {
+    if (
+      (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
+      data.longpress === 5
+    ) {
+      on.flip();
+    }
+  });
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'h801',
+    new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337)
+  );
+
+  doItem(
+    deviceLabel,
+    'hello',
+    new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+  );
+
+  const led0 = new Led(
+    doService(new LedService(0), device),
+    doService(new Indicator(0), device)
+  );
+  led0.actualBrightness.observe((value) => {
+    doLog([deviceLabel, 'led0', 'actualBrightness'], value);
+  });
+  ledOn.observe((value) => (led0.setBrightness.value = value ? 255 : 0));
+
+  const led1 = new Led(doService(new LedService(1), device));
+  led1.actualBrightness.observe((value) => {
+    doLog([deviceLabel, 'led1', 'actualBrightness'], value);
+  });
+  ledOn.observe((value) => (led1.setBrightness.value = value ? 255 : 0));
+
+  const led2 = new Led(doService(new LedService(2), device));
+  led2.actualBrightness.observe((value) => {
+    doLog([deviceLabel, 'led2', 'actualBrightness'], value);
+  });
+  ledOn.observe((value) => (led2.setBrightness.value = value ? 255 : 0));
+
+  const led3 = new Led(doService(new LedService(3), device));
+  led3.actualBrightness.observe((value) => {
+    doLog([deviceLabel, 'led3', 'actualBrightness'], value);
+  });
+  ledOn.observe((value) => (led3.setBrightness.value = value ? 255 : 0));
+
+  const led4 = new Led(doService(new LedService(4), device));
+  led4.actualBrightness.observe((value) => {
+    doLog([deviceLabel, 'led4', 'actualBrightness'], value);
+  });
+  ledOn.observe((value) => (led4.setBrightness.value = value ? 255 : 0));
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'shellyi33',
+    new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337)
+  );
+
+  doItem(
+    deviceLabel,
+    'hello',
+    new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+  );
+
+  const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
+  button0.observable.observe((data) => {
+    if (!data.down && data.downChanged) {
+      on.flip();
+    }
+  });
+
+  const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
+  button1.observable.observe((data) => {
+    if (!data.down && data.downChanged) {
+      on.flip();
+    }
+  });
+
+  const button2 = doEvent(deviceLabel, 'button2', new Button(2), device);
+  button2.observable.observe((data) => {
+    if (!data.down && data.downChanged) {
+      on.flip();
+    }
+  });
+})();
+
+const espNowTransport = (() => {
+  const [deviceLabel, device] = doDevice(
+    'olimexEsp32Gateway',
+    new UDPDevice('olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud', 1337)
+  );
+
+  doItem(
+    deviceLabel,
+    'hello',
+    new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+  );
+
+  const espNow = doEvent(deviceLabel, 'espNow', new ESPNowEvent(), device);
+  const _espNowTransport = new ESPNowTransport(espNow);
+
+  const rf433 = doEvent(deviceLabel, 'rf433', new Rf433(), device);
+  rf433.observable.observe((data) => {
+    const binaryRepresentation = data.value.toString(2);
+    const bitLengthPadded = Math.ceil(binaryRepresentation.length / 8) * 8;
+    const binaryRepresentationPadded = binaryRepresentation.padStart(
+      bitLengthPadded,
+      '0'
+    );
+    const binaryRepresentationBytes = binaryRepresentationPadded
+      .split('')
+      .map((value, _index) => {
+        const index = _index + 1;
+
+        if (index % 8) return value;
+        if (index === bitLengthPadded) return value;
+
+        return `${value}, `;
       })
-      .catch(() => onReject('⛔️ relayShelly1'));
-  }
+      .join('');
 
-  obiJackOutput.setState.value = on;
+    doLog([deviceLabel, 'rf433', 'bits'], binaryRepresentationBytes);
+  });
 
-  if (on) {
-    changeLeds(255);
-    return;
-  }
+  return _espNowTransport;
+})();
 
-  changeLeds(timer.isRunning ? 32 : 0);
-};
+(() => {
+  const baseLabel = 'espNowTestButton';
 
-buttonShelly1.observable.observe((data) => {
-  log.info(() => `event buttonShelly1 ${JSON.stringify(data)}`);
+  (() => {
+    const [deviceLabel, device] = doDevice(
+      `${baseLabel}[wifi]`,
+      new UDPDevice('esp-now-test-button.iot-ng.net.wurstsalat.cloud', 1337)
+    );
 
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
+    doItem(
+      deviceLabel,
+      'hello',
+      new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+    );
 
-buttonObiJack.observable.observe((data) => {
-  log.info(() => `event buttonObiJack ${JSON.stringify(data)}`);
+    const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
+    button0.observable.observe((data) => {
+      if (!data.down && data.downChanged) {
+        on.flip();
+      }
+    });
 
-  if (
-    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
-    data.longpress === 5
-  ) {
-    changeRelays();
-  }
-});
+    const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
+    button1.observable.observe((data) => {
+      if (!data.down && data.downChanged) {
+        on.flip();
+      }
+    });
+  })();
 
-button0Shellyi3.observable.observe((data) => {
-  log.info(() => `event button0Shellyi3 ${JSON.stringify(data)}`);
+  (() => {
+    const [deviceLabel, device] = doDevice(
+      `${baseLabel}[espNow]`,
+      new ESPNowDevice(
+        espNowTransport,
+        // prettier-ignore
+        [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]
+      )
+    );
 
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
+    const button0 = doEvent(deviceLabel, 'button0', new Button(0), device);
+    button0.observable.observe((data) => {
+      if (!data.down && data.downChanged) {
+        on.flip();
+      }
+    });
 
-button1Shellyi3.observable.observe((data) => {
-  log.info(() => `event button1Shellyi3 ${JSON.stringify(data)}`);
+    const button1 = doEvent(deviceLabel, 'button1', new Button(1), device);
+    button1.observable.observe((data) => {
+      if (!data.down && data.downChanged) {
+        on.flip();
+      }
+    });
 
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
+    doEvent(deviceLabel, 'VCC', new VCC(), device);
+  })();
+})();
 
-button2Shellyi3.observable.observe((data) => {
-  log.info(() => `event button2Shellyi3 ${JSON.stringify(data)}`);
+(() => {
+  const baseLabel = 'espNowTestWindowSensor';
 
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
+  (() => {
+    const [deviceLabel, device] = doDevice(
+      `${baseLabel}[wifi]`,
+      new UDPDevice(
+        'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
+        1337
+      )
+    );
 
-motionTestDevice.observable.observe((data) => {
-  log.info(() => `event motionTestDevice ${data ? '🟡' : '🔵'}`);
+    doItem(
+      deviceLabel,
+      'hello',
+      new SingleValueSensor(doService(new Hello(), device), every30Seconds)
+    );
 
-  if (on || !data) return;
+    doEvent(deviceLabel, 'input0', new Input(0), device);
+    doEvent(deviceLabel, 'input1', new Input(1), device);
+    doEvent(deviceLabel, 'input2', new Input(2), device);
+  })();
 
-  changeLeds(32);
-  timer.start();
-});
+  (() => {
+    const [deviceLabel, device] = doDevice(
+      `${baseLabel}[espNow]`,
+      new ESPNowDevice(
+        espNowTransport,
+        // prettier-ignore
+        [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]
+      )
+    );
 
-button0wifiTestButton.observable.observe((data) => {
-  log.info(() => `event button0wifiTestButton ${JSON.stringify(data)}`);
+    doEvent(deviceLabel, 'input0', new Input(0), device);
+    doEvent(deviceLabel, 'input1', new Input(1), device);
+    doEvent(deviceLabel, 'input2', new Input(2), device);
 
-  if (
-    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
-    data.longpress === 5
-  ) {
-    changeRelays();
-  }
-});
-button0espNowTestButton.observable.observe((data) => {
-  log.info(() => `event button0espNowTestButton ${JSON.stringify(data)}`);
-
-  if (
-    (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
-    data.longpress === 5
-  ) {
-    changeRelays();
-  }
-});
-
-button1wifiTestButton.observable.observe((data) => {
-  log.info(() => `event button1wifiTestButton ${JSON.stringify(data)}`);
-
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
-button1espNowTestButton.observable.observe((data) => {
-  log.info(() => `event button1espNowTestButton ${JSON.stringify(data)}`);
-
-  if (!data.down && data.downChanged) {
-    changeRelays();
-  }
-});
-vccEspNowTestButton.observable.observe((data) => {
-  log.info(() => `event vccEspNowTestButton "${data}"`);
-});
-
-wifiWindowOpenSensor.observable.observe((data) => {
-  log.info(() => `event wifiWindowOpenSensor ${data ? '🟡' : '🔵'}`);
-});
-espNowWindowOpenSensor.observable.observe((data) => {
-  log.info(() => `event espNowWindowOpenSensor ${data ? '🟡' : '🔵'}`);
-});
-
-wifiWindowOpenFullySensor.observable.observe((data) => {
-  log.info(() => `event wifiWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
-});
-espNowWindowOpenFullySensor.observable.observe((data) => {
-  log.info(() => `event espNowWindowOpenFullySensor ${data ? '🟡' : '🔵'}`);
-});
-
-wifiWindowAdditionalInput.observable.observe((data) => {
-  log.info(() => `event wifiWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
-});
-espNowWindowAdditionalInput.observable.observe((data) => {
-  log.info(() => `event espNowWindowAdditionalInput ${data ? '🟡' : '🔵'}`);
-});
-espNowWindowVcc.observable.observe((data) => {
-  log.info(() => `event espNowWindowVcc "${data}"`);
-});
-
-rf433TestEvent.observable.observe((data) => {
-  const binaryRepresentation = data.value.toString(2);
-  const bitLengthPadded = Math.ceil(binaryRepresentation.length / 8) * 8;
-  const binaryRepresentationPadded = binaryRepresentation.padStart(
-    bitLengthPadded,
-    '0'
-  );
-  const binaryRepresentationBytes = binaryRepresentationPadded
-    .split('')
-    .map((value, _index) => {
-      const index = _index + 1;
-
-      if (index % 8) return value;
-      if (index === bitLengthPadded) return value;
-
-      return `${value}, `;
-    })
-    .join('');
-
-  log.info(
-    () =>
-      `event rf433: protocol=${data.protocol}; bytes=[ ${binaryRepresentationBytes} ]`
-  );
-});
-
-mcp9808.state.observe((v) => log.info(() => `mcp9808: ${v}`));
-
-bme280.state.humidity.observe((v) => log.info(() => `bme280 humidity: ${v}`));
-bme280.state.pressure.observe((v) => log.info(() => `bme280 pressure: ${v}`));
-bme280.state.temperature.observe((v) =>
-  log.info(() => `bme280 temperature: ${v}`)
-);
-
-tsl2561.state.observe((v) => log.info(() => `tsl2561: ${v}`));
-
-veml6070.state.observe((v) => log.info(() => `veml6070: ${v}`));
-
-sds011.state.pm025.observe((v) => log.info(() => `sds011 pm025: ${v}`));
-sds011.state.pm10.observe((v) => log.info(() => `sds011 pm10: ${v}`));
-
-mhz19.state.abc.observe((v) => log.info(() => `mhz19 abc: ${v}`));
-mhz19.state.accuracy.observe((v) => log.info(() => `mhz19 accuracy: ${v}`));
-mhz19.state.co2.observe((v) => log.info(() => `mhz19 co2: ${v}`));
-mhz19.state.temperature.observe((v) =>
-  log.info(() => `mhz19 temperature: ${v}`)
-);
-mhz19.state.transmittance.observe((v) =>
-  log.info(() => `mhz19 transmittance: ${v}`)
-);
-
-obiJackOutput.actualState.observe((v) => log.info(() => `obiJackOutput: ${v}`));
-
-led0.actualBrightness.observe((v) => log.info(() => `led0: ${v}`));
-led1.actualBrightness.observe((v) => log.info(() => `led1: ${v}`));
-led2.actualBrightness.observe((v) => log.info(() => `led2: ${v}`));
-led3.actualBrightness.observe((v) => log.info(() => `led3: ${v}`));
-led4.actualBrightness.observe((v) => log.info(() => `led4: ${v}`));
-
-timer.observe(() => {
-  if (on) return;
-  changeLeds(0);
-});
+    doEvent(deviceLabel, 'VCC', new VCC(), device);
+  })();
+})();

@@ -92,7 +92,7 @@ export class BooleanStateGroup extends StateGroup<boolean> {
 
   get value(): boolean {
     if (this._strategy === BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE) {
-      this.someTrue();
+      return this.someTrue();
     }
 
     return this.allTrue();
