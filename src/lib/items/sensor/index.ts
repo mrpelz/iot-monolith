@@ -23,7 +23,7 @@ export class SingleValueSensor<T = unknown> {
 
   private async _get() {
     try {
-      const result = await this._service.request();
+      const result = await this._service.request(undefined, true);
       if (result === null) {
         this._unknown();
         return;
@@ -76,7 +76,7 @@ export class MultiValueSensor<
 
   private async _get() {
     try {
-      const result = await this._service.request();
+      const result = await this._service.request(undefined, true);
       if (result === null) {
         this._unknown();
         return;

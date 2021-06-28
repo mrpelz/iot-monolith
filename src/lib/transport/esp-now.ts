@@ -19,7 +19,7 @@ export class ESPNowTransport extends Transport {
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
   constructor(event: ESPNowEvent) {
-    super(6, false);
+    super(null, 6, false);
 
     event.observable.observe(({ deviceIdentifier, payload }) =>
       this._handleMessage(deviceIdentifier, payload)

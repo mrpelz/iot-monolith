@@ -52,7 +52,7 @@ export class TCPTransport extends Transport {
       throw new Error('insufficient options provided');
     }
 
-    super();
+    super(`${host}:${port}`);
 
     rebind(this, '_handleReadable', '_onConnection', '_onDisconnection');
 

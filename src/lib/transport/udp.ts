@@ -72,7 +72,7 @@ export class UDPTransport extends Transport {
     keepAlive = 2000,
     sequenceHandling = false
   ) {
-    super();
+    super(`${host}:${port}`);
 
     rebind(this, '_handleMessage', '_onConnection', '_onDisconnection');
 

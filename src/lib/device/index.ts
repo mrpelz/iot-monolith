@@ -128,13 +128,18 @@ export class Service<T = void, S = void> extends Property {
   /**
    * issue request on Device instance
    */
-  request(payload: S): Request<T | null> {
+  request(payload: S, suppressErrors = false): Request<T | null> {
     if (!this._device) {
       throw new Error('no device is present on this property');
     }
 
     return this._device
-      .request(this.identifier, this.encode(payload), this._timeout)
+      .request(
+        this.identifier,
+        this.encode(payload),
+        this._timeout,
+        suppressErrors
+      )
       .then((result) => this.decode(result));
   }
 }
@@ -172,7 +177,7 @@ export class Device {
     keepAlive = 5000
   ) {
     this._log = logger.getInput({
-      head: `Device ${identifier}`,
+      head: `Device ${transport.firendlyName || identifier}`,
     });
     this._transport = transport.addDevice(this);
 
@@ -325,11 +330,15 @@ export class Device {
   request(
     serviceIdentifier: Buffer,
     payload: Buffer | null = null,
-    timeout: number
+    timeout: number,
+    suppressErrors = false
   ): Request {
     if (!this._isOnline.value) {
       const error = new Error('device is not online');
-      this._log.error(() => error.message);
+
+      if (!suppressErrors) {
+        this._log.error(() => error.message);
+      }
 
       return Promise.reject(error);
     }
@@ -343,7 +352,10 @@ export class Device {
       timer.observe((_, observer) => {
         observer.remove();
         const error = new Error('request timed out');
-        this._log.error(() => error.message);
+
+        if (!suppressErrors) {
+          this._log.error(() => error.message);
+        }
 
         reject(error);
       });

@@ -3,6 +3,8 @@ import { Device } from '../device/index.js';
 import { ReadOnlyObservable } from '../observable/index.js';
 import { logger } from '../../app/logging.js';
 
+type FriendlyName = string | null;
+
 export class TransportDevice {
   static _isValidDeviceForTransport(
     devices: Set<TransportDevice>,
@@ -81,16 +83,22 @@ export class Transport {
 
   protected readonly _isConnected = new BooleanState(false);
 
+  readonly firendlyName: FriendlyName;
   readonly identifierLength: number;
   readonly isConnected: ReadOnlyObservable<boolean>;
 
-  constructor(identifierLength = 0, singleDevice = true) {
+  constructor(
+    friendlyName: FriendlyName = null,
+    identifierLength = 0,
+    singleDevice = true
+  ) {
     if (!singleDevice && !identifierLength) {
       throw new Error('identifier is required for multi device transport');
     }
 
     this._singleDevice = singleDevice;
 
+    this.firendlyName = friendlyName;
     this.identifierLength = identifierLength;
     this.isConnected = new ReadOnlyObservable(this._isConnected);
   }
