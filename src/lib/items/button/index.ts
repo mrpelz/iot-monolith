@@ -88,18 +88,19 @@ export class Button {
     );
   }
 
-  shortPress(callback: Callback): Observer {
-    return this.up(callback);
+  shortPress(callback: Callback, maxDuration = 300): Observer {
+    return this.up(callback, maxDuration);
   }
 
   triplePress(callback: Callback): Observer {
     return this.repeatPresses(callback, 3);
   }
 
-  up(callback: Callback): Observer {
+  up(callback: Callback, maxDuration = 300): Observer {
     return this.match(
       callback,
-      ({ down, downChanged }) => !down && downChanged
+      ({ down, downChanged, previousDuration }) =>
+        !down && downChanged && previousDuration < maxDuration
     );
   }
 

@@ -223,14 +223,14 @@ const doEvent = <T extends Event<unknown>>(
 
   on.observe((value) => (output.setState.value = value));
 
-  const button = doEvent(deviceLabel, 'button', new ButtonEvent(0), device);
-  button.observable.observe((data) => {
-    if (
-      (!data.down && data.downChanged && data.previousDuration < 125 * 5) ||
-      data.longpress === 5
-    ) {
-      on.flip();
-    }
+  const button = new Button(
+    doEvent(deviceLabel, 'button', new ButtonEvent(0), device)
+  );
+  button.shortPress(() => {
+    on.flip();
+  });
+  button.longPress(() => {
+    on.flip();
   });
 })();
 
@@ -292,25 +292,25 @@ const doEvent = <T extends Event<unknown>>(
     new SingleValueSensor(doService(new Hello(), device), every30Seconds)
   );
 
-  const button0 = doEvent(deviceLabel, 'button0', new ButtonEvent(0), device);
-  button0.observable.observe((data) => {
-    if (!data.down && data.downChanged) {
-      on.flip();
-    }
+  const button0 = new Button(
+    doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+  );
+  button0.shortPress(() => {
+    on.flip();
   });
 
-  const button1 = doEvent(deviceLabel, 'button1', new ButtonEvent(1), device);
-  button1.observable.observe((data) => {
-    if (!data.down && data.downChanged) {
-      on.flip();
-    }
+  const button1 = new Button(
+    doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+  );
+  button1.shortPress(() => {
+    on.flip();
   });
 
-  const button2 = doEvent(deviceLabel, 'button2', new ButtonEvent(2), device);
-  button2.observable.observe((data) => {
-    if (!data.down && data.downChanged) {
-      on.flip();
-    }
+  const button2 = new Button(
+    doEvent(deviceLabel, 'button2', new ButtonEvent(2), device)
+  );
+  button2.shortPress(() => {
+    on.flip();
   });
 })();
 
@@ -370,18 +370,18 @@ const espNowTransport = (() => {
       new SingleValueSensor(doService(new Hello(), device), every30Seconds)
     );
 
-    const button0 = doEvent(deviceLabel, 'button0', new ButtonEvent(0), device);
-    button0.observable.observe((data) => {
-      if (!data.down && data.downChanged) {
-        on.flip();
-      }
+    const button0 = new Button(
+      doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+    );
+    button0.shortPress(() => {
+      on.flip();
     });
 
-    const button1 = doEvent(deviceLabel, 'button1', new ButtonEvent(1), device);
-    button1.observable.observe((data) => {
-      if (!data.down && data.downChanged) {
-        on.flip();
-      }
+    const button1 = new Button(
+      doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+    );
+    button1.shortPress(() => {
+      on.flip();
     });
   })();
 
@@ -398,14 +398,14 @@ const espNowTransport = (() => {
     const button0 = new Button(
       doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
     );
-    button0.longPress(() => {
+    button0.shortPress(() => {
       on.flip();
     });
 
     const button1 = new Button(
       doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
     );
-    button1.triplePress(() => {
+    button1.shortPress(() => {
       on.flip();
     });
 
