@@ -4,8 +4,6 @@
     "alwaysStrict": true,
     "checkJs": false,
     "esModuleInterop": true,
-    "jsx": "react",
-    "jsxFactory": "h",
     "lib": [
       "esnext",
       "dom"
