@@ -6,6 +6,10 @@ export function byteRange(count: number): number {
   return bitRange(count * 8);
 }
 
+export function bytesRequiredForBitLength(count: number): number {
+  return Math.ceil(count / 8);
+}
+
 export const NUMBER_RANGES = {
   uint16: bitRange(16),
   uint32: bitRange(32),

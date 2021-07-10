@@ -1,6 +1,5 @@
-import { ESPNow as ESPNowEvent } from '../events/esp-now/index.js';
+import { ESPNow } from '../events/esp-now/index.js';
 import { EVENT_IDENTIFIER } from '../device/index.js';
-import { ReadOnlyObservable } from '../observable/index.js';
 import { Transport } from './index.js';
 import { humanPayload } from '../data/index.js';
 import { logger } from '../../app/logging.js';
@@ -16,9 +15,7 @@ import { logger } from '../../app/logging.js';
 export class ESPNowTransport extends Transport {
   private readonly _espNowLog = logger.getInput({ head: 'ESPNowTransport' });
 
-  readonly shouldBeConnected: ReadOnlyObservable<boolean>;
-
-  constructor(event: ESPNowEvent) {
+  constructor(event: ESPNow) {
     super(null, 6, false);
 
     event.observable.observe(({ deviceIdentifier, payload }) =>

@@ -10,13 +10,14 @@ export class SingleValueSensor<T = unknown> {
 
   constructor(service: Service<T, void>, schedule: Schedule) {
     this._service = service;
+
+    this.state = new ReadOnlyObservable(this._state);
+
     this._service.isOnline.observe((online) => {
       if (!online) {
         this._unknown();
       }
     });
-
-    this.state = new ReadOnlyObservable(this._state);
 
     schedule.addTask(() => this._get());
   }
@@ -60,16 +61,17 @@ export class MultiValueSensor<
     this._properties = properties;
 
     this._service = service;
-    this._service.isOnline.observe((online) => {
-      if (!online) {
-        this._unknown();
-      }
-    });
 
     for (const property of this._properties) {
       this._state[property] = new Observable(null);
       this.state[property] = new ReadOnlyObservable(this._state[property]);
     }
+
+    this._service.isOnline.observe((online) => {
+      if (!online) {
+        this._unknown();
+      }
+    });
 
     schedule.addTask(() => this._get());
   }

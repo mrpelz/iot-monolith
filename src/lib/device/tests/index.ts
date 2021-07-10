@@ -3,7 +3,14 @@ import {
   BooleanStateGroup,
 } from '../../state-group/index.js';
 import { Device, Event, Service } from '../index.js';
+import { Ev1527Device, bitLengthPayload, maxPayload } from '../ev1527.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
+import {
+  MultiValueEvent,
+  SingleValueEvent,
+  StatelessMultiValueEvent,
+  StatelessSingleValueEvent,
+} from '../../items/event/index.js';
 import {
   MultiValueSensor,
   SingleValueSensor,
@@ -16,6 +23,9 @@ import { Button as ButtonEvent } from '../../events/button/index.js';
 import { ESPNowDevice } from '../esp-now.js';
 import { ESPNow as ESPNowEvent } from '../../events/esp-now/index.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
+import { Ev1527Button } from '../../events/ev1527-button/index.js';
+import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor/index.js';
 import { Hello } from '../../services/hello/index.js';
 import { Indicator } from '../../services/indicator/index.js';
 import { Input } from '../../events/input/index.js';
@@ -75,13 +85,13 @@ const every2Minutes = new Schedule(
 );
 every2Minutes.start();
 
-const doLog = (labels: string[], value: unknown) => {
-  log.info(() => `${labels.join('/')}: ${JSON.stringify(value)}`);
+const doLog = (label: string, path: string[], value: unknown) => {
+  log.info(() => `${label} => ${path.join('/')}: ${JSON.stringify(value)}`);
 };
 
 const doDevice = (deviceLabel: string, device: Device) => {
   device.isOnline.observe((value) =>
-    doLog([deviceLabel], value ? 'online' : 'offline')
+    doLog('device', [deviceLabel], value ? 'online' : 'offline')
   );
 
   return [deviceLabel, device] as const;
@@ -96,25 +106,13 @@ const doService = <T extends Service<unknown, unknown>>(
   return service;
 };
 
-const doItem = (
-  deviceLabel: string,
-  serviceLabel: string,
-  item: SingleValueSensor | MultiValueSensor<Record<string, unknown>, string>
-) => {
-  if (item instanceof SingleValueSensor) {
-    item.state.observe((value) => doLog([deviceLabel, serviceLabel], value));
+const doEvent = <T extends Event<unknown>>(event: T, device: Device) => {
+  device.addEvent(event);
 
-    return;
-  }
-
-  for (const [property, value] of Object.entries(item.state)) {
-    value.observe((_value) =>
-      doLog([deviceLabel, serviceLabel, property], _value)
-    );
-  }
+  return event;
 };
 
-const doEvent = <T extends Event<unknown>>(
+const doEventWithLog = <T extends Event<unknown>>(
   deviceLabel: string,
   eventLabel: string,
   event: T,
@@ -122,9 +120,81 @@ const doEvent = <T extends Event<unknown>>(
 ) => {
   device.addEvent(event);
 
-  event.observable.observe((value) => doLog([deviceLabel, eventLabel], value));
+  event.observable.observe((value) =>
+    doLog('event', [deviceLabel, eventLabel], value)
+  );
 
   return event;
+};
+
+const doItem = <
+  T extends
+    | SingleValueSensor
+    | SingleValueEvent
+    | StatelessSingleValueEvent
+    | MultiValueSensor<Record<string, unknown>, string>
+    | MultiValueEvent<Record<string, unknown>, string>
+    | StatelessMultiValueEvent<Record<string, unknown>, string>
+>(
+  deviceLabel: string,
+  itemLabel: string,
+  item: T
+): T => {
+  if (item instanceof SingleValueSensor) {
+    item.state.observe((value) =>
+      doLog('singleValueSensor', [deviceLabel, itemLabel], value)
+    );
+
+    return item;
+  }
+
+  if (item instanceof SingleValueEvent) {
+    item.state.observe((value) =>
+      doLog('singleValueEvent', [deviceLabel, itemLabel], value)
+    );
+
+    return item;
+  }
+
+  if (item instanceof StatelessSingleValueEvent) {
+    item.state.observe((value) =>
+      doLog('statelessSingleValueEvent', [deviceLabel, itemLabel], value)
+    );
+
+    return item;
+  }
+
+  if (item instanceof MultiValueSensor) {
+    for (const [property, value] of Object.entries(item.state)) {
+      value.observe((_value) =>
+        doLog('multiValueSensor', [deviceLabel, itemLabel, property], _value)
+      );
+    }
+
+    return item;
+  }
+
+  if (item instanceof MultiValueEvent) {
+    for (const [property, value] of Object.entries(item.state)) {
+      value.observe((_value) =>
+        doLog('multiValueEvent', [deviceLabel, itemLabel, property], _value)
+      );
+    }
+
+    return item;
+  }
+
+  for (const [property, value] of Object.entries(item.state)) {
+    value.observe((_value) =>
+      doLog(
+        'statelessMultiValueEvent',
+        [deviceLabel, itemLabel, property],
+        _value
+      )
+    );
+  }
+
+  return item;
 };
 
 (() => {
@@ -193,8 +263,12 @@ const doEvent = <T extends Event<unknown>>(
     )
   );
 
-  const motion = doEvent(deviceLabel, 'motion', new Input(0), device);
-  motion.observable.observe((value) => {
+  const motion = doItem(
+    deviceLabel,
+    'motion',
+    new SingleValueEvent(doEvent(new Input(0), device))
+  );
+  motion.state.observe((value) => {
     if (!value) return;
     timedOn.value = true;
   });
@@ -218,13 +292,13 @@ const doEvent = <T extends Event<unknown>>(
   );
 
   output.actualState.observe((value) =>
-    doLog([deviceLabel, 'output', 'actualState'], value)
+    doLog('log', [deviceLabel, 'output', 'actualState'], value)
   );
 
   on.observe((value) => (output.setState.value = value));
 
   const button = new Button(
-    doEvent(deviceLabel, 'button', new ButtonEvent(0), device)
+    doEventWithLog(deviceLabel, 'button', new ButtonEvent(0), device)
   );
   button.shortPress(() => {
     on.flip();
@@ -251,31 +325,31 @@ const doEvent = <T extends Event<unknown>>(
     doService(new Indicator(0), device)
   );
   led0.actualBrightness.observe((value) => {
-    doLog([deviceLabel, 'led0', 'actualBrightness'], value);
+    doLog('log', [deviceLabel, 'led0', 'actualBrightness'], value);
   });
   ledOn.observe((value) => (led0.setBrightness.value = value ? 255 : 0));
 
   const led1 = new Led(doService(new LedService(1), device));
   led1.actualBrightness.observe((value) => {
-    doLog([deviceLabel, 'led1', 'actualBrightness'], value);
+    doLog('log', [deviceLabel, 'led1', 'actualBrightness'], value);
   });
   ledOn.observe((value) => (led1.setBrightness.value = value ? 255 : 0));
 
   const led2 = new Led(doService(new LedService(2), device));
   led2.actualBrightness.observe((value) => {
-    doLog([deviceLabel, 'led2', 'actualBrightness'], value);
+    doLog('log', [deviceLabel, 'led2', 'actualBrightness'], value);
   });
   ledOn.observe((value) => (led2.setBrightness.value = value ? 255 : 0));
 
   const led3 = new Led(doService(new LedService(3), device));
   led3.actualBrightness.observe((value) => {
-    doLog([deviceLabel, 'led3', 'actualBrightness'], value);
+    doLog('log', [deviceLabel, 'led3', 'actualBrightness'], value);
   });
   ledOn.observe((value) => (led3.setBrightness.value = value ? 255 : 0));
 
   const led4 = new Led(doService(new LedService(4), device));
   led4.actualBrightness.observe((value) => {
-    doLog([deviceLabel, 'led4', 'actualBrightness'], value);
+    doLog('log', [deviceLabel, 'led4', 'actualBrightness'], value);
   });
   ledOn.observe((value) => (led4.setBrightness.value = value ? 255 : 0));
 })();
@@ -293,28 +367,28 @@ const doEvent = <T extends Event<unknown>>(
   );
 
   const button0 = new Button(
-    doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+    doEventWithLog(deviceLabel, 'button0', new ButtonEvent(0), device)
   );
   button0.shortPress(() => {
     on.flip();
   });
 
   const button1 = new Button(
-    doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+    doEventWithLog(deviceLabel, 'button1', new ButtonEvent(1), device)
   );
   button1.shortPress(() => {
     on.flip();
   });
 
   const button2 = new Button(
-    doEvent(deviceLabel, 'button2', new ButtonEvent(2), device)
+    doEventWithLog(deviceLabel, 'button2', new ButtonEvent(2), device)
   );
   button2.shortPress(() => {
     on.flip();
   });
 })();
 
-const espNowTransport = (() => {
+const [espNowTransport, ev1527Transport] = (() => {
   const [deviceLabel, device] = doDevice(
     'olimexEsp32Gateway',
     new UDPDevice('olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud', 1337)
@@ -326,33 +400,55 @@ const espNowTransport = (() => {
     new SingleValueSensor(doService(new Hello(), device), every30Seconds)
   );
 
-  const espNow = doEvent(deviceLabel, 'espNow', new ESPNowEvent(), device);
+  const espNow = doEventWithLog(
+    deviceLabel,
+    'espNow',
+    new ESPNowEvent(),
+    device
+  );
   const _espNowTransport = new ESPNowTransport(espNow);
 
-  const rf433 = doEvent(deviceLabel, 'rf433', new Rf433(), device);
-  rf433.observable.observe((data) => {
-    const binaryRepresentation = data.value.toString(2);
-    const bitLengthPadded = Math.ceil(binaryRepresentation.length / 8) * 8;
-    const binaryRepresentationPadded = binaryRepresentation.padStart(
-      bitLengthPadded,
-      '0'
-    );
-    const binaryRepresentationBytes = binaryRepresentationPadded
-      .split('')
-      .map((value, _index) => {
-        const index = _index + 1;
+  const rf433 = doEventWithLog(deviceLabel, 'rf433', new Rf433(), device);
 
-        if (index % 8) return value;
-        if (index === bitLengthPadded) return value;
+  // rf433.observable.observe(({ value, protocol }) => {
+  //   const binaryRepresentation = value.toString(2);
+  //   const bitLengthPadded = Math.ceil(binaryRepresentation.length / 8) * 8;
+  //   const binaryRepresentationPadded = binaryRepresentation.padStart(
+  //     bitLengthPadded,
+  //     '0'
+  //   );
+  //   const binaryRepresentationBytes = binaryRepresentationPadded
+  //     .split('')
+  //     .map((_value, _index) => {
+  //       const index = _index + 1;
 
-        return `${value}, `;
-      })
-      .join('');
+  //       if (index % 8) return _value;
+  //       if (index === bitLengthPadded) return _value;
 
-    doLog([deviceLabel, 'rf433', 'bits'], binaryRepresentationBytes);
-  });
+  //       return `${_value}, `;
+  //     })
+  //     .join('');
 
-  return _espNowTransport;
+  //   doLog('log', [deviceLabel, 'rf433', 'protocol'], protocol);
+  //   doLog('log', [deviceLabel, 'rf433', 'bits'], binaryRepresentationBytes);
+
+  //   doLog(
+  //     'log',
+  //     [deviceLabel, 'ev1527', 'address'],
+  //     // eslint-disable-next-line no-bitwise
+  //     value >> bitLengthPayload
+  //   );
+  //   doLog(
+  //     'log',
+  //     [deviceLabel, 'ev1527', 'payload'],
+  //     // eslint-disable-next-line no-bitwise
+  //     `0b${(value & maxPayload).toString(2).padStart(bitLengthPayload, '0')}`
+  //   );
+  // });
+
+  const _ev1527Transport = new Ev1527Transport(rf433);
+
+  return [_espNowTransport, _ev1527Transport] as const;
 })();
 
 (() => {
@@ -371,14 +467,14 @@ const espNowTransport = (() => {
     );
 
     const button0 = new Button(
-      doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+      doEventWithLog(deviceLabel, 'button0', new ButtonEvent(0), device)
     );
     button0.shortPress(() => {
       on.flip();
     });
 
     const button1 = new Button(
-      doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+      doEventWithLog(deviceLabel, 'button1', new ButtonEvent(1), device)
     );
     button1.shortPress(() => {
       on.flip();
@@ -396,20 +492,24 @@ const espNowTransport = (() => {
     );
 
     const button0 = new Button(
-      doEvent(deviceLabel, 'button0', new ButtonEvent(0), device)
+      doEventWithLog(deviceLabel, 'button0', new ButtonEvent(0), device)
     );
     button0.shortPress(() => {
       on.flip();
     });
 
     const button1 = new Button(
-      doEvent(deviceLabel, 'button1', new ButtonEvent(1), device)
+      doEventWithLog(deviceLabel, 'button1', new ButtonEvent(1), device)
     );
     button1.shortPress(() => {
       on.flip();
     });
 
-    doEvent(deviceLabel, 'VCC', new VCC(), device);
+    doItem(
+      deviceLabel,
+      'VCC',
+      new SingleValueEvent(doEvent(new VCC(), device))
+    );
   })();
 })();
 
@@ -431,9 +531,21 @@ const espNowTransport = (() => {
       new SingleValueSensor(doService(new Hello(), device), every30Seconds)
     );
 
-    doEvent(deviceLabel, 'input0', new Input(0), device);
-    doEvent(deviceLabel, 'input1', new Input(1), device);
-    doEvent(deviceLabel, 'input2', new Input(2), device);
+    doItem(
+      deviceLabel,
+      'input0',
+      new SingleValueEvent(doEvent(new Input(0), device))
+    );
+    doItem(
+      deviceLabel,
+      'input1',
+      new SingleValueEvent(doEvent(new Input(1), device))
+    );
+    doItem(
+      deviceLabel,
+      'input2',
+      new SingleValueEvent(doEvent(new Input(2), device))
+    );
   })();
 
   (() => {
@@ -446,10 +558,99 @@ const espNowTransport = (() => {
       )
     );
 
-    doEvent(deviceLabel, 'input0', new Input(0), device);
-    doEvent(deviceLabel, 'input1', new Input(1), device);
-    doEvent(deviceLabel, 'input2', new Input(2), device);
+    doItem(
+      deviceLabel,
+      'input0',
+      new SingleValueEvent(doEvent(new Input(0), device))
+    );
+    doItem(
+      deviceLabel,
+      'input1',
+      new SingleValueEvent(doEvent(new Input(1), device))
+    );
+    doItem(
+      deviceLabel,
+      'input2',
+      new SingleValueEvent(doEvent(new Input(2), device))
+    );
 
-    doEvent(deviceLabel, 'VCC', new VCC(), device);
+    doItem(
+      deviceLabel,
+      'VCC',
+      new SingleValueEvent(doEvent(new VCC(), device))
+    );
   })();
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'blueButton',
+    new Ev1527Device(ev1527Transport, 74160)
+  );
+
+  const button = doItem(
+    deviceLabel,
+    'button',
+    new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
+      'bottomLeft',
+      'bottomRight',
+      'topLeft',
+      'topRight',
+    ])
+  );
+  button.state.bottomRight.observe(() => on.flip());
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'grayButton',
+    new Ev1527Device(ev1527Transport, 4448)
+  );
+
+  const button = doItem(
+    deviceLabel,
+    'button',
+    new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
+      'bottomLeft',
+      'bottomRight',
+      'topLeft',
+      'topRight',
+    ])
+  );
+  button.state.bottomRight.observe(() => on.flip());
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'orangeButton',
+    new Ev1527Device(ev1527Transport, 307536)
+  );
+
+  const button = doItem(
+    deviceLabel,
+    'button',
+    new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
+      'bottomLeft',
+      'bottomRight',
+      'topLeft',
+      'topRight',
+    ])
+  );
+  button.state.bottomRight.observe(() => on.flip());
+})();
+
+(() => {
+  const [deviceLabel, device] = doDevice(
+    'arbeitszimmerWindowRight',
+    new Ev1527Device(ev1527Transport, 839280)
+  );
+
+  doItem(
+    deviceLabel,
+    'sensor',
+    new MultiValueEvent(doEvent(new Ev1527WindowSensor(), device), [
+      'open',
+      'tamperSwitch',
+    ])
+  );
 })();
