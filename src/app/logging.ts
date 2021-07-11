@@ -4,13 +4,15 @@ import {
   Logger,
   // TelegramOutput,
 } from '../lib/log/index.js';
-import { isProd } from './environment.js';
+import { isProd, logLevel } from './environment.js';
 
 export const logger = new Logger();
 
-const primaryOutput = isProd ? new JournaldOutput() : new DevOutput();
+const primaryOutput = isProd
+  ? new JournaldOutput(logLevel)
+  : new DevOutput(logLevel);
 
-// const telegramLogOutput = new TelegramOutput();
+// const telegramLogOutput = new TelegramOutput(logLevel);
 
 logger.addOutput(primaryOutput);
 // logger.addOutput(telegramLogOutput);

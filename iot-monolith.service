@@ -4,6 +4,7 @@ Description=iot-monolith
 [Service]
 Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
+Environment="LOG_LEVEL=5"
 Environment="LOG_TELEGRAM=1"
 Environment="PROD_ENV=1"
 # Environment="TELEGRAM_TOKEN=SECRET"

@@ -46,7 +46,7 @@ function logMerge(input: Log | string): Log {
 export class Output {
   private _callback: Callback;
 
-  levels: Level[];
+  readonly levels: Level[];
 
   constructor(levels: Level[], callback: Callback) {
     this.levels = levels;
@@ -74,7 +74,7 @@ export class DevOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor() {
+  constructor(logLevel = 7) {
     super(
       [
         Level.EMERGENCY,
@@ -84,7 +84,8 @@ export class DevOutput extends Output {
         Level.WARNING,
         Level.NOTICE,
         Level.INFO,
-      ],
+        Level.DEBUG,
+      ].slice(0, logLevel + 1),
       DevOutput._callback
     );
   }
@@ -98,7 +99,7 @@ export class JournaldOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor() {
+  constructor(logLevel = 7) {
     super(
       [
         Level.EMERGENCY,
@@ -108,7 +109,8 @@ export class JournaldOutput extends Output {
         Level.WARNING,
         Level.NOTICE,
         Level.INFO,
-      ],
+        Level.DEBUG,
+      ].slice(0, logLevel + 1),
       JournaldOutput._callback
     );
   }
@@ -126,7 +128,7 @@ export class JournaldOutput extends Output {
 //     });
 //   }
 
-//   constructor() {
+//   constructor(logLevel = 7) {
 //     super(
 //       [
 //         Level.EMERGENCY,
@@ -134,7 +136,10 @@ export class JournaldOutput extends Output {
 //         Level.CRITICAL,
 //         Level.ERROR,
 //         Level.WARNING,
-//       ],
+//         Level.NOTICE,
+//         Level.INFO,
+//         Level.DEBUG,
+//       ].slice(0, logLevel + 1),
 //       TelegramOutput._callback
 //     );
 //   }
