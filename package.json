@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npm run --silent clear && npm run --silent tsc",
     "build:watch": "npm run --silent clear && npm run --silent tsc:watch",
-    "clear": "rm -rf dist/*",
+    "clear": "rm -rf dist",
     "deploy": "scripts/deploy.sh",
     "format:verify": "prettier --check '**/*.{js,json,ts}'",
     "format:write": "prettier --write '**/*.{js,json,ts}'",

@@ -2,6 +2,9 @@
 
 git pull --rebase
 
+npm install
+npm run build
+
 /bin/systemctl restart iot-monolith.service
 echo "restart done"
 
