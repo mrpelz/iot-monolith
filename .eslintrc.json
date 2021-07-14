@@ -34,9 +34,7 @@
       "node": {
         "extensions": [
           ".js",
-          ".ts",
-          ".jsx",
-          ".tsx"
+          ".ts"
         ]
       }
     }
