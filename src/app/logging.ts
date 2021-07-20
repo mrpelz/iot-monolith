@@ -3,7 +3,7 @@ import {
   JournaldOutput,
   Logger,
   // TelegramOutput,
-} from '../lib/log/index.js';
+} from '../lib/log.js';
 import { isProd, logLevel } from './environment.js';
 
 export const logger = new Logger();

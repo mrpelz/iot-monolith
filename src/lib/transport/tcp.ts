@@ -1,11 +1,11 @@
-import { humanPayload, readNumber, writeNumber } from '../data/index.js';
-import { BooleanState } from '../state/index.js';
-import { ReadOnlyObservable } from '../observable/index.js';
+import { humanPayload, readNumber, writeNumber } from '../data.js';
+import { BooleanState } from '../state.js';
+import { ReadOnlyObservable } from '../observable.js';
 import { Socket } from 'net';
-import { Timer } from '../timer/index.js';
-import { Transport } from './index.js';
+import { Timer } from '../timer.js';
+import { Transport } from './main.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../oop/index.js';
+import { rebind } from '../oop.js';
 
 // PACKET FORMAT
 //

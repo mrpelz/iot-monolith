@@ -1,4 +1,4 @@
-import { Device } from './index.js';
+import { Device } from './main.js';
 import { UDPTransport } from '../transport/udp.js';
 
 export class UDPDevice extends Device {

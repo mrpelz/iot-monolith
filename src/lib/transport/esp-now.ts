@@ -1,7 +1,7 @@
-import { ESPNow } from '../events/esp-now/index.js';
-import { EVENT_IDENTIFIER } from '../device/index.js';
-import { Transport } from './index.js';
-import { humanPayload } from '../data/index.js';
+import { ESPNow } from '../events/esp-now.js';
+import { EVENT_IDENTIFIER } from '../device/main.js';
+import { Transport } from './main.js';
+import { humanPayload } from '../data.js';
 import { logger } from '../../app/logging.js';
 
 // PACKET FORMAT

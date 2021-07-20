@@ -1,4 +1,4 @@
-import { parse } from '../lib/string/index.js';
+import { parse } from '../lib/string.js';
 
 const { LOG_LEVEL, LOG_TELEGRAM, PROD_ENV, TELEGRAM_TOKEN } = process.env;
 

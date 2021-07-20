@@ -1,8 +1,5 @@
-import {
-  bitRange,
-  bytesRequiredForBitLength,
-} from '../rolling-number/index.js';
-import { Device } from './index.js';
+import { bitRange, bytesRequiredForBitLength } from '../rolling-number.js';
+import { Device } from './main.js';
 import { Ev1527Transport } from '../transport/ev1527.js';
 
 export const bitLengthAddress = 20;

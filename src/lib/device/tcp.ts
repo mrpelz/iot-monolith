@@ -1,4 +1,4 @@
-import { Device } from './index.js';
+import { Device } from './main.js';
 import { TCPTransport } from '../transport/tcp.js';
 
 export class TCPDevice extends Device {

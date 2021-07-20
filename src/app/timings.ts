@@ -1,5 +1,5 @@
-import { ModifiableDate, Unit } from '../lib/modifiable-date/index.js';
-import { Schedule } from '../lib/schedule/index.js';
+import { ModifiableDate, Unit } from '../lib/modifiable-date.js';
+import { Schedule } from '../lib/schedule.js';
 
 export const every5Seconds = new Schedule(
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,

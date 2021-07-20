@@ -4,10 +4,10 @@ import {
   maxAddress,
   maxPayload,
 } from '../device/ev1527.js';
-import { EVENT_IDENTIFIER } from '../device/index.js';
-import { Rf433 } from '../events/rf433/index.js';
-import { Transport } from './index.js';
-import { humanPayload } from '../data/index.js';
+import { EVENT_IDENTIFIER } from '../device/main.js';
+import { Rf433 } from '../events/rf433.js';
+import { Transport } from './main.js';
+import { humanPayload } from '../data.js';
 import { logger } from '../../app/logging.js';
 
 // PACKET FORMAT

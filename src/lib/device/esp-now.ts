@@ -1,4 +1,4 @@
-import { Device } from './index.js';
+import { Device } from './main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
 
 export type MACAddress = [number, number, number, number, number, number];

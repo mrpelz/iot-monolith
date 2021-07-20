@@ -1,11 +1,11 @@
-import { NUMBER_RANGES, RollingNumber } from '../rolling-number/index.js';
+import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
-import { humanPayload, readNumber } from '../data/index.js';
-import { BooleanState } from '../state/index.js';
-import { ReadOnlyObservable } from '../observable/index.js';
-import { Transport } from './index.js';
+import { humanPayload, readNumber } from '../data.js';
+import { BooleanState } from '../state.js';
+import { ReadOnlyObservable } from '../observable.js';
+import { Transport } from './main.js';
 import { logger } from '../../app/logging.js';
-import { rebind } from '../oop/index.js';
+import { rebind } from '../oop.js';
 
 // PACKET FORMAT
 //
