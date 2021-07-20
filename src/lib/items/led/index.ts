@@ -7,7 +7,6 @@ const states = [true, false, null] as const;
 
 export class Led {
   private readonly _actualBrightness = new Observable<number | null>(null);
-  private readonly _actualOn = new EnumState(states, null);
   private readonly _indicator?: Indicator;
   private readonly _service: LedService;
 
@@ -28,8 +27,13 @@ export class Led {
       this._set(this.setBrightness.value);
     });
 
+    const actualOn = new EnumState(states, null);
+    this._actualBrightness.observe((brightness) => {
+      actualOn.value = brightness === null ? null : Boolean(brightness);
+    });
+
     this.actualBrightness = new ReadOnlyObservable(this._actualBrightness);
-    this.actualOn = new ReadOnlyObservable(this._actualOn);
+    this.actualOn = new ReadOnlyObservable(actualOn);
 
     this.setBrightness = new Observable(0, (brightness) =>
       this._set(brightness)
@@ -46,7 +50,6 @@ export class Led {
   }
 
   private _success(brightness: number) {
-    this._actualOn.value = Boolean(brightness);
     this._actualBrightness.value = brightness;
 
     if (!this._indicator) return;
@@ -57,7 +60,6 @@ export class Led {
   }
 
   private _unknown() {
-    this._actualOn.value = null;
     this._actualBrightness.value = null;
   }
 }

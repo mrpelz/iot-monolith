@@ -3,7 +3,6 @@ import {
   BooleanStateGroup,
 } from '../../state-group/index.js';
 import { Device, Event, Service } from '../index.js';
-import { Ev1527Device, bitLengthPayload, maxPayload } from '../ev1527.js';
 import { ModifiableDate, Unit } from '../../modifiable-date/index.js';
 import {
   MultiValueEvent,
@@ -24,6 +23,11 @@ import { ESPNowDevice } from '../esp-now.js';
 import { ESPNow as ESPNowEvent } from '../../events/esp-now/index.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Ev1527Button } from '../../events/ev1527-button/index.js';
+import {
+  Ev1527Device,
+  // bitLengthPayload,
+  // maxPayload
+} from '../ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor/index.js';
 import { Hello } from '../../services/hello/index.js';
