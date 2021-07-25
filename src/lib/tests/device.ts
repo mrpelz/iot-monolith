@@ -1,4 +1,4 @@
-import { BooleanGroupStrategy, BooleanStateGroup } from '../state-group.js';
+import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
 import { Device, Event, Service } from '../device/main.js';
 import { ModifiableDate, Unit } from '../modifiable-date.js';
 import {
@@ -33,7 +33,6 @@ import { Mcp9808 } from '../services/mcp9808.js';
 import { Mhz19 } from '../services/mhz19.js';
 import { Output } from '../items/output.js';
 import { Output as OutputService } from '../services/output.js';
-import { ReadOnlyObservable } from '../observable.js';
 import { Rf433 } from '../events/rf433.js';
 import { Schedule } from '../schedule.js';
 import { Sds011 } from '../services/sds011.js';
@@ -59,10 +58,11 @@ timedOn.observe((value) => {
 });
 timer.observe(() => (timedOn.value = false));
 
-const ledOn = new BooleanStateGroup(
+const ledOn = combineBooleanState(
   BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-  new ReadOnlyObservable(on),
-  new ReadOnlyObservable(timedOn)
+  false,
+  on,
+  timedOn
 );
 
 const every5Seconds = new Schedule(
@@ -354,7 +354,7 @@ const doItem = <
 
 (() => {
   const [deviceLabel, device] = doDevice(
-    'shellyi33',
+    'shellyi3',
     new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337)
   );
 

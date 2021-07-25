@@ -78,12 +78,11 @@ export class TransportDevice {
 
 export class Transport {
   private readonly _devices = new Set<TransportDevice>();
-  private readonly _log = logger.getInput({ head: 'Transport' });
   private readonly _singleDevice: boolean;
 
   protected readonly _isConnected = new BooleanState(false);
 
-  readonly firendlyName: FriendlyName;
+  readonly friendlyName: FriendlyName;
   readonly identifierLength: number;
   readonly isConnected: ReadOnlyObservable<boolean>;
 
@@ -98,7 +97,7 @@ export class Transport {
 
     this._singleDevice = singleDevice;
 
-    this.firendlyName = friendlyName;
+    this.friendlyName = friendlyName;
     this.identifierLength = identifierLength;
     this.isConnected = new ReadOnlyObservable(this._isConnected);
   }

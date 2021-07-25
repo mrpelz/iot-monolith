@@ -23,17 +23,20 @@ export class SingleValueSensor<T = unknown> {
   }
 
   private async _get() {
-    try {
-      const result = await this._service.request(undefined, true);
-      if (result === null) {
-        this._unknown();
-        return;
+    const result = await (async () => {
+      try {
+        return await this._service.request(undefined, true);
+      } catch {
+        return null;
       }
+    })();
 
-      this._success(result);
-    } catch {
+    if (result === null) {
       this._unknown();
+      return;
     }
+
+    this._success(result);
   }
 
   private _success(result: T) {
@@ -49,7 +52,7 @@ export class MultiValueSensor<
   T extends Record<string, unknown>,
   K extends keyof T
 > {
-  private readonly _properties: K[];
+  private readonly _properties: readonly K[];
   private readonly _service: Service<T, void>;
   private readonly _state = {} as { [P in keyof T]: Observable<T[P] | null> };
 
@@ -57,7 +60,11 @@ export class MultiValueSensor<
     [P in keyof T]: ReadOnlyObservable<T[P] | null>;
   };
 
-  constructor(service: Service<T, void>, properties: K[], schedule: Schedule) {
+  constructor(
+    service: Service<T, void>,
+    properties: readonly K[],
+    schedule: Schedule
+  ) {
     this._properties = properties;
 
     this._service = service;
@@ -77,17 +84,20 @@ export class MultiValueSensor<
   }
 
   private async _get() {
-    try {
-      const result = await this._service.request(undefined, true);
-      if (result === null) {
-        this._unknown();
-        return;
+    const result = await (async () => {
+      try {
+        return await this._service.request(undefined, true);
+      } catch {
+        return null;
       }
+    })();
 
-      this._success(result);
-    } catch {
+    if (result === null) {
       this._unknown();
+      return;
     }
+
+    this._success(result);
   }
 
   private _success(result: T) {

@@ -48,7 +48,7 @@ export class EnumState<T = unknown> extends Observable<T> {
 
     this._value = value;
 
-    for (const observer of this._observers) {
+    for (const [observer] of this._observers) {
       observer(this._value);
     }
   }
@@ -87,19 +87,27 @@ export class EnumState<T = unknown> extends Observable<T> {
 }
 
 export class NullState<T = null> {
-  protected readonly _observers: Set<MetaObserverCallback<T>>;
+  protected readonly _observers: Set<MetaObserverCallback<T | null>>;
 
-  constructor(observerCallback?: MetaObserverCallback<T>) {
+  constructor(observerCallback?: MetaObserverCallback<T | null>) {
     this._observers = observerCallback
       ? new Set([observerCallback])
       : new Set();
   }
 
-  observe(observerCallback: ObserverCallback<T>): Observer {
+  get value(): T {
+    return undefined as unknown as T;
+  }
+
+  set value(value: T) {
+    this.trigger(value);
+  }
+
+  observe(observerCallback: ObserverCallback<T | null>): Observer {
     // eslint-disable-next-line prefer-const
     let observer: Observer;
 
-    const metaObserverCallback = (value: T) => {
+    const metaObserverCallback = (value: T | null) => {
       observerCallback(value, observer);
     };
 
@@ -112,7 +120,7 @@ export class NullState<T = null> {
     return observer;
   }
 
-  trigger(data: T): void {
+  trigger(data: T | null = null): void {
     for (const observer of this._observers) {
       observer(data);
     }

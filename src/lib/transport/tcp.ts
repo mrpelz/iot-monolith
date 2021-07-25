@@ -1,5 +1,6 @@
 import { humanPayload, readNumber, writeNumber } from '../data.js';
 import { BooleanState } from '../state.js';
+import { Input } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Socket } from 'net';
 import { Timer } from '../timer.js';
@@ -34,11 +35,11 @@ export class TCPTransport extends Transport {
   private readonly _host: string;
   private readonly _keepAlive: number;
   private readonly _lengthPreamble: number;
+  private readonly _log: Input;
   private readonly _messageTimer: Timer;
   private readonly _port: number;
   private readonly _shouldBeConnected = new BooleanState(false);
   private _socket: Socket | null = null;
-  private readonly _tcpLog = logger.getInput({ head: 'TCPTransport' });
 
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
@@ -53,6 +54,10 @@ export class TCPTransport extends Transport {
     }
 
     super(`${host}:${port}`);
+
+    this._log = logger.getInput({
+      head: `TCPTransport "${this.friendlyName}"`,
+    });
 
     rebind(this, '_handleReadable', '_onConnection', '_onDisconnection');
 
@@ -74,7 +79,7 @@ export class TCPTransport extends Transport {
    * handle (dis)connection of socket
    */
   private _connect() {
-    this._tcpLog.debug(() => 'connection/disconnection handling');
+    this._log.debug(() => 'connection/disconnection handling');
 
     if (this._shouldBeConnected.value && !this._isConnected.value) {
       this._nukeSocket();
@@ -120,7 +125,7 @@ export class TCPTransport extends Transport {
 
     this._connectionTime = Date.now();
 
-    this._tcpLog.info(() => 'is connected');
+    this._log.info(() => 'is connected');
 
     this._isConnected.value = true;
   }
@@ -137,7 +142,7 @@ export class TCPTransport extends Transport {
 
     this._currentLength = 0;
 
-    this._tcpLog.info(() => 'is disconnected');
+    this._log.info(() => 'is disconnected');
 
     this._isConnected.value = false;
   }
@@ -156,7 +161,7 @@ export class TCPTransport extends Transport {
 
       this._messageTimer.stop();
 
-      this._tcpLog.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
+      this._log.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
 
       this._ingestIntoDeviceInstances(null, payload);
 
@@ -171,12 +176,12 @@ export class TCPTransport extends Transport {
     this._messageTimer.start();
 
     if (this._currentLength > 5) {
-      this._tcpLog.error(
+      this._log.error(
         () => `unusual large message: ${this._currentLength} bytes`
       );
     }
 
-    this._tcpLog.debug(() => `receive ${this._currentLength} byte payload`);
+    this._log.debug(() => `receive ${this._currentLength} byte payload`);
 
     return true;
   }
@@ -213,7 +218,7 @@ export class TCPTransport extends Transport {
   connect(): void {
     this._shouldBeConnected.value = true;
 
-    this._tcpLog.info(() => 'set connect');
+    this._log.info(() => 'set connect');
   }
 
   /**
@@ -222,7 +227,7 @@ export class TCPTransport extends Transport {
   disconnect(): void {
     this._shouldBeConnected.value = false;
 
-    this._tcpLog.info(() => 'set disconnect');
+    this._log.info(() => 'set disconnect');
   }
 
   /**
@@ -241,12 +246,12 @@ export class TCPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      this._tcpLog.error(() => 'socket is not connected!');
+      this._log.error(() => 'socket is not connected!');
     }
 
-    this._tcpLog.debug(() => `send ${payload.length} byte payload`);
+    this._log.debug(() => `send ${payload.length} byte payload`);
 
-    this._tcpLog.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
+    this._log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
     this._socket.write(
       Buffer.concat([

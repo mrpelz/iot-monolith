@@ -30,12 +30,21 @@ export class Output {
   }
 
   private async _set(on: boolean) {
-    try {
-      await this._service.request(on);
+    const success = await (async () => {
+      try {
+        await this._service.request(on);
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+
+    if (success) {
       this._success(on);
-    } catch {
-      this._unknown();
+      return;
     }
+
+    this._unknown();
   }
 
   private _success(on: boolean) {

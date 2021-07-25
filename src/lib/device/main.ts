@@ -1,4 +1,4 @@
-import { BooleanGroupStrategy, BooleanStateGroup } from '../state-group.js';
+import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
 import { BooleanState, NullState, ReadOnlyNullState } from '../state.js';
 import { ModifiableDate, Unit } from '../modifiable-date.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
@@ -174,18 +174,17 @@ export class Device {
     keepAlive = 5000
   ) {
     this._log = logger.getInput({
-      head: `Device "${transport.firendlyName || identifier}"`,
+      head: `Device "${transport.friendlyName || identifier}"`,
     });
     this._transport = transport.addDevice(this);
 
     this.identifier = identifier;
 
-    this.isOnline = new ReadOnlyObservable(
-      new BooleanStateGroup(
-        BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-        transport.isConnected,
-        new ReadOnlyObservable(this._isOnline)
-      )
+    this.isOnline = combineBooleanState(
+      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+      false,
+      transport.isConnected,
+      this._isOnline
     );
 
     this.isOnline.observe((online) =>

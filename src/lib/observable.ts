@@ -1,4 +1,3 @@
-import { StateGroup } from './state-group.js';
 import { promiseGuard } from './oop.js';
 
 export type Observer = {
@@ -7,25 +6,26 @@ export type Observer = {
 
 export type MetaObserverCallback<T> = (value: T) => void;
 export type ObserverCallback<T> = (value: T, observer: Observer) => void;
+export type ProxyObserverFn<T, S> = (input: T) => S;
 
 export type AnyObservable<T> =
   | Observable<T>
   | ReadOnlyObservable<T>
-  | StateGroup<T>;
+  | ProxyObservable<unknown, T>;
 
 export type ObservifyResult<T> = [ReadOnlyObservable<T | null>, () => void];
 export type ObservifyGetter<T> = () => Promise<T | null>;
 
 export class Observable<T> {
-  protected readonly _observers: Set<MetaObserverCallback<T>>;
+  protected readonly _observers: Map<MetaObserverCallback<T>, boolean>;
 
   protected _value: T;
 
   constructor(initialValue: T, observerCallback?: MetaObserverCallback<T>) {
     this._value = initialValue;
     this._observers = observerCallback
-      ? new Set([observerCallback])
-      : new Set();
+      ? new Map([[observerCallback, false]])
+      : new Map();
   }
 
   get value(): T {
@@ -33,16 +33,20 @@ export class Observable<T> {
   }
 
   set value(value: T) {
-    if (value === this._value) return;
-
+    const oldValue = this._value;
     this._value = value;
 
-    for (const observer of this._observers) {
-      observer(this._value);
+    for (const [observer, forcedReport] of this._observers) {
+      if (value === oldValue && !forcedReport) continue;
+
+      observer(value);
     }
   }
 
-  observe(observerCallback: ObserverCallback<T>): Observer {
+  observe(
+    observerCallback: ObserverCallback<T>,
+    forcedReport = false
+  ): Observer {
     // eslint-disable-next-line prefer-const
     let observer: Observer;
 
@@ -50,7 +54,7 @@ export class Observable<T> {
       observerCallback(value, observer);
     };
 
-    this._observers.add(metaObserverCallback);
+    this._observers.set(metaObserverCallback, forcedReport);
 
     observer = {
       remove: () => this._observers.delete(metaObserverCallback),
@@ -71,8 +75,35 @@ export class ReadOnlyObservable<T> {
     return this._observable.value;
   }
 
-  observe(observerCallback: ObserverCallback<T>): Observer {
-    return this._observable.observe(observerCallback);
+  observe(
+    observerCallback: ObserverCallback<T>,
+    forcedReport = false
+  ): Observer {
+    return this._observable.observe(observerCallback, forcedReport);
+  }
+}
+
+export class ProxyObservable<T, S> {
+  private readonly _fn: ProxyObserverFn<T, S>;
+  private readonly _observable: ReadOnlyObservable<T>;
+
+  constructor(fn: ProxyObserverFn<T, S>, observable: ReadOnlyObservable<T>) {
+    this._fn = fn;
+    this._observable = observable;
+  }
+
+  get value(): S {
+    return this._fn(this._observable.value);
+  }
+
+  observe(
+    observerCallback: ObserverCallback<S>,
+    forcedReport = false
+  ): Observer {
+    return this._observable.observe(
+      (value, observer) => observerCallback(this._fn(value), observer),
+      forcedReport
+    );
   }
 }
 
@@ -84,4 +115,23 @@ export function observify<T>(fn: ObservifyGetter<T>): ObservifyResult<T> {
   };
 
   return [new ReadOnlyObservable(observable), trigger];
+}
+
+export function combineObservables<T>(
+  fn: (...values: T[]) => T,
+  initialValue: T,
+  ...states: AnyObservable<T>[]
+): ReadOnlyObservable<T> {
+  const combined = new Observable<T>(initialValue);
+  const result = new ReadOnlyObservable(combined);
+
+  for (const state of states) {
+    state.observe(() => {
+      const values = states.map(({ value }) => value);
+
+      combined.value = fn(...values);
+    });
+  }
+
+  return result;
 }

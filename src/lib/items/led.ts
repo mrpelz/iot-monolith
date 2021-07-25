@@ -41,12 +41,21 @@ export class Led {
   }
 
   private async _set(brightness: number) {
-    try {
-      await this._service.request(brightness);
+    const success = await (async () => {
+      try {
+        await this._service.request(brightness);
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+
+    if (success) {
       this._success(brightness);
-    } catch {
-      this._unknown();
+      return;
     }
+
+    this._unknown();
   }
 
   private _success(brightness: number) {

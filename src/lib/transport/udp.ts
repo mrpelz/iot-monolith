@@ -2,6 +2,7 @@ import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { humanPayload, readNumber } from '../data.js';
 import { BooleanState } from '../state.js';
+import { Input } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Transport } from './main.js';
 import { logger } from '../../app/logging.js';
@@ -51,6 +52,7 @@ const sequenceRepeatOutgoing = 5;
 export class UDPTransport extends Transport {
   private readonly _host: string;
   private readonly _keepAlive: number;
+  private readonly _log: Input;
   private _messageIncomingSequence = 0;
 
   private readonly _messageOutgoingSequence = new RollingNumber(
@@ -62,7 +64,6 @@ export class UDPTransport extends Transport {
   private readonly _sequenceHandling: boolean;
   private readonly _shouldBeConnected = new BooleanState(false);
   private _socket: Socket | null = null;
-  private readonly _udpLog = logger.getInput({ head: 'UDPTransport' });
 
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
@@ -73,6 +74,10 @@ export class UDPTransport extends Transport {
     sequenceHandling = false
   ) {
     super(`${host}:${port}`);
+
+    this._log = logger.getInput({
+      head: `UDPTransport "${this.friendlyName}"`,
+    });
 
     rebind(this, '_handleMessage', '_onConnection', '_onDisconnection');
 
@@ -109,7 +114,7 @@ export class UDPTransport extends Transport {
    * handle (dis)connection of socket
    */
   private _connect() {
-    this._udpLog.debug(() => 'connection/disconnection handling');
+    this._log.debug(() => 'connection/disconnection handling');
 
     if (this._shouldBeConnected.value && !this._isConnected.value) {
       this._nukeSocket();
@@ -136,7 +141,7 @@ export class UDPTransport extends Transport {
       payload = message;
     }
 
-    this._udpLog.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
+    this._log.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
 
     this._ingestIntoDeviceInstances(null, payload);
   }
@@ -163,7 +168,7 @@ export class UDPTransport extends Transport {
   private _onConnection() {
     if (this._isConnected.value) return;
 
-    this._udpLog.info(() => 'is connected');
+    this._log.info(() => 'is connected');
 
     this._isConnected.value = true;
   }
@@ -176,7 +181,7 @@ export class UDPTransport extends Transport {
 
     this._nukeSocket();
 
-    this._udpLog.info(() => 'is disconnected');
+    this._log.info(() => 'is disconnected');
 
     this._isConnected.value = false;
   }
@@ -203,7 +208,7 @@ export class UDPTransport extends Transport {
   connect(): void {
     this._shouldBeConnected.value = true;
 
-    this._udpLog.info(() => 'set connect');
+    this._log.info(() => 'set connect');
   }
 
   /**
@@ -212,7 +217,7 @@ export class UDPTransport extends Transport {
   disconnect(): void {
     this._shouldBeConnected.value = false;
 
-    this._udpLog.info(() => 'set disconnect');
+    this._log.info(() => 'set disconnect');
   }
 
   /**
@@ -231,11 +236,11 @@ export class UDPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      this._udpLog.error(() => 'socket is not connected!');
+      this._log.error(() => 'socket is not connected!');
     }
 
-    this._udpLog.debug(() => `send ${payload.length} byte payload`);
-    this._udpLog.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
+    this._log.debug(() => `send ${payload.length} byte payload`);
+    this._log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
     if (this._sequenceHandling) {
       for (let index = 0; index < sequenceRepeatOutgoing; index += 1) {
