@@ -23,10 +23,10 @@ export class MultiValueEvent<
 > {
   private readonly _event: Event<T>;
   private readonly _properties: K[];
-  private readonly _state = {} as { [P in keyof T]: Observable<T[P] | null> };
+  private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
 
   readonly state = {} as {
-    [P in keyof T]: ReadOnlyObservable<T[P] | null>;
+    [P in K]: ReadOnlyObservable<T[P] | null>;
   };
 
   constructor(event: Event<T>, properties: K[]) {
@@ -72,10 +72,10 @@ export class StatelessMultiValueEvent<
 > {
   private readonly _event: Event<T>;
   private readonly _properties: K[];
-  private readonly _state = {} as { [P in keyof T]: NullState<T[P] | null> };
+  private readonly _state = {} as { [P in K]: NullState<T[P] | null> };
 
   readonly state = {} as {
-    [P in keyof T]: ReadOnlyNullState<T[P] | null>;
+    [P in K]: ReadOnlyNullState<T[P] | null>;
   };
 
   constructor(event: Event<T>, properties: K[]) {

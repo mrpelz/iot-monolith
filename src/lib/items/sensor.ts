@@ -54,10 +54,10 @@ export class MultiValueSensor<
 > {
   private readonly _properties: readonly K[];
   private readonly _service: Service<T, void>;
-  private readonly _state = {} as { [P in keyof T]: Observable<T[P] | null> };
+  private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
 
   readonly state = {} as {
-    [P in keyof T]: ReadOnlyObservable<T[P] | null>;
+    [P in K]: ReadOnlyObservable<T[P] | null>;
   };
 
   constructor(

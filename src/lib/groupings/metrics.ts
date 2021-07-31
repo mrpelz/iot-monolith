@@ -13,7 +13,6 @@ import { Device } from '../device/main.js';
 import { Hello } from '../services/hello.js';
 import { Input } from '../events/input.js';
 import { Mcp9808 } from '../services/mcp9808.js';
-import { Meta } from '../hierarchy.js';
 import { Mhz19 } from '../services/mhz19.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Sds011 } from '../services/sds011.js';
@@ -23,6 +22,7 @@ import { Tsl2561 } from '../services/tsl2561.js';
 import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
 import { epochs } from '../epochs.js';
+import { metadataStore } from '../hierarchy.js';
 
 function metricStaleness<T>(
   state: ReadOnlyObservable<T | null>,
@@ -40,13 +40,16 @@ function metricStaleness<T>(
     timer.start();
   }, true);
 
+  const result = {
+    _get: new ReadOnlyObservable(stale),
+  };
+
+  metadataStore.set(result, {
+    type: 'boolean',
+  });
+
   return {
-    stale: {
-      meta: <Meta>{
-        type: 'boolean',
-      },
-      state: new ReadOnlyObservable(stale),
-    },
+    stale: result,
   };
 }
 
@@ -56,16 +59,17 @@ export function async(device: Device) {
     every2Minutes
   );
 
-  return {
-    async: {
-      meta: <Meta>{
-        metric: 'async',
-        type: 'buffer',
-      },
-      nodes: metricStaleness(state, epochs.minute * 2),
-      state,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state, epochs.minute * 2),
   };
+
+  metadataStore.set(result, {
+    metric: 'async',
+    type: 'buffer',
+  });
+
+  return { async: result };
 }
 
 export function bme280(device: Device) {
@@ -78,33 +82,48 @@ export function bme280(device: Device) {
   );
 
   return {
-    humidity: {
-      meta: <Meta>{
+    humidity: (() => {
+      const result = {
+        _get: state.humidity,
+        ...metricStaleness(state.humidity, epochs.second * 5),
+      };
+
+      metadataStore.set(result, {
         metric: 'relativeHumidity',
         type: 'number',
         unit: 'percent',
-      },
-      nodes: metricStaleness(state.humidity, epochs.second * 5),
-      state: state.humidity,
-    },
-    pressure: {
-      meta: <Meta>{
+      });
+
+      return result;
+    })(),
+    pressure: (() => {
+      const result = {
+        _get: state.pressure,
+        ...metricStaleness(state.pressure, epochs.second * 5),
+      };
+
+      metadataStore.set(result, {
         metric: 'pressure',
         type: 'number',
         unit: 'pascal',
-      },
-      nodes: metricStaleness(state.pressure, epochs.second * 5),
-      state: state.pressure,
-    },
-    temperature: {
-      meta: <Meta>{
+      });
+
+      return result;
+    })(),
+    temperature: (() => {
+      const result = {
+        _get: state.temperature,
+        ...metricStaleness(state.temperature, epochs.second * 5),
+      };
+
+      metadataStore.set(result, {
         metric: 'temperature',
         type: 'number',
         unit: 'celsius',
-      },
-      nodes: metricStaleness(state.temperature, epochs.second * 5),
-      state: state.temperature,
-    },
+      });
+
+      return result;
+    })(),
   };
 }
 
@@ -114,28 +133,32 @@ export function hello(device: Device) {
     every30Seconds
   );
 
-  return {
-    hello: {
-      meta: <Meta>{
-        metric: 'hello',
-        type: 'string',
-      },
-      nodes: metricStaleness(state, epochs.second * 30),
-      state,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state, epochs.second * 30),
   };
+
+  metadataStore.set(result, {
+    metric: 'hello',
+    type: 'string',
+  });
+
+  return { hello: result };
 }
 
 export function input(device: Device, index = 0) {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
-  return {
-    meta: <Meta>{
-      metric: 'motion',
-      type: 'null',
-    },
-    state,
+  const result = {
+    _get: state,
   };
+
+  metadataStore.set(result, {
+    metric: 'motion',
+    type: 'null',
+  });
+
+  return result;
 }
 
 export function mcp9808(device: Device) {
@@ -144,17 +167,18 @@ export function mcp9808(device: Device) {
     every5Seconds
   );
 
-  return {
-    temperature: {
-      meta: <Meta>{
-        metric: 'temperature',
-        type: 'number',
-        unit: 'celsius',
-      },
-      nodes: metricStaleness(state, epochs.second * 5),
-      state,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state, epochs.second * 5),
   };
+
+  metadataStore.set(result, {
+    metric: 'temperature',
+    type: 'number',
+    unit: 'celsius',
+  });
+
+  return { temperature: result };
 }
 
 export function mhz19(device: Device) {
@@ -172,63 +196,83 @@ export function mhz19(device: Device) {
     every2Minutes
   );
 
-  return {
-    co2: {
-      meta: <Meta>{
-        metric: 'co2',
-        type: 'number',
-        unit: 'ppm',
-      },
-      nodes: {
-        ...metricStaleness(state.co2, epochs.minute * 2),
-        abc: {
-          meta: <Meta>{
-            metric: 'abc',
-            type: 'boolean',
-          },
-          nodes: metricStaleness(state.abc, epochs.minute * 2),
-          state: state.abc,
-        },
-        accuracy: {
-          meta: <Meta>{
-            metric: 'accuracy',
-            unit: 'percent',
-          },
-          nodes: metricStaleness(state.accuracy, epochs.minute * 2),
-          state: state.accuracy,
-        },
-        temperature: {
-          meta: <Meta>{
-            metric: 'temperature',
-            unit: 'celsius',
-          },
-          nodes: metricStaleness(state.temperature, epochs.minute * 2),
-          state: state.temperature,
-        },
-        transmittance: {
-          meta: <Meta>{
-            metric: 'transmittance',
-            unit: 'percent',
-          },
-          nodes: metricStaleness(state.transmittance, epochs.minute * 2),
-          state: state.transmittance,
-        },
-      },
-      state: state.co2,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state.co2, epochs.minute * 2),
+    abc: (() => {
+      const _abc = {
+        _get: state.abc,
+        ...metricStaleness(state.abc, epochs.minute * 2),
+      };
+
+      metadataStore.set(_abc, {
+        metric: 'abc',
+        type: 'boolean',
+      });
+
+      return _abc;
+    })(),
+    accuracy: (() => {
+      const _accuracy = {
+        _get: state.accuracy,
+        ...metricStaleness(state.accuracy, epochs.minute * 2),
+      };
+
+      metadataStore.set(_accuracy, {
+        metric: 'accuracy',
+        unit: 'percent',
+      });
+
+      return _accuracy;
+    })(),
+    temperature: (() => {
+      const _temperature = {
+        _get: state.temperature,
+        ...metricStaleness(state.temperature, epochs.minute * 2),
+      };
+
+      metadataStore.set(_temperature, {
+        metric: 'temperature',
+        unit: 'celsius',
+      });
+
+      return _temperature;
+    })(),
+    transmittance: (() => {
+      const _transmittance = {
+        _get: state.transmittance,
+        ...metricStaleness(state.transmittance, epochs.minute * 2),
+      };
+
+      metadataStore.set(_transmittance, {
+        metric: 'transmittance',
+        unit: 'percent',
+      });
+
+      return _transmittance;
+    })(),
   };
+
+  metadataStore.set(result, {
+    metric: 'co2',
+    type: 'number',
+    unit: 'ppm',
+  });
+
+  return { co2: result };
 }
 
 export function online(device: Device) {
-  return {
-    online: {
-      meta: <Meta>{
-        metric: 'isOnline',
-        type: 'boolean',
-      },
-      state: device.isOnline,
-    },
+  const result = {
+    _get: device.isOnline,
   };
+
+  metadataStore.set(result, {
+    metric: 'isOnline',
+    type: 'boolean',
+  });
+
+  return { online: result };
 }
 
 export function sds011(device: Device) {
@@ -241,24 +285,34 @@ export function sds011(device: Device) {
   );
 
   return {
-    pm025: {
-      meta: <Meta>{
+    pm025: (() => {
+      const result = {
+        _get: state.pm025,
+        ...metricStaleness(state.pm025, epochs.minute * 2),
+      };
+
+      metadataStore.set(result, {
         metric: 'pm025',
         type: 'number',
         unit: 'ppm',
-      },
-      nodes: metricStaleness(state.pm025, epochs.minute * 2),
-      state: state.pm025,
-    },
-    pm10: {
-      meta: <Meta>{
+      });
+
+      return result;
+    })(),
+    pm10: (() => {
+      const result = {
+        _get: state.pm10,
+        ...metricStaleness(state.pm10, epochs.minute * 2),
+      };
+
+      metadataStore.set(result, {
         metric: 'pm10',
         type: 'number',
         unit: 'ppm',
-      },
-      nodes: metricStaleness(state.pm10, epochs.minute * 2),
-      state: state.pm10,
-    },
+      });
+
+      return result;
+    })(),
   };
 }
 
@@ -268,17 +322,18 @@ export function tsl2561(device: Device) {
     every5Seconds
   );
 
-  return {
-    brightness: {
-      meta: <Meta>{
-        metric: 'brightness',
-        type: 'number',
-        unit: 'lux',
-      },
-      nodes: metricStaleness(state, epochs.second * 5),
-      state,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state, epochs.second * 5),
   };
+
+  metadataStore.set(result, {
+    metric: 'brightness',
+    type: 'number',
+    unit: 'lux',
+  });
+
+  return { brightness: result };
 }
 
 export function uvIndex(device: Device) {
@@ -287,29 +342,31 @@ export function uvIndex(device: Device) {
     every5Seconds
   );
 
-  return {
-    uvIndex: {
-      meta: <Meta>{
-        metric: 'uvIndex',
-        type: 'number',
-      },
-      nodes: metricStaleness(state, epochs.second * 5),
-      state,
-    },
+  const result = {
+    _get: state,
+    ...metricStaleness(state, epochs.second * 5),
   };
+
+  metadataStore.set(result, {
+    metric: 'uvIndex',
+    type: 'number',
+  });
+
+  return { uvIndex: result };
 }
 
 export function vcc(device: Device) {
   const { state } = new SingleValueEvent(device.addEvent(new VCC()));
 
-  return {
-    vcc: {
-      meta: <Meta>{
-        metric: 'voltage',
-        type: 'number',
-        unit: 'volt',
-      },
-      state,
-    },
+  const result = {
+    _get: state,
   };
+
+  metadataStore.set(result, {
+    metric: 'voltage',
+    type: 'number',
+    unit: 'volt',
+  });
+
+  return { vcc: result };
 }
