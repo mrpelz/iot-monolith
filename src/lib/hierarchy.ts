@@ -1,5 +1,5 @@
 import { ReadOnlyObservable } from './observable.js';
-import { app } from '../app/app.js';
+import { office } from '../app/rooms/office.js';
 
 type MetaKeys = 'actuator' | 'name' | 'metric' | 'type' | 'unit';
 
@@ -8,7 +8,7 @@ export type Meta = Partial<Record<MetaKeys, string>>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const metadataStore = new WeakMap<object, Meta>();
 
-export type Tree = ReturnType<typeof app>;
+export type Tree = ReturnType<typeof office>;
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function hierarchyToObject(input: Tree) {

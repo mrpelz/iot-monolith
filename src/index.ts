@@ -12,23 +12,23 @@ logger.info(() => ({
   body: 'starting process',
 }));
 
-function quit(signal: number) {
+function quit(code: number) {
   process.nextTick(() => {
-    process.exit(signal);
+    process.exit(code);
   });
 }
 
-async function exit(signal = 0) {
+async function exit(code = 0) {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
   process.removeListener('SIGUSR1', exit);
   process.removeListener('SIGUSR2', exit);
 
   await logger.info(() => ({
-    body: `stopping process (signal=${signal})`,
+    body: `stopping process with exit code "${code}"`,
   }));
 
-  quit(signal);
+  quit(code);
 }
 
 process.on('uncaughtException', async (error) => {
@@ -49,9 +49,15 @@ process.on('unhandledRejection', async (error) => {
   exit();
 });
 
-process.on('SIGINT', exit);
-process.on('SIGTERM', exit);
-process.on('SIGUSR1', exit);
-process.on('SIGUSR2', exit);
+export async function handleSignal(signal: string): Promise<void> {
+  await logger.info(() => ({
+    body: `received signal "${signal}"`,
+  }));
+
+  exit();
+}
+
+process.on('SIGINT', handleSignal);
+process.on('SIGTERM', handleSignal);
 
 app();
