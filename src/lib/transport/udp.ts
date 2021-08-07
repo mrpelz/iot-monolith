@@ -1,11 +1,10 @@
+import { Input, Logger } from '../log.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { humanPayload, readNumber } from '../data.js';
 import { BooleanState } from '../state.js';
-import { Input } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Transport } from './main.js';
-import { logger } from '../../app/logging.js';
 import { rebind } from '../oop.js';
 
 // PACKET FORMAT
@@ -70,10 +69,11 @@ export class UDPTransport extends Transport {
   constructor(
     host: string,
     port: number,
+    logger: Logger,
     keepAlive = 2000,
     sequenceHandling = false
   ) {
-    super(`${host}:${port}`);
+    super(logger, `${host}:${port}`);
 
     this._log = logger.getInput({
       head: `UDPTransport "${this.friendlyName}"`,

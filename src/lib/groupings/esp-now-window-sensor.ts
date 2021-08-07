@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import { ESPNowDevice, MACAddress } from '../device/esp-now.js';
-import { hello, online, vcc } from './metrics.js';
+import { Timings, hello, online, vcc } from './metrics.js';
 import { Device } from '../device/main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
 import { Input } from '../events/input.js';
+import { Logger } from '../log.js';
 import { SingleValueEvent } from '../items/event.js';
 import { UDPDevice } from '../device/udp.js';
 import { metadataStore } from '../hierarchy.js';
@@ -18,8 +21,11 @@ export type EspNowWindowSensorOptions = {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const espNowWindowSensor = (options: EspNowWindowSensorOptions) => {
+export const espNowWindowSensor = (
+  logger: Logger,
+  timings: Timings,
+  options: EspNowWindowSensorOptions
+) => {
   const children = (device: Device) => ({
     input0: { $: new SingleValueEvent(device.addEvent(new Input(0))).state },
     input1: { $: new SingleValueEvent(device.addEvent(new Input(1))).state },
@@ -28,7 +34,7 @@ export const espNowWindowSensor = (options: EspNowWindowSensorOptions) => {
 
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
-    const device = new ESPNowDevice(transport, macAddress);
+    const device = new ESPNowDevice(logger, transport, macAddress);
 
     const result = {
       ...children,
@@ -44,11 +50,11 @@ export const espNowWindowSensor = (options: EspNowWindowSensorOptions) => {
 
   const wifi = (() => {
     const { host, port = 1337 } = options.wifi;
-    const device = new UDPDevice(host, port);
+    const device = new UDPDevice(logger, host, port);
 
     const result = {
       ...children,
-      ...hello(device),
+      ...hello(device, timings.moderate || timings.default),
       ...online(device),
     };
 

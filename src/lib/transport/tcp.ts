@@ -1,11 +1,10 @@
+import { Input, Logger } from '../log.js';
 import { humanPayload, readNumber, writeNumber } from '../data.js';
 import { BooleanState } from '../state.js';
-import { Input } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Socket } from 'net';
 import { Timer } from '../timer.js';
 import { Transport } from './main.js';
-import { logger } from '../../app/logging.js';
 import { rebind } from '../oop.js';
 
 // PACKET FORMAT
@@ -46,6 +45,7 @@ export class TCPTransport extends Transport {
   constructor(
     host: string,
     port: number,
+    logger: Logger,
     lengthPreamble = 1,
     keepAlive = 2000
   ) {
@@ -53,7 +53,7 @@ export class TCPTransport extends Transport {
       throw new Error('insufficient options provided');
     }
 
-    super(`${host}:${port}`);
+    super(logger, `${host}:${port}`);
 
     this._log = logger.getInput({
       head: `TCPTransport "${this.friendlyName}"`,

@@ -1,76 +1,66 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import { ReadOnlyObservable } from './observable.js';
-import { office } from '../app/rooms/office.js';
 
 type MetaKeys = 'actuator' | 'name' | 'metric' | 'type' | 'unit';
-
 export type Meta = Partial<Record<MetaKeys, string>>;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const metadataStore = new WeakMap<object, Meta>();
+const states = new Map<any, number>();
+const setters = new Map<any, number>();
 
-export type Tree = ReturnType<typeof office>;
+const getStateIndex = (() => {
+  let index = 0;
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function hierarchyToObject(input: Tree) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const states = new Map<any, number>();
+  return (value: unknown) => {
+    const entry = states.get(value);
+    if (entry !== undefined) return entry;
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const setters = new Map<any, number>();
+    const entryIndex = index;
+    states.set(value, entryIndex);
 
-  const getStateIndex = (() => {
-    let index = 0;
+    index += 1;
 
-    return (value: unknown) => {
-      const entry = states.get(value);
-      if (entry !== undefined) return entry;
+    return entryIndex;
+  };
+})();
 
-      const entryIndex = index;
-      states.set(value, entryIndex);
+const getSetterIndex = (() => {
+  let index = 0;
 
-      index += 1;
+  return (value: unknown) => {
+    const entry = setters.get(value);
+    if (entry !== undefined) return entry;
 
-      return entryIndex;
-    };
-  })();
+    const entryIndex = index;
+    setters.set(value, entryIndex);
 
-  const getSetterIndex = (() => {
-    let index = 0;
+    index += 1;
 
-    return (value: unknown) => {
-      const entry = setters.get(value);
-      if (entry !== undefined) return entry;
+    return entryIndex;
+  };
+})();
 
-      const entryIndex = index;
-      setters.set(value, entryIndex);
-
-      index += 1;
-
-      return entryIndex;
-    };
-  })();
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const serialize = (object: any) => {
+export function hierarchyToObject(input: any) {
+  const serialize = (object: any, parentMeta?: Meta): any => {
     if (typeof object !== 'object') return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    const _meta = (() => {
+      return {
+        ...parentMeta,
+        name: undefined,
+        ...(metadataStore.get(object) || undefined),
+      };
+    })();
+
     const nodes = (() => {
       return Object.fromEntries(
         Object.entries(object)
           .filter(([key]) => !['$', '_get', '_set'].includes(key))
-          .map(([key, node]) => [key, serialize(node)])
+          .map(([key, node]) => [key, serialize(node, _meta)])
       );
-    })();
-
-    const _meta = (() => {
-      return metadataStore.get(object) || undefined;
     })();
 
     const _get = (() => {
@@ -97,12 +87,11 @@ export function hierarchyToObject(input: Tree) {
     Array.from(states.entries()).map(([state, index]) => [index, state.value]);
 
   return {
-    structure: () => serialize(input),
+    structure: serialize(input),
     values,
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 interface Dictionary<O extends object = {}> {
   readonly size: number;
   get<K extends keyof O>(key: K): O[K];

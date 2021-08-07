@@ -32,23 +32,18 @@ export class Cache<T> {
 }
 
 export class CachePromise<T> {
-  private _deferred: {
+  private readonly _deferred: {
     reject: PromiseRejector;
     resolve: PromiseResolver<T>;
   }[];
 
   private _fulfilled: boolean;
-
   private _promised: Promise<T> | null;
-
-  private _timeout: number;
-
+  private readonly _timeout: number;
   private _timer: NodeJS.Timeout | null;
 
   requestTime: Date | null;
-
   resultTime: Date | null;
-
   value: T | null;
 
   constructor(timeout = 0) {

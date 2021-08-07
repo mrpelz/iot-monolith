@@ -41,7 +41,7 @@ import { Tsl2561 } from '../services/tsl2561.js';
 import { UDPDevice } from '../device/udp.js';
 import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
-import { logger } from '../../app/logging.js';
+import { logger } from './main.js';
 
 const log = logger.getInput({
   head: 'device-test',
@@ -66,18 +66,21 @@ const ledOn = combineBooleanState(
 );
 
 const every5Seconds = new Schedule(
+  logger,
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
   false
 );
 every5Seconds.start();
 
 const every30Seconds = new Schedule(
+  logger,
   () => new ModifiableDate().ceil(Unit.SECOND, 30).date,
   false
 );
 every30Seconds.start();
 
 const every2Minutes = new Schedule(
+  logger,
   () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
   false
 );
@@ -198,7 +201,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'testDevice',
-    new UDPDevice('test-device.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'test-device.iot-ng.net.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -275,7 +278,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'obiJack',
-    new UDPDevice('obi-jack.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'obi-jack.iot-ng.net.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -309,7 +312,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'h801',
-    new UDPDevice('h801.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'h801.iot-ng.net.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -355,7 +358,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'shellyi3',
-    new UDPDevice('shelly-i3.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'shelly-i3.iot-ng.net.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -389,7 +392,11 @@ const doItem = <
 const [espNowTransport, ev1527Transport] = (() => {
   const [deviceLabel, device] = doDevice(
     'olimexEsp32Gateway',
-    new UDPDevice('olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(
+      logger,
+      'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
+      1337
+    )
   );
 
   doItem(
@@ -404,7 +411,7 @@ const [espNowTransport, ev1527Transport] = (() => {
     new ESPNowEvent(),
     device
   );
-  const _espNowTransport = new ESPNowTransport(espNow);
+  const _espNowTransport = new ESPNowTransport(logger, espNow);
 
   const rf433 = doEventWithLog(deviceLabel, 'rf433', new Rf433(), device);
 
@@ -444,7 +451,7 @@ const [espNowTransport, ev1527Transport] = (() => {
   //   );
   // });
 
-  const _ev1527Transport = new Ev1527Transport(rf433);
+  const _ev1527Transport = new Ev1527Transport(logger, rf433);
 
   return [_espNowTransport, _ev1527Transport] as const;
 })();
@@ -455,7 +462,11 @@ const [espNowTransport, ev1527Transport] = (() => {
   (() => {
     const [deviceLabel, device] = doDevice(
       `${baseLabel}[wifi]`,
-      new UDPDevice('esp-now-test-button.iot-ng.net.wurstsalat.cloud', 1337)
+      new UDPDevice(
+        logger,
+        'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
+        1337
+      )
     );
 
     doItem(
@@ -483,6 +494,7 @@ const [espNowTransport, ev1527Transport] = (() => {
     const [deviceLabel, device] = doDevice(
       `${baseLabel}[espNow]`,
       new ESPNowDevice(
+        logger,
         espNowTransport,
         // prettier-ignore
         [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf]
@@ -518,6 +530,7 @@ const [espNowTransport, ev1527Transport] = (() => {
     const [deviceLabel, device] = doDevice(
       `${baseLabel}[wifi]`,
       new UDPDevice(
+        logger,
         'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
         1337
       )
@@ -550,6 +563,7 @@ const [espNowTransport, ev1527Transport] = (() => {
     const [deviceLabel, device] = doDevice(
       `${baseLabel}[espNow]`,
       new ESPNowDevice(
+        logger,
         espNowTransport,
         // prettier-ignore
         [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0]
@@ -583,7 +597,7 @@ const [espNowTransport, ev1527Transport] = (() => {
 (() => {
   const [deviceLabel, device] = doDevice(
     'blueButton',
-    new Ev1527Device(ev1527Transport, 74160)
+    new Ev1527Device(logger, ev1527Transport, 74160)
   );
 
   const button = doItem(
@@ -602,7 +616,7 @@ const [espNowTransport, ev1527Transport] = (() => {
 (() => {
   const [deviceLabel, device] = doDevice(
     'grayButton',
-    new Ev1527Device(ev1527Transport, 4448)
+    new Ev1527Device(logger, ev1527Transport, 4448)
   );
 
   const button = doItem(
@@ -621,7 +635,7 @@ const [espNowTransport, ev1527Transport] = (() => {
 (() => {
   const [deviceLabel, device] = doDevice(
     'orangeButton',
-    new Ev1527Device(ev1527Transport, 307536)
+    new Ev1527Device(logger, ev1527Transport, 307536)
   );
 
   const button = doItem(
@@ -640,7 +654,7 @@ const [espNowTransport, ev1527Transport] = (() => {
 (() => {
   const [deviceLabel, device] = doDevice(
     'arbeitszimmerWindowRight',
-    new Ev1527Device(ev1527Transport, 839280)
+    new Ev1527Device(logger, ev1527Transport, 839280)
   );
 
   doItem(

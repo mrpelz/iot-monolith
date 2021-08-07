@@ -1,3 +1,4 @@
+import { HttpServer } from '../lib/http-server.js';
 import { handleSignal } from '../index.js';
 import { hierarchyToObject } from '../lib/hierarchy.js';
 import { logger } from './logging.js';
@@ -8,9 +9,12 @@ const log = logger.getInput({
   head: 'app',
 });
 
-export function app(): void {
-  const tree = office();
+export const httpServer = new HttpServer(logger, 1337);
+httpServer.listen();
 
+export const tree = office(logger);
+
+export function app(): void {
   const repl = start({
     prompt: '🏠 ',
   });
@@ -19,7 +23,7 @@ export function app(): void {
 
   Object.assign(repl.context, {
     structure: () => {
-      log.info(() => JSON.stringify(structure(), null, 2));
+      log.info(() => JSON.stringify(structure, null, 2));
     },
     tree,
     values: () => {

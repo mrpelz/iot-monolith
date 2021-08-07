@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import {
   BooleanGroupStrategy,
   combineBooleanState,
 } from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
 import { espNowTransport, ev1527Transport } from '../bridges.js';
+import { Logger } from '../../lib/log.js';
 import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
 import { espNowButton } from '../../lib/groupings/esp-now-button.js';
@@ -15,12 +18,12 @@ import { metadataStore } from '../../lib/hierarchy.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { testDevice } from '../../lib/groupings/test-device.js';
+import { timings } from '../timings.js';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function office() {
+export function office(logger: Logger) {
   const nodes = {
-    blueButton: ev1527ButtonX1(ev1527Transport, 74160),
-    espNowButton: espNowButton({
+    blueButton: ev1527ButtonX1(ev1527Transport, 74160, logger),
+    espNowButton: espNowButton(logger, timings, {
       espNow: {
         // prettier-ignore
         macAddress: [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf],
@@ -30,7 +33,7 @@ export function office() {
         host: 'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
       },
     }),
-    espNowWindowSensor: espNowWindowSensor({
+    espNowWindowSensor: espNowWindowSensor(logger, timings, {
       espNow: {
         // prettier-ignore
         macAddress: [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0],
@@ -40,13 +43,17 @@ export function office() {
         host: 'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
       },
     }),
-    grayButton: ev1527ButtonX1(ev1527Transport, 4448),
-    h801: h801('h801.iot-ng.net.wurstsalat.cloud'),
-    obiPlug: obiPlug('obi-jack.iot-ng.net.wurstsalat.cloud'),
-    orangeButton: ev1527ButtonX1(ev1527Transport, 307536),
-    shellyi3: shellyi3('shelly-i3.iot-ng.net.wurstsalat.cloud'),
-    testDevice: testDevice(),
-    windowSensor: ev1527WindowSensor(ev1527Transport, 839280),
+    grayButton: ev1527ButtonX1(ev1527Transport, 4448, logger),
+    h801: h801(logger, timings, 'h801.iot-ng.net.wurstsalat.cloud'),
+    obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.net.wurstsalat.cloud'),
+    orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+    shellyi3: shellyi3(
+      logger,
+      timings,
+      'shelly-i3.iot-ng.net.wurstsalat.cloud'
+    ),
+    testDevice: testDevice(logger, timings),
+    windowSensor: ev1527WindowSensor(logger, ev1527Transport, 839280),
   };
 
   const on = new BooleanState(false);

@@ -1,3 +1,4 @@
+import { Input, Logger } from '../log.js';
 import {
   bitLengthPayload,
   byteLengthAddress,
@@ -8,7 +9,6 @@ import { EVENT_IDENTIFIER } from '../device/main.js';
 import { Rf433 } from '../events/rf433.js';
 import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
-import { logger } from '../../app/logging.js';
 
 // PACKET FORMAT
 //
@@ -19,10 +19,12 @@ import { logger } from '../../app/logging.js';
 // |                                         |                  |
 
 export class Ev1527Transport extends Transport {
-  private readonly _ev1527Log = logger.getInput({ head: 'Ev1527Transport' });
+  private readonly _log: Input;
 
-  constructor(event: Rf433) {
-    super(null, 3, false);
+  constructor(logger: Logger, event: Rf433) {
+    super(logger, null, 3, false);
+
+    this._log = logger.getInput({ head: 'Ev1527Transport' });
 
     event.observable.observe(({ protocol, value }) =>
       this._handleMessage(protocol, value)
@@ -48,7 +50,7 @@ export class Ev1527Transport extends Transport {
 
     const payloadBuffer = Buffer.of(payload);
 
-    this._ev1527Log.debug(
+    this._log.debug(
       () =>
         `msg incoming\nfrom: ${[...deviceIdentifier]
           .map((octet) => octet.toString(16))

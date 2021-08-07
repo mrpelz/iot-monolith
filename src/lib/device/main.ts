@@ -1,14 +1,13 @@
 import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
 import { BooleanState, NullState, ReadOnlyNullState } from '../state.js';
+import { Input, Logger } from '../log.js';
 import { ModifiableDate, Unit } from '../modifiable-date.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { readNumber, writeNumber } from '../data.js';
-import { Input } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Schedule } from '../schedule.js';
 import { Timer } from '../timer.js';
-import { logger } from '../../app/logging.js';
 
 type DeviceEvents = Set<Event<unknown>>;
 type DeviceServices = Set<Service<unknown, unknown>>;
@@ -142,8 +141,9 @@ export class Service<T = void, S = void> extends Property {
 }
 
 export class Device {
-  private static _setUpSchedule(): Schedule {
+  private static _setUpSchedule(logger: Logger): Schedule {
     return new Schedule(
+      logger,
       () => new ModifiableDate().set().truncateToNext(Unit.SECOND).date,
       false
     );
@@ -169,6 +169,7 @@ export class Device {
   readonly isOnline: ReadOnlyObservable<boolean>;
 
   constructor(
+    logger: Logger,
     transport: Transport,
     identifier: DeviceIdentifier = null,
     keepAlive = 5000
@@ -195,7 +196,7 @@ export class Device {
 
     this._keepAliveReceiveTimer = new Timer(keepAlive);
 
-    this._keepAliveSendSchedule = Device._setUpSchedule();
+    this._keepAliveSendSchedule = Device._setUpSchedule(logger);
     this._keepAliveSendSchedule.addTask(() => this._sendKeepAlive());
 
     transport.isConnected.observe((transportConnected) => {

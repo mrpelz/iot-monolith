@@ -1,4 +1,6 @@
-import { logger } from '../app/logging.js';
+import { Input, Logger } from './log.js';
+
+export type ScheduleEpochPair = [Schedule, number];
 
 type Task = (previousExecution: Date | null) => void;
 
@@ -13,7 +15,7 @@ type NextExecutionProvider = (
 const MAX_TIMEOUT = 2147483647;
 
 export class Schedule {
-  private readonly _log = logger.getInput({ head: 'schedule' });
+  private readonly _log: Input;
   private readonly _nextExecutionProvider: NextExecutionProvider;
   private readonly _once: boolean;
   private _previousExecution: Date | null = null;
@@ -21,10 +23,12 @@ export class Schedule {
   private _timeout: NodeJS.Timeout | null = null;
 
   constructor(
+    logger: Logger,
     nextExecutionProvider: NextExecutionProvider,
     start = true,
     once = false
   ) {
+    this._log = logger.getInput({ head: 'schedule' });
     this._nextExecutionProvider = nextExecutionProvider;
     this._once = once;
 

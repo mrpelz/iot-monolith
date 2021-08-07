@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
-import {
-  every2Minutes,
-  every30Seconds,
-  every5Seconds,
-} from '../../app/timings.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
 import { BooleanState } from '../state.js';
@@ -15,6 +10,7 @@ import { Input } from '../events/input.js';
 import { Mcp9808 } from '../services/mcp9808.js';
 import { Mhz19 } from '../services/mhz19.js';
 import { ReadOnlyObservable } from '../observable.js';
+import { ScheduleEpochPair } from '../schedule.js';
 import { Sds011 } from '../services/sds011.js';
 import { SingleValueEvent } from '../items/event.js';
 import { Timer } from '../timer.js';
@@ -23,6 +19,10 @@ import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
 import { epochs } from '../epochs.js';
 import { metadataStore } from '../hierarchy.js';
+
+export type Timings = Record<string, ScheduleEpochPair | undefined> & {
+  default: ScheduleEpochPair;
+};
 
 function metricStaleness<T>(
   state: ReadOnlyObservable<T | null>,
@@ -45,6 +45,7 @@ function metricStaleness<T>(
   };
 
   metadataStore.set(result, {
+    metric: 'stale',
     type: 'boolean',
   });
 
@@ -53,15 +54,15 @@ function metricStaleness<T>(
   };
 }
 
-export function async(device: Device) {
+export function async(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const { state } = new SingleValueSensor(
     device.addService(new Async()),
-    every2Minutes
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state, epochs.minute * 2),
+    ...metricStaleness(state, epoch),
   };
 
   metadataStore.set(result, {
@@ -72,20 +73,20 @@ export function async(device: Device) {
   return { async: result };
 }
 
-export function bme280(device: Device) {
+export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const metrics = ['humidity', 'pressure', 'temperature'] as const;
 
   const { state } = new MultiValueSensor(
     device.addService(new Bme280()),
     metrics,
-    every5Seconds
+    schedule
   );
 
   return {
     humidity: (() => {
       const result = {
         _get: state.humidity,
-        ...metricStaleness(state.humidity, epochs.second * 5),
+        ...metricStaleness(state.humidity, epoch),
       };
 
       metadataStore.set(result, {
@@ -99,7 +100,7 @@ export function bme280(device: Device) {
     pressure: (() => {
       const result = {
         _get: state.pressure,
-        ...metricStaleness(state.pressure, epochs.second * 5),
+        ...metricStaleness(state.pressure, epoch),
       };
 
       metadataStore.set(result, {
@@ -113,7 +114,7 @@ export function bme280(device: Device) {
     temperature: (() => {
       const result = {
         _get: state.temperature,
-        ...metricStaleness(state.temperature, epochs.second * 5),
+        ...metricStaleness(state.temperature, epoch),
       };
 
       metadataStore.set(result, {
@@ -127,15 +128,15 @@ export function bme280(device: Device) {
   };
 }
 
-export function hello(device: Device) {
+export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const { state } = new SingleValueSensor(
     device.addService(new Hello()),
-    every30Seconds
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state, epochs.second * 30),
+    ...metricStaleness(state, epoch),
   };
 
   metadataStore.set(result, {
@@ -161,15 +162,15 @@ export function input(device: Device, index = 0) {
   return result;
 }
 
-export function mcp9808(device: Device) {
+export function mcp9808(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const { state } = new SingleValueSensor(
     device.addService(new Mcp9808()),
-    every5Seconds
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state, epochs.second * 5),
+    ...metricStaleness(state, epoch),
   };
 
   metadataStore.set(result, {
@@ -181,7 +182,7 @@ export function mcp9808(device: Device) {
   return { temperature: result };
 }
 
-export function mhz19(device: Device) {
+export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const metrics = [
     'abc',
     'accuracy',
@@ -193,16 +194,16 @@ export function mhz19(device: Device) {
   const { state } = new MultiValueSensor(
     device.addService(new Mhz19()),
     metrics,
-    every2Minutes
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state.co2, epochs.minute * 2),
+    ...metricStaleness(state.co2, epoch),
     abc: (() => {
       const _abc = {
         _get: state.abc,
-        ...metricStaleness(state.abc, epochs.minute * 2),
+        ...metricStaleness(state.abc, epoch),
       };
 
       metadataStore.set(_abc, {
@@ -215,7 +216,7 @@ export function mhz19(device: Device) {
     accuracy: (() => {
       const _accuracy = {
         _get: state.accuracy,
-        ...metricStaleness(state.accuracy, epochs.minute * 2),
+        ...metricStaleness(state.accuracy, epoch),
       };
 
       metadataStore.set(_accuracy, {
@@ -228,7 +229,7 @@ export function mhz19(device: Device) {
     temperature: (() => {
       const _temperature = {
         _get: state.temperature,
-        ...metricStaleness(state.temperature, epochs.minute * 2),
+        ...metricStaleness(state.temperature, epoch),
       };
 
       metadataStore.set(_temperature, {
@@ -241,7 +242,7 @@ export function mhz19(device: Device) {
     transmittance: (() => {
       const _transmittance = {
         _get: state.transmittance,
-        ...metricStaleness(state.transmittance, epochs.minute * 2),
+        ...metricStaleness(state.transmittance, epoch),
       };
 
       metadataStore.set(_transmittance, {
@@ -275,20 +276,20 @@ export function online(device: Device) {
   return { online: result };
 }
 
-export function sds011(device: Device) {
+export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const metrics = ['pm025', 'pm10'] as const;
 
   const { state } = new MultiValueSensor(
     device.addService(new Sds011()),
     metrics,
-    every2Minutes
+    schedule
   );
 
   return {
     pm025: (() => {
       const result = {
         _get: state.pm025,
-        ...metricStaleness(state.pm025, epochs.minute * 2),
+        ...metricStaleness(state.pm025, epoch),
       };
 
       metadataStore.set(result, {
@@ -302,7 +303,7 @@ export function sds011(device: Device) {
     pm10: (() => {
       const result = {
         _get: state.pm10,
-        ...metricStaleness(state.pm10, epochs.minute * 2),
+        ...metricStaleness(state.pm10, epoch),
       };
 
       metadataStore.set(result, {
@@ -316,15 +317,15 @@ export function sds011(device: Device) {
   };
 }
 
-export function tsl2561(device: Device) {
+export function tsl2561(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const { state } = new SingleValueSensor(
     device.addService(new Tsl2561()),
-    every5Seconds
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state, epochs.second * 5),
+    ...metricStaleness(state, epoch),
   };
 
   metadataStore.set(result, {
@@ -336,15 +337,15 @@ export function tsl2561(device: Device) {
   return { brightness: result };
 }
 
-export function uvIndex(device: Device) {
+export function uvIndex(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const { state } = new SingleValueSensor(
     device.addService(new Veml6070()),
-    every5Seconds
+    schedule
   );
 
   const result = {
     _get: state,
-    ...metricStaleness(state, epochs.second * 5),
+    ...metricStaleness(state, epoch),
   };
 
   metadataStore.set(result, {

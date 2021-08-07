@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import {
+  Timings,
   async,
   bme280,
   hello,
@@ -10,25 +13,34 @@ import {
   tsl2561,
   uvIndex,
 } from './metrics.js';
+import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
 import { combineObservables } from '../observable.js';
 import { metadataStore } from '../hierarchy.js';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const testDevice = () => {
-  const device = new UDPDevice('test-device.iot-ng.net.wurstsalat.cloud', 1337);
+export const testDevice = (logger: Logger, timings: Timings) => {
+  const device = new UDPDevice(
+    logger,
+    'test-device.iot-ng.net.wurstsalat.cloud',
+    1337
+  );
 
-  const { humidity, pressure, temperature: bme280Temperature } = bme280(device);
-  const { temperature: mcp9808Temperature } = mcp9808(device);
+  const {
+    humidity,
+    pressure,
+    temperature: bme280Temperature,
+  } = bme280(device, timings.default);
+
+  const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
 
   const result = {
-    ...async(device),
-    ...hello(device),
-    ...mhz19(device),
+    ...async(device, timings.moderate || timings.default),
+    ...hello(device, timings.moderate || timings.default),
+    ...mhz19(device, timings.slow || timings.default),
     ...online(device),
-    ...sds011(device),
-    ...tsl2561(device),
-    ...uvIndex(device),
+    ...sds011(device, timings.slow || timings.default),
+    ...tsl2561(device, timings.default),
+    ...uvIndex(device, timings.default),
     humidity,
     motion: input(device),
     pressure,

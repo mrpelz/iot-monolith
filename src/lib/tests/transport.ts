@@ -1,8 +1,9 @@
 import { Device, Event, Service } from '../device/main.js';
 import { UDPTransport } from '../transport/udp.js';
+import { logger } from './main.js';
 
-const transport = new UDPTransport('10.97.0.222', 2222);
-const device = new Device(transport);
+const transport = new UDPTransport('10.97.0.222', 2222, logger);
+const device = new Device(logger, transport);
 
 const event = new Event(Buffer.from([1]));
 device.addEvent(event);

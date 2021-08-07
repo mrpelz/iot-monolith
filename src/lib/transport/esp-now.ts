@@ -1,8 +1,8 @@
+import { Input, Logger } from '../log.js';
 import { ESPNow } from '../events/esp-now.js';
 import { EVENT_IDENTIFIER } from '../device/main.js';
 import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
-import { logger } from '../../app/logging.js';
 
 // PACKET FORMAT
 //
@@ -13,10 +13,12 @@ import { logger } from '../../app/logging.js';
 // |                        |                                  |                      |                      |
 
 export class ESPNowTransport extends Transport {
-  private readonly _espNowLog = logger.getInput({ head: 'ESPNowTransport' });
+  private readonly _log: Input;
 
-  constructor(event: ESPNow) {
-    super(null, 6, false);
+  constructor(logger: Logger, event: ESPNow) {
+    super(logger, null, 6, false);
+
+    this._log = logger.getInput({ head: 'ESPNowTransport' });
 
     event.observable.observe(({ deviceIdentifier, payload }) =>
       this._handleMessage(deviceIdentifier, payload)
@@ -27,7 +29,7 @@ export class ESPNowTransport extends Transport {
    * handle incoming messages
    */
   private _handleMessage(deviceIdentifier: Buffer, payload: Buffer) {
-    this._espNowLog.debug(
+    this._log.debug(
       () =>
         `msg incoming\nfrom: ${[...deviceIdentifier]
           .map((octet) => octet.toString(16))

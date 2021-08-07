@@ -1,7 +1,7 @@
+import { Input, Logger } from '../log.js';
 import { BooleanState } from '../state.js';
 import { Device } from '../device/main.js';
 import { ReadOnlyObservable } from '../observable.js';
-import { logger } from '../../app/logging.js';
 
 type FriendlyName = string | null;
 
@@ -26,13 +26,14 @@ export class TransportDevice {
     }
   }
 
-  private readonly _log = logger.getInput({ head: 'Device' });
+  private readonly _log: Input;
   private readonly _transport: Transport;
 
   readonly device: Device;
   readonly isConnected: ReadOnlyObservable<boolean>;
 
-  constructor(transport: Transport, device: Device) {
+  constructor(transport: Transport, device: Device, logger: Logger) {
+    this._log = logger.getInput({ head: 'Device' });
     this._transport = transport;
     this.device = device;
     this.isConnected = transport.isConnected;
@@ -78,6 +79,7 @@ export class TransportDevice {
 
 export class Transport {
   private readonly _devices = new Set<TransportDevice>();
+  private readonly _logger: Logger;
   private readonly _singleDevice: boolean;
 
   protected readonly _isConnected = new BooleanState(false);
@@ -87,6 +89,7 @@ export class Transport {
   readonly isConnected: ReadOnlyObservable<boolean>;
 
   constructor(
+    logger: Logger,
     friendlyName: FriendlyName = null,
     identifierLength = 0,
     singleDevice = true
@@ -95,6 +98,7 @@ export class Transport {
       throw new Error('identifier is required for multi device transport');
     }
 
+    this._logger = logger;
     this._singleDevice = singleDevice;
 
     this.friendlyName = friendlyName;
@@ -131,7 +135,7 @@ export class Transport {
 
     TransportDevice._isValidDeviceForTransport(this._devices, device);
 
-    const transportDevice = new TransportDevice(this, device);
+    const transportDevice = new TransportDevice(this, device, this._logger);
     this._devices.add(transportDevice);
 
     return transportDevice;

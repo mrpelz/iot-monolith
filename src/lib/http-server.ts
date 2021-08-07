@@ -1,4 +1,5 @@
 import { IncomingMessage, Server, ServerResponse } from 'http';
+import { Input, Logger } from './log.js';
 
 export type RouteHandler = (
   response: ServerResponse,
@@ -11,11 +12,17 @@ export type Route = {
 };
 
 export class HttpServer {
-  private _routes = new Map<string, RouteHandler>();
-  private _server: Server;
+  private readonly _log: Input;
+  private readonly _port: number;
+  private readonly _routes = new Map<string, RouteHandler>();
 
-  constructor() {
-    this._server = new Server((...args) => this._handleRequest(...args));
+  readonly server: Server;
+
+  constructor(logger: Logger, port: number) {
+    this._log = logger.getInput({ head: 'http-server' });
+    this._port = port;
+
+    this.server = new Server((...args) => this._handleRequest(...args));
   }
 
   private _handleRequest(request: IncomingMessage, response: ServerResponse) {
@@ -24,22 +31,40 @@ export class HttpServer {
     const url = new URL(request.url);
 
     const handler = this._routes.get(url.pathname);
-    if (!handler) return;
+
+    if (!handler) {
+      this._log.notice(() => `${url}: 404`);
+
+      response.writeHead(
+        404,
+        '404 Not found\nThe resource could not be found.'
+      );
+
+      return;
+    }
 
     handler(response, request, url);
   }
 
   close(): void {
-    this._server.close();
+    this.server.close();
+
+    this._log.info(() => 'close');
   }
 
-  listen(port: number): void {
-    this._server.listen(port, 'localhost');
+  listen(): void {
+    this.server.listen(this._port, 'localhost');
+
+    this._log.info(() => `listen on localhost:${this._port}`);
   }
 
   route(path: string, handler: RouteHandler): Route {
     if (this._routes.has(path)) {
-      throw new Error(`route with path "${path}" already set`);
+      const error = new Error(`route with path "${path}" already set`);
+
+      this._log.error(() => error.message);
+
+      throw error;
     }
 
     this._routes.set(path, handler);

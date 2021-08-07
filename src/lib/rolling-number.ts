@@ -20,7 +20,6 @@ export class RollingNumber {
   private readonly _max: number;
   private readonly _min: number;
   private readonly _reserved: number[];
-
   private _value: number;
 
   constructor(min: number, max: number, reserved: number[] = []) {

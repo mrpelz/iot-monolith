@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import { ESPNowDevice, MACAddress } from '../device/esp-now.js';
-import { hello, online, vcc } from './metrics.js';
+import { Timings, hello, online, vcc } from './metrics.js';
 import { Button } from '../items/button.js';
 import { Button as ButtonEvent } from '../events/button.js';
 import { Device } from '../device/main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
+import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
 import { metadataStore } from '../hierarchy.js';
 
@@ -18,8 +21,11 @@ export type EspNowButtonOptions = {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const espNowButton = (options: EspNowButtonOptions) => {
+export const espNowButton = (
+  logger: Logger,
+  timings: Timings,
+  options: EspNowButtonOptions
+) => {
   const children = (device: Device) => ({
     button0: { $: new Button(device.addEvent(new ButtonEvent(0))) },
     button1: { $: new Button(device.addEvent(new ButtonEvent(1))) },
@@ -27,7 +33,7 @@ export const espNowButton = (options: EspNowButtonOptions) => {
 
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
-    const device = new ESPNowDevice(transport, macAddress);
+    const device = new ESPNowDevice(logger, transport, macAddress);
 
     const result = {
       ...children,
@@ -43,11 +49,11 @@ export const espNowButton = (options: EspNowButtonOptions) => {
 
   const wifi = (() => {
     const { host, port = 1337 } = options.wifi;
-    const device = new UDPDevice(host, port);
+    const device = new UDPDevice(logger, host, port);
 
     const result = {
       ...children,
-      ...hello(device),
+      ...hello(device, timings.moderate || timings.default),
       ...online(device),
     };
 

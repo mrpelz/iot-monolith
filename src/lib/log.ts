@@ -44,7 +44,7 @@ function logMerge(input: Log | string): Log {
 }
 
 export class Output {
-  private _callback: Callback;
+  private readonly _callback: Callback;
 
   readonly levels: Level[];
 
@@ -146,8 +146,8 @@ export class JournaldOutput extends Output {
 // }
 
 export class Input {
-  private _logger: Logger;
-  private _options: Partial<Log>;
+  private readonly _logger: Logger;
+  private readonly _options: Partial<Log>;
 
   /**
    * DO NOT CALL YOURSELF, USE `Logger.getInput` INSTEAD
@@ -210,8 +210,8 @@ export class Input {
 }
 
 export class Logger {
-  private _inputs = new Set<Input>();
-  private _outputs = new Set<Output>();
+  private readonly _inputs = new Set<Input>();
+  private readonly _outputs = new Set<Output>();
 
   private _shouldLog(level: Level) {
     return Boolean(
