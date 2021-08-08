@@ -7,7 +7,7 @@ import { Ev1527Transport } from '../transport/ev1527.js';
 import { Logger } from '../log.js';
 import { Rf433 } from '../events/rf433.js';
 import { UDPDevice } from '../device/udp.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export const rfBridge = (
   logger: Logger,

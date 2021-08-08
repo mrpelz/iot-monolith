@@ -14,7 +14,7 @@ import { espNowWindowSensor } from '../../lib/groupings/esp-now-window-sensor.js
 import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { h801 } from '../../lib/groupings/h801.js';
-import { metadataStore } from '../../lib/hierarchy.js';
+import { metadataStore } from '../../lib/tree.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { testDevice } from '../../lib/groupings/test-device.js';

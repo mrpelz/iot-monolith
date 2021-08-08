@@ -172,7 +172,7 @@ export class Device {
     logger: Logger,
     transport: Transport,
     identifier: DeviceIdentifier = null,
-    keepAlive = 5000
+    keepAlive = 10000
   ) {
     this._log = logger.getInput({
       head: `Device "${transport.friendlyName || identifier}"`,

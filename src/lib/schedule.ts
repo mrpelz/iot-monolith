@@ -28,7 +28,7 @@ export class Schedule {
     start = true,
     once = false
   ) {
-    this._log = logger.getInput({ head: 'schedule' });
+    this._log = logger.getInput({ head: 'Schedule' });
     this._nextExecutionProvider = nextExecutionProvider;
     this._once = once;
 

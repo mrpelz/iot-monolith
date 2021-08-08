@@ -9,7 +9,7 @@ import { Led } from '../items/led.js';
 import { Led as LedService } from '../services/led.js';
 import { Output } from '../items/output.js';
 import { Output as OutputService } from '../services/output.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 function actuatorStaleness<T>(
   state: ReadOnlyObservable<T | null>,

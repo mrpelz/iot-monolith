@@ -4,7 +4,7 @@ import { Timings, hello, online } from './metrics.js';
 import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
 import { led } from './actuators.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export const h801 = (
   logger: Logger,

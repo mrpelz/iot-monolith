@@ -8,7 +8,7 @@ import { Input } from '../events/input.js';
 import { Logger } from '../log.js';
 import { SingleValueEvent } from '../items/event.js';
 import { UDPDevice } from '../device/udp.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export type EspNowWindowSensorOptions = {
   espNow: {

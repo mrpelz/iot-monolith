@@ -8,7 +8,7 @@ import { Device } from '../device/main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
 import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export type EspNowButtonOptions = {
   espNow: {

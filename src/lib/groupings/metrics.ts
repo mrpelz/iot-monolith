@@ -18,7 +18,7 @@ import { Tsl2561 } from '../services/tsl2561.js';
 import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
 import { epochs } from '../epochs.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;

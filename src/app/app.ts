@@ -1,25 +1,31 @@
 import { HttpServer } from '../lib/http-server.js';
+import { Tree } from '../lib/tree.js';
+import { WebApi } from '../lib/web-api.js';
 import { handleSignal } from '../index.js';
-import { hierarchyToObject } from '../lib/hierarchy.js';
 import { logger } from './logging.js';
 import { office } from './rooms/office.js';
 import { start } from 'repl';
+
+const run = Date.now().toString();
 
 const log = logger.getInput({
   head: 'app',
 });
 
-export const httpServer = new HttpServer(logger, 1337);
+const httpServer = new HttpServer(logger, 1337);
 httpServer.listen();
-
-export const tree = office(logger);
 
 export function app(): void {
   const repl = start({
     prompt: '🏠 ',
   });
 
-  const { structure, values } = hierarchyToObject(tree);
+  const tree = new Tree(office(logger));
+
+  // eslint-disable-next-line no-new
+  new WebApi(logger, httpServer, run, tree);
+
+  const { structure, values } = tree;
 
   Object.assign(repl.context, {
     structure: () => {

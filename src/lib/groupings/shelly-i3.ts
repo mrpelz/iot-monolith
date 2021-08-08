@@ -5,7 +5,7 @@ import { Button } from '../items/button.js';
 import { Button as ButtonEvent } from '../events/button.js';
 import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
-import { metadataStore } from '../hierarchy.js';
+import { metadataStore } from '../tree.js';
 
 export const shellyi3 = (
   logger: Logger,
