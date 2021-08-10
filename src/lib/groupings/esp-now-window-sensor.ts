@@ -37,7 +37,7 @@ export const espNowWindowSensor = (
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     const result = {
-      ...children,
+      ...children(device),
       ...vcc(device),
     };
 
@@ -53,7 +53,7 @@ export const espNowWindowSensor = (
     const device = new UDPDevice(logger, host, port);
 
     const result = {
-      ...children,
+      ...children(device),
       ...hello(device, timings.moderate || timings.default),
       ...online(device),
     };

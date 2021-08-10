@@ -81,6 +81,11 @@ export function office(logger: Logger) {
 
   nodes.obiPlug.button.$.shortPress(() => on.flip());
 
+  nodes.espNowButton.wifi.button0.$.shortPress(() => on.flip());
+  nodes.espNowButton.wifi.button1.$.shortPress(() => on.flip());
+  nodes.espNowButton.espNow.button0.$.shortPress(() => on.flip());
+  nodes.espNowButton.espNow.button1.$.shortPress(() => on.flip());
+
   nodes.shellyi3.button0.$.shortPress(() => on.flip());
   nodes.shellyi3.button1.$.shortPress(() => on.flip());
   nodes.shellyi3.button2.$.shortPress(() => on.flip());
