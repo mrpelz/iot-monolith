@@ -27,11 +27,16 @@ export function multiline(
 
   for (const line of lines) {
     const lineIndent = indentMatcher.exec(line)?.[0]?.length || 0;
-    if (lineIndent > indent) indent = lineIndent;
+    if (lineIndent && (!indent || lineIndent < indent)) indent = lineIndent;
   }
 
   const text = lines
-    .map((line) => `${line.slice(0, indent).trim()}${line.slice(indent)}`)
+    .map((line) => {
+      const localIndent = indentMatcher.exec(line)?.[0]?.length || 0;
+      const finalIndent = localIndent < indent ? 0 : localIndent - indent;
+
+      return `${''.padStart(finalIndent, ' ')}${line.slice(localIndent)}`;
+    })
     .join('\n');
 
   return `${text}\n`;
