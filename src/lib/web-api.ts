@@ -49,8 +49,18 @@ export class WebApi {
     this._wss.on('connection', (ws) => this._handleStream(ws));
   }
 
-  private _handleHierarchyGet({ response, utils }: RouteHandle) {
+  private _handleHierarchyGet({ response, url, utils }: RouteHandle) {
     if (utils.constrainMethod('GET')) return;
+
+    if (url.searchParams.get('id') !== this._id) {
+      response.writeHead(400, 'Bad request');
+      response.end(multiline`
+        400 Bad request
+        The client didn\'t supply the correct "id" query parameter.
+      `);
+
+      return;
+    }
 
     response.setHeader('Content-Type', 'application/json');
     response.end(JSON.stringify(this._tree.structure));
