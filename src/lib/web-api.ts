@@ -12,6 +12,8 @@ const PATH_ID = '/api/id' as const;
 const PATH_STREAM = '/api/stream' as const;
 const PATH_VALUES = '/api/values' as const;
 
+const WEBSOCKET_PING_INTERVAL = 5000;
+
 export class WebApi {
   private readonly _httpServer: HttpServer;
   private readonly _id: string;
@@ -78,6 +80,8 @@ export class WebApi {
         ws.send(JSON.stringify(entry));
       });
 
+      const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
+
       ws.on('message', (data) => {
         const payload = (() => {
           if (typeof data !== 'string') return null;
@@ -97,6 +101,7 @@ export class WebApi {
       });
 
       ws.on('close', () => {
+        clearInterval(pingPong);
         observer.remove();
         ws.close();
       });
