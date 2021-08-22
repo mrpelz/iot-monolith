@@ -67,7 +67,7 @@ export class Tree {
   private _serialize(object: any, parentMeta?: Meta) {
     if (typeof object !== 'object') return undefined;
 
-    const _meta = (() => {
+    const meta = (() => {
       return {
         ...parentMeta,
         name: undefined,
@@ -76,30 +76,30 @@ export class Tree {
     })();
 
     const nodes = ((): any => {
-      return Object.fromEntries(
-        Object.entries(object)
-          .filter(([key]) => !['$', '_get', '_set'].includes(key))
-          .map(([key, node]) => [key, this._serialize(node, _meta)])
-      );
+      const result = Object.entries(object)
+        .filter(([key]) => !['$', '_get', '_set'].includes(key))
+        .map(([key, node]) => [key, this._serialize(node, meta)]);
+
+      return result.length ? Object.fromEntries(result) : undefined;
     })();
 
-    const _get = (() => {
+    const get = (() => {
       if (!('_get' in object)) return undefined;
       if (!(object._get instanceof ReadOnlyObservable)) return undefined;
 
       return this._getGetterIndex(object._get);
     })();
 
-    const _set = (() => {
+    const set = (() => {
       if (!('_set' in object)) return undefined;
       return this._getSetterIndex(object._set);
     })();
 
     return {
-      _get,
-      _meta,
-      _set,
-      ...nodes,
+      get,
+      meta,
+      nodes,
+      set,
     };
   }
 

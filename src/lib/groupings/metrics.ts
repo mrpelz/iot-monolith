@@ -198,7 +198,7 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   );
 
   const result = {
-    _get: state,
+    _get: state.co2,
     ...metricStaleness(state.co2, epoch),
     abc: (() => {
       const _abc = {
