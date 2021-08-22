@@ -199,7 +199,12 @@ export class UDPTransport extends Transport {
 
     this._socket = socket;
 
-    socket.connect(this._port, this._host);
+    try {
+      socket.connect(this._port, this._host);
+    } catch (error) {
+      this._log.error(() => `error connecting socket: ${error}`);
+      this._nukeSocket();
+    }
   }
 
   /**

@@ -191,17 +191,6 @@ export class TCPTransport extends Transport {
    */
   private _setUpSocket(): void {
     const socket = new Socket();
-    socket.connect({
-      host: this._host,
-      port: this._port,
-    });
-
-    socket.setNoDelay(true);
-
-    if (this._keepAlive) {
-      socket.setKeepAlive(true, this._keepAlive);
-      socket.setTimeout(this._keepAlive * 2);
-    }
 
     socket.on('readable', this._handleReadable);
     socket.on('connect', this._onConnection);
@@ -210,6 +199,23 @@ export class TCPTransport extends Transport {
     socket.on('error', this._onDisconnection);
 
     this._socket = socket;
+
+    try {
+      socket.connect({
+        host: this._host,
+        port: this._port,
+      });
+
+      socket.setNoDelay(true);
+
+      if (this._keepAlive) {
+        socket.setKeepAlive(true, this._keepAlive);
+        socket.setTimeout(this._keepAlive * 2);
+      }
+    } catch (error) {
+      this._log.error(() => `error connecting socket: ${error}`);
+      this._nukeSocket();
+    }
   }
 
   /**

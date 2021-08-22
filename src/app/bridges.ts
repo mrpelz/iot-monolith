@@ -5,7 +5,7 @@ import { timings } from './timings.js';
 export const rfBridge = _rfBridge(
   logger,
   timings,
-  'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud'
+  'olimex-esp32-gateway.iot-ng.lan.wurstsalat.cloud'
 );
 
 const {

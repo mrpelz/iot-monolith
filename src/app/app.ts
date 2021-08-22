@@ -20,7 +20,8 @@ export function app(): void {
     prompt: '🏠 ',
   });
 
-  const tree = new Tree(office(logger));
+  const root = office(logger);
+  const tree = new Tree(root);
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, run, tree);
@@ -28,6 +29,7 @@ export function app(): void {
   const { structure, values } = tree;
 
   Object.assign(repl.context, {
+    root,
     structure: () => {
       log.info(() => JSON.stringify(structure, null, 2));
     },

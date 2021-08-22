@@ -21,7 +21,7 @@ import { metadataStore } from '../tree.js';
 export const testDevice = (logger: Logger, timings: Timings) => {
   const device = new UDPDevice(
     logger,
-    'test-device.iot-ng.net.wurstsalat.cloud',
+    'test-device.iot-ng.lan.wurstsalat.cloud',
     1337
   );
 

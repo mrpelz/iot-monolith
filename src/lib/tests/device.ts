@@ -201,7 +201,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'testDevice',
-    new UDPDevice(logger, 'test-device.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'test-device.iot-ng.lan.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -278,7 +278,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'obiJack',
-    new UDPDevice(logger, 'obi-jack.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'obi-jack.iot-ng.lan.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -312,7 +312,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'h801',
-    new UDPDevice(logger, 'h801.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'h801.iot-ng.lan.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -358,7 +358,7 @@ const doItem = <
 (() => {
   const [deviceLabel, device] = doDevice(
     'shellyi3',
-    new UDPDevice(logger, 'shelly-i3.iot-ng.net.wurstsalat.cloud', 1337)
+    new UDPDevice(logger, 'shelly-i3.iot-ng.lan.wurstsalat.cloud', 1337)
   );
 
   doItem(
@@ -394,7 +394,7 @@ const [espNowTransport, ev1527Transport] = (() => {
     'olimexEsp32Gateway',
     new UDPDevice(
       logger,
-      'olimex-esp32-gateway.iot-ng.net.wurstsalat.cloud',
+      'olimex-esp32-gateway.iot-ng.lan.wurstsalat.cloud',
       1337
     )
   );
@@ -464,7 +464,7 @@ const [espNowTransport, ev1527Transport] = (() => {
       `${baseLabel}[wifi]`,
       new UDPDevice(
         logger,
-        'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
+        'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
         1337
       )
     );
@@ -531,7 +531,7 @@ const [espNowTransport, ev1527Transport] = (() => {
       `${baseLabel}[wifi]`,
       new UDPDevice(
         logger,
-        'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
+        'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
         1337
       )
     );

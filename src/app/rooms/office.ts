@@ -30,7 +30,7 @@ export function office(logger: Logger) {
         transport: espNowTransport,
       },
       wifi: {
-        host: 'esp-now-test-button.iot-ng.net.wurstsalat.cloud',
+        host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
       },
     }),
     espNowWindowSensor: espNowWindowSensor(logger, timings, {
@@ -40,17 +40,17 @@ export function office(logger: Logger) {
         transport: espNowTransport,
       },
       wifi: {
-        host: 'esp-now-test-window-sensor.iot-ng.net.wurstsalat.cloud',
+        host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
       },
     }),
     grayButton: ev1527ButtonX1(ev1527Transport, 4448, logger),
-    h801: h801(logger, timings, 'h801.iot-ng.net.wurstsalat.cloud'),
-    obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.net.wurstsalat.cloud'),
+    h801: h801(logger, timings, 'h801.iot-ng.lan.wurstsalat.cloud'),
+    obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.lan.wurstsalat.cloud'),
     orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
     shellyi3: shellyi3(
       logger,
       timings,
-      'shelly-i3.iot-ng.net.wurstsalat.cloud'
+      'shelly-i3.iot-ng.lan.wurstsalat.cloud'
     ),
     testDevice: testDevice(logger, timings),
     windowSensor: ev1527WindowSensor(logger, ev1527Transport, 839280),
