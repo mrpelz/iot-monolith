@@ -5,7 +5,7 @@ import {
   combineBooleanState,
 } from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
-import { espNowTransport, ev1527Transport } from '../bridges.js';
+import { espNowTransport, ev1527Transport, rfBridge } from '../bridges.js';
 import { Logger } from '../../lib/log.js';
 import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
@@ -47,6 +47,7 @@ export function office(logger: Logger) {
     h801: h801(logger, timings, 'h801.iot-ng.lan.wurstsalat.cloud'),
     obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.lan.wurstsalat.cloud'),
     orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+    rfBridge,
     shellyi3: shellyi3(
       logger,
       timings,

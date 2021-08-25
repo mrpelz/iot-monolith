@@ -75,7 +75,7 @@ export class Tree {
       };
     })();
 
-    const nodes = ((): any => {
+    const children = ((): any => {
       const result = Object.entries(object)
         .filter(([key]) => !['$', '_get', '_set'].includes(key))
         .map(([key, node]) => [key, this._serialize(node, meta)]);
@@ -96,9 +96,9 @@ export class Tree {
     })();
 
     return {
+      children,
       get,
       meta,
-      nodes,
       set,
     };
   }
