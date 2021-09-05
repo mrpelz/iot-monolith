@@ -5,7 +5,10 @@ import { ReadOnlyObservable } from '../observable.js';
 import { Socket } from 'net';
 import { Timer } from '../timer.js';
 import { Transport } from './main.js';
+import { promises } from 'dns';
 import { rebind } from '../oop.js';
+
+const { lookup } = promises;
 
 // PACKET FORMAT
 //
@@ -200,9 +203,11 @@ export class TCPTransport extends Transport {
 
     this._socket = socket;
 
-    try {
+    (async () => {
+      const { address } = await lookup(this._host, 4);
+
       socket.connect({
-        host: this._host,
+        host: address,
         port: this._port,
       });
 
@@ -212,10 +217,10 @@ export class TCPTransport extends Transport {
         socket.setKeepAlive(true, this._keepAlive);
         socket.setTimeout(this._keepAlive * 2);
       }
-    } catch (error) {
+    })().catch((error) => {
       this._log.error(() => `error connecting socket: ${error}`);
       this._nukeSocket();
-    }
+    });
   }
 
   /**

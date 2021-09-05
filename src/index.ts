@@ -5,7 +5,7 @@ const logger = globalLogger.getInput({
   head: 'root',
 });
 
-Error.stackTraceLimit = 50;
+Error.stackTraceLimit = 250;
 process.stdin.resume();
 
 logger.info(() => ({
@@ -33,7 +33,8 @@ async function exit(code = 0) {
 
 process.on('uncaughtException', async (error) => {
   await logger.emergency(() => ({
-    body: `uncaughtException: ${error.message}`,
+    body: error.toString(),
+    head: `uncaughtException: ${error.message}`,
   }));
 
   exit();

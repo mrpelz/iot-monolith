@@ -215,9 +215,7 @@ export class Logger {
 
   private _shouldLog(level: Level) {
     return Boolean(
-      [...this._outputs].find((output) =>
-        Boolean(output.levels.find((outputLevel) => outputLevel === level))
-      )
+      [...this._outputs].find((output) => output.levels.includes(level))
     );
   }
 

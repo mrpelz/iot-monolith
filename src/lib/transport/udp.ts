@@ -5,7 +5,10 @@ import { humanPayload, readNumber } from '../data.js';
 import { BooleanState } from '../state.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { Transport } from './main.js';
+import { promises } from 'dns';
 import { rebind } from '../oop.js';
+
+const { lookup } = promises;
 
 // PACKET FORMAT
 //
@@ -199,12 +202,13 @@ export class UDPTransport extends Transport {
 
     this._socket = socket;
 
-    try {
-      socket.connect(this._port, this._host);
-    } catch (error) {
+    (async () => {
+      const { address } = await lookup(this._host, 4);
+      socket.connect(this._port, address);
+    })().catch((error) => {
       this._log.error(() => `error connecting socket: ${error}`);
       this._nukeSocket();
-    }
+    });
   }
 
   /**
