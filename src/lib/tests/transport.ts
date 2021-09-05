@@ -19,5 +19,5 @@ service
   // eslint-disable-next-line no-console
   .then(console.log)
   .catch(() => {
-    /* noop */
+    // noop
   });

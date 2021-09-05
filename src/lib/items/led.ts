@@ -62,10 +62,14 @@ export class Led {
     this._actualBrightness.value = brightness;
 
     if (!this._indicator) return;
-    this._indicator.request({
-      blink: brightness ? 3 : 2,
-      mode: IndicatorMode.BLINK,
-    });
+    this._indicator
+      .request({
+        blink: brightness ? 3 : 2,
+        mode: IndicatorMode.BLINK,
+      })
+      .catch(() => {
+        // noop
+      });
   }
 
   private _unknown() {

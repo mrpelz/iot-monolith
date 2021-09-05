@@ -51,10 +51,14 @@ export class Output {
     this._actualState.value = on;
 
     if (!this._indicator) return;
-    this._indicator.request({
-      blink: on ? 3 : 2,
-      mode: IndicatorMode.BLINK,
-    });
+    this._indicator
+      .request({
+        blink: on ? 3 : 2,
+        mode: IndicatorMode.BLINK,
+      })
+      .catch(() => {
+        // noop
+      });
   }
 
   private _unknown() {
