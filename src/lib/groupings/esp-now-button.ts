@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../device/esp-now.js';
+import { Levels, metadataStore } from '../tree.js';
 import { Timings, hello, online, vcc } from './metrics.js';
 import { Button } from '../items/button.js';
 import { Button as ButtonEvent } from '../events/button.js';
@@ -8,7 +9,6 @@ import { Device } from '../device/main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
 import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
-import { metadataStore } from '../tree.js';
 
 export type EspNowButtonOptions = {
   espNow: {
@@ -41,7 +41,9 @@ export const espNowButton = (
     };
 
     metadataStore.set(result, {
-      name: 'esp-now',
+      isSubDevice: true,
+      level: Levels.DEVICE,
+      name: 'espNow',
     });
 
     return { espNow: result };
@@ -58,6 +60,8 @@ export const espNowButton = (
     };
 
     metadataStore.set(result, {
+      isSubDevice: true,
+      level: Levels.DEVICE,
       name: 'wifi',
     });
 
@@ -71,7 +75,8 @@ export const espNowButton = (
     };
 
     metadataStore.set(result, {
-      name: 'esp-now-button',
+      level: Levels.DEVICE,
+      name: 'espNowButton',
     });
 
     return result;

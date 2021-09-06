@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Levels, ValueType, inherit, metadataStore } from '../tree.js';
 import { Ev1527Device } from '../device/ev1527.js';
 import { Ev1527Transport } from '../transport/ev1527.js';
 import { Ev1527WindowSensor } from '../events/ev1527-window-sensor.js';
 import { Logger } from '../log.js';
 import { MultiValueEvent } from '../items/event.js';
-import { metadataStore } from '../tree.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,
@@ -26,8 +26,11 @@ export const ev1527WindowSensor = (
       };
 
       metadataStore.set(_open, {
-        metric: 'window-open',
-        type: 'boolean',
+        level: Levels.PROPERTY,
+        measured: 'windowOpen',
+        name: inherit,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
       });
 
       return _open;
@@ -38,8 +41,11 @@ export const ev1527WindowSensor = (
       };
 
       metadataStore.set(_tamperSwitch, {
-        metric: 'window-tamper-switch',
-        type: 'boolean',
+        level: Levels.PROPERTY,
+        measured: 'windowTamperSwitch',
+        name: inherit,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
       });
 
       return _tamperSwitch;
@@ -47,7 +53,8 @@ export const ev1527WindowSensor = (
   };
 
   metadataStore.set(result, {
-    name: 'ev1527-window-sensor',
+    level: Levels.DEVICE,
+    name: 'ev1527WindowSensor',
   });
 
   return result;

@@ -5,7 +5,14 @@ import {
   combineBooleanState,
 } from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
-import { espNowTransport, ev1527Transport, rfBridge } from '../bridges.js';
+import {
+  Levels,
+  ParentRelation,
+  ValueType,
+  inherit,
+  metadataStore,
+} from '../../lib/tree.js';
+import { espNowTransport, ev1527Transport } from '../bridges.js';
 import { Logger } from '../../lib/log.js';
 import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
@@ -14,7 +21,6 @@ import { espNowWindowSensor } from '../../lib/groupings/esp-now-window-sensor.js
 import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { h801 } from '../../lib/groupings/h801.js';
-import { metadataStore } from '../../lib/tree.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { testDevice } from '../../lib/groupings/test-device.js';
@@ -47,7 +53,6 @@ export function office(logger: Logger) {
     h801: h801(logger, timings, 'h801.iot-ng.lan.wurstsalat.cloud'),
     obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.lan.wurstsalat.cloud'),
     orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
-    rfBridge,
     shellyi3: shellyi3(
       logger,
       timings,
@@ -129,7 +134,11 @@ export function office(logger: Logger) {
         };
 
         metadataStore.set(_flip, {
-          type: 'null',
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
         });
 
         return _flip;
@@ -140,7 +149,11 @@ export function office(logger: Logger) {
         };
 
         metadataStore.set(_off, {
-          type: 'null',
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
         });
 
         return _off;
@@ -151,7 +164,11 @@ export function office(logger: Logger) {
         };
 
         metadataStore.set(_on, {
-          type: 'null',
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
         });
 
         return _on;
@@ -159,8 +176,10 @@ export function office(logger: Logger) {
     };
 
     metadataStore.set(_light, {
-      actuator: 'virtual',
-      type: 'boolean',
+      actuated: 'light',
+      level: Levels.PROPERTY,
+      type: 'actuator',
+      valueType: ValueType.BOOLEAN,
     });
 
     return _light;
@@ -181,6 +200,8 @@ export function office(logger: Logger) {
   };
 
   metadataStore.set(result, {
+    isDaylit: true,
+    level: Levels.ROOM,
     name: 'office',
   });
 

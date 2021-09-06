@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Levels, ValueType, metadataStore } from '../tree.js';
 import {
   Timings,
   bme280,
@@ -13,7 +14,6 @@ import {
 import { Logger } from '../log.js';
 import { UDPDevice } from '../device/udp.js';
 import { combineObservables } from '../observable.js';
-import { metadataStore } from '../tree.js';
 
 export const roomSensor = (
   logger: Logger,
@@ -58,9 +58,12 @@ export const roomSensor = (
       };
 
       metadataStore.set(_temperature, {
-        metric: 'temperature',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'temperature',
+        name: 'compoundTemperature',
+        type: 'sensor',
         unit: 'celsius',
+        valueType: ValueType.NUMBER,
       });
 
       return _temperature;
@@ -68,7 +71,8 @@ export const roomSensor = (
   };
 
   metadataStore.set(result, {
-    name: 'room-sensor',
+    level: Levels.DEVICE,
+    name: 'roomSensor',
   });
 
   return result;

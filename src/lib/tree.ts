@@ -5,8 +5,108 @@
 import { AnyObservable, Observable, ReadOnlyObservable } from './observable.js';
 import { RollingNumber } from './rolling-number.js';
 
-type MetaKeys = 'actuator' | 'name' | 'metric' | 'type' | 'unit';
-export type Meta = Partial<Record<MetaKeys, string>>;
+export const inherit = Symbol('inherit');
+
+type Inherit = typeof inherit;
+
+export enum Levels {
+  SYSTEM,
+  HOME,
+  BUILDING,
+  FLOOR,
+  ROOM,
+  AREA,
+  DEVICE,
+  PROPERTY,
+}
+
+export enum ValueType {
+  NULL,
+  BOOLEAN,
+  NUMBER,
+  STRING,
+  RAW,
+}
+
+export enum ParentRelation {
+  META_RELATION,
+  CONTROL_TRIGGER,
+  CONTROL_EXTENSION,
+  DATA_QUALIFIER,
+}
+
+type MetaSystem = {
+  level: Levels.SYSTEM;
+};
+
+type MetaHome = {
+  isPrimary?: true;
+  level: Levels.HOME;
+  name: string;
+};
+
+type MetaBuilding = {
+  isPrimary?: true;
+  level: Levels.BUILDING;
+  name: string;
+};
+
+type MetaFloor = {
+  isBasement?: true;
+  isGroundFloor?: true;
+  isPartiallyOutside?: true;
+  isPrimary?: true;
+  level: Levels.FLOOR;
+  name: string;
+};
+
+type MetaRoom = {
+  isConnectingRoom?: true;
+  isDaylit?: true;
+  level: Levels.ROOM;
+  name: string;
+};
+
+type MetaArea = {
+  level: Levels.AREA;
+  name: string;
+};
+
+type MetaDevice = {
+  isSubDevice?: true;
+  level: Levels.DEVICE;
+  name: string;
+};
+
+type MetaProperty = {
+  level: Levels.PROPERTY;
+  name?: string | Inherit;
+  parentRelation?: ParentRelation;
+};
+
+type MetaPropertySensor = MetaProperty & {
+  measured?: string | Inherit;
+  type: 'sensor';
+  unit?: string;
+  valueType: ValueType;
+};
+
+type MetaPropertyActuator = MetaProperty & {
+  actuated?: string | Inherit;
+  type: 'actuator';
+  valueType: ValueType;
+};
+
+export type Meta =
+  | MetaSystem
+  | MetaHome
+  | MetaBuilding
+  | MetaFloor
+  | MetaRoom
+  | MetaArea
+  | MetaDevice
+  | MetaPropertySensor
+  | MetaPropertyActuator;
 
 export type Stream = ReadOnlyObservable<[number, unknown] | null>;
 export type Values = [number, unknown][];
@@ -68,11 +168,18 @@ export class Tree {
     if (typeof object !== 'object') return undefined;
 
     const meta = (() => {
-      return {
-        ...parentMeta,
-        name: undefined,
-        ...(metadataStore.get(object) || undefined),
-      };
+      const result = metadataStore.get(object) || undefined;
+      if (!result) return undefined;
+
+      for (const [key, value] of Object.entries(result)) {
+        if (value === inherit) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          result[key] = parentMeta[key];
+        }
+      }
+
+      return result;
     })();
 
     const children = ((): any => {

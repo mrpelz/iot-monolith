@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Levels, ParentRelation, ValueType, metadataStore } from '../tree.js';
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
@@ -18,7 +19,6 @@ import { Tsl2561 } from '../services/tsl2561.js';
 import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
 import { epochs } from '../epochs.js';
-import { metadataStore } from '../tree.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -45,8 +45,10 @@ function metricStaleness<T>(
   };
 
   metadataStore.set(result, {
-    metric: 'stale',
-    type: 'boolean',
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'sensor',
+    valueType: ValueType.BOOLEAN,
   });
 
   return {
@@ -66,8 +68,10 @@ export function async(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'async',
-    type: 'buffer',
+    level: Levels.PROPERTY,
+    measured: 'async',
+    type: 'sensor',
+    valueType: ValueType.RAW,
   });
 
   return { async: result };
@@ -90,9 +94,11 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(result, {
-        metric: 'relativeHumidity',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'relativeHumidity',
+        type: 'sensor',
         unit: 'percent',
+        valueType: ValueType.NUMBER,
       });
 
       return result;
@@ -104,9 +110,11 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(result, {
-        metric: 'pressure',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'pressure',
+        type: 'sensor',
         unit: 'pascal',
+        valueType: ValueType.NUMBER,
       });
 
       return result;
@@ -118,9 +126,11 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(result, {
-        metric: 'temperature',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'temperature',
+        type: 'sensor',
         unit: 'celsius',
+        valueType: ValueType.NUMBER,
       });
 
       return result;
@@ -140,8 +150,10 @@ export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'hello',
-    type: 'string',
+    level: Levels.PROPERTY,
+    measured: 'hello',
+    type: 'sensor',
+    valueType: ValueType.STRING,
   });
 
   return { hello: result };
@@ -155,8 +167,10 @@ export function input(device: Device, index = 0) {
   };
 
   metadataStore.set(result, {
-    metric: 'motion',
-    type: 'null',
+    level: Levels.PROPERTY,
+    measured: 'motion',
+    type: 'sensor',
+    valueType: ValueType.NULL,
   });
 
   return result;
@@ -174,9 +188,11 @@ export function mcp9808(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'temperature',
-    type: 'number',
+    level: Levels.PROPERTY,
+    measured: 'temperature',
+    type: 'sensor',
     unit: 'celsius',
+    valueType: ValueType.NUMBER,
   });
 
   return { temperature: result };
@@ -207,8 +223,11 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(_abc, {
-        metric: 'abc',
-        type: 'boolean',
+        level: Levels.PROPERTY,
+        measured: 'abc',
+        parentRelation: ParentRelation.DATA_QUALIFIER,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
       });
 
       return _abc;
@@ -220,8 +239,12 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(_accuracy, {
-        metric: 'accuracy',
+        level: Levels.PROPERTY,
+        measured: 'accuracy',
+        parentRelation: ParentRelation.DATA_QUALIFIER,
+        type: 'sensor',
         unit: 'percent',
+        valueType: ValueType.NUMBER,
       });
 
       return _accuracy;
@@ -233,8 +256,12 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(_temperature, {
-        metric: 'temperature',
+        level: Levels.PROPERTY,
+        measured: 'temperature',
+        parentRelation: ParentRelation.DATA_QUALIFIER,
+        type: 'sensor',
         unit: 'celsius',
+        valueType: ValueType.NUMBER,
       });
 
       return _temperature;
@@ -246,8 +273,12 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(_transmittance, {
-        metric: 'transmittance',
+        level: Levels.PROPERTY,
+        measured: 'transmittance',
+        parentRelation: ParentRelation.DATA_QUALIFIER,
+        type: 'sensor',
         unit: 'percent',
+        valueType: ValueType.NUMBER,
       });
 
       return _transmittance;
@@ -255,9 +286,11 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'co2',
-    type: 'number',
+    level: Levels.PROPERTY,
+    measured: 'co2',
+    type: 'sensor',
     unit: 'ppm',
+    valueType: ValueType.NUMBER,
   });
 
   return { co2: result };
@@ -269,8 +302,11 @@ export function online(device: Device) {
   };
 
   metadataStore.set(result, {
-    metric: 'isOnline',
-    type: 'boolean',
+    level: Levels.PROPERTY,
+    measured: 'isOnline',
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'sensor',
+    valueType: ValueType.BOOLEAN,
   });
 
   return { online: result };
@@ -293,9 +329,11 @@ export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(result, {
-        metric: 'pm025',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'pm025',
+        type: 'sensor',
         unit: 'ppm',
+        valueType: ValueType.NUMBER,
       });
 
       return result;
@@ -307,9 +345,11 @@ export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       };
 
       metadataStore.set(result, {
-        metric: 'pm10',
-        type: 'number',
+        level: Levels.PROPERTY,
+        measured: 'pm10',
+        type: 'sensor',
         unit: 'ppm',
+        valueType: ValueType.NUMBER,
       });
 
       return result;
@@ -329,9 +369,11 @@ export function tsl2561(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'brightness',
-    type: 'number',
+    level: Levels.PROPERTY,
+    measured: 'brightness',
+    type: 'sensor',
     unit: 'lux',
+    valueType: ValueType.NUMBER,
   });
 
   return { brightness: result };
@@ -349,8 +391,10 @@ export function uvIndex(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   };
 
   metadataStore.set(result, {
-    metric: 'uvIndex',
-    type: 'number',
+    level: Levels.PROPERTY,
+    measured: 'uvIndex',
+    type: 'sensor',
+    valueType: ValueType.NUMBER,
   });
 
   return { uvIndex: result };
@@ -364,9 +408,12 @@ export function vcc(device: Device) {
   };
 
   metadataStore.set(result, {
-    metric: 'voltage',
-    type: 'number',
+    level: Levels.PROPERTY,
+    measured: 'voltage',
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'sensor',
     unit: 'volt',
+    valueType: ValueType.NUMBER,
   });
 
   return { vcc: result };

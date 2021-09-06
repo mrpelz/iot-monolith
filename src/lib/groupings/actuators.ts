@@ -2,6 +2,13 @@
 
 import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
 import { BooleanState, NullState } from '../state.js';
+import {
+  Levels,
+  ParentRelation,
+  ValueType,
+  inherit,
+  metadataStore,
+} from '../tree.js';
 import { ProxyObservable, ReadOnlyObservable } from '../observable.js';
 import { Device } from '../device/main.js';
 import { Indicator } from '../services/indicator.js';
@@ -9,7 +16,6 @@ import { Led } from '../items/led.js';
 import { Led as LedService } from '../services/led.js';
 import { Output } from '../items/output.js';
 import { Output as OutputService } from '../services/output.js';
-import { metadataStore } from '../tree.js';
 
 function actuatorStaleness<T>(
   state: ReadOnlyObservable<T | null>,
@@ -38,7 +44,10 @@ function actuatorStaleness<T>(
       };
 
       metadataStore.set(result, {
-        type: 'boolean',
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
       });
 
       return result;
@@ -55,7 +64,10 @@ function actuatorStaleness<T>(
       };
 
       metadataStore.set(result, {
-        type: 'boolean',
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
       });
 
       return result;
@@ -86,7 +98,11 @@ export function led(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_brightness, {
-        type: 'number',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_EXTENSION,
+        type: 'actuator',
+        valueType: ValueType.NUMBER,
       });
 
       return _brightness;
@@ -99,7 +115,11 @@ export function led(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_flip, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _flip;
@@ -110,7 +130,11 @@ export function led(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_off, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _off;
@@ -121,7 +145,11 @@ export function led(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_on, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _on;
@@ -129,14 +157,21 @@ export function led(device: Device, index = 0, indicator = false) {
   };
 
   metadataStore.set(result, {
-    actuator: 'led',
-    type: 'boolean',
+    actuated: 'light',
+    level: Levels.PROPERTY,
+    type: 'actuator',
+    valueType: ValueType.BOOLEAN,
   });
 
   return result;
 }
 
-export function output(device: Device, index = 0, indicator = false) {
+export function output(
+  device: Device,
+  index = 0,
+  indicator = false,
+  actuated = 'light'
+) {
   const { actualState, setState } = new Output(
     device.addService(new OutputService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
@@ -152,7 +187,11 @@ export function output(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_flip, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _flip;
@@ -163,7 +202,11 @@ export function output(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_off, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _off;
@@ -174,7 +217,11 @@ export function output(device: Device, index = 0, indicator = false) {
       };
 
       metadataStore.set(_on, {
-        type: 'null',
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
       });
 
       return _on;
@@ -182,8 +229,10 @@ export function output(device: Device, index = 0, indicator = false) {
   };
 
   metadataStore.set(result, {
-    actuator: 'output',
-    type: 'boolean',
+    actuated,
+    level: Levels.PROPERTY,
+    type: 'actuator',
+    valueType: ValueType.BOOLEAN,
   });
 
   return result;

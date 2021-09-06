@@ -2,7 +2,7 @@ import { HttpServer } from '../lib/http-server.js';
 import { Tree } from '../lib/tree.js';
 import { WebApi } from '../lib/web-api.js';
 import { logger } from './logging.js';
-import { office } from './rooms/office.js';
+import { system } from './system.js';
 
 const run = Date.now().toString();
 
@@ -14,7 +14,7 @@ const httpServer = new HttpServer(logger, 1337);
 httpServer.listen();
 
 export function app(): void {
-  const root = office(logger);
+  const root = system(logger);
   const tree = new Tree(root);
 
   // eslint-disable-next-line no-new
