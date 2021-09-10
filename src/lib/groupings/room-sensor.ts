@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, ValueType, metadataStore } from '../tree.js';
+import {
+  Levels,
+  MetaPropertySensor,
+  ParentRelation,
+  ValueType,
+  metadataExtensionStore,
+  metadataStore,
+} from '../tree.js';
 import {
   Timings,
   bme280,
@@ -56,6 +63,18 @@ export const roomSensor = (
         bme280: bme280Temperature,
         mcp9808: mcp9808Temperature,
       };
+
+      metadataExtensionStore.set<MetaPropertySensor, typeof _temperature>(
+        _temperature,
+        {
+          bme280: {
+            parentRelation: ParentRelation.DATA_AGGREGATION_SOURCE,
+          },
+          mcp9808: {
+            parentRelation: ParentRelation.DATA_AGGREGATION_SOURCE,
+          },
+        }
+      );
 
       metadataStore.set(_temperature, {
         level: Levels.PROPERTY,

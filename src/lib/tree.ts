@@ -33,25 +33,26 @@ export enum ParentRelation {
   CONTROL_TRIGGER,
   CONTROL_EXTENSION,
   DATA_QUALIFIER,
+  DATA_AGGREGATION_SOURCE,
 }
 
-type MetaSystem = {
+export type MetaSystem = {
   level: Levels.SYSTEM;
 };
 
-type MetaHome = {
+export type MetaHome = {
   isPrimary?: true;
   level: Levels.HOME;
   name: string;
 };
 
-type MetaBuilding = {
+export type MetaBuilding = {
   isPrimary?: true;
   level: Levels.BUILDING;
   name: string;
 };
 
-type MetaFloor = {
+export type MetaFloor = {
   isBasement?: true;
   isGroundFloor?: true;
   isPartiallyOutside?: true;
@@ -60,19 +61,19 @@ type MetaFloor = {
   name: string;
 };
 
-type MetaRoom = {
+export type MetaRoom = {
   isConnectingRoom?: true;
   isDaylit?: true;
   level: Levels.ROOM;
   name: string;
 };
 
-type MetaArea = {
+export type MetaArea = {
   level: Levels.AREA;
   name: string;
 };
 
-type MetaDevice = {
+export type MetaDevice = {
   isSubDevice?: true;
   level: Levels.DEVICE;
   name: string;
@@ -84,14 +85,14 @@ type MetaProperty = {
   parentRelation?: ParentRelation;
 };
 
-type MetaPropertySensor = MetaProperty & {
+export type MetaPropertySensor = MetaProperty & {
   measured?: string | Inherit;
   type: 'sensor';
   unit?: string;
   valueType: ValueType;
 };
 
-type MetaPropertyActuator = MetaProperty & {
+export type MetaPropertyActuator = MetaProperty & {
   actuated?: string | Inherit;
   type: 'actuator';
   valueType: ValueType;
@@ -108,10 +109,23 @@ export type Meta =
   | MetaPropertySensor
   | MetaPropertyActuator;
 
+interface MetadataExtensionStore {
+  delete(key: object): boolean;
+  get<T extends Meta, K extends object>(
+    key: K
+  ): { [P in keyof K]?: Partial<T> } | undefined;
+  has(key: object): boolean;
+  set<T extends Meta, K extends object>(
+    key: K,
+    value: { [P in keyof K]?: Partial<T> }
+  ): this;
+}
+
 export type Stream = ReadOnlyObservable<[number, unknown] | null>;
 export type Values = [number, unknown][];
 
 export const metadataStore = new WeakMap<object, Meta>();
+export const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
 
 export class Tree {
   private _getterIndex = new RollingNumber(0, Infinity);
@@ -164,8 +178,14 @@ export class Tree {
     return entryIndex;
   }
 
-  private _serialize(object: any, parentMeta?: Meta) {
+  private _serialize<T extends Meta>(
+    object: any,
+    parentMeta?: T,
+    metaExtension?: Partial<Meta>
+  ) {
     if (typeof object !== 'object') return undefined;
+
+    const extension = metadataExtensionStore.get(object) || undefined;
 
     const meta = (() => {
       const result = metadataStore.get(object) || undefined;
@@ -179,13 +199,16 @@ export class Tree {
         }
       }
 
-      return result;
+      return { ...result, ...metaExtension };
     })();
 
     const children = ((): any => {
       const result = Object.entries(object)
         .filter(([key]) => !['$', '_get', '_set'].includes(key))
-        .map(([key, node]) => [key, this._serialize(node, meta)]);
+        .map(([key, node]) => [
+          key,
+          this._serialize(node, meta as T, extension?.[key]),
+        ]);
 
       return result.length ? Object.fromEntries(result) : undefined;
     })();

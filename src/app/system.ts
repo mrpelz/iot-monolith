@@ -3,12 +3,12 @@
 import { Levels, metadataStore } from '../lib/tree.js';
 import { Logger } from '../lib/log.js';
 import { office } from './rooms/office.js';
-import { rfBridge } from './bridges.js';
+import { storage } from './rooms/storage.js';
 
 function firstFloor(logger: Logger) {
   const result = {
     office: office(logger),
-    rfBridge,
+    storage: storage(),
   };
 
   metadataStore.set(result, {

@@ -170,7 +170,7 @@ export function input(device: Device, index = 0) {
     level: Levels.PROPERTY,
     measured: 'motion',
     type: 'sensor',
-    valueType: ValueType.NULL,
+    valueType: ValueType.BOOLEAN,
   });
 
   return result;
