@@ -44,7 +44,6 @@ export const espNowWindowSensor = (
     metadataStore.set(result, {
       isSubDevice: true,
       level: Levels.DEVICE,
-      name: 'espNow',
     });
 
     return { espNow: result };
@@ -63,7 +62,6 @@ export const espNowWindowSensor = (
     metadataStore.set(result, {
       isSubDevice: true,
       level: Levels.DEVICE,
-      name: 'wifi',
     });
 
     return { wifi: result };
@@ -77,7 +75,6 @@ export const espNowWindowSensor = (
 
     metadataStore.set(result, {
       level: Levels.DEVICE,
-      name: 'espNowWindowSensor',
     });
 
     return result;

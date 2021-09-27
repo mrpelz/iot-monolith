@@ -29,7 +29,6 @@ export const shellyi3 = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'shellyI3',
   });
 
   return result;

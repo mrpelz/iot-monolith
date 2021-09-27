@@ -43,7 +43,6 @@ export const espNowButton = (
     metadataStore.set(result, {
       isSubDevice: true,
       level: Levels.DEVICE,
-      name: 'espNow',
     });
 
     return { espNow: result };
@@ -62,7 +61,6 @@ export const espNowButton = (
     metadataStore.set(result, {
       isSubDevice: true,
       level: Levels.DEVICE,
-      name: 'wifi',
     });
 
     return { wifi: result };
@@ -76,7 +74,6 @@ export const espNowButton = (
 
     metadataStore.set(result, {
       level: Levels.DEVICE,
-      name: 'espNowButton',
     });
 
     return result;

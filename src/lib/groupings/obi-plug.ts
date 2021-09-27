@@ -28,7 +28,6 @@ export const obiPlug = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'obiPlug',
   });
 
   return result;

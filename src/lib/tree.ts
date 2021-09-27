@@ -43,13 +43,13 @@ export type MetaSystem = {
 export type MetaHome = {
   isPrimary?: true;
   level: Levels.HOME;
-  name: string;
+  name?: string;
 };
 
 export type MetaBuilding = {
   isPrimary?: true;
   level: Levels.BUILDING;
-  name: string;
+  name?: string;
 };
 
 export type MetaFloor = {
@@ -58,25 +58,25 @@ export type MetaFloor = {
   isPartiallyOutside?: true;
   isPrimary?: true;
   level: Levels.FLOOR;
-  name: string;
+  name?: string;
 };
 
 export type MetaRoom = {
   isConnectingRoom?: true;
   isDaylit?: true;
   level: Levels.ROOM;
-  name: string;
+  name?: string;
 };
 
 export type MetaArea = {
   level: Levels.AREA;
-  name: string;
+  name?: string;
 };
 
 export type MetaDevice = {
   isSubDevice?: true;
   level: Levels.DEVICE;
-  name: string;
+  name?: string;
 };
 
 type MetaProperty = {
@@ -180,6 +180,7 @@ export class Tree {
 
   private _serialize<T extends Meta>(
     object: any,
+    property?: string,
     parentMeta?: T,
     metaExtension?: Partial<Meta>
   ) {
@@ -199,7 +200,15 @@ export class Tree {
         }
       }
 
-      return { ...result, ...metaExtension };
+      return {
+        ...(result.level === Levels.SYSTEM || !property
+          ? undefined
+          : {
+              name: property,
+            }),
+        ...result,
+        ...metaExtension,
+      };
     })();
 
     const children = ((): any => {
@@ -207,7 +216,7 @@ export class Tree {
         .filter(([key]) => !['$', '_get', '_set'].includes(key))
         .map(([key, node]) => [
           key,
-          this._serialize(node, meta as T, extension?.[key]),
+          this._serialize(node, key, meta as T, extension?.[key]),
         ]);
 
       return result.length ? Object.fromEntries(result) : undefined;

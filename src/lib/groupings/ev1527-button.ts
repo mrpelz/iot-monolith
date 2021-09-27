@@ -25,7 +25,6 @@ export const ev1527ButtonX4 = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'ev1527Button',
   });
 
   return result;
@@ -46,7 +45,6 @@ export const ev1527ButtonX1 = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'ev1527Button',
   });
 
   return result;

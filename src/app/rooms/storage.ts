@@ -9,7 +9,6 @@ export function storage() {
   };
 
   metadataStore.set(result, {
-    isDaylit: true,
     level: Levels.ROOM,
     name: 'storage',
   });

@@ -31,7 +31,6 @@ export const h801 = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'h801',
   });
 
   return result;

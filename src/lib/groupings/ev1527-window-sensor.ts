@@ -54,7 +54,6 @@ export const ev1527WindowSensor = (
 
   metadataStore.set(result, {
     level: Levels.DEVICE,
-    name: 'ev1527WindowSensor',
   });
 
   return result;
