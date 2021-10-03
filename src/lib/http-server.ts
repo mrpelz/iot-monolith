@@ -2,8 +2,6 @@ import { IncomingMessage, Server, ServerResponse } from 'http';
 import { Input, Logger } from './log.js';
 import { multiline } from './string.js';
 
-const HOST = 'localhost' as const;
-
 export type RouteUtils = {
   constrainMethod: (method: string, body?: string) => boolean;
   internalServerError: (body?: string) => void;
@@ -148,13 +146,13 @@ export class HttpServer {
   }
 
   listen(): void {
-    this.server.listen(this._port, HOST);
+    this.server.listen(this._port);
 
-    this._log.info(() => `listen on ${HOST}:${this._port}`);
+    this._log.info(() => `listen on port ${this._port}`);
   }
 
   requestUrl(request: IncomingMessage): URL {
-    return new URL(request.url || '/', `http://${HOST}:${this._port}/`);
+    return new URL(request.url || '/', `http://[::]:${this._port}/`);
   }
 
   route(path: string, handler: RouteHandler): Route {
