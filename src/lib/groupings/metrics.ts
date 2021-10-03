@@ -2,6 +2,7 @@
 
 import { Levels, ParentRelation, ValueType, metadataStore } from '../tree.js';
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
+import { Observable, ReadOnlyObservable } from '../observable.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
 import { BooleanState } from '../state.js';
@@ -10,7 +11,6 @@ import { Hello } from '../services/hello.js';
 import { Input } from '../events/input.js';
 import { Mcp9808 } from '../services/mcp9808.js';
 import { Mhz19 } from '../services/mhz19.js';
-import { ReadOnlyObservable } from '../observable.js';
 import { ScheduleEpochPair } from '../schedule.js';
 import { Sds011 } from '../services/sds011.js';
 import { SingleValueEvent } from '../items/event.js';
@@ -46,13 +46,38 @@ function metricStaleness<T>(
 
   metadataStore.set(result, {
     level: Levels.PROPERTY,
-    parentRelation: ParentRelation.META_RELATION,
+    parentRelation: ParentRelation.DATA_QUALIFIER,
     type: 'sensor',
     valueType: ValueType.BOOLEAN,
   });
 
   return {
     stale: result,
+  };
+}
+
+export function lastSeen<T>(state: ReadOnlyObservable<T | null>) {
+  const seen = new Observable<number | null>(null);
+
+  state.observe((value) => {
+    if (value === null) return;
+
+    seen.value = Date.now();
+  }, true);
+
+  const result = {
+    _get: new ReadOnlyObservable(seen),
+  };
+
+  metadataStore.set(result, {
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.DATA_QUALIFIER,
+    type: 'sensor',
+    valueType: ValueType.NUMBER,
+  });
+
+  return {
+    lastSeen: result,
   };
 }
 
@@ -147,6 +172,7 @@ export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const result = {
     _get: state,
     ...metricStaleness(state, epoch),
+    ...lastSeen(state),
   };
 
   metadataStore.set(result, {
@@ -405,6 +431,7 @@ export function vcc(device: Device) {
 
   const result = {
     _get: state,
+    ...lastSeen(state),
   };
 
   metadataStore.set(result, {

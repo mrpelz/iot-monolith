@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../device/esp-now.js';
-import { Levels, metadataStore } from '../tree.js';
+import { Levels, ValueType, metadataStore } from '../tree.js';
 import { Timings, hello, online, vcc } from './metrics.js';
 import { Device } from '../device/main.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
@@ -21,17 +21,58 @@ export type EspNowWindowSensorOptions = {
   };
 };
 
+function children(device: Device) {
+  return {
+    input0: (() => {
+      const result = {
+        _get: new SingleValueEvent(device.addEvent(new Input(0))).state,
+      };
+
+      metadataStore.set(result, {
+        level: Levels.PROPERTY,
+        measured: 'windowOpen',
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
+      });
+
+      return result;
+    })(),
+    input1: (() => {
+      const result = {
+        _get: new SingleValueEvent(device.addEvent(new Input(1))).state,
+      };
+
+      metadataStore.set(result, {
+        level: Levels.PROPERTY,
+        measured: 'windowOpen',
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
+      });
+
+      return result;
+    })(),
+    input2: (() => {
+      const result = {
+        _get: new SingleValueEvent(device.addEvent(new Input(2))).state,
+      };
+
+      metadataStore.set(result, {
+        level: Levels.PROPERTY,
+        measured: 'windowOpen',
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
+      });
+
+      return result;
+    })(),
+  };
+}
+
 export const espNowWindowSensor = (
   logger: Logger,
   timings: Timings,
   options: EspNowWindowSensorOptions
 ) => {
-  const children = (device: Device) => ({
-    input0: { $: new SingleValueEvent(device.addEvent(new Input(0))).state },
-    input1: { $: new SingleValueEvent(device.addEvent(new Input(1))).state },
-    input2: { $: new SingleValueEvent(device.addEvent(new Input(2))).state },
-  });
-
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
     const device = new ESPNowDevice(logger, transport, macAddress);

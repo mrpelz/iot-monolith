@@ -45,7 +45,7 @@ function actuatorStaleness<T>(
 
       metadataStore.set(result, {
         level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
+        parentRelation: ParentRelation.DATA_QUALIFIER,
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
@@ -65,7 +65,7 @@ function actuatorStaleness<T>(
 
       metadataStore.set(result, {
         level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
+        parentRelation: ParentRelation.DATA_QUALIFIER,
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
