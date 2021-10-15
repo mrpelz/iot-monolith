@@ -5,15 +5,11 @@ Description=iot-monolith
 Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
 Environment="LOG_LEVEL=5"
-Environment="LOG_TELEGRAM=1"
+Environment="LOG_TELEGRAM=0"
 Environment="PROD_ENV=1"
 # Environment="TELEGRAM_TOKEN=SECRET"
 WorkingDirectory=/opt/iot-monolith/
-ExecStartPre=/bin/cp -f /var/cache/iot-monolith/iot-db.json /tmp/iot-db.json
-ExecStartPre=/usr/bin/npm run build
 ExecStart=/usr/bin/node --use_strict --experimental-modules dist/index.js
-ExecStopPost=/bin/mkdir -p /var/cache/iot-monolith
-ExecStopPost=/bin/cp -f /tmp/iot-db.json /var/cache/iot-monolith/iot-db.json
 Restart=always
 RestartSec=5
 StandardOutput=journal
