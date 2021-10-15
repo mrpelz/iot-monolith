@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git pull --rebase
+git pull origin HEAD --rebase
 
 npm install
 npm run build
