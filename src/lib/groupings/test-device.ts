@@ -41,7 +41,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
   const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
 
   const result = {
-    ...async(device, timings.moderate || timings.default),
+    ...async(device, timings.slow || timings.default),
     ...hello(device, timings.moderate || timings.default),
     ...mhz19(device, timings.slow || timings.default),
     ...online(device),
