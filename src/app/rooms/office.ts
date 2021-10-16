@@ -22,6 +22,7 @@ import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { h801 } from '../../lib/groupings/h801.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
+import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { testDevice } from '../../lib/groupings/test-device.js';
 import { timings } from '../timings.js';
@@ -53,6 +54,7 @@ export function office(logger: Logger) {
     h801: h801(logger, timings, 'h801.iot-ng.lan.wurstsalat.cloud'),
     obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.lan.wurstsalat.cloud'),
     orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+    shelly1: shelly1(logger, timings, 'shelly1.iot-ng.lan.wurstsalat.cloud'),
     shellyi3: shellyi3(
       logger,
       timings,
@@ -92,6 +94,8 @@ export function office(logger: Logger) {
   nodes.espNowButton.espNow.button0.$.shortPress(() => on.flip());
   nodes.espNowButton.espNow.button1.$.shortPress(() => on.flip());
 
+  nodes.shelly1.button.$.shortPress(() => on.flip());
+
   nodes.shellyi3.button0.$.shortPress(() => on.flip());
   nodes.shellyi3.button1.$.shortPress(() => on.flip());
   nodes.shellyi3.button2.$.shortPress(() => on.flip());
@@ -102,6 +106,7 @@ export function office(logger: Logger) {
 
   on.observe((value) => {
     nodes.obiPlug.relay._set.value = value;
+    nodes.shelly1.relay._set.value = value;
   });
 
   ledOn.observe((value) => {
