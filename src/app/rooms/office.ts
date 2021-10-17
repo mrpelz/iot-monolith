@@ -24,6 +24,7 @@ import { h801 } from '../../lib/groupings/h801.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
+import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
 import { testDevice } from '../../lib/groupings/test-device.js';
 import { timings } from '../timings.js';
 
@@ -59,6 +60,11 @@ export function office(logger: Logger) {
       logger,
       timings,
       'shelly-i3.iot-ng.lan.wurstsalat.cloud'
+    ),
+    sonoffBasic: sonoffBasic(
+      logger,
+      timings,
+      'sonoff-basic.iot-ng.lan.wurstsalat.cloud'
     ),
     testDevice: testDevice(logger, timings),
     windowSensor: ev1527WindowSensor(logger, ev1527Transport, 839280),
@@ -100,6 +106,8 @@ export function office(logger: Logger) {
   nodes.shellyi3.button1.$.shortPress(() => on.flip());
   nodes.shellyi3.button2.$.shortPress(() => on.flip());
 
+  nodes.sonoffBasic.button.$.shortPress(() => on.flip());
+
   nodes.blueButton.$.observe(() => on.flip());
   nodes.grayButton.$.observe(() => on.flip());
   nodes.orangeButton.$.observe(() => on.flip());
@@ -107,6 +115,7 @@ export function office(logger: Logger) {
   on.observe((value) => {
     nodes.obiPlug.relay._set.value = value;
     nodes.shelly1.relay._set.value = value;
+    nodes.sonoffBasic.relay._set.value = value;
   });
 
   ledOn.observe((value) => {
