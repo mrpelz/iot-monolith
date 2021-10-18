@@ -8,7 +8,7 @@ import { storage } from './rooms/storage.js';
 function firstFloor(logger: Logger) {
   const result = {
     office: office(logger),
-    storage: storage(),
+    storage: storage(logger),
   };
 
   metadataStore.set(result, {
