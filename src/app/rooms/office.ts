@@ -31,6 +31,7 @@ import { timings } from '../timings.js';
 export function office(logger: Logger) {
   const nodes = {
     blueButton: ev1527ButtonX1(ev1527Transport, 74160, logger),
+    doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55696),
     espNowButton: espNowButton(logger, timings, {
       espNow: {
         // prettier-ignore
@@ -138,6 +139,8 @@ export function office(logger: Logger) {
     uvIndex,
   } = nodes.testDevice;
 
+  const { open: doorOpen } = nodes.doorSensor;
+
   const light = (() => {
     const _light = {
       _get: new ReadOnlyObservable(on),
@@ -203,6 +206,7 @@ export function office(logger: Logger) {
     ...nodes,
     brightness,
     co2,
+    doorOpen,
     humidity,
     light,
     motion,
