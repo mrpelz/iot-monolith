@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { ESPNow, ESPNowPayload } from '../events/esp-now.js';
 import { Levels, ParentRelation, ValueType, metadataStore } from '../tree.js';
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
 import { Observable, ReadOnlyObservable } from '../observable.js';
+import { Rf433, Rf433Payload } from '../events/rf433.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
 import { BooleanState } from '../state.js';
@@ -336,6 +338,43 @@ export function online(device: Device) {
   });
 
   return { online: result };
+}
+
+export function rfReadout(espNowEvent: ESPNow, rf433Event: Rf433) {
+  const state = new Observable<{
+    espNow?: ESPNowPayload;
+    rf433?: Rf433Payload;
+  }>({});
+
+  espNowEvent.observable.observe((value) => {
+    state.value = {
+      ...state.value,
+      espNow: value,
+    };
+  });
+
+  rf433Event.observable.observe((value) => {
+    state.value = {
+      ...state.value,
+      rf433: value,
+    };
+  });
+
+  const readOnlyState = new ReadOnlyObservable(state);
+
+  const result = {
+    _get: readOnlyState,
+    ...lastSeen(readOnlyState),
+  };
+
+  metadataStore.set(result, {
+    level: Levels.PROPERTY,
+    measured: 'rfReadout',
+    type: 'sensor',
+    valueType: ValueType.RAW,
+  });
+
+  return { rfReadout: result };
 }
 
 export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {

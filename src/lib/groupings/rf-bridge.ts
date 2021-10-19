@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../tree.js';
-import { Timings, hello, online } from './metrics.js';
+import { Timings, hello, online, rfReadout } from './metrics.js';
 import { ESPNow } from '../events/esp-now.js';
 import { ESPNowTransport } from '../transport/esp-now.js';
 import { Ev1527Transport } from '../transport/ev1527.js';
@@ -17,12 +17,15 @@ export const rfBridge = (
 ) => {
   const device = new UDPDevice(logger, host, port);
 
+  const espNowEvent = device.addEvent(new ESPNow());
+  const rf433Event = device.addEvent(new Rf433());
+
   const children = {
     espNowTransport: {
-      $: new ESPNowTransport(logger, device.addEvent(new ESPNow())),
+      $: new ESPNowTransport(logger, espNowEvent),
     },
     ev1527Transport: {
-      $: new Ev1527Transport(logger, device.addEvent(new Rf433())),
+      $: new Ev1527Transport(logger, rf433Event),
     },
   };
 
@@ -30,6 +33,7 @@ export const rfBridge = (
     ...children,
     ...hello(device, timings.moderate || timings.default),
     ...online(device),
+    ...rfReadout(espNowEvent, rf433Event),
   };
 
   metadataStore.set(result, {
