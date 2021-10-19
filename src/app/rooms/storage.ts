@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import {
+  BooleanGroupStrategy,
+  combineBooleanState,
+} from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
 import {
   Levels,
@@ -15,6 +19,7 @@ import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
+import { sleep } from '../../lib/sleep.js';
 import { timings } from '../timings.js';
 
 export function storage(logger: Logger) {
@@ -31,9 +36,20 @@ export function storage(logger: Logger) {
   const { open: doorOpen } = nodes.doorSensor;
 
   const on = new BooleanState(false);
+  const effectOn = new BooleanState(true);
+
+  const relayOn = combineBooleanState(
+    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+    false,
+    on,
+    effectOn
+  );
+
   const timer = new Timer(epochs.minute * 5);
+  const timerStop = new NullState();
 
   nodes.ceilingLight.button.$.shortPress(() => on.flip());
+  nodes.ceilingLight.button.$.longPress(() => timerStop.trigger());
 
   doorOpen._get.observe((value) => {
     if (!value) return;
@@ -41,17 +57,38 @@ export function storage(logger: Logger) {
   }, true);
 
   on.observe((value) => {
-    nodes.ceilingLight.relay._set.value = value;
-
     if (value) {
       timer.start();
       return;
     }
 
     timer.stop();
-  });
+  }, true);
 
   timer.observe(() => (on.value = false));
+
+  timerStop.observe(async () => {
+    on.value = true;
+    timer.stop();
+
+    if (on.value) {
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+      await sleep(250);
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+    } else {
+      effectOn.value = true;
+      await sleep(250);
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+    }
+  });
+
+  relayOn.observe((value) => (nodes.ceilingLight.relay._set.value = value));
 
   const light = (() => {
     const _light = {
@@ -101,6 +138,21 @@ export function storage(logger: Logger) {
         });
 
         return _on;
+      })(),
+      timerStop: (() => {
+        const _timerStop = {
+          _set: timerStop,
+        };
+
+        metadataStore.set(_timerStop, {
+          actuated: 'timer',
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_EXTENSION,
+          type: 'actuator',
+          valueType: ValueType.NULL,
+        });
+
+        return _timerStop;
       })(),
     };
 

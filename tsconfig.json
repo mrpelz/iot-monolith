@@ -4,6 +4,7 @@
     "alwaysStrict": true,
     "checkJs": false,
     "esModuleInterop": true,
+    "incremental": true,
     "lib": [
       "esnext",
       "dom"

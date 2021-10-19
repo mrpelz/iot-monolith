@@ -1,6 +1,7 @@
 #!/bin/bash
 
-git pull origin HEAD --rebase
+git reset --hard HEAD~1
+git pull --ff-only origin HEAD
 
 npm install
 npm run build
