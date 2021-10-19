@@ -8,11 +8,12 @@ import {
   inherit,
   metadataStore,
 } from '../../lib/tree.js';
+import { ev1527Transport, rfBridge } from '../bridges.js';
 import { Logger } from '../../lib/log.js';
 import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
-import { rfBridge } from '../bridges.js';
+import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { timings } from '../timings.js';
 
@@ -23,13 +24,21 @@ export function storage(logger: Logger) {
       timings,
       'storage-ceilinglight.iot.wurstsalat.cloud'
     ),
+    doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55632),
     rfBridge,
   };
 
+  const { open: doorOpen } = nodes.doorSensor;
+
   const on = new BooleanState(false);
-  const timer = new Timer(epochs.minute * 30);
+  const timer = new Timer(epochs.minute * 5);
 
   nodes.ceilingLight.button.$.shortPress(() => on.flip());
+
+  doorOpen._get.observe((value) => {
+    if (!value) return;
+    on.value = true;
+  }, true);
 
   on.observe((value) => {
     nodes.ceilingLight.relay._set.value = value;
@@ -107,6 +116,7 @@ export function storage(logger: Logger) {
 
   const result = {
     ...nodes,
+    doorOpen,
     light,
   };
 
