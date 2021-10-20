@@ -12,134 +12,115 @@ import {
   inherit,
   metadataStore,
 } from '../../lib/tree.js';
-import { espNowTransport, ev1527Transport } from '../bridges.js';
 import { Logger } from '../../lib/log.js';
 import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
-import { espNowButton } from '../../lib/groupings/esp-now-button.js';
-import { espNowWindowSensor } from '../../lib/groupings/esp-now-window-sensor.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
+import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { h801 } from '../../lib/groupings/h801.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
-import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
+import { sleep } from '../../lib/sleep.js';
 import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
-import { testDevice } from '../../lib/groupings/test-device.js';
 import { timings } from '../timings.js';
 
 export function office(logger: Logger) {
   const nodes = {
-    blueButton: ev1527ButtonX1(ev1527Transport, 74160, logger),
-    doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55696),
-    espNowButton: espNowButton(logger, timings, {
-      espNow: {
-        // prettier-ignore
-        macAddress: [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf],
-        transport: espNowTransport,
-      },
-      wifi: {
-        host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
-      },
-    }),
-    espNowWindowSensor: espNowWindowSensor(logger, timings, {
-      espNow: {
-        // prettier-ignore
-        macAddress: [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0],
-        transport: espNowTransport,
-      },
-      wifi: {
-        host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
-      },
-    }),
-    grayButton: ev1527ButtonX1(ev1527Transport, 4448, logger),
-    h801: h801(logger, timings, 'h801.iot-ng.lan.wurstsalat.cloud'),
-    obiPlug: obiPlug(logger, timings, 'obi-jack.iot-ng.lan.wurstsalat.cloud'),
-    orangeButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
-    shelly1: shelly1(logger, timings, 'shelly1.iot-ng.lan.wurstsalat.cloud'),
-    shellyi3: shellyi3(
+    ceilingLight: sonoffBasic(
       logger,
       timings,
-      'shelly-i3.iot-ng.lan.wurstsalat.cloud'
+      'office-ceilinglight.iot.wurstsalat.cloud'
     ),
-    sonoffBasic: sonoffBasic(
+    doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55632),
+    floodlight: obiPlug(
       logger,
       timings,
-      'sonoff-basic.iot-ng.lan.wurstsalat.cloud'
+      'office-floodlight.iot.wurstsalat.cloud'
     ),
-    testDevice: testDevice(logger, timings),
-    windowSensor: ev1527WindowSensor(logger, ev1527Transport, 839280),
+    wallswitch: shellyi3(
+      logger,
+      timings,
+      'office-wallswitch.iot.wurstsalat.cloud'
+    ),
+    windowSensorRight: ev1527WindowSensor(logger, ev1527Transport, 839280),
+    workbenchButton: ev1527ButtonX1(ev1527Transport, 903326, logger),
+    workbenchLEDs: h801(
+      logger,
+      timings,
+      'office-workbenchleds.iot.wurstsalat.cloud'
+    ),
   };
 
+  const { open: doorOpen } = nodes.doorSensor;
+  const { open: windowOpenRight } = nodes.windowSensorRight;
+
   const on = new BooleanState(false);
+  const effectOn = new BooleanState(true);
 
-  const timedOn = new BooleanState(false);
-  const timer = new Timer(10000);
-
-  timedOn.observe((value) => {
-    if (!value) return;
-    timer.start();
-  });
-  timer.observe(() => (timedOn.value = false));
-
-  const ledOn = combineBooleanState(
-    BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+  const relayOn = combineBooleanState(
+    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
     false,
     on,
-    timedOn
+    effectOn
   );
 
-  nodes.testDevice.motion._get.observe((motion) => {
-    if (!motion) return;
-    timedOn.value = true;
-  });
+  const timer = new Timer(epochs.hour);
+  const timerStop = new NullState();
 
-  nodes.obiPlug.button.$.shortPress(() => on.flip());
+  nodes.wallswitch.button0.$.shortPress(() => on.flip());
+  nodes.wallswitch.button0.$.longPress(() => timerStop.trigger());
 
-  nodes.espNowButton.wifi.button0.$.shortPress(() => on.flip());
-  nodes.espNowButton.wifi.button1.$.shortPress(() => on.flip());
-  nodes.espNowButton.espNow.button0.$.shortPress(() => on.flip());
-  nodes.espNowButton.espNow.button1.$.shortPress(() => on.flip());
-
-  nodes.shelly1.button.$.shortPress(() => on.flip());
-
-  nodes.shellyi3.button0.$.shortPress(() => on.flip());
-  nodes.shellyi3.button1.$.shortPress(() => on.flip());
-  nodes.shellyi3.button2.$.shortPress(() => on.flip());
-
-  nodes.sonoffBasic.button.$.shortPress(() => on.flip());
-
-  nodes.blueButton.$.observe(() => on.flip());
-  nodes.grayButton.$.observe(() => on.flip());
-  nodes.orangeButton.$.observe(() => on.flip());
+  windowOpenRight._get.observe((value) => {
+    if (!value) return;
+    on.value = false;
+  }, true);
 
   on.observe((value) => {
-    nodes.obiPlug.relay._set.value = value;
-    nodes.shelly1.relay._set.value = value;
-    nodes.sonoffBasic.relay._set.value = value;
+    if (value) {
+      timer.start();
+      return;
+    }
+
+    timer.stop();
+  }, true);
+
+  timer.observe(() => (on.value = false));
+
+  timerStop.observe(async () => {
+    on.value = true;
+    timer.stop();
+
+    if (on.value) {
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+      await sleep(250);
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+    } else {
+      effectOn.value = true;
+      await sleep(250);
+      effectOn.value = false;
+      await sleep(250);
+      effectOn.value = true;
+    }
   });
 
-  ledOn.observe((value) => {
-    nodes.h801.led0._set.value = value;
-    nodes.h801.led1._set.value = value;
-    nodes.h801.led2._set.value = value;
-    nodes.h801.led3._set.value = value;
-    nodes.h801.led4._set.value = value;
-  });
+  relayOn.observe((value) => (nodes.ceilingLight.relay._set.value = value));
 
-  const {
-    brightness,
-    co2,
-    humidity,
-    motion,
-    pm025,
-    pm10,
-    pressure,
-    temperature,
-    uvIndex,
-  } = nodes.testDevice;
+  const ledOn = new BooleanState(false);
 
-  const { open: doorOpen } = nodes.doorSensor;
+  nodes.workbenchButton.$.observe(() => ledOn.flip());
+
+  ledOn.observe((value) => (nodes.workbenchLEDs.led0._set.value = value));
+  ledOn.observe((value) => (nodes.workbenchLEDs.led2._set.value = value));
+
+  nodes.floodlight.button.$.shortPress(() =>
+    nodes.floodlight.relay._set.flip()
+  );
 
   const light = (() => {
     const _light = {
@@ -190,6 +171,21 @@ export function office(logger: Logger) {
 
         return _on;
       })(),
+      timerStop: (() => {
+        const _timerStop = {
+          _set: timerStop,
+        };
+
+        metadataStore.set(_timerStop, {
+          actuated: 'timer',
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_EXTENSION,
+          type: 'actuator',
+          valueType: ValueType.NULL,
+        });
+
+        return _timerStop;
+      })(),
     };
 
     metadataStore.set(_light, {
@@ -202,23 +198,76 @@ export function office(logger: Logger) {
     return _light;
   })();
 
+  const led = (() => {
+    const _led = {
+      _get: new ReadOnlyObservable(ledOn),
+      _set: ledOn,
+      flip: (() => {
+        const _flip = {
+          _set: new NullState(() => ledOn.flip()),
+        };
+
+        metadataStore.set(_flip, {
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
+        });
+
+        return _flip;
+      })(),
+      off: (() => {
+        const _off = {
+          _set: new NullState(() => (ledOn.value = false)),
+        };
+
+        metadataStore.set(_off, {
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
+        });
+
+        return _off;
+      })(),
+      on: (() => {
+        const _on = {
+          _set: new NullState(() => (ledOn.value = true)),
+        };
+
+        metadataStore.set(_on, {
+          actuated: inherit,
+          level: Levels.PROPERTY,
+          parentRelation: ParentRelation.CONTROL_TRIGGER,
+          type: 'actuator',
+          valueType: ValueType.NULL,
+        });
+
+        return _on;
+      })(),
+    };
+
+    metadataStore.set(_led, {
+      actuated: 'light',
+      level: Levels.PROPERTY,
+      type: 'actuator',
+      valueType: ValueType.BOOLEAN,
+    });
+
+    return _led;
+  })();
+
   const result = {
     ...nodes,
-    brightness,
-    co2,
     doorOpen,
-    humidity,
+    led,
     light,
-    motion,
-    pm025,
-    pm10,
-    pressure,
-    temperature,
-    uvIndex,
+    windowOpenRight,
   };
 
   metadataStore.set(result, {
-    isDaylit: true,
     level: Levels.ROOM,
     name: 'office',
   });

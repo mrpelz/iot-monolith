@@ -4,6 +4,7 @@ import { Levels, metadataStore } from '../lib/tree.js';
 import { Logger } from '../lib/log.js';
 import { office } from './rooms/office.js';
 import { storage } from './rooms/storage.js';
+import { testRoom } from './rooms/test-room.js';
 
 function firstFloor(logger: Logger) {
   const result = {
@@ -50,6 +51,7 @@ function wurstHome(logger: Logger) {
 
 export function system(logger: Logger) {
   const result = {
+    testRoom: testRoom(logger),
     wurstHome: wurstHome(logger),
   };
 
