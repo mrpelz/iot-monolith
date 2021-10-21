@@ -237,3 +237,87 @@ export function output(
 
   return result;
 }
+
+export function outputGrouping(
+  on: BooleanState,
+  actuated = 'light',
+  timerStop?: NullState
+) {
+  const _outputGrouping = {
+    _get: new ReadOnlyObservable(on),
+    _set: on,
+    flip: (() => {
+      const _flip = {
+        _set: new NullState(() => on.flip()),
+      };
+
+      metadataStore.set(_flip, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _flip;
+    })(),
+    off: (() => {
+      const _off = {
+        _set: new NullState(() => (on.value = false)),
+      };
+
+      metadataStore.set(_off, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _off;
+    })(),
+    on: (() => {
+      const _on = {
+        _set: new NullState(() => (on.value = true)),
+      };
+
+      metadataStore.set(_on, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _on;
+    })(),
+    ...(timerStop
+      ? {
+          timerStop: (() => {
+            const _timerStop = {
+              _set: timerStop,
+            };
+
+            metadataStore.set(_timerStop, {
+              actuated: 'timer',
+              level: Levels.PROPERTY,
+              parentRelation: ParentRelation.CONTROL_EXTENSION,
+              type: 'actuator',
+              valueType: ValueType.NULL,
+            });
+
+            return _timerStop;
+          })(),
+        }
+      : undefined),
+  };
+
+  metadataStore.set(_outputGrouping, {
+    actuated,
+    level: Levels.PROPERTY,
+    type: 'actuator',
+    valueType: ValueType.BOOLEAN,
+  });
+
+  return _outputGrouping;
+}

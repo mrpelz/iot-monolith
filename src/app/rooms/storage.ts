@@ -5,21 +5,15 @@ import {
   combineBooleanState,
 } from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
-import {
-  Levels,
-  ParentRelation,
-  ValueType,
-  inherit,
-  metadataStore,
-} from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree.js';
+import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
 import { Logger } from '../../lib/log.js';
-import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
+import { outputGrouping } from '../../lib/groupings/actuators.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
-import { sleep } from '../../lib/sleep.js';
 import { timings } from '../timings.js';
 
 export function storage(logger: Logger) {
@@ -72,104 +66,18 @@ export function storage(logger: Logger) {
     timer.stop();
 
     if (on.value) {
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
-      await sleep(250);
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
+      ackBlinkFromOn(effectOn);
     } else {
-      effectOn.value = true;
-      await sleep(250);
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
+      ackBlinkFromOff(effectOn);
     }
   });
 
   relayOn.observe((value) => (nodes.ceilingLight.relay._set.value = value));
 
-  const light = (() => {
-    const _light = {
-      _get: new ReadOnlyObservable(on),
-      _set: on,
-      flip: (() => {
-        const _flip = {
-          _set: new NullState(() => on.flip()),
-        };
-
-        metadataStore.set(_flip, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _flip;
-      })(),
-      off: (() => {
-        const _off = {
-          _set: new NullState(() => (on.value = false)),
-        };
-
-        metadataStore.set(_off, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _off;
-      })(),
-      on: (() => {
-        const _on = {
-          _set: new NullState(() => (on.value = true)),
-        };
-
-        metadataStore.set(_on, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _on;
-      })(),
-      timerStop: (() => {
-        const _timerStop = {
-          _set: timerStop,
-        };
-
-        metadataStore.set(_timerStop, {
-          actuated: 'timer',
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_EXTENSION,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _timerStop;
-      })(),
-    };
-
-    metadataStore.set(_light, {
-      actuated: 'light',
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    });
-
-    return _light;
-  })();
-
   const result = {
     ...nodes,
     doorOpen,
-    light,
+    light: outputGrouping(on, undefined, timerStop),
   };
 
   metadataStore.set(result, {

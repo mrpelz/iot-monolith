@@ -5,15 +5,9 @@ import {
   combineBooleanState,
 } from '../../lib/state-group.js';
 import { BooleanState, NullState } from '../../lib/state.js';
-import {
-  Levels,
-  ParentRelation,
-  ValueType,
-  inherit,
-  metadataStore,
-} from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree.js';
+import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { Logger } from '../../lib/log.js';
-import { ReadOnlyObservable } from '../../lib/observable.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
@@ -21,8 +15,8 @@ import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
 import { h801 } from '../../lib/groupings/h801.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
+import { outputGrouping } from '../../lib/groupings/actuators.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
-import { sleep } from '../../lib/sleep.js';
 import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
 import { timings } from '../timings.js';
 
@@ -93,19 +87,9 @@ export function office(logger: Logger) {
     timer.stop();
 
     if (on.value) {
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
-      await sleep(250);
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
+      ackBlinkFromOn(effectOn);
     } else {
-      effectOn.value = true;
-      await sleep(250);
-      effectOn.value = false;
-      await sleep(250);
-      effectOn.value = true;
+      ackBlinkFromOff(effectOn);
     }
   });
 
@@ -122,148 +106,11 @@ export function office(logger: Logger) {
     nodes.floodlight.relay._set.flip()
   );
 
-  const light = (() => {
-    const _light = {
-      _get: new ReadOnlyObservable(on),
-      _set: on,
-      flip: (() => {
-        const _flip = {
-          _set: new NullState(() => on.flip()),
-        };
-
-        metadataStore.set(_flip, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _flip;
-      })(),
-      off: (() => {
-        const _off = {
-          _set: new NullState(() => (on.value = false)),
-        };
-
-        metadataStore.set(_off, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _off;
-      })(),
-      on: (() => {
-        const _on = {
-          _set: new NullState(() => (on.value = true)),
-        };
-
-        metadataStore.set(_on, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _on;
-      })(),
-      timerStop: (() => {
-        const _timerStop = {
-          _set: timerStop,
-        };
-
-        metadataStore.set(_timerStop, {
-          actuated: 'timer',
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_EXTENSION,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _timerStop;
-      })(),
-    };
-
-    metadataStore.set(_light, {
-      actuated: 'light',
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    });
-
-    return _light;
-  })();
-
-  const led = (() => {
-    const _led = {
-      _get: new ReadOnlyObservable(ledOn),
-      _set: ledOn,
-      flip: (() => {
-        const _flip = {
-          _set: new NullState(() => ledOn.flip()),
-        };
-
-        metadataStore.set(_flip, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _flip;
-      })(),
-      off: (() => {
-        const _off = {
-          _set: new NullState(() => (ledOn.value = false)),
-        };
-
-        metadataStore.set(_off, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _off;
-      })(),
-      on: (() => {
-        const _on = {
-          _set: new NullState(() => (ledOn.value = true)),
-        };
-
-        metadataStore.set(_on, {
-          actuated: inherit,
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.CONTROL_TRIGGER,
-          type: 'actuator',
-          valueType: ValueType.NULL,
-        });
-
-        return _on;
-      })(),
-    };
-
-    metadataStore.set(_led, {
-      actuated: 'light',
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    });
-
-    return _led;
-  })();
-
   const result = {
     ...nodes,
     doorOpen,
-    led,
-    light,
+    led: outputGrouping(ledOn),
+    light: outputGrouping(on, undefined, timerStop),
     windowOpenRight,
   };
 
