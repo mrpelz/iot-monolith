@@ -62,14 +62,17 @@ export function storage(logger: Logger) {
   timer.observe(() => (on.value = false));
 
   timerStop.observe(async () => {
-    on.value = true;
-    timer.stop();
+    const wasOn = on.value;
 
-    if (on.value) {
+    on.value = true;
+
+    if (wasOn) {
       ackBlinkFromOn(effectOn);
     } else {
       ackBlinkFromOff(effectOn);
     }
+
+    timer.stop();
   });
 
   relayOn.observe((value) => (nodes.ceilingLight.relay._set.value = value));
