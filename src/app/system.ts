@@ -10,6 +10,7 @@ function firstFloor(logger: Logger) {
   const result = {
     office: office(logger),
     storage: storage(logger),
+    testRoom: testRoom(logger),
   };
 
   metadataStore.set(result, {
@@ -51,7 +52,6 @@ function wurstHome(logger: Logger) {
 
 export function system(logger: Logger) {
   const result = {
-    testRoom: testRoom(logger),
     wurstHome: wurstHome(logger),
   };
 
