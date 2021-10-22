@@ -2,6 +2,7 @@
 
 import { Levels, metadataStore } from '../lib/tree.js';
 import { Logger } from '../lib/log.js';
+import { diningRoom } from './rooms/dining-room.js';
 import { livingRoom } from './rooms/living-room.js';
 import { office } from './rooms/office.js';
 import { storage } from './rooms/storage.js';
@@ -9,6 +10,7 @@ import { testRoom } from './rooms/test-room.js';
 
 function firstFloor(logger: Logger) {
   const result = {
+    diningRoom: diningRoom(logger),
     livingRoom: livingRoom(logger),
     office: office(logger),
     storage: storage(logger),
