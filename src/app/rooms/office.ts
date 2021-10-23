@@ -102,7 +102,7 @@ export function office(logger: Logger) {
 
   nodes.workbenchButton.$.observe(() => ledOn.flip());
 
-  ledOn.observe((value) => (nodes.workbenchLEDs.led0._set.value = value));
+  ledOn.observe((value) => (nodes.workbenchLEDs.led1._set.value = value));
   ledOn.observe((value) => (nodes.workbenchLEDs.led2._set.value = value));
 
   nodes.floodlight.button.$.shortPress(() =>
