@@ -1,12 +1,6 @@
 import { Input, Logger } from '../log.js';
-import {
-  bitLengthPayload,
-  byteLengthAddress,
-  maxAddress,
-  maxPayload,
-} from '../device/ev1527.js';
+import { Rf433, Rf433Payload } from '../events/rf433.js';
 import { EVENT_IDENTIFIER } from '../device/main.js';
-import { Rf433 } from '../events/rf433.js';
 import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
 
@@ -26,40 +20,29 @@ export class Ev1527Transport extends Transport {
 
     this._log = logger.getInput({ head: 'Ev1527Transport' });
 
-    event.observable.observe(({ protocol, value }) =>
-      this._handleMessage(protocol, value)
+    event.observable.observe((payload: Rf433Payload) =>
+      this._handleMessage(payload)
     );
   }
 
   /**
    * handle incoming messages
    */
-  private _handleMessage(protocol: number, value: number) {
-    if (protocol !== 1) return;
+  private _handleMessage(payload: Rf433Payload) {
+    if (!payload || payload.protocol !== 1) return;
 
-    // eslint-disable-next-line no-bitwise
-    const address = value >> bitLengthPayload;
-    if (address > maxAddress) return;
-
-    // eslint-disable-next-line no-bitwise
-    const payload = value & maxPayload;
-    if (payload > maxPayload) return;
-
-    const deviceIdentifier = Buffer.alloc(byteLengthAddress);
-    deviceIdentifier.writeUIntBE(address, 0, byteLengthAddress);
-
-    const payloadBuffer = Buffer.of(payload);
+    const { data, deviceIdentifier } = payload;
 
     this._log.debug(
       () =>
         `msg incoming\nfrom: ${[...deviceIdentifier]
           .map((octet) => octet.toString(16))
-          .join(':')}\n\n${humanPayload(payloadBuffer)}`
+          .join(':')}\n\n${humanPayload(data)}`
     );
 
     this._ingestIntoDeviceInstances(
       deviceIdentifier,
-      Buffer.concat([Buffer.from([EVENT_IDENTIFIER]), payloadBuffer])
+      Buffer.concat([Buffer.from([EVENT_IDENTIFIER]), data])
     );
   }
 }

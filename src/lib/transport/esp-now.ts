@@ -1,5 +1,5 @@
+import { ESPNow, ESPNowPayload } from '../events/esp-now.js';
 import { Input, Logger } from '../log.js';
-import { ESPNow } from '../events/esp-now.js';
 import { EVENT_IDENTIFIER } from '../device/main.js';
 import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
@@ -20,25 +20,27 @@ export class ESPNowTransport extends Transport {
 
     this._log = logger.getInput({ head: 'ESPNowTransport' });
 
-    event.observable.observe(({ deviceIdentifier, payload }) =>
-      this._handleMessage(deviceIdentifier, payload)
+    event.observable.observe((payload: ESPNowPayload) =>
+      this._handleMessage(payload)
     );
   }
 
   /**
    * handle incoming messages
    */
-  private _handleMessage(deviceIdentifier: Buffer, payload: Buffer) {
+  private _handleMessage(payload: ESPNowPayload) {
+    const { deviceIdentifier, data } = payload;
+
     this._log.debug(
       () =>
         `msg incoming\nfrom: ${[...deviceIdentifier]
           .map((octet) => octet.toString(16))
-          .join(':')}\n\n${humanPayload(payload)}`
+          .join(':')}\n\n${humanPayload(data)}`
     );
 
     this._ingestIntoDeviceInstances(
       deviceIdentifier,
-      Buffer.concat([Buffer.from([EVENT_IDENTIFIER]), payload])
+      Buffer.concat([Buffer.from([EVENT_IDENTIFIER]), data])
     );
   }
 }

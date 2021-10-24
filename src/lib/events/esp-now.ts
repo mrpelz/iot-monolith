@@ -1,8 +1,8 @@
 import { Event } from '../device/main.js';
 
 export type ESPNowPayload = {
+  data: Buffer;
   deviceIdentifier: Buffer;
-  payload: Buffer;
 };
 
 export class ESPNow extends Event<ESPNowPayload> {
@@ -14,11 +14,11 @@ export class ESPNow extends Event<ESPNowPayload> {
     if (input.length < 6) return null;
 
     const deviceIdentifier = input.subarray(0, 6);
-    const payload = input.subarray(6);
+    const data = input.subarray(6);
 
     return {
+      data,
       deviceIdentifier,
-      payload,
     };
   }
 }
