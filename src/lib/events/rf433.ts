@@ -14,7 +14,7 @@ export type Ev1527Payload = {
 
 export type Rf433Payload = {
   protocol: number;
-  value: number;
+  value: Buffer;
 } & Ev1527Payload;
 
 export class Rf433 extends Event<Rf433Payload> {
@@ -26,16 +26,18 @@ export class Rf433 extends Event<Rf433Payload> {
     if (input.length < 5) return null;
 
     const protocol = input.subarray(0, 1).readUInt8(); // 1.
-    const value = input.subarray(1, 5).readUInt32LE(); // 2.
+    const value = input.subarray(1, 5); // 2.
+
+    const _value = value.readUInt32LE(); // 2.
 
     if (protocol !== 1) return null;
 
     // eslint-disable-next-line no-bitwise
-    const _deviceIdentifier = value >> bitLengthPayload;
+    const _deviceIdentifier = _value >> bitLengthPayload;
     if (_deviceIdentifier > maxAddress) return null;
 
     // eslint-disable-next-line no-bitwise
-    const _data = value & maxPayload;
+    const _data = _value & maxPayload;
     if (_data > maxPayload) return null;
 
     const deviceIdentifier = Buffer.alloc(byteLengthAddress);

@@ -6,13 +6,13 @@ import { Logger } from '../../lib/log.js';
 import { h801 } from '../../lib/groupings/h801.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { outputGrouping } from '../../lib/groupings/actuators.js';
+import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
-import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export function bedroom(logger: Logger) {
   const nodes = {
-    ceilingLight: sonoffBasic(
+    ceilingLight: shelly1(
       logger,
       timings,
       'bedroom-ceilinglight.iot.wurstsalat.cloud'
@@ -27,11 +27,6 @@ export function bedroom(logger: Logger) {
       logger,
       timings,
       'bedroom-stonelamp.iot.wurstsalat.cloud'
-    ),
-    tableLight: sonoffBasic(
-      logger,
-      timings,
-      'diningroom-tablelight.iot.wurstsalat.cloud'
     ),
     wallswitchDoor: shellyi3(
       logger,

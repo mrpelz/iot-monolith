@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { ESPNow, ESPNowPayload } from '../events/esp-now.js';
 import { Levels, ParentRelation, ValueType, metadataStore } from '../tree.js';
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
 import { Observable, ReadOnlyObservable } from '../observable.js';
-import { Rf433, Rf433Payload } from '../events/rf433.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
 import { BooleanState } from '../state.js';
 import { Device } from '../device/main.js';
+import { ESPNow } from '../events/esp-now.js';
 import { Hello } from '../services/hello.js';
 import { Input } from '../events/input.js';
 import { Mcp9808 } from '../services/mcp9808.js';
 import { Mhz19 } from '../services/mhz19.js';
+import { Rf433 } from '../events/rf433.js';
 import { ScheduleEpochPair } from '../schedule.js';
 import { Sds011 } from '../services/sds011.js';
 import { SingleValueEvent } from '../items/event.js';
@@ -20,6 +20,7 @@ import { Timer } from '../timer.js';
 import { Tsl2561 } from '../services/tsl2561.js';
 import { VCC } from '../events/vcc.js';
 import { Veml6070 } from '../services/veml6070.js';
+import { byteLengthAddress } from '../device/ev1527.js';
 import { epochs } from '../epochs.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
@@ -341,24 +342,40 @@ export function online(device: Device) {
 }
 
 export function rfReadout(espNowEvent: ESPNow, rf433Event: Rf433) {
-  const state = new Observable<{
-    espNow?: ESPNowPayload;
-    rf433?: Rf433Payload;
-  }>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const state = new Observable<any>({});
 
-  espNowEvent.observable.observe((value) => {
+  espNowEvent.observable.observe(({ deviceIdentifier, data }) => {
     state.value = {
       ...state.value,
-      espNow: value,
+      espNow: {
+        data: [...data],
+        macAddress: [...deviceIdentifier]
+          .map((octet) => octet.toString(16).padStart(2, '0'))
+          .join(':'),
+      },
     };
   });
 
-  rf433Event.observable.observe((value) => {
-    state.value = {
-      ...state.value,
-      rf433: value,
-    };
-  });
+  rf433Event.observable.observe(
+    ({ data, deviceIdentifier, protocol, value }) => {
+      state.value = {
+        ...state.value,
+        rf433: {
+          data: `0b${[...data]
+            .reverse()
+            .map((byte) => byte.toString(2).padStart(8, '0'))
+            .join('')}`,
+          deviceIdentifier: deviceIdentifier.readUIntBE(0, byteLengthAddress),
+          protocol,
+          value: `0b${[...value]
+            .reverse()
+            .map((byte) => byte.toString(2).padStart(8, '0'))
+            .join('')}`,
+        },
+      };
+    }
+  );
 
   const readOnlyState = new ReadOnlyObservable(state);
 
