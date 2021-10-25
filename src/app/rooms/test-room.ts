@@ -63,7 +63,6 @@ export function testRoom() {
   };
 
   metadataStore.set(result, {
-    isDaylit: true,
     level: Levels.ROOM,
     name: 'testRoom',
   });

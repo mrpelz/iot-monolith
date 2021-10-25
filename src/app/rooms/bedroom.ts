@@ -64,6 +64,7 @@ export function bedroom() {
   };
 
   metadataStore.set(result, {
+    isDaylit: true,
     level: Levels.ROOM,
     name: 'bedroom',
   });

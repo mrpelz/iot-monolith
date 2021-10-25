@@ -118,6 +118,7 @@ export function office() {
   };
 
   metadataStore.set(result, {
+    isDaylit: true,
     level: Levels.ROOM,
     name: 'office',
   });
