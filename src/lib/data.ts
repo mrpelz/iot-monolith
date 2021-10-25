@@ -1,8 +1,8 @@
 import { randomFillSync } from 'crypto';
 
 export const emptyBuffer = Buffer.from([]);
-export const falseBuffer = Buffer.from([0]);
-export const trueBuffer = Buffer.from([1]);
+export const falseBuffer = Buffer.of(0);
+export const trueBuffer = Buffer.of(1);
 
 export function arrayPadLeft<T>(
   input: T[],
