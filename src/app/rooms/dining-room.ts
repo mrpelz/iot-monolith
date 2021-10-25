@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree.js';
-import { Logger } from '../../lib/log.js';
 import { h801 } from '../../lib/groupings/h801.js';
+import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
 import { timings } from '../timings.js';
 
-export function diningRoom(logger: Logger) {
+export function diningRoom() {
   const nodes = {
     ceilingLight: sonoffBasic(
       logger,

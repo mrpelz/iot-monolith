@@ -8,15 +8,15 @@ import { BooleanState, NullState } from '../../lib/state.js';
 import { Levels, metadataStore } from '../../lib/tree.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
-import { Logger } from '../../lib/log.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
+import { logger } from '../logging.js';
 import { outputGrouping } from '../../lib/groupings/actuators.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { timings } from '../timings.js';
 
-export function storage(logger: Logger) {
+export function storage() {
   const nodes = {
     ceilingLight: shelly1(
       logger,

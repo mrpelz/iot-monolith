@@ -2,14 +2,14 @@
 
 import { Levels, metadataStore } from '../../lib/tree.js';
 import { espNowTransport, ev1527Transport } from '../bridges.js';
-import { Logger } from '../../lib/log.js';
 import { espNowButton } from '../../lib/groupings/esp-now-button.js';
 import { espNowWindowSensor } from '../../lib/groupings/esp-now-window-sensor.js';
 import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
+import { logger } from '../logging.js';
 import { testDevice } from '../../lib/groupings/test-device.js';
 import { timings } from '../timings.js';
 
-export function testRoom(logger: Logger) {
+export function testRoom() {
   const nodes = {
     blueButton: ev1527ButtonX1(ev1527Transport, 74160, logger),
     espNowButton: espNowButton(logger, timings, {

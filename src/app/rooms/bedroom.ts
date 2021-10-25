@@ -2,15 +2,15 @@
 
 import { Levels, metadataStore } from '../../lib/tree.js';
 import { BooleanState } from '../../lib/state.js';
-import { Logger } from '../../lib/log.js';
 import { h801 } from '../../lib/groupings/h801.js';
+import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/groupings/obi-plug.js';
 import { outputGrouping } from '../../lib/groupings/actuators.js';
 import { shelly1 } from '../../lib/groupings/shelly1.js';
 import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
 import { timings } from '../timings.js';
 
-export function bedroom(logger: Logger) {
+export function bedroom() {
   const nodes = {
     ceilingLight: shelly1(
       logger,

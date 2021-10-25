@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../lib/tree.js';
-import { Logger } from '../lib/log.js';
 import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { livingRoom } from './rooms/living-room.js';
@@ -9,14 +8,14 @@ import { office } from './rooms/office.js';
 import { storage } from './rooms/storage.js';
 import { testRoom } from './rooms/test-room.js';
 
-function firstFloor(logger: Logger) {
+function firstFloor() {
   const result = {
-    bedroom: bedroom(logger),
-    diningRoom: diningRoom(logger),
-    livingRoom: livingRoom(logger),
-    office: office(logger),
-    storage: storage(logger),
-    testRoom: testRoom(logger),
+    bedroom: bedroom(),
+    diningRoom: diningRoom(),
+    livingRoom: livingRoom(),
+    office: office(),
+    storage: storage(),
+    testRoom: testRoom(),
   };
 
   metadataStore.set(result, {
@@ -29,9 +28,9 @@ function firstFloor(logger: Logger) {
   return result;
 }
 
-function sonninstraße16(logger: Logger) {
+function sonninstraße16() {
   const result = {
-    firstFloor: firstFloor(logger),
+    firstFloor: firstFloor(),
   };
 
   metadataStore.set(result, {
@@ -43,9 +42,9 @@ function sonninstraße16(logger: Logger) {
   return result;
 }
 
-function wurstHome(logger: Logger) {
+function wurstHome() {
   const result = {
-    sonninstraße16: sonninstraße16(logger),
+    sonninstraße16: sonninstraße16(),
   };
 
   metadataStore.set(result, {
@@ -56,9 +55,9 @@ function wurstHome(logger: Logger) {
   return result;
 }
 
-export function system(logger: Logger) {
+export function system() {
   const result = {
-    wurstHome: wurstHome(logger),
+    wurstHome: wurstHome(),
   };
 
   metadataStore.set(result, {
