@@ -117,21 +117,46 @@ export function observify<T>(fn: ObservifyGetter<T>): ObservifyResult<T> {
   return [new ReadOnlyObservable(observable), trigger];
 }
 
-export function combineObservables<T>(
-  fn: (...values: T[]) => T,
-  initialValue: T,
-  ...states: AnyObservable<T>[]
-): ReadOnlyObservable<T> {
-  const combined = new Observable<T>(initialValue);
-  const result = new ReadOnlyObservable(combined);
+export class ObservableGroup<T> extends Observable<T> {
+  protected readonly _states: AnyObservable<T>[];
 
-  for (const state of states) {
-    state.observe(() => {
-      const values = states.map(({ value }) => value);
+  constructor(initialValue: T, states: AnyObservable<T>[]) {
+    super(initialValue);
 
-      combined.value = fn(...values);
-    });
+    this._states = states;
+
+    for (const state of this._states) {
+      state.observe(() => {
+        const oldValue = super.value;
+        const value = this.value;
+
+        if (value === oldValue) return;
+
+        super.value = value;
+      }, true);
+    }
   }
 
-  return result;
+  get value(): T {
+    return this._merge();
+  }
+
+  set value(value: T) {
+    for (const state of this._states) {
+      if (
+        state instanceof ReadOnlyObservable ||
+        state instanceof ProxyObservable
+      ) {
+        continue;
+      }
+
+      state.value = value;
+    }
+
+    super.value = value;
+  }
+
+  protected _merge(): T {
+    throw new Error(`_merge method not defined in ${this}`);
+  }
 }

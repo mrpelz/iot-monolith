@@ -1,4 +1,8 @@
-import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
+import {
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+} from '../state.js';
 import { Device, Event, Service } from '../device/main.js';
 import { ModifiableDate, Unit } from '../modifiable-date.js';
 import {
@@ -10,7 +14,6 @@ import {
 import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
 import { Async } from '../services/async.js';
 import { Bme280 } from '../services/bme280.js';
-import { BooleanState } from '../state.js';
 import { Button } from '../items/button.js';
 import { Button as ButtonEvent } from '../events/button.js';
 import { ESPNowDevice } from '../device/esp-now.js';
@@ -58,12 +61,10 @@ timedOn.observe((value) => {
 });
 timer.observe(() => (timedOn.value = false));
 
-const ledOn = combineBooleanState(
-  BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-  false,
+const ledOn = new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
   on,
-  timedOn
-);
+  timedOn,
+]);
 
 const every5Seconds = new Schedule(
   logger,

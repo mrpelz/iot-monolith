@@ -1,11 +1,52 @@
 import {
+  AnyObservable,
   MetaObserverCallback,
   Observable,
+  ObservableGroup,
   Observer,
   ObserverCallback,
 } from './observable.js';
 
 export class BooleanState extends Observable<boolean> {
+  flip(): boolean {
+    this.value = !this.value;
+
+    return this.value;
+  }
+}
+
+export enum BooleanGroupStrategy {
+  IS_TRUE_IF_ALL_TRUE,
+  IS_TRUE_IF_SOME_TRUE,
+}
+
+export class BooleanStateGroup extends ObservableGroup<boolean> {
+  private static _getValue(
+    strategy: BooleanGroupStrategy,
+    states: AnyObservable<boolean>[]
+  ) {
+    const values = states.map(({ value }) => value);
+
+    return strategy === BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE
+      ? !values.includes(false)
+      : values.includes(true);
+  }
+
+  private readonly _strategy: BooleanGroupStrategy;
+
+  constructor(
+    strategy: BooleanGroupStrategy,
+    states: AnyObservable<boolean>[]
+  ) {
+    super(BooleanStateGroup._getValue(strategy, states), states);
+
+    this._strategy = strategy;
+  }
+
+  protected _merge(): boolean {
+    return BooleanStateGroup._getValue(this._strategy, this._states);
+  }
+
   flip(): boolean {
     this.value = !this.value;
 

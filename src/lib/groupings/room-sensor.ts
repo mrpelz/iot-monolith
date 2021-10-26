@@ -19,8 +19,8 @@ import {
   tsl2561,
 } from './metrics.js';
 import { Logger } from '../log.js';
+import { ObservableGroup } from '../observable.js';
 import { UDPDevice } from '../device/udp.js';
-import { combineObservables } from '../observable.js';
 
 export const roomSensor = (
   logger: Logger,
@@ -48,18 +48,15 @@ export const roomSensor = (
     pressure,
     temperature: (() => {
       const _temperature = {
-        _get: combineObservables(
-          (...values) => {
-            const validValues = values.filter(
-              (value): value is number => typeof value === 'number'
-            );
+        _get: new (class extends ObservableGroup<number | null> {
+          protected _merge(): number | null {
+            const validValues = this._states
+              .map(({ value }) => value)
+              .filter((value): value is number => typeof value === 'number');
 
             return validValues.length ? Math.min(...validValues) : null;
-          },
-          null,
-          mcp9808Temperature._get,
-          bme280Temperature._get
-        ),
+          }
+        })(null, [mcp9808Temperature._get, bme280Temperature._get]),
         bme280: bme280Temperature,
         mcp9808: mcp9808Temperature,
       };

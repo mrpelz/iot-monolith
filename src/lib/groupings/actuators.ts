@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
-import { BooleanState, NullState } from '../state.js';
+import {
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+  NullState,
+} from '../state.js';
 import {
   Levels,
   ParentRelation,
@@ -54,13 +58,11 @@ function actuatorStaleness<T>(
     })(),
     stale: (() => {
       const result = {
-        _get: combineBooleanState(
-          BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-          true,
+        _get: new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
           stale,
           // invert online state to be true if device is offline
-          new ProxyObservable((online) => !online, device.isOnline)
-        ),
+          new ProxyObservable((online) => !online, device.isOnline),
+        ]),
       };
 
       metadataStore.set(result, {

@@ -1,5 +1,10 @@
-import { BooleanGroupStrategy, combineBooleanState } from '../state-group.js';
-import { BooleanState, NullState, ReadOnlyNullState } from '../state.js';
+import {
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+  NullState,
+  ReadOnlyNullState,
+} from '../state.js';
 import { Input, Logger } from '../log.js';
 import { ModifiableDate, Unit } from '../modifiable-date.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
@@ -181,11 +186,11 @@ export class Device {
 
     this.identifier = identifier;
 
-    this.isOnline = combineBooleanState(
-      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-      false,
-      transport.isConnected,
-      this._isOnline
+    this.isOnline = new ReadOnlyObservable(
+      new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE, [
+        transport.isConnected,
+        this._isOnline,
+      ])
     );
 
     this.isOnline.observe((online) =>

@@ -2,9 +2,10 @@
 
 import {
   BooleanGroupStrategy,
-  combineBooleanState,
-} from '../../lib/state-group.js';
-import { BooleanState, NullState } from '../../lib/state.js';
+  BooleanState,
+  BooleanStateGroup,
+  NullState,
+} from '../../lib/state.js';
 import { Levels, metadataStore } from '../../lib/tree.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { Timer } from '../../lib/timer.js';
@@ -53,11 +54,9 @@ export function office() {
   const on = new BooleanState(false);
   const effectOn = new BooleanState(true);
 
-  const relayOn = combineBooleanState(
+  const relayOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-    false,
-    on,
-    effectOn
+    [on, effectOn]
   );
 
   const timer = new Timer(epochs.hour);
