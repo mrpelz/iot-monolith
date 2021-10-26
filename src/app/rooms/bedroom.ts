@@ -41,13 +41,13 @@ export function bedroom() {
     nodes.ceilingLight.relay._set.flip()
   );
 
-  nodes.wallswitchDoor.button0.$.shortPress(() =>
-    nodes.stoneLamp.relay._set.flip()
-  );
+  nodes.wallswitchDoor.button0.$.shortPress(() => ledsOn.flip());
   nodes.wallswitchDoor.button1.$.shortPress(() =>
     nodes.ceilingLight.relay._set.flip()
   );
-  nodes.wallswitchDoor.button2.$.shortPress(() => ledsOn.flip());
+  nodes.wallswitchDoor.button2.$.shortPress(() =>
+    nodes.stoneLamp.relay._set.flip()
+  );
 
   nodes.stoneLamp.button.$.shortPress(() => nodes.stoneLamp.relay._set.flip());
 
