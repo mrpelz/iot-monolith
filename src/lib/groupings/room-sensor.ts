@@ -50,9 +50,9 @@ export const roomSensor = (
       const _temperature = {
         _get: new (class extends ObservableGroup<number | null> {
           protected _merge(): number | null {
-            const validValues = this._states
-              .map(({ value }) => value)
-              .filter((value): value is number => typeof value === 'number');
+            const validValues = this.values.filter(
+              (value): value is number => typeof value === 'number'
+            );
 
             return validValues.length ? Math.min(...validValues) : null;
           }

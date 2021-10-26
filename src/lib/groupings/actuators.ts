@@ -13,7 +13,7 @@ import {
   inherit,
   metadataStore,
 } from '../tree.js';
-import { ProxyObservable, ReadOnlyObservable } from '../observable.js';
+import { ReadOnlyObservable, ReadOnlyProxyObservable } from '../observable.js';
 import { Device } from '../device/main.js';
 import { Indicator } from '../services/indicator.js';
 import { Led } from '../items/led.js';
@@ -61,7 +61,7 @@ function actuatorStaleness<T>(
         _get: new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
           stale,
           // invert online state to be true if device is offline
-          new ProxyObservable((online) => !online, device.isOnline),
+          new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
         ]),
       };
 
@@ -78,16 +78,14 @@ function actuatorStaleness<T>(
 }
 
 export function led(device: Device, index = 0, indicator = false) {
-  const { actualBrightness, actualOn, setBrightness } = new Led(
+  const { actualBrightness, actualOn, setBrightness, setOn } = new Led(
     device.addService(new LedService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
   );
 
   const result = {
     _get: actualOn,
-    _set: new NullState<boolean>(
-      (value) => (setBrightness.value = value ? 255 : 0)
-    ),
+    _set: setOn,
     ...actuatorStaleness(
       actualBrightness,
       new ReadOnlyObservable(setBrightness),
@@ -111,9 +109,7 @@ export function led(device: Device, index = 0, indicator = false) {
     })(),
     flip: (() => {
       const _flip = {
-        _set: new NullState(
-          () => (setBrightness.value = actualOn.value ? 0 : 255)
-        ),
+        _set: new NullState(() => setOn.flip()),
       };
 
       metadataStore.set(_flip, {
@@ -128,7 +124,7 @@ export function led(device: Device, index = 0, indicator = false) {
     })(),
     off: (() => {
       const _off = {
-        _set: new NullState(() => (setBrightness.value = 0)),
+        _set: new NullState(() => (setOn.value = false)),
       };
 
       metadataStore.set(_off, {
@@ -143,7 +139,7 @@ export function led(device: Device, index = 0, indicator = false) {
     })(),
     on: (() => {
       const _on = {
-        _set: new NullState(() => (setBrightness.value = 255)),
+        _set: new NullState(() => (setOn.value = true)),
       };
 
       metadataStore.set(_on, {

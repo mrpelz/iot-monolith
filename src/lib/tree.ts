@@ -2,7 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { AnyObservable, Observable, ReadOnlyObservable } from './observable.js';
+import {
+  AnyObservable,
+  AnyReadOnlyObservable,
+  Observable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from './observable.js';
 import { RollingNumber } from './rolling-number.js';
 
 export const inherit = Symbol('inherit');
@@ -129,7 +135,7 @@ export const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
 
 export class Tree {
   private _getterIndex = new RollingNumber(0, Infinity);
-  private readonly _getters = new Map<ReadOnlyObservable<unknown>, number>();
+  private readonly _getters = new Map<AnyReadOnlyObservable<unknown>, number>();
   private _setterIndex = new RollingNumber(0, Infinity);
   private readonly _setters = new Map<number, any>();
   private _stream: Stream | null = null;
@@ -156,7 +162,7 @@ export class Tree {
     return this._stream;
   }
 
-  private _getGetterIndex(value: ReadOnlyObservable<unknown>) {
+  private _getGetterIndex(value: AnyReadOnlyObservable<unknown>) {
     const entry = this._getters.get(value);
     if (entry !== undefined) return entry;
 
@@ -224,7 +230,14 @@ export class Tree {
 
     const get = (() => {
       if (!('_get' in object)) return undefined;
-      if (!(object._get instanceof ReadOnlyObservable)) return undefined;
+      if (
+        !(
+          object._get instanceof ReadOnlyObservable ||
+          object._get instanceof ReadOnlyProxyObservable
+        )
+      ) {
+        return undefined;
+      }
 
       return this._getGetterIndex(object._get);
     })();
@@ -263,9 +276,9 @@ interface Dictionary<O extends object = {}> {
   set<K extends PropertyKey, V>(
     key: Exclude<K, keyof O>,
     value: V
-  ): asserts this is Dictionary<
-    { [P in K | keyof O]: P extends K ? V : P extends keyof O ? O[P] : V }
-  >;
+  ): asserts this is Dictionary<{
+    [P in K | keyof O]: P extends K ? V : P extends keyof O ? O[P] : V;
+  }>;
   set<K extends keyof O>(key: K, value: O[K]): void;
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention

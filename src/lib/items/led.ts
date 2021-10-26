@@ -1,9 +1,11 @@
 import { Indicator, IndicatorMode } from '../services/indicator.js';
-import { Observable, ReadOnlyObservable } from '../observable.js';
-import { EnumState } from '../state.js';
+import {
+  Observable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../observable.js';
+import { BooleanProxyState } from '../state.js';
 import { Led as LedService } from '../services/led.js';
-
-const states = [true, false, null] as const;
 
 export class Led {
   private readonly _actualBrightness = new Observable<number | null>(null);
@@ -11,8 +13,9 @@ export class Led {
   private readonly _service: LedService;
 
   readonly actualBrightness: ReadOnlyObservable<number | null>;
-  readonly actualOn: ReadOnlyObservable<typeof states[number]>;
+  readonly actualOn: ReadOnlyProxyObservable<number | null, boolean | null>;
   readonly setBrightness: Observable<number>;
+  readonly setOn: BooleanProxyState<number>;
 
   constructor(service: LedService, indicator?: Indicator) {
     this._indicator = indicator;
@@ -27,16 +30,19 @@ export class Led {
       this._set(this.setBrightness.value);
     });
 
-    const actualOn = new EnumState(states, null);
-    this._actualBrightness.observe((brightness) => {
-      actualOn.value = brightness === null ? null : Boolean(brightness);
-    });
-
     this.actualBrightness = new ReadOnlyObservable(this._actualBrightness);
-    this.actualOn = new ReadOnlyObservable(actualOn);
+    this.actualOn = new ReadOnlyProxyObservable(
+      this._actualBrightness,
+      (value) => (value === null ? value : Boolean(value))
+    );
 
     this.setBrightness = new Observable(0, (brightness) =>
       this._set(brightness)
+    );
+    this.setOn = new BooleanProxyState(
+      this.setBrightness,
+      (value) => Boolean(value),
+      (value) => (value ? 255 : 0)
     );
   }
 

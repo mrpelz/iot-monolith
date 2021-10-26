@@ -5,9 +5,18 @@ import {
   ObservableGroup,
   Observer,
   ObserverCallback,
+  ProxyObservable,
 } from './observable.js';
 
 export class BooleanState extends Observable<boolean> {
+  flip(): boolean {
+    this.value = !this.value;
+
+    return this.value;
+  }
+}
+
+export class BooleanProxyState<T> extends ProxyObservable<T, boolean> {
   flip(): boolean {
     this.value = !this.value;
 
@@ -36,7 +45,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 
   constructor(
     strategy: BooleanGroupStrategy,
-    states: AnyObservable<boolean>[]
+    states: AnyObservable<boolean>[] = []
   ) {
     super(BooleanStateGroup._getValue(strategy, states), states);
 
@@ -44,7 +53,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
   }
 
   protected _merge(): boolean {
-    return BooleanStateGroup._getValue(this._strategy, this._states);
+    return BooleanStateGroup._getValue(this._strategy, this.observables);
   }
 
   flip(): boolean {
@@ -57,13 +66,13 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 export class EnumState<T = unknown> extends Observable<T> {
   private readonly _enum: readonly T[];
 
-  constructor(_enum: readonly T[], initialValue: T) {
-    if (!_enum.includes(initialValue)) {
+  constructor(anEnum: readonly T[], initialValue: T) {
+    if (!anEnum.includes(initialValue)) {
       throw new RangeError(`"${initialValue}" is not an allowed value`);
     }
 
     super(initialValue);
-    this._enum = _enum;
+    this._enum = anEnum;
   }
 
   private get _maxIndex() {
@@ -77,21 +86,17 @@ export class EnumState<T = unknown> extends Observable<T> {
   }
 
   get value(): T {
-    return this._value;
+    return super.value;
   }
 
   set value(value: T) {
-    if (value === this._value) return;
+    if (value === super.value) return;
 
     if (!this._enum.includes(value)) {
       throw new RangeError(`"${value}" is not an allowed value`);
     }
 
-    this._value = value;
-
-    for (const [observer] of this._observers) {
-      observer(this._value);
-    }
+    super.value = value;
   }
 
   getIndex(): number | null {
