@@ -1,4 +1,4 @@
-import { rfBridge as _rfBridge } from '../lib/groupings/rf-bridge.js';
+import { rfBridge as _rfBridge } from '../lib/tree/devices/rf-bridge.js';
 import { logger } from './logging.js';
 import { timings } from './timings.js';
 

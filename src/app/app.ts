@@ -1,5 +1,5 @@
 import { HttpServer } from '../lib/http-server.js';
-import { Tree } from '../lib/tree.js';
+import { Tree } from '../lib/tree/main.js';
 import { WebApi } from '../lib/web-api.js';
 import { logger } from './logging.js';
 import { system } from './system.js';

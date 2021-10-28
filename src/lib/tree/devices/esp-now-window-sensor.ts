@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { ESPNowDevice, MACAddress } from '../device/esp-now.js';
-import { Levels, ValueType, metadataStore } from '../tree.js';
-import { Timings, hello, online, vcc } from './metrics.js';
-import { Device } from '../device/main.js';
-import { ESPNowTransport } from '../transport/esp-now.js';
-import { Input } from '../events/input.js';
-import { Logger } from '../log.js';
-import { SingleValueEvent } from '../items/event.js';
-import { UDPDevice } from '../device/udp.js';
+import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
+import { Levels, ValueType, metadataStore } from '../main.js';
+import { Timings, hello, online, vcc } from '../properties/sensors.js';
+import { Device } from '../../device/main.js';
+import { ESPNowTransport } from '../../transport/esp-now.js';
+import { Input } from '../../events/input.js';
+import { Logger } from '../../log.js';
+import { SingleValueEvent } from '../../items/event.js';
+import { UDPDevice } from '../../device/udp.js';
 
 export type EspNowWindowSensorOptions = {
   espNow: {

@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, ParentRelation, ValueType, metadataStore } from '../tree.js';
-import { MultiValueSensor, SingleValueSensor } from '../items/sensor.js';
-import { Observable, ReadOnlyObservable } from '../observable.js';
-import { Async } from '../services/async.js';
-import { Bme280 } from '../services/bme280.js';
-import { BooleanState } from '../state.js';
-import { Device } from '../device/main.js';
-import { ESPNow } from '../events/esp-now.js';
-import { Hello } from '../services/hello.js';
-import { Input } from '../events/input.js';
-import { Mcp9808 } from '../services/mcp9808.js';
-import { Mhz19 } from '../services/mhz19.js';
-import { Rf433 } from '../events/rf433.js';
-import { ScheduleEpochPair } from '../schedule.js';
-import { Sds011 } from '../services/sds011.js';
-import { SingleValueEvent } from '../items/event.js';
-import { Timer } from '../timer.js';
-import { Tsl2561 } from '../services/tsl2561.js';
-import { VCC } from '../events/vcc.js';
-import { Veml6070 } from '../services/veml6070.js';
-import { byteLengthAddress } from '../device/ev1527.js';
-import { epochs } from '../epochs.js';
+import { Levels, ParentRelation, ValueType, metadataStore } from '../main.js';
+import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
+import { Observable, ReadOnlyObservable } from '../../observable.js';
+import { Async } from '../../services/async.js';
+import { Bme280 } from '../../services/bme280.js';
+import { BooleanState } from '../../state.js';
+import { Device } from '../../device/main.js';
+import { ESPNow } from '../../events/esp-now.js';
+import { Hello } from '../../services/hello.js';
+import { Input } from '../../events/input.js';
+import { Mcp9808 } from '../../services/mcp9808.js';
+import { Mhz19 } from '../../services/mhz19.js';
+import { Rf433 } from '../../events/rf433.js';
+import { ScheduleEpochPair } from '../../schedule.js';
+import { Sds011 } from '../../services/sds011.js';
+import { SingleValueEvent } from '../../items/event.js';
+import { Timer } from '../../timer.js';
+import { Tsl2561 } from '../../services/tsl2561.js';
+import { VCC } from '../../events/vcc.js';
+import { Veml6070 } from '../../services/veml6070.js';
+import { byteLengthAddress } from '../../device/ev1527.js';
+import { epochs } from '../../epochs.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;

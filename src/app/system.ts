@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../lib/tree.js';
+import { Levels, metadataStore } from '../lib/tree/main.js';
 import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { livingRoom } from './rooms/living-room.js';
@@ -10,7 +10,7 @@ import { testRoom } from './rooms/test-room.js';
 
 function firstFloor() {
   const result = {
-    bedroom: bedroom(),
+    bedroom,
     diningRoom: diningRoom(),
     livingRoom: livingRoom(),
     office: office(),

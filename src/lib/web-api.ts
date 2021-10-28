@@ -3,7 +3,7 @@ import { Input, Logger } from './log.js';
 import { Duplex } from 'stream';
 import { IncomingMessage } from 'http';
 import { Socket } from 'net';
-import { Tree } from './tree.js';
+import { Tree } from './tree/main.js';
 import WebSocket from 'ws';
 import { multiline } from './string.js';
 

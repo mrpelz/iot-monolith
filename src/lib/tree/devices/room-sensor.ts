@@ -7,7 +7,7 @@ import {
   ValueType,
   metadataExtensionStore,
   metadataStore,
-} from '../tree.js';
+} from '../main.js';
 import {
   Timings,
   bme280,
@@ -17,10 +17,10 @@ import {
   mhz19,
   online,
   tsl2561,
-} from './metrics.js';
-import { Logger } from '../log.js';
-import { ObservableGroup } from '../observable.js';
-import { UDPDevice } from '../device/udp.js';
+} from '../properties/sensors.js';
+import { Logger } from '../../log.js';
+import { ObservableGroup } from '../../observable.js';
+import { UDPDevice } from '../../device/udp.js';
 
 export const roomSensor = (
   logger: Logger,

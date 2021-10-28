@@ -1,6 +1,6 @@
 import { ModifiableDate, Unit } from '../lib/modifiable-date.js';
 import { Schedule } from '../lib/schedule.js';
-import { Timings } from '../lib/groupings/metrics.js';
+import { Timings } from '../lib/tree/properties/sensors.js';
 import { epochs } from '../lib/epochs.js';
 import { logger } from './logging.js';
 

@@ -7,7 +7,7 @@ import {
   ValueType,
   metadataExtensionStore,
   metadataStore,
-} from '../tree.js';
+} from '../main.js';
 import {
   Timings,
   async,
@@ -20,10 +20,10 @@ import {
   sds011,
   tsl2561,
   uvIndex,
-} from './metrics.js';
-import { Logger } from '../log.js';
-import { ObservableGroup } from '../observable.js';
-import { UDPDevice } from '../device/udp.js';
+} from '../properties/sensors.js';
+import { Logger } from '../../log.js';
+import { ObservableGroup } from '../../observable.js';
+import { UDPDevice } from '../../device/udp.js';
 
 export const testDevice = (logger: Logger, timings: Timings) => {
   const device = new UDPDevice(

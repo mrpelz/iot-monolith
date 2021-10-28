@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { espNowTransport, ev1527Transport } from '../bridges.js';
-import { espNowButton } from '../../lib/groupings/esp-now-button.js';
-import { espNowWindowSensor } from '../../lib/groupings/esp-now-window-sensor.js';
-import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
+import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
+import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { logger } from '../logging.js';
-import { testDevice } from '../../lib/groupings/test-device.js';
+import { testDevice } from '../../lib/tree/devices/test-device.js';
 import { timings } from '../timings.js';
 
 export function testRoom() {

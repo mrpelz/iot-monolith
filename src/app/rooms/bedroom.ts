@@ -1,73 +1,154 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree.js';
-import { BooleanState } from '../../lib/state.js';
-import { h801 } from '../../lib/groupings/h801.js';
+import { Levels, metadataStore } from '../../lib/tree/main.js';
+import {
+  ledGrouping,
+  outputGrouping,
+} from '../../lib/tree/properties/actuators.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
+import { ev1527Transport } from '../bridges.js';
+import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/groupings/obi-plug.js';
-import { outputGrouping } from '../../lib/groupings/actuators.js';
-import { shelly1 } from '../../lib/groupings/shelly1.js';
-import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
+import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { shelly1 } from '../../lib/tree/devices/shelly1.js';
+import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
 
-export function bedroom() {
-  const nodes = {
-    ceilingLight: shelly1(
-      logger,
-      timings,
-      'bedroom-ceilinglight.iot.wurstsalat.cloud'
-    ),
-    nightstandLEDs: h801(
-      logger,
-      timings,
-      'bedroom-nightstandleds.iot.wurstsalat.cloud'
-    ),
-    rgbwLEDs: h801(logger, timings, 'bedroom-bedrgbwleds.iot.wurstsalat.cloud'),
-    stoneLamp: obiPlug(
-      logger,
-      timings,
-      'bedroom-stonelamp.iot.wurstsalat.cloud'
-    ),
-    wallswitchDoor: shellyi3(
-      logger,
-      timings,
-      'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
-    ),
+export const devices = {
+  deviceCeilingLight: shelly1(
+    logger,
+    timings,
+    'bedroom-ceilinglight.iot.wurstsalat.cloud'
+  ),
+  deviceNightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
+  deviceNightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
+  deviceNightstandLeds: h801(
+    logger,
+    timings,
+    'bedroom-nightstandleds.iot.wurstsalat.cloud'
+  ),
+  deviceRgbwLeds: h801(
+    logger,
+    timings,
+    'bedroom-bedrgbwleds.iot.wurstsalat.cloud'
+  ),
+  deviceStoneLamp: obiPlug(
+    logger,
+    timings,
+    'bedroom-stonelamp.iot.wurstsalat.cloud'
+  ),
+  deviceWallswitchDoor: shellyi3(
+    logger,
+    timings,
+    'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
+  ),
+};
+
+export const properties = {
+  bedLedB: devices.deviceRgbwLeds.ledB,
+  bedLedDownlightRed: devices.deviceNightstandLeds.ledB,
+  bedLedG: devices.deviceRgbwLeds.ledG,
+  bedLedR: devices.deviceRgbwLeds.ledR,
+  bedLedW: devices.deviceRgbwLeds.ledW1,
+  ceilingLight: devices.deviceCeilingLight.relay,
+  nightstandLedLeft: devices.deviceNightstandLeds.ledR,
+  nightstandLedRight: devices.deviceNightstandLeds.ledG,
+  stoneLamp: devices.deviceStoneLamp.relay,
+};
+
+export const instances = {
+  nightstandButtonLeft: devices.deviceNightstandButtonLeft.$,
+  nightstandButtonRight: devices.deviceNightstandButtonRight.$,
+  stoneLampButton: devices.deviceStoneLamp.button.$,
+  wallswitchBedButton: devices.deviceCeilingLight.button.$,
+  wallswitchDoorButtonLeft: devices.deviceWallswitchDoor.button0.$,
+  wallswitchDoorButtonMiddle: devices.deviceWallswitchDoor.button1.$,
+  wallswitchDoorButtonRight: devices.deviceWallswitchDoor.button2.$,
+};
+
+export const groups = {
+  all: outputGrouping([
+    properties.bedLedR,
+    properties.bedLedG,
+    properties.bedLedB,
+    properties.bedLedW,
+    properties.ceilingLight,
+    properties.nightstandLedLeft,
+    properties.nightstandLedRight,
+    properties.bedLedDownlightRed,
+    properties.stoneLamp,
+  ]),
+  fuckLight: outputGrouping([
+    properties.bedLedDownlightRed,
+    properties.bedLedR,
+    properties.stoneLamp,
+  ]),
+  leds: ledGrouping([
+    properties.bedLedR,
+    properties.bedLedG,
+    properties.bedLedB,
+    properties.bedLedW,
+    properties.nightstandLedLeft,
+    properties.nightstandLedRight,
+    properties.bedLedDownlightRed,
+  ]),
+  nightstandLeds: ledGrouping([
+    properties.nightstandLedLeft,
+    properties.nightstandLedRight,
+  ]),
+  whiteLeds: ledGrouping([
+    properties.bedLedW,
+    properties.nightstandLedLeft,
+    properties.nightstandLedRight,
+  ]),
+};
+
+(() => {
+  const allOffOr = (cb: () => void) => {
+    if (groups.all._get.value) {
+      groups.all._set.value = false;
+
+      return;
+    }
+
+    cb();
   };
 
-  const ledsOn = new BooleanState(false);
-
-  nodes.ceilingLight.button.$.shortPress(() =>
-    nodes.ceilingLight.relay._set.flip()
+  instances.nightstandButtonLeft.observe(() =>
+    allOffOr(() => (properties.nightstandLedLeft._set.value = true))
   );
 
-  nodes.wallswitchDoor.button0.$.shortPress(() => ledsOn.flip());
-  nodes.wallswitchDoor.button1.$.shortPress(() =>
-    nodes.ceilingLight.relay._set.flip()
-  );
-  nodes.wallswitchDoor.button2.$.shortPress(() =>
-    nodes.stoneLamp.relay._set.flip()
+  instances.nightstandButtonRight.observe(() =>
+    allOffOr(() => (properties.nightstandLedRight._set.value = true))
   );
 
-  nodes.stoneLamp.button.$.shortPress(() => nodes.stoneLamp.relay._set.flip());
+  instances.wallswitchBedButton.up(() =>
+    allOffOr(() => (properties.ceilingLight._set.value = true))
+  );
 
-  ledsOn.observe((value) => {
-    nodes.nightstandLEDs.ledR._set.value = value;
-    nodes.nightstandLEDs.ledG._set.value = value;
+  instances.stoneLampButton.up(() =>
+    allOffOr(() => (properties.stoneLamp._set.value = true))
+  );
 
-    nodes.rgbwLEDs.ledW1._set.value = value;
-  });
+  instances.wallswitchDoorButtonLeft.up(() =>
+    allOffOr(() => (groups.whiteLeds._set.value = true))
+  );
+  instances.wallswitchDoorButtonMiddle.up(() =>
+    allOffOr(() => (properties.ceilingLight._set.value = true))
+  );
+  instances.wallswitchDoorButtonRight.up(() =>
+    allOffOr(() => (groups.fuckLight._set.value = true))
+  );
+})();
 
-  const result = {
-    ...nodes,
-    led: outputGrouping(ledsOn),
-  };
+export const bedroom = {
+  ...devices,
+  ...groups,
+  ...properties,
+};
 
-  metadataStore.set(result, {
-    isDaylit: true,
-    level: Levels.ROOM,
-    name: 'bedroom',
-  });
-
-  return result;
-}
+metadataStore.set(bedroom, {
+  isDaylit: true,
+  level: Levels.ROOM,
+  name: 'bedroom',
+});

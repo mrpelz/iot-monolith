@@ -6,19 +6,18 @@ import {
   BooleanStateGroup,
   NullState,
 } from '../../lib/state.js';
-import { Levels, metadataStore } from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
-import { ev1527ButtonX1 } from '../../lib/groupings/ev1527-button.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
-import { h801 } from '../../lib/groupings/h801.js';
+import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/groupings/obi-plug.js';
-import { outputGrouping } from '../../lib/groupings/actuators.js';
-import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
-import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
+import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export function office() {
@@ -111,8 +110,6 @@ export function office() {
   const result = {
     ...nodes,
     doorOpen,
-    led: outputGrouping(ledOn),
-    light: outputGrouping(on, undefined, timerStop),
     windowOpenRight,
   };
 

@@ -5,11 +5,12 @@
 import {
   AnyObservable,
   AnyReadOnlyObservable,
+  AnyWritableObservable,
   Observable,
   ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from './observable.js';
-import { RollingNumber } from './rolling-number.js';
+  isWritableObservable,
+} from '../observable.js';
+import { RollingNumber } from '../rolling-number.js';
 
 export const inherit = Symbol('inherit');
 
@@ -137,7 +138,7 @@ export class Tree {
   private _getterIndex = new RollingNumber(0, Infinity);
   private readonly _getters = new Map<AnyReadOnlyObservable<unknown>, number>();
   private _setterIndex = new RollingNumber(0, Infinity);
-  private readonly _setters = new Map<number, any>();
+  private readonly _setters = new Map<number, AnyWritableObservable<unknown>>();
   private _stream: Stream | null = null;
 
   readonly structure: any;
@@ -172,10 +173,10 @@ export class Tree {
     return entryIndex;
   }
 
-  private _getSetterIndex(value: unknown) {
-    const entry = [...this._setters.values()].find(
-      (setter) => setter === value
-    );
+  private _getSetterIndex(value: AnyWritableObservable<unknown>) {
+    const entry = [...this._setters.entries()].find(
+      ([, setter]) => setter === value
+    )?.[0];
     if (entry !== undefined) return entry;
 
     const entryIndex = this._setterIndex.get();
@@ -230,12 +231,7 @@ export class Tree {
 
     const get = (() => {
       if (!('_get' in object)) return undefined;
-      if (
-        !(
-          object._get instanceof ReadOnlyObservable ||
-          object._get instanceof ReadOnlyProxyObservable
-        )
-      ) {
+      if (isWritableObservable(object._get)) {
         return undefined;
       }
 

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, ValueType, inherit, metadataStore } from '../tree.js';
-import { Ev1527Device } from '../device/ev1527.js';
-import { Ev1527Transport } from '../transport/ev1527.js';
-import { Ev1527WindowSensor } from '../events/ev1527-window-sensor.js';
-import { Logger } from '../log.js';
-import { MultiValueEvent } from '../items/event.js';
+import { Levels, ValueType, inherit, metadataStore } from '../main.js';
+import { Ev1527Device } from '../../device/ev1527.js';
+import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
+import { Logger } from '../../log.js';
+import { MultiValueEvent } from '../../items/event.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,

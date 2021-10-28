@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../tree.js';
-import { Ev1527Button } from '../events/ev1527-button.js';
-import { Ev1527Device } from '../device/ev1527.js';
-import { Ev1527Transport } from '../transport/ev1527.js';
-import { Logger } from '../log.js';
-import { StatelessMultiValueEvent } from '../items/event.js';
+import { Levels, metadataStore } from '../main.js';
+import { Ev1527Button } from '../../events/ev1527-button.js';
+import { Ev1527Device } from '../../device/ev1527.js';
+import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Logger } from '../../log.js';
+import { StatelessMultiValueEvent } from '../../items/event.js';
 
 export const ev1527ButtonX4 = (
   logger: Logger,

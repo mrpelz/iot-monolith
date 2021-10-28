@@ -32,9 +32,9 @@ export enum BooleanGroupStrategy {
 export class BooleanStateGroup extends ObservableGroup<boolean> {
   private static _getValue(
     strategy: BooleanGroupStrategy,
-    states: AnyObservable<boolean>[]
+    observables: AnyObservable<boolean>[]
   ) {
-    const values = states.map(({ value }) => value);
+    const values = observables.map(({ value }) => value);
 
     return strategy === BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE
       ? !values.includes(false)
@@ -60,6 +60,25 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
     this.value = !this.value;
 
     return this.value;
+  }
+}
+
+export class BooleanNullableStateGroup extends BooleanStateGroup {
+  constructor(
+    strategy: BooleanGroupStrategy,
+    observables: AnyObservable<boolean | null>[] = []
+  ) {
+    super(
+      strategy,
+      observables.map(
+        (observable) =>
+          new ProxyObservable(
+            observable,
+            (value) => Boolean(value),
+            (value) => value
+          )
+      )
+    );
   }
 }
 

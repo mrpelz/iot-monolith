@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/groupings/obi-plug.js';
-import { shellyi3 } from '../../lib/groupings/shelly-i3.js';
-import { sonoffBasic } from '../../lib/groupings/sonoff-basic.js';
+import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export function livingRoom() {

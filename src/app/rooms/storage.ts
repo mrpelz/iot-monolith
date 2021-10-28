@@ -6,15 +6,15 @@ import {
   BooleanStateGroup,
   NullState,
 } from '../../lib/state.js';
-import { Levels, metadataStore } from '../../lib/tree.js';
+import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
-import { ev1527WindowSensor } from '../../lib/groupings/ev1527-window-sensor.js';
+import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { logger } from '../logging.js';
-import { outputGrouping } from '../../lib/groupings/actuators.js';
-import { shelly1 } from '../../lib/groupings/shelly1.js';
+import { outputGrouping } from '../../lib/tree/properties/actuators.js';
+import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { timings } from '../timings.js';
 
 export function storage() {
@@ -79,7 +79,7 @@ export function storage() {
   const result = {
     ...nodes,
     doorOpen,
-    light: outputGrouping(on, undefined, timerStop),
+    light: outputGrouping([], undefined, timerStop),
   };
 
   metadataStore.set(result, {

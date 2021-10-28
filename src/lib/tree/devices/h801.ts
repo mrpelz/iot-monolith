@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../tree.js';
-import { Timings, hello, online } from './metrics.js';
-import { Logger } from '../log.js';
-import { UDPDevice } from '../device/udp.js';
-import { led } from './actuators.js';
+import { Levels, metadataStore } from '../main.js';
+import { Timings, hello, online } from '../properties/sensors.js';
+import { Logger } from '../../log.js';
+import { UDPDevice } from '../../device/udp.js';
+import { led } from '../properties/actuators.js';
 
 export const h801 = (
   logger: Logger,
