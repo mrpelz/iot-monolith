@@ -44,6 +44,16 @@ export const devices = {
   ),
 };
 
+export const instances = {
+  nightstandButtonLeft: devices.deviceNightstandButtonLeft.$,
+  nightstandButtonRight: devices.deviceNightstandButtonRight.$,
+  stoneLampButton: devices.deviceStoneLamp.button.$,
+  wallswitchBedButton: devices.deviceCeilingLight.button.$,
+  wallswitchDoorButtonLeft: devices.deviceWallswitchDoor.button0.$,
+  wallswitchDoorButtonMiddle: devices.deviceWallswitchDoor.button1.$,
+  wallswitchDoorButtonRight: devices.deviceWallswitchDoor.button2.$,
+};
+
 export const properties = {
   bedLedB: devices.deviceRgbwLeds.ledB,
   bedLedDownlightRed: devices.deviceNightstandLeds.ledB,
@@ -56,18 +66,8 @@ export const properties = {
   stoneLamp: devices.deviceStoneLamp.relay,
 };
 
-export const instances = {
-  nightstandButtonLeft: devices.deviceNightstandButtonLeft.$,
-  nightstandButtonRight: devices.deviceNightstandButtonRight.$,
-  stoneLampButton: devices.deviceStoneLamp.button.$,
-  wallswitchBedButton: devices.deviceCeilingLight.button.$,
-  wallswitchDoorButtonLeft: devices.deviceWallswitchDoor.button0.$,
-  wallswitchDoorButtonMiddle: devices.deviceWallswitchDoor.button1.$,
-  wallswitchDoorButtonRight: devices.deviceWallswitchDoor.button2.$,
-};
-
 export const groups = {
-  all: outputGrouping([
+  allLights: outputGrouping([
     properties.bedLedR,
     properties.bedLedG,
     properties.bedLedB,
@@ -105,8 +105,8 @@ export const groups = {
 
 (() => {
   const allOffOr = (cb: () => void) => {
-    if (groups.all._get.value) {
-      groups.all._set.value = false;
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
 
       return;
     }

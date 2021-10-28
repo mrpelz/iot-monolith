@@ -11,7 +11,7 @@ import { testRoom } from './rooms/test-room.js';
 function firstFloor() {
   const result = {
     bedroom,
-    diningRoom: diningRoom(),
+    diningRoom,
     livingRoom: livingRoom(),
     office: office(),
     storage: storage(),
