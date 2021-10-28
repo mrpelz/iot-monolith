@@ -13,20 +13,20 @@ export const h801 = (
   port = 1337
 ) => {
   const device = new UDPDevice(logger, host, port);
-  const led0 = led(device, 0, true);
-  const led1 = led(device, 1);
-  const led2 = led(device, 2);
-  const led3 = led(device, 3);
-  const led4 = led(device, 4);
+  const ledR = led(device, 0, true);
+  const ledG = led(device, 1);
+  const ledB = led(device, 2);
+  const ledW1 = led(device, 3);
+  const ledW2 = led(device, 4);
 
   const result = {
     ...hello(device, timings.moderate || timings.default),
     ...online(device),
-    led0,
-    led1,
-    led2,
-    led3,
-    led4,
+    ledB,
+    ledG,
+    ledR,
+    ledW1,
+    ledW2,
   };
 
   metadataStore.set(result, {

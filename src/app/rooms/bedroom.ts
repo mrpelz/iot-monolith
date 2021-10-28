@@ -52,10 +52,10 @@ export function bedroom() {
   nodes.stoneLamp.button.$.shortPress(() => nodes.stoneLamp.relay._set.flip());
 
   ledsOn.observe((value) => {
-    nodes.nightstandLEDs.led0._set.value = value;
-    nodes.nightstandLEDs.led1._set.value = value;
+    nodes.nightstandLEDs.ledR._set.value = value;
+    nodes.nightstandLEDs.ledG._set.value = value;
 
-    nodes.rgbwLEDs.led3._set.value = value;
+    nodes.rgbwLEDs.ledW1._set.value = value;
   });
 
   const result = {
