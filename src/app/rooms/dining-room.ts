@@ -15,31 +15,31 @@ import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
-  deviceCeilingLight: sonoffBasic(
+  ceilingLight: sonoffBasic(
     logger,
     timings,
     'diningroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  deviceCouchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
-  deviceFan: obiPlug(logger, timings, 'diningroom-fan.iot.wurstsalat.cloud'),
-  deviceFanRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
-  deviceKallaxLeds: h801(
+  couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
+  fan: obiPlug(logger, timings, 'diningroom-fan.iot.wurstsalat.cloud'),
+  fanRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+  kallaxLeds: h801(
     logger,
     timings,
     'diningroom-kallaxleds.iot.wurstsalat.cloud'
   ),
-  deviceKallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
-  deviceStandingLamp: obiPlug(
+  kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
+  standingLamp: obiPlug(
     logger,
     timings,
     'diningroom-standinglamp.iot.wurstsalat.cloud'
   ),
-  deviceTableLight: sonoffBasic(
+  tableLight: sonoffBasic(
     logger,
     timings,
     'diningroom-tablelight.iot.wurstsalat.cloud'
   ),
-  deviceWallswitch: shellyi3(
+  wallswitch: shellyi3(
     logger,
     timings,
     'diningroom-wallswitch.iot.wurstsalat.cloud'
@@ -47,25 +47,25 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.deviceCouchButton.$,
-  fanButton: devices.deviceFan.button.$,
-  fanRfButton: devices.deviceFanRfButton.$,
-  kallaxSideButton: devices.deviceKallaxSideButton.$,
-  standingLampButton: devices.deviceStandingLamp.button.$,
-  wallswitchBottom: devices.deviceWallswitch.button1.$,
-  wallswitchTop: devices.deviceWallswitch.button0.$,
+  couchButton: devices.couchButton.$,
+  fanButton: devices.fan.button.$,
+  fanRfButton: devices.fanRfButton.$,
+  kallaxSideButton: devices.kallaxSideButton.$,
+  standingLampButton: devices.standingLamp.button.$,
+  wallswitchBottom: devices.wallswitch.button1.$,
+  wallswitchTop: devices.wallswitch.button0.$,
 };
 
 export const properties = {
-  ceilingLight: devices.deviceCeilingLight.relay,
-  fan: devices.deviceFan.relay,
-  kallaxLedB: devices.deviceKallaxLeds.ledB,
-  kallaxLedG: devices.deviceKallaxLeds.ledG,
-  kallaxLedR: devices.deviceKallaxLeds.ledR,
-  kallaxLedSide: devices.deviceKallaxLeds.ledW2,
-  kallaxLedW: devices.deviceKallaxLeds.ledW1,
-  standingLamp: devices.deviceStandingLamp.relay,
-  tableLight: devices.deviceTableLight.relay,
+  ceilingLight: devices.ceilingLight.relay,
+  fan: devices.fan.relay,
+  kallaxLedB: devices.kallaxLeds.ledB,
+  kallaxLedG: devices.kallaxLeds.ledG,
+  kallaxLedR: devices.kallaxLeds.ledR,
+  kallaxLedSide: devices.kallaxLeds.ledW2,
+  kallaxLedW: devices.kallaxLeds.ledW1,
+  standingLamp: devices.standingLamp.relay,
+  tableLight: devices.tableLight.relay,
 };
 
 export const groups = {
@@ -130,9 +130,9 @@ export const groups = {
 })();
 
 export const diningRoom = {
-  ...devices,
   ...groups,
   ...properties,
+  devices,
 };
 
 metadataStore.set(diningRoom, {

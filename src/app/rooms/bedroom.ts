@@ -15,29 +15,21 @@ import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
 
 export const devices = {
-  deviceCeilingLight: shelly1(
+  ceilingLight: shelly1(
     logger,
     timings,
     'bedroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  deviceNightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
-  deviceNightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
-  deviceNightstandLeds: h801(
+  nightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
+  nightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
+  nightstandLeds: h801(
     logger,
     timings,
     'bedroom-nightstandleds.iot.wurstsalat.cloud'
   ),
-  deviceRgbwLeds: h801(
-    logger,
-    timings,
-    'bedroom-bedrgbwleds.iot.wurstsalat.cloud'
-  ),
-  deviceStoneLamp: obiPlug(
-    logger,
-    timings,
-    'bedroom-stonelamp.iot.wurstsalat.cloud'
-  ),
-  deviceWallswitchDoor: shellyi3(
+  rgbwLeds: h801(logger, timings, 'bedroom-bedrgbwleds.iot.wurstsalat.cloud'),
+  stoneLamp: obiPlug(logger, timings, 'bedroom-stonelamp.iot.wurstsalat.cloud'),
+  wallswitchDoor: shellyi3(
     logger,
     timings,
     'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
@@ -45,25 +37,25 @@ export const devices = {
 };
 
 export const instances = {
-  nightstandButtonLeft: devices.deviceNightstandButtonLeft.$,
-  nightstandButtonRight: devices.deviceNightstandButtonRight.$,
-  stoneLampButton: devices.deviceStoneLamp.button.$,
-  wallswitchBedButton: devices.deviceCeilingLight.button.$,
-  wallswitchDoorButtonLeft: devices.deviceWallswitchDoor.button0.$,
-  wallswitchDoorButtonMiddle: devices.deviceWallswitchDoor.button1.$,
-  wallswitchDoorButtonRight: devices.deviceWallswitchDoor.button2.$,
+  nightstandButtonLeft: devices.nightstandButtonLeft.$,
+  nightstandButtonRight: devices.nightstandButtonRight.$,
+  stoneLampButton: devices.stoneLamp.button.$,
+  wallswitchBedButton: devices.ceilingLight.button.$,
+  wallswitchDoorButtonLeft: devices.wallswitchDoor.button0.$,
+  wallswitchDoorButtonMiddle: devices.wallswitchDoor.button1.$,
+  wallswitchDoorButtonRight: devices.wallswitchDoor.button2.$,
 };
 
 export const properties = {
-  bedLedB: devices.deviceRgbwLeds.ledB,
-  bedLedDownlightRed: devices.deviceNightstandLeds.ledB,
-  bedLedG: devices.deviceRgbwLeds.ledG,
-  bedLedR: devices.deviceRgbwLeds.ledR,
-  bedLedW: devices.deviceRgbwLeds.ledW1,
-  ceilingLight: devices.deviceCeilingLight.relay,
-  nightstandLedLeft: devices.deviceNightstandLeds.ledR,
-  nightstandLedRight: devices.deviceNightstandLeds.ledG,
-  stoneLamp: devices.deviceStoneLamp.relay,
+  bedLedB: devices.rgbwLeds.ledB,
+  bedLedDownlightRed: devices.nightstandLeds.ledB,
+  bedLedG: devices.rgbwLeds.ledG,
+  bedLedR: devices.rgbwLeds.ledR,
+  bedLedW: devices.rgbwLeds.ledW1,
+  ceilingLight: devices.ceilingLight.relay,
+  nightstandLedLeft: devices.nightstandLeds.ledR,
+  nightstandLedRight: devices.nightstandLeds.ledG,
+  stoneLamp: devices.stoneLamp.relay,
 };
 
 export const groups = {
@@ -142,9 +134,9 @@ export const groups = {
 })();
 
 export const bedroom = {
-  ...devices,
   ...groups,
   ...properties,
+  devices,
 };
 
 metadataStore.set(bedroom, {
