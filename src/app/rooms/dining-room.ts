@@ -2,9 +2,13 @@
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import {
+  led,
   ledGrouping,
+  output,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
+import { Timer } from '../../lib/timer.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -94,39 +98,45 @@ export const groups = {
 };
 
 (() => {
-  const allOffOr = (cb: () => void) => {
-    if (groups.allLights._get.value) {
-      groups.allLights._set.value = false;
+  const timer = new Timer(epochs.second * 10);
+
+  const allOffOr = (
+    light:
+      | ReturnType<typeof output>
+      | ReturnType<typeof led>
+      | ReturnType<typeof outputGrouping>
+      | ReturnType<typeof ledGrouping>
+  ) => {
+    if (timer.isRunning) {
+      light._set.flip();
+
+      timer.start();
 
       return;
     }
 
-    cb();
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+    } else {
+      light._set.value = true;
+    }
+
+    timer.start();
   };
 
-  instances.couchButton.observe(() =>
-    allOffOr(() => (properties.standingLamp._set.value = true))
-  );
+  instances.couchButton.observe(() => allOffOr(properties.standingLamp));
 
   instances.fanButton.up(() => properties.fan._set.flip());
 
   instances.fanRfButton.observe(() => properties.fan._set.flip());
 
-  instances.kallaxSideButton.observe(() =>
-    allOffOr(() => (properties.kallaxLedSide._set.value = true))
-  );
+  instances.kallaxSideButton.observe(() => allOffOr(properties.kallaxLedSide));
 
-  instances.standingLampButton.up(() =>
-    allOffOr(() => (properties.standingLamp._set.value = true))
-  );
+  instances.standingLampButton.up(() => allOffOr(properties.standingLamp));
 
-  instances.wallswitchBottom.up(() =>
-    allOffOr(() => (properties.tableLight._set.value = true))
-  );
+  instances.wallswitchBottom.up(() => allOffOr(properties.tableLight));
 
-  instances.wallswitchTop.up(() =>
-    allOffOr(() => (properties.ceilingLight._set.value = true))
-  );
+  instances.wallswitchTop.up(() => allOffOr(properties.ceilingLight));
 })();
 
 export const diningRoom = {

@@ -5,16 +5,16 @@ import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { livingRoom } from './rooms/living-room.js';
 import { office } from './rooms/office.js';
-import { storage } from './rooms/storage.js';
+import { storageRoom } from './rooms/storage-room.js';
 import { testRoom } from './rooms/test-room.js';
 
 function firstFloor() {
   const result = {
     bedroom,
     diningRoom,
-    livingRoom: livingRoom(),
+    livingRoom,
     office: office(),
-    storage: storage(),
+    storageRoom,
     testRoom: testRoom(),
   };
 

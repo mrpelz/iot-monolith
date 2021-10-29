@@ -2,9 +2,13 @@
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import {
+  led,
   ledGrouping,
+  output,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
+import { Timer } from '../../lib/timer.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -96,41 +100,49 @@ export const groups = {
 };
 
 (() => {
-  const allOffOr = (cb: () => void) => {
-    if (groups.allLights._get.value) {
-      groups.allLights._set.value = false;
+  const timer = new Timer(epochs.second * 10);
+
+  const allOffOr = (
+    light:
+      | ReturnType<typeof output>
+      | ReturnType<typeof led>
+      | ReturnType<typeof outputGrouping>
+      | ReturnType<typeof ledGrouping>
+  ) => {
+    if (timer.isRunning) {
+      light._set.flip();
+
+      timer.start();
 
       return;
     }
 
-    cb();
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+    } else {
+      light._set.value = true;
+    }
+
+    timer.start();
   };
 
   instances.nightstandButtonLeft.observe(() =>
-    allOffOr(() => (properties.nightstandLedLeft._set.value = true))
+    allOffOr(properties.nightstandLedLeft)
   );
 
   instances.nightstandButtonRight.observe(() =>
-    allOffOr(() => (properties.nightstandLedRight._set.value = true))
+    allOffOr(properties.nightstandLedRight)
   );
 
-  instances.wallswitchBedButton.up(() =>
-    allOffOr(() => (properties.ceilingLight._set.value = true))
-  );
+  instances.wallswitchBedButton.up(() => allOffOr(properties.ceilingLight));
 
-  instances.stoneLampButton.up(() =>
-    allOffOr(() => (properties.stoneLamp._set.value = true))
-  );
+  instances.stoneLampButton.up(() => allOffOr(properties.stoneLamp));
 
-  instances.wallswitchDoorButtonLeft.up(() =>
-    allOffOr(() => (groups.whiteLeds._set.value = true))
-  );
+  instances.wallswitchDoorButtonLeft.up(() => allOffOr(groups.whiteLeds));
   instances.wallswitchDoorButtonMiddle.up(() =>
-    allOffOr(() => (properties.ceilingLight._set.value = true))
+    allOffOr(properties.ceilingLight)
   );
-  instances.wallswitchDoorButtonRight.up(() =>
-    allOffOr(() => (groups.fuckLight._set.value = true))
-  );
+  instances.wallswitchDoorButtonRight.up(() => allOffOr(groups.fuckLight));
 })();
 
 export const bedroom = {

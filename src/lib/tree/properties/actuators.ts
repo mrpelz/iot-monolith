@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
+  AnyWritableObservable,
+  ObservableGroup,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../../observable.js';
+import {
   BooleanGroupStrategy,
   BooleanNullableStateGroup,
   BooleanState,
@@ -14,17 +20,13 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
-import {
-  ObservableGroup,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../observable.js';
 import { Device } from '../../device/main.js';
 import { Indicator } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
+import { Timer } from '../../timer.js';
 
 function actuatorStaleness<T>(
   state: ReadOnlyObservable<T | null>,
@@ -272,10 +274,124 @@ export function output(
   return result;
 }
 
+export function timer(
+  timedOff: number,
+  setter: AnyWritableObservable<boolean>
+) {
+  const offTimerEnabled = new BooleanState(true);
+  const offTimerActive = new BooleanState(false);
+
+  const offTimer = new Timer(timedOff);
+
+  offTimerEnabled.observe((value) => {
+    if (value) {
+      offTimer.enable();
+      return;
+    }
+
+    offTimerActive.value = false;
+    offTimer.disable();
+  });
+
+  offTimerActive.observe((value) => {
+    if (value) {
+      offTimer.start();
+      return;
+    }
+
+    if (!offTimer.isRunning) return;
+
+    offTimer.stop();
+  }, true);
+
+  offTimer.observe(() => (setter.value = false));
+  setter.observe((value) => (offTimerActive.value = value), true);
+
+  const result = {
+    $: offTimer,
+    _get: new ReadOnlyObservable(offTimerEnabled),
+    _set: offTimerEnabled,
+    active: (() => {
+      const _active = {
+        $: offTimerActive,
+        _get: new ReadOnlyObservable(offTimerActive),
+        _set: new NullState(() => (offTimerActive.value = false)),
+      };
+
+      metadataStore.set(_active, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _active;
+    })(),
+    flip: (() => {
+      const _flip = {
+        _set: new NullState(() => offTimerEnabled.flip()),
+      };
+
+      metadataStore.set(_flip, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _flip;
+    })(),
+    off: (() => {
+      const _off = {
+        _set: new NullState(() => (offTimerEnabled.value = false)),
+      };
+
+      metadataStore.set(_off, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _off;
+    })(),
+    on: (() => {
+      const _on = {
+        _set: new NullState(() => (offTimerEnabled.value = true)),
+      };
+
+      metadataStore.set(_on, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _on;
+    })(),
+  };
+
+  metadataStore.set(result, {
+    actuated: 'timer',
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'actuator',
+    valueType: ValueType.BOOLEAN,
+  });
+
+  return {
+    offTimer: result,
+  };
+}
+
 export function ledGrouping(
   lights: ReturnType<typeof led>[],
   actuated = 'light',
-  timerStop?: NullState
+  timedOff?: number
 ) {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
@@ -386,25 +502,7 @@ export function ledGrouping(
 
       return _on;
     })(),
-    ...(timerStop
-      ? {
-          timerStop: (() => {
-            const _timerStop = {
-              _set: timerStop,
-            };
-
-            metadataStore.set(_timerStop, {
-              actuated: 'timer',
-              level: Levels.PROPERTY,
-              parentRelation: ParentRelation.CONTROL_EXTENSION,
-              type: 'actuator',
-              valueType: ValueType.NULL,
-            });
-
-            return _timerStop;
-          })(),
-        }
-      : undefined),
+    ...(timedOff ? timer(timedOff, setOn) : undefined),
   };
 
   metadataStore.set(result, {
@@ -420,7 +518,7 @@ export function ledGrouping(
 export function outputGrouping(
   lights: (ReturnType<typeof output> | ReturnType<typeof led>)[],
   actuated = 'light',
-  timerStop?: NullState
+  timedOff?: number
 ) {
   const actual = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
@@ -482,25 +580,7 @@ export function outputGrouping(
 
       return _on;
     })(),
-    ...(timerStop
-      ? {
-          timerStop: (() => {
-            const _timerStop = {
-              _set: timerStop,
-            };
-
-            metadataStore.set(_timerStop, {
-              actuated: 'timer',
-              level: Levels.PROPERTY,
-              parentRelation: ParentRelation.CONTROL_EXTENSION,
-              type: 'actuator',
-              valueType: ValueType.NULL,
-            });
-
-            return _timerStop;
-          })(),
-        }
-      : undefined),
+    ...(timedOff ? timer(timedOff, set) : undefined),
   };
 
   metadataStore.set(result, {
