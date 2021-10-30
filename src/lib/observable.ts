@@ -44,10 +44,12 @@ export class Observable<T> {
     const oldValue = this._value;
     this._value = value;
 
-    for (const [observer, forcedReport] of this._observers) {
-      if (value === oldValue && !forcedReport) continue;
+    const changed = this._value !== oldValue;
 
-      observer(value);
+    for (const [observer, forcedReport] of this._observers) {
+      if (!changed && !forcedReport) continue;
+
+      observer(this._value);
     }
   }
 
@@ -174,14 +176,7 @@ export class ObservableGroup<T> extends Observable<T> {
     this._observables = observables ? new Set(observables) : new Set();
 
     for (const state of this._observables) {
-      state.observe(() => {
-        const oldValue = super.value;
-        const value = this.value;
-
-        if (value === oldValue) return;
-
-        super.value = value;
-      }, true);
+      state.observe(() => (super.value = this.value), true);
     }
   }
 
