@@ -8,6 +8,7 @@ import {
   metadataExtensionStore,
   metadataStore,
 } from '../main.js';
+import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import {
   Timings,
   async,
@@ -22,7 +23,6 @@ import {
   uvIndex,
 } from '../properties/sensors.js';
 import { Logger } from '../../log.js';
-import { ObservableGroup } from '../../observable.js';
 import { UDPDevice } from '../../device/udp.js';
 
 export const testDevice = (logger: Logger, timings: Timings) => {
@@ -53,15 +53,17 @@ export const testDevice = (logger: Logger, timings: Timings) => {
     pressure,
     temperature: (() => {
       const _temperature = {
-        _get: new (class extends ObservableGroup<number | null> {
-          protected _merge(): number | null {
-            const validValues = this.values.filter(
-              (value): value is number => typeof value === 'number'
-            );
+        _get: new ReadOnlyObservable(
+          new (class extends ObservableGroup<number | null> {
+            protected _merge(): number | null {
+              const validValues = this.values.filter(
+                (value): value is number => typeof value === 'number'
+              );
 
-            return validValues.length ? Math.min(...validValues) : null;
-          }
-        })(null, [mcp9808Temperature._get, bme280Temperature._get]),
+              return validValues.length ? Math.min(...validValues) : null;
+            }
+          })(null, [mcp9808Temperature._get, bme280Temperature._get])
+        ),
         bme280: bme280Temperature,
         mcp9808: mcp9808Temperature,
       };

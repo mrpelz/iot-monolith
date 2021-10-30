@@ -45,12 +45,12 @@ export function timer(
       return;
     }
 
+    triggerTime.value = null;
+    runoutTime.value = null;
+
     if (!offTimer.isRunning) return;
 
     offTimer.stop();
-
-    triggerTime.value = null;
-    runoutTime.value = null;
   }, true);
 
   offTimer.observe(() => {
