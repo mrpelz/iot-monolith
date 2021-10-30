@@ -14,8 +14,7 @@ const httpServer = new HttpServer(logger, 1337);
 httpServer.listen();
 
 export function app(): void {
-  const root = system();
-  const tree = new Tree(root);
+  const tree = new Tree(system);
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, run, tree);

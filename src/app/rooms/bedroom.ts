@@ -2,13 +2,10 @@
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import {
-  led,
   ledGrouping,
-  output,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
-import { Timer } from '../../lib/timer.js';
-import { epochs } from '../../lib/epochs.js';
+import { EnumState } from '../../lib/state.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -17,6 +14,8 @@ import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
+
+export const nightstandBrightnessSteps = [0, 16, 100] as const;
 
 export const devices = {
   ceilingLight: shelly1(
@@ -44,10 +43,10 @@ export const instances = {
   nightstandButtonLeft: devices.nightstandButtonLeft.$,
   nightstandButtonRight: devices.nightstandButtonRight.$,
   stoneLampButton: devices.stoneLamp.button.$,
-  wallswitchBedButton: devices.ceilingLight.button.$,
-  wallswitchDoorButtonLeft: devices.wallswitchDoor.button0.$,
-  wallswitchDoorButtonMiddle: devices.wallswitchDoor.button1.$,
-  wallswitchDoorButtonRight: devices.wallswitchDoor.button2.$,
+  wallswitchBed: devices.ceilingLight.button.$,
+  wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
+  wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
+  wallswitchDoorRight: devices.wallswitchDoor.button2.$,
 };
 
 export const properties = {
@@ -76,7 +75,6 @@ export const groups = {
   ]),
   fuckLight: outputGrouping([
     properties.bedLedDownlightRed,
-    properties.bedLedR,
     properties.stoneLamp,
   ]),
   leds: ledGrouping([
@@ -100,49 +98,56 @@ export const groups = {
 };
 
 (() => {
-  const timer = new Timer(epochs.second * 10);
+  const nightstandButtonLeftSteps = new EnumState(
+    nightstandBrightnessSteps,
+    nightstandBrightnessSteps[0]
+  );
 
-  const allOffOr = (
-    light:
-      | ReturnType<typeof output>
-      | ReturnType<typeof led>
-      | ReturnType<typeof outputGrouping>
-      | ReturnType<typeof ledGrouping>
-  ) => {
-    if (timer.isRunning) {
-      light._set.flip();
-
-      timer.start();
-
-      return;
-    }
-
-    if (groups.allLights._set.value) {
-      groups.allLights._set.value = false;
-    } else {
-      light._set.value = true;
-    }
-
-    timer.start();
-  };
+  nightstandButtonLeftSteps.observe(
+    (value) => (properties.nightstandLedLeft.brightness._set.value = value)
+  );
 
   instances.nightstandButtonLeft.observe(() =>
-    allOffOr(properties.nightstandLedLeft)
+    nightstandButtonLeftSteps.next()
+  );
+
+  const nightstandButtonRightSteps = new EnumState(
+    nightstandBrightnessSteps,
+    nightstandBrightnessSteps[0]
+  );
+
+  nightstandButtonRightSteps.observe(
+    (value) => (properties.nightstandLedRight.brightness._set.value = value)
   );
 
   instances.nightstandButtonRight.observe(() =>
-    allOffOr(properties.nightstandLedRight)
+    nightstandButtonRightSteps.next()
   );
 
-  instances.wallswitchBedButton.up(() => allOffOr(properties.ceilingLight));
-
-  instances.stoneLampButton.up(() => allOffOr(properties.stoneLamp));
-
-  instances.wallswitchDoorButtonLeft.up(() => allOffOr(groups.whiteLeds));
-  instances.wallswitchDoorButtonMiddle.up(() =>
-    allOffOr(properties.ceilingLight)
+  instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchBed.longPress(
+    () => (groups.allLights._set.value = false)
   );
-  instances.wallswitchDoorButtonRight.up(() => allOffOr(groups.fuckLight));
+
+  instances.stoneLampButton.up(() => properties.stoneLamp._set.flip());
+  instances.stoneLampButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.wallswitchDoorLeft.up(() => groups.whiteLeds._set.flip());
+  instances.wallswitchDoorLeft.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.wallswitchDoorMiddle.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorMiddle.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.wallswitchDoorRight.up(() => groups.fuckLight._set.flip());
+  instances.wallswitchDoorRight.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 })();
 
 export const bedroom = {

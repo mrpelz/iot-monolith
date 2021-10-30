@@ -8,6 +8,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { logger } from '../logging.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
+import { timer } from '../../lib/tree/properties/logic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -28,31 +29,21 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
   doorSensorTampered: devices.doorSensor.tamperSwitch,
+  lightTimer: timer(epochs.minute * 5, devices.ceilingLight.relay._set),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight]),
-  timedCeilingLight: outputGrouping(
-    [properties.ceilingLight],
-    undefined,
-    epochs.minute * 5
-  ),
 };
 
 (() => {
-  const timerEnabled = groups.timedCeilingLight.offTimer?.$;
-  const timerActive = groups.timedCeilingLight.offTimer?.active.$;
-
-  instances.wallswitch.up(() => groups.timedCeilingLight._set.flip());
+  instances.wallswitch.up(() => properties.ceilingLight._set.flip());
 
   instances.wallswitch.longPress(() => {
-    if (!timerEnabled) return;
+    if (!properties.lightTimer._get.value) return;
 
-    groups.timedCeilingLight._set.value = true;
-
-    if (timerActive) {
-      timerActive.value = false;
-    }
+    properties.ceilingLight._set.value = true;
+    properties.lightTimer.active._set.value = false;
 
     if (properties.ceilingLight._set.value) {
       ackBlinkFromOn(properties.ceilingLight.effectState.$);
@@ -63,7 +54,7 @@ export const groups = {
 
   properties.doorOpen._get.observe((value) => {
     if (!value) return;
-    groups.timedCeilingLight._set.value = true;
+    properties.ceilingLight._set.value = true;
   });
 })();
 

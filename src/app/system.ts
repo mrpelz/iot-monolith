@@ -8,14 +8,14 @@ import { office } from './rooms/office.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { testRoom } from './rooms/test-room.js';
 
-function firstFloor() {
+const firstFloor = (() => {
   const result = {
     bedroom,
     diningRoom,
     livingRoom,
-    office: office(),
+    office,
     storageRoom,
-    testRoom: testRoom(),
+    testRoom,
   };
 
   metadataStore.set(result, {
@@ -26,11 +26,11 @@ function firstFloor() {
   });
 
   return result;
-}
+})();
 
-function sonninstraße16() {
+const sonninstraße16 = (() => {
   const result = {
-    firstFloor: firstFloor(),
+    firstFloor,
   };
 
   metadataStore.set(result, {
@@ -40,11 +40,11 @@ function sonninstraße16() {
   });
 
   return result;
-}
+})();
 
-function wurstHome() {
+const wurstHome = (() => {
   const result = {
-    sonninstraße16: sonninstraße16(),
+    sonninstraße16,
   };
 
   metadataStore.set(result, {
@@ -53,11 +53,11 @@ function wurstHome() {
   });
 
   return result;
-}
+})();
 
-export function system() {
+export const system = (() => {
   const result = {
-    wurstHome: wurstHome(),
+    wurstHome,
   };
 
   metadataStore.set(result, {
@@ -65,4 +65,4 @@ export function system() {
   });
 
   return result;
-}
+})();

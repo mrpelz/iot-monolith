@@ -1,16 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
-import {
-  led,
-  ledGrouping,
-  output,
-  outputGrouping,
-} from '../../lib/tree/properties/actuators.js';
-import { Timer } from '../../lib/timer.js';
-import { epochs } from '../../lib/epochs.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -53,41 +46,27 @@ export const groups = {
 };
 
 (() => {
-  const timer = new Timer(epochs.second * 10);
-
-  const allOffOr = (
-    light:
-      | ReturnType<typeof output>
-      | ReturnType<typeof led>
-      | ReturnType<typeof outputGrouping>
-      | ReturnType<typeof ledGrouping>
-  ) => {
-    if (timer.isRunning) {
-      light._set.flip();
-
-      timer.start();
-
-      return;
-    }
-
-    if (groups.allLights._set.value) {
-      groups.allLights._set.value = false;
-    } else {
-      light._set.value = true;
-    }
-
-    timer.start();
-  };
-
   instances.fanButton.up(() => properties.fan._set.flip());
 
-  instances.standingLampButton.up(() => allOffOr(properties.standingLamp));
+  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
+  instances.standingLampButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
-  instances.wallswitchBottom.up(() => allOffOr(properties.fan));
+  instances.wallswitchBottom.up(() => properties.fan._set.flip());
+  instances.wallswitchBottom.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
-  instances.wallswitchMiddle.up(() => allOffOr(properties.standingLamp));
+  instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
+  instances.wallswitchMiddle.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
-  instances.wallswitchTop.up(() => allOffOr(properties.ceilingLight));
+  instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchTop.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 })();
 
 export const livingRoom = {
