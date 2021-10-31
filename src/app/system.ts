@@ -3,6 +3,7 @@
 import { Levels, metadataStore } from '../lib/tree/main.js';
 import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
+import { kitchen } from './rooms/kitchen.js';
 import { livingRoom } from './rooms/living-room.js';
 import { office } from './rooms/office.js';
 import { storageRoom } from './rooms/storage-room.js';
@@ -12,6 +13,7 @@ const firstFloor = (() => {
   const result = {
     bedroom,
     diningRoom,
+    kitchen,
     livingRoom,
     office,
     storageRoom,
