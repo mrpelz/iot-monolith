@@ -5,7 +5,6 @@ import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
-import { EnumState } from '../../lib/state.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -14,8 +13,6 @@ import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
-
-export const nightstandBrightnessSteps = [0, 16, 100] as const;
 
 export const devices = {
   ceilingLight: shelly1(
@@ -98,31 +95,23 @@ export const groups = {
 };
 
 (() => {
-  const nightstandButtonLeftSteps = new EnumState(
-    nightstandBrightnessSteps,
-    nightstandBrightnessSteps[0]
-  );
+  instances.nightstandButtonLeft.observe(() => {
+    if (properties.nightstandLedLeft._get.value) {
+      properties.nightstandLedLeft._set.value = false;
+      return;
+    }
 
-  nightstandButtonLeftSteps.observe(
-    (value) => (properties.nightstandLedLeft.brightness._set.value = value)
-  );
+    properties.nightstandLedLeft.brightness._set.value = 16;
+  });
 
-  instances.nightstandButtonLeft.observe(() =>
-    nightstandButtonLeftSteps.next()
-  );
+  instances.nightstandButtonRight.observe(() => {
+    if (properties.nightstandLedRight._get.value) {
+      properties.nightstandLedRight._set.value = false;
+      return;
+    }
 
-  const nightstandButtonRightSteps = new EnumState(
-    nightstandBrightnessSteps,
-    nightstandBrightnessSteps[0]
-  );
-
-  nightstandButtonRightSteps.observe(
-    (value) => (properties.nightstandLedRight.brightness._set.value = value)
-  );
-
-  instances.nightstandButtonRight.observe(() =>
-    nightstandButtonRightSteps.next()
-  );
+    properties.nightstandLedRight.brightness._set.value = 16;
+  });
 
   instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchBed.longPress(

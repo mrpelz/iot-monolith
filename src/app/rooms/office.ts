@@ -5,7 +5,6 @@ import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
-import { EnumState } from '../../lib/state.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -15,13 +14,6 @@ import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
-
-const workbenchButtonSteps = [
-  [false, false] as const,
-  [true, true] as const,
-  [false, true] as const,
-  [true, false] as const,
-] as const;
 
 export const devices = {
   ceilingLight: sonoffBasic(
@@ -102,17 +94,7 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  const workbenchButtonEnum = new EnumState(
-    workbenchButtonSteps,
-    workbenchButtonSteps[0]
-  );
-
-  workbenchButtonEnum.observe(([cWhiteOn, wWhiteOn]) => {
-    properties.workbenchLedCWhite._set.value = cWhiteOn;
-    properties.workbenchLedWWhite._set.value = wWhiteOn;
-  });
-
-  instances.workbenchButton.observe(() => workbenchButtonEnum.next());
+  instances.workbenchButton.observe(() => groups.workbenchLeds._set.flip());
 })();
 
 export const office = {

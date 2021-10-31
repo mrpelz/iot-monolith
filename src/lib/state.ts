@@ -56,6 +56,20 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
     return BooleanStateGroup._getValue(this._strategy, this.observables);
   }
 
+  get allOn(): boolean {
+    return BooleanStateGroup._getValue(
+      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+      this.observables
+    );
+  }
+
+  get someOn(): boolean {
+    return BooleanStateGroup._getValue(
+      BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+      this.observables
+    );
+  }
+
   flip(): boolean {
     this.value = !this.value;
 
