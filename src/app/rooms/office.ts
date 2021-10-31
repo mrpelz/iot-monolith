@@ -94,7 +94,39 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  instances.workbenchButton.observe(() => groups.workbenchLeds._set.flip());
+  instances.workbenchButton.observe(() => {
+    if (
+      !properties.workbenchLedCWhite._get.value &&
+      !properties.workbenchLedWWhite._get.value
+    ) {
+      groups.workbenchLeds._set.value = true;
+      return;
+    }
+
+    if (
+      properties.workbenchLedCWhite._get.value &&
+      properties.workbenchLedWWhite._get.value
+    ) {
+      properties.workbenchLedCWhite._set.value = false;
+      return;
+    }
+
+    if (
+      !properties.workbenchLedCWhite._get.value &&
+      properties.workbenchLedWWhite._get.value
+    ) {
+      properties.workbenchLedCWhite._set.value = true;
+      properties.workbenchLedWWhite._set.value = false;
+      return;
+    }
+
+    if (
+      properties.workbenchLedCWhite._get.value &&
+      !properties.workbenchLedWWhite._get.value
+    ) {
+      groups.workbenchLeds._set.value = false;
+    }
+  });
 })();
 
 export const office = {

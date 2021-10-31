@@ -96,21 +96,21 @@ export const groups = {
 
 (() => {
   instances.nightstandButtonLeft.observe(() => {
-    if (properties.nightstandLedLeft._get.value) {
-      properties.nightstandLedLeft._set.value = false;
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
       return;
     }
 
-    properties.nightstandLedLeft.brightness._set.value = 16;
+    properties.nightstandLedLeft.brightness._set.value = 8;
   });
 
   instances.nightstandButtonRight.observe(() => {
-    if (properties.nightstandLedRight._get.value) {
-      properties.nightstandLedRight._set.value = false;
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
       return;
     }
 
-    properties.nightstandLedRight.brightness._set.value = 16;
+    properties.nightstandLedRight.brightness._set.value = 8;
   });
 
   instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
