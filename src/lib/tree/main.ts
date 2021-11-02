@@ -134,11 +134,56 @@ export type Values = [number, unknown][];
 export const metadataStore = new WeakMap<object, Meta>();
 export const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
 
+export const valueTypeMap = {
+  [ValueType.BOOLEAN]: {
+    typeof: 'boolean',
+  },
+  [ValueType.NULL]: {
+    typeof: 'object',
+    value: null,
+  },
+  [ValueType.NUMBER]: {
+    typeof: 'number',
+  },
+  [ValueType.RAW]: {
+    abort: true,
+  },
+  [ValueType.STRING]: {
+    typeof: 'string',
+  },
+};
+
+export function isValidValue(value: unknown, valueType: ValueType): boolean {
+  const valueTypeMapItem = valueTypeMap[valueType];
+  if (!valueTypeMapItem) return false;
+
+  if ('abort' in valueTypeMapItem && valueTypeMapItem.abort) {
+    return false;
+  }
+
+  if ('value' in valueTypeMapItem && valueTypeMapItem.value !== value) {
+    return false;
+  }
+
+  if (
+    'typeof' in valueTypeMapItem &&
+    valueTypeMapItem.typeof !== typeof value
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 export class Tree {
   private _getterIndex = new RollingNumber(0, Infinity);
   private readonly _getters = new Map<AnyReadOnlyObservable<unknown>, number>();
   private _setterIndex = new RollingNumber(0, Infinity);
-  private readonly _setters = new Map<number, AnyWritableObservable<unknown>>();
+  private readonly _setters = new Map<
+    number,
+    [AnyWritableObservable<unknown>, ValueType]
+  >();
+
   private _stream: Stream | null = null;
 
   readonly structure: any;
@@ -173,14 +218,17 @@ export class Tree {
     return entryIndex;
   }
 
-  private _getSetterIndex(value: AnyWritableObservable<unknown>) {
+  private _getSetterIndex(
+    value: AnyWritableObservable<unknown>,
+    valueType: ValueType
+  ) {
     const entry = [...this._setters.entries()].find(
-      ([, setter]) => setter === value
+      ([, [setter]]) => setter === value
     )?.[0];
     if (entry !== undefined) return entry;
 
     const entryIndex = this._setterIndex.get();
-    this._setters.set(entryIndex, value);
+    this._setters.set(entryIndex, [value, valueType]);
 
     return entryIndex;
   }
@@ -240,7 +288,11 @@ export class Tree {
 
     const set = (() => {
       if (!('_set' in object)) return undefined;
-      return this._getSetterIndex(object._set);
+      if (!meta) return undefined;
+      if (meta.level !== Levels.PROPERTY) return undefined;
+      if (meta.valueType === undefined) return undefined;
+
+      return this._getSetterIndex(object._set, meta.valueType);
     })();
 
     return {
@@ -252,10 +304,25 @@ export class Tree {
   }
 
   set(index: number, value: unknown): void {
-    const setter = this._setters.get(index);
-    if (!setter) return;
+    const item = this._setters.get(index);
+    if (!item) return;
+
+    const [setter, valueType] = item;
+    if (!isValidValue(value, valueType)) return;
 
     setter.value = value;
+  }
+
+  value(index: number): unknown {
+    const result = Array.from(this._getters.entries()).find(
+      ([, gettersIndex]) => gettersIndex === index
+    );
+
+    if (!result) return undefined;
+
+    const [getter] = result;
+
+    return getter.value;
   }
 
   values(): Values {

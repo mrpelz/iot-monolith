@@ -78,27 +78,21 @@ export const groups = {
   instances.leftButton.observe(() => groups.allLights._set.flip());
 
   instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());
-  instances.wallswitchFrontTop.longPress(() => {
-    if (groups.allLights._get.value) {
-      groups.allLights._set.value = false;
+  instances.wallswitchFrontTop.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
-      return;
-    }
-
-    groups.floodlight._set.value = true;
-  });
-
-  instances.wallswitchFrontBottomLeft.up(() => {
-    if (groups.allLights._get.value) {
-      groups.allLights._set.value = false;
-
-      return;
-    }
-
-    groups.worklightWWhite._set.value = true;
-  });
+  instances.wallswitchFrontBottomLeft.up(() =>
+    groups.worklightWWhite._set.flip()
+  );
+  instances.wallswitchFrontBottomLeft.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
   instances.wallswitchBack.up(() => groups.allLights._set.flip());
+  instances.wallswitchBack.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 })();
 
 export const kitchen = {

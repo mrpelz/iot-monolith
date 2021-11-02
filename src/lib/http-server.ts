@@ -3,6 +3,7 @@ import { Input, Logger } from './log.js';
 import { multiline } from './string.js';
 
 export type RouteUtils = {
+  badRequest: (body?: string) => void;
   constrainMethod: (method: string, body?: string) => boolean;
   internalServerError: (body?: string) => void;
   notFound: (body?: string) => void;
@@ -22,6 +23,24 @@ export type Route = {
 };
 
 export class HttpServer {
+  static badRequest(response: ServerResponse, body?: string): void {
+    response.writeHead(400, 'Bad request');
+
+    const message = multiline`
+      400 Bad request
+      The request could not be understood by the server due to malformed syntax.
+    `;
+
+    response.end(
+      body
+        ? multiline`
+          ${message}
+          ${body}
+        `
+        : message
+    );
+  }
+
   static constrainMethod(
     method: string,
     response: ServerResponse,
@@ -104,6 +123,7 @@ export class HttpServer {
 
   private _handleRequest(request: IncomingMessage, response: ServerResponse) {
     const utils: RouteUtils = {
+      badRequest: (body) => HttpServer.badRequest(response, body),
       constrainMethod: (method, body) =>
         HttpServer.constrainMethod(method, response, request, body),
       internalServerError: (body) =>
