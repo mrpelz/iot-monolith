@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
-  AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
   Observable,
@@ -198,7 +197,7 @@ export class Tree {
     const observable = new Observable<[number, unknown] | null>(null);
 
     for (const [getter, key] of this._getters) {
-      (getter as unknown as AnyObservable<unknown>).observe(
+      (getter as unknown as AnyReadOnlyObservable<unknown>).observe(
         (value) => (observable.value = [key, value])
       );
     }
@@ -303,17 +302,7 @@ export class Tree {
     };
   }
 
-  set(index: number, value: unknown): void {
-    const item = this._setters.get(index);
-    if (!item) return;
-
-    const [setter, valueType] = item;
-    if (!isValidValue(value, valueType)) return;
-
-    setter.value = value;
-  }
-
-  value(index: number): unknown {
+  getter(index: number): AnyReadOnlyObservable<unknown> | undefined {
     const result = Array.from(this._getters.entries()).find(
       ([, gettersIndex]) => gettersIndex === index
     );
@@ -322,7 +311,17 @@ export class Tree {
 
     const [getter] = result;
 
-    return getter.value;
+    return getter;
+  }
+
+  set(index: number, value: unknown): void {
+    const item = this._setters.get(index);
+    if (!item) return;
+
+    const [setter, valueType] = item;
+    if (!isValidValue(value, valueType)) return;
+
+    setter.value = value;
   }
 
   values(): Values {

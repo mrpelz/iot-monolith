@@ -1,11 +1,11 @@
 import { HttpServer } from '../lib/http-server.js';
 import { Tree } from '../lib/tree/main.js';
 import { WebApi } from '../lib/web-api.js';
+import { hooks } from '../lib/hooks.js';
 
 export async function app(): Promise<void> {
   const { logger } = await import('./logging.js');
   const { system } = await import('./system.js');
-  const { hooks } = await import('./hooks.js');
 
   const run = Date.now().toString();
 

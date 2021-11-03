@@ -1,8 +1,5 @@
-/* eslint-disable max-depth */
-/* eslint-disable complexity */
-
-import { Tree, isValidValue } from '../lib/tree/main.js';
-import { HttpServer } from '../lib/http-server.js';
+import { Tree, isValidValue } from './tree/main.js';
+import { HttpServer } from './http-server.js';
 
 const PATH_HOOKS = '/hooks' as const;
 const PATH_DELIMITER = '.' as const;
@@ -40,7 +37,10 @@ export function hooks(httpServer: HttpServer, tree: Tree): void {
       return;
     }
 
-    if (method === 'POST' && 'set' in state && searchParams.has('value')) {
+    const hasGetter = 'get' in state && state.get !== undefined;
+    const hasSetter = 'set' in state && state.set !== undefined;
+
+    if (method === 'POST' && hasSetter && searchParams.has('value')) {
       const value = (() => {
         const _value = searchParams.get('value');
 
@@ -67,8 +67,38 @@ export function hooks(httpServer: HttpServer, tree: Tree): void {
       return;
     }
 
-    if ('get' in state) {
-      response.end(`${JSON.stringify(tree.value(state.get))}\n`);
+    if (hasGetter) {
+      response.write(`${JSON.stringify(tree.getter(state.get)?.value)}\n`);
+
+      if (searchParams.get('follow') === '1') {
+        const getter = tree.getter(state.get);
+        if (!getter) {
+          response.end();
+
+          return;
+        }
+
+        request.socket.setNoDelay(true);
+
+        const subscription = getter.observe((value) => {
+          if (!response.writable) return;
+
+          response.write(`${JSON.stringify(value)}\n`);
+        });
+
+        const handleClose = () => {
+          subscription.remove();
+          response.end();
+        };
+
+        request.on('close', handleClose);
+        request.on('end', handleClose);
+        request.on('error', () => handleClose);
+
+        return;
+      }
+
+      response.end();
 
       return;
     }
