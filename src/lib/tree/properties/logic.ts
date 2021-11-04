@@ -15,32 +15,29 @@ import {
 } from '../main.js';
 import { Timer } from '../../timer.js';
 
-export function timer(
-  timedOff: number,
-  setter: AnyWritableObservable<boolean>
-) {
-  const offTimerEnabled = new BooleanState(true);
-  const offTimerActive = new BooleanState(false);
+export function offTimer(time: number, setter: AnyWritableObservable<boolean>) {
+  const enabled = new BooleanState(true);
+  const active = new BooleanState(false);
 
   const triggerTime = new Observable<number | null>(null);
   const runoutTime = new Observable<number | null>(null);
 
-  const offTimer = new Timer(timedOff);
+  const timer = new Timer(time);
 
-  offTimerEnabled.observe((value) => {
+  enabled.observe((value) => {
     if (value) return;
 
-    offTimerActive.value = false;
+    active.value = false;
   });
 
-  offTimerActive.observe((value) => {
+  active.observe((value) => {
     if (value) {
-      offTimer.start();
+      timer.start();
 
       const now = Date.now();
 
       triggerTime.value = now;
-      runoutTime.value = now + timedOff;
+      runoutTime.value = now + time;
 
       return;
     }
@@ -48,31 +45,28 @@ export function timer(
     triggerTime.value = null;
     runoutTime.value = null;
 
-    if (!offTimer.isRunning) return;
+    if (!timer.isRunning) return;
 
-    offTimer.stop();
+    timer.stop();
   }, true);
 
-  offTimer.observe(() => {
+  timer.observe(() => {
     setter.value = false;
-    offTimerActive.value = false;
+    active.value = false;
   });
-  setter.observe(
-    (value) => (offTimerActive.value = offTimerEnabled.value && value),
-    true
-  );
+  setter.observe((value) => (active.value = enabled.value && value), true);
 
   const result = {
-    _get: new ReadOnlyObservable(offTimerEnabled),
-    _set: offTimerEnabled,
+    _get: new ReadOnlyObservable(enabled),
+    _set: enabled,
     active: (() => {
       const _active = {
-        $: offTimerActive,
-        _get: new ReadOnlyObservable(offTimerActive),
-        _set: offTimerActive,
+        $: active,
+        _get: new ReadOnlyObservable(active),
+        _set: active,
         flip: (() => {
           const _flip = {
-            _set: new NullState(() => offTimerActive.flip()),
+            _set: new NullState(() => active.flip()),
           };
 
           metadataStore.set(_flip, {
@@ -87,7 +81,7 @@ export function timer(
         })(),
         off: (() => {
           const _off = {
-            _set: new NullState(() => (offTimerActive.value = false)),
+            _set: new NullState(() => (active.value = false)),
           };
 
           metadataStore.set(_off, {
@@ -102,7 +96,7 @@ export function timer(
         })(),
         on: (() => {
           const _on = {
-            _set: new NullState(() => (offTimerActive.value = true)),
+            _set: new NullState(() => (active.value = true)),
           };
 
           metadataStore.set(_on, {
@@ -129,7 +123,7 @@ export function timer(
     })(),
     flip: (() => {
       const _flip = {
-        _set: new NullState(() => offTimerEnabled.flip()),
+        _set: new NullState(() => enabled.flip()),
       };
 
       metadataStore.set(_flip, {
@@ -144,7 +138,7 @@ export function timer(
     })(),
     off: (() => {
       const _off = {
-        _set: new NullState(() => (offTimerEnabled.value = false)),
+        _set: new NullState(() => (enabled.value = false)),
       };
 
       metadataStore.set(_off, {
@@ -159,7 +153,7 @@ export function timer(
     })(),
     on: (() => {
       const _on = {
-        _set: new NullState(() => (offTimerEnabled.value = true)),
+        _set: new NullState(() => (enabled.value = true)),
       };
 
       metadataStore.set(_on, {
@@ -203,7 +197,7 @@ export function timer(
   };
 
   metadataStore.set(result, {
-    actuated: 'timer',
+    actuated: 'offTimer',
     level: Levels.PROPERTY,
     parentRelation: ParentRelation.META_RELATION,
     type: 'actuator',

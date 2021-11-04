@@ -3,6 +3,7 @@
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
+import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { ledGrouping } from '../../lib/tree/properties/actuators.js';
 import { logger } from '../logging.js';
@@ -23,6 +24,7 @@ export const devices = {
     timings,
     'kitchen-wallswitchfront.iot.wurstsalat.cloud'
   ),
+  windowSensor: ev1527WindowSensor(logger, ev1527Transport, 841520),
 };
 
 export const instances = {
@@ -40,6 +42,8 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.ledB,
   ledRightFloodlight: devices.ledsRight.ledW1,
   ledRightWWhite: devices.ledsRight.ledG,
+  windowOpen: devices.windowSensor.open,
+  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const groups = {

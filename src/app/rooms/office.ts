@@ -32,6 +32,7 @@ export const devices = {
     timings,
     'office-wallswitch.iot.wurstsalat.cloud'
   ),
+  // windowSensorLeft: ev1527WindowSensor(logger, ev1527Transport, 0),
   windowSensorRight: ev1527WindowSensor(logger, ev1527Transport, 839280),
   workbenchButton: ev1527ButtonX1(ev1527Transport, 903326, logger),
   workbenchLeds: h801(
@@ -54,6 +55,8 @@ export const properties = {
   doorOpen: devices.doorSensor.open,
   doorSensorTampered: devices.doorSensor.tamperSwitch,
   floodLight: devices.floodlight.relay,
+  // windowLeftOpen: devices.windowSensorLeft.open,
+  // windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
   windowRightOpen: devices.windowSensorRight.open,
   windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
   workbenchLedCWhite: devices.workbenchLeds.ledB,

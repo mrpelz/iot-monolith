@@ -7,6 +7,7 @@ import {
 } from '../../lib/tree/properties/actuators.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
+import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
@@ -20,6 +21,7 @@ export const devices = {
     timings,
     'bedroom-ceilinglight.iot.wurstsalat.cloud'
   ),
+  doorSensor: ev1527WindowSensor(logger, ev1527Transport, 724720),
   nightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
   nightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
   nightstandLeds: h801(
@@ -34,6 +36,8 @@ export const devices = {
     timings,
     'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
   ),
+  windowSensorLeft: ev1527WindowSensor(logger, ev1527Transport, 762272),
+  // windowSensorRight: ev1527WindowSensor(logger, ev1527Transport, 0),
 };
 
 export const instances = {
@@ -53,9 +57,15 @@ export const properties = {
   bedLedR: devices.rgbwLeds.ledR,
   bedLedW: devices.rgbwLeds.ledW1,
   ceilingLight: devices.ceilingLight.relay,
+  doorOpen: devices.doorSensor.open,
+  doorSensorTampered: devices.doorSensor.tamperSwitch,
   nightstandLedLeft: devices.nightstandLeds.ledR,
   nightstandLedRight: devices.nightstandLeds.ledG,
   stoneLamp: devices.stoneLamp.relay,
+  windowLeftOpen: devices.windowSensorLeft.open,
+  windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
+  // windowRightOpen: devices.windowSensorRight.open,
+  // windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
 };
 
 export const groups = {

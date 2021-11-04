@@ -6,9 +6,9 @@ import { ev1527Transport, rfBridge } from '../bridges.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { logger } from '../logging.js';
+import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
-import { timer } from '../../lib/tree/properties/logic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -29,7 +29,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
   doorSensorTampered: devices.doorSensor.tamperSwitch,
-  lightTimer: timer(epochs.minute * 5, devices.ceilingLight.relay._set),
+  lightTimer: offTimer(epochs.minute * 5, devices.ceilingLight.relay._set),
 };
 
 export const groups = {

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { ev1527Transport } from '../bridges.js';
+import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
@@ -25,6 +27,7 @@ export const devices = {
     timings,
     'livingroom-wallswitch.iot.wurstsalat.cloud'
   ),
+  windowSensor: ev1527WindowSensor(logger, ev1527Transport, 670496),
 };
 
 export const instances = {
@@ -33,6 +36,8 @@ export const instances = {
   wallswitchBottom: devices.wallswitch.button2.$,
   wallswitchMiddle: devices.wallswitch.button1.$,
   wallswitchTop: devices.wallswitch.button0.$,
+  windowOpen: devices.windowSensor.open,
+  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const properties = {
