@@ -12,6 +12,7 @@ import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
+import { groups as systemGroups } from '../system.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -80,8 +81,8 @@ export const groups = {
     properties.kallaxLedR,
     properties.kallaxLedSide,
     properties.kallaxLedW,
-    properties.tableLight,
     properties.standingLamp,
+    properties.tableLight,
   ]),
   leds: ledGrouping([
     properties.kallaxLedB,
@@ -95,8 +96,8 @@ export const groups = {
 
 (() => {
   instances.couchButton.observe(() => {
-    if (groups.allLights._set.value) {
-      groups.allLights._set.value = false;
+    if (systemGroups.kitchenAdjacentLights._set.value) {
+      systemGroups.kitchenAdjacentLights._set.value = false;
       return;
     }
 
@@ -113,17 +114,17 @@ export const groups = {
 
   instances.standingLampButton.up(() => properties.standingLamp._set.flip());
   instances.standingLampButton.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
   instances.wallswitchBottom.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchTop.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 })();
 

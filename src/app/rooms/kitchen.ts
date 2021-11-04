@@ -8,6 +8,7 @@ import { h801 } from '../../lib/tree/devices/h801.js';
 import { ledGrouping } from '../../lib/tree/properties/actuators.js';
 import { logger } from '../logging.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
+import { groups as systemGroups } from '../system.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -83,24 +84,24 @@ export const groups = {
 
   instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());
   instances.wallswitchFrontTop.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchFrontBottomLeft.up(() =>
     groups.worklightWWhite._set.flip()
   );
   instances.wallswitchFrontBottomLeft.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchFrontBottomRight.up(() => groups.floodlight._set.flip());
   instances.wallswitchFrontBottomRight.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchBack.up(() => groups.allLights._set.flip());
   instances.wallswitchBack.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (systemGroups.kitchenAdjacentLights._set.value = false)
   );
 })();
 
