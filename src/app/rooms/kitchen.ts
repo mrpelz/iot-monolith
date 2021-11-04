@@ -93,6 +93,11 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
+  instances.wallswitchFrontBottomRight.up(() => groups.floodlight._set.flip());
+  instances.wallswitchFrontBottomRight.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
   instances.wallswitchBack.up(() => groups.allLights._set.flip());
   instances.wallswitchBack.longPress(
     () => (groups.allLights._set.value = false)
