@@ -10,9 +10,11 @@ import {
   livingRoom,
   properties as livingRoomProperties,
 } from './rooms/living-room.js';
+import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
 import { office } from './rooms/office.js';
 import { outputGrouping } from '../lib/tree/properties/actuators.js';
+import { showerBathroom } from './rooms/shower-bathroom.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { testRoom } from './rooms/test-room.js';
 
@@ -41,12 +43,14 @@ const firstFloor = (() => {
   const { kitchenAdjacentLights } = groups;
 
   const result = {
+    bathtubBathroom,
     bedroom,
     diningRoom,
     kitchen,
     kitchenAdjacentLights,
     livingRoom,
     office,
+    showerBathroom,
     storageRoom,
     testRoom,
   };

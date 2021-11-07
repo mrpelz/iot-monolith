@@ -37,14 +37,14 @@ export const instances = {
   wallswitchBottom: devices.wallswitch.button2.$,
   wallswitchMiddle: devices.wallswitch.button1.$,
   wallswitchTop: devices.wallswitch.button0.$,
-  windowOpen: devices.windowSensor.open,
-  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
+  windowOpen: devices.windowSensor.open,
+  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const groups = {
