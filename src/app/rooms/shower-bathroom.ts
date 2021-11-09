@@ -67,7 +67,6 @@ export const showerBathroom = {
 };
 
 metadataStore.set(showerBathroom, {
-  isDaylit: true,
   level: Levels.ROOM,
   name: 'showerBathroom',
 });
