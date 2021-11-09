@@ -182,11 +182,11 @@ export class NullState<T = null> {
     this.trigger(value);
   }
 
-  observe(observerCallback: ObserverCallback<T | null>): Observer {
+  observe(observerCallback: ObserverCallback<T>): Observer {
     // eslint-disable-next-line prefer-const
     let observer: Observer;
 
-    const metaObserverCallback = (value: T | null) => {
+    const metaObserverCallback = (value: T) => {
       observerCallback(value, observer);
     };
 

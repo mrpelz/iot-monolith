@@ -32,7 +32,7 @@ export class Observable<T> {
   constructor(initialValue: T, observerCallback?: MetaObserverCallback<T>) {
     this._value = initialValue;
     this._observers = observerCallback
-      ? new Map([[observerCallback, false]])
+      ? new Map([[observerCallback, true]])
       : new Map();
   }
 

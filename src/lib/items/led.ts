@@ -6,11 +6,13 @@ import {
 } from '../observable.js';
 import { BooleanProxyState } from '../state.js';
 import { Led as LedService } from '../services/led.js';
+import { Timer } from '../timer.js';
 
 export class Led {
   private readonly _actualBrightness = new Observable<number | null>(null);
   private readonly _indicator?: Indicator;
   private readonly _service: LedService;
+  private readonly _timer = new Timer(10000);
 
   readonly actualBrightness: ReadOnlyObservable<number | null>;
   readonly actualOn: ReadOnlyProxyObservable<number | null, boolean | null>;
@@ -44,6 +46,8 @@ export class Led {
       (value) => Boolean(value),
       (value) => (value ? 255 : 0)
     );
+
+    this._timer.observe(() => this._set(this.setBrightness.value));
   }
 
   private async _set(brightness: number) {
@@ -67,6 +71,8 @@ export class Led {
   private _success(brightness: number) {
     this._actualBrightness.value = brightness;
 
+    this._timer.stop();
+
     if (!this._indicator) return;
     this._indicator
       .request({
@@ -80,5 +86,7 @@ export class Led {
 
   private _unknown() {
     this._actualBrightness.value = null;
+
+    this._timer.start();
   }
 }

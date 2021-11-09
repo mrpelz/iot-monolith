@@ -2,11 +2,13 @@ import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Observable, ReadOnlyObservable } from '../observable.js';
 import { BooleanState } from '../state.js';
 import { Output as OutputService } from '../services/output.js';
+import { Timer } from '../timer.js';
 
 export class Output {
   private readonly _actualState = new Observable<boolean | null>(null);
   private readonly _indicator?: Indicator;
   private readonly _service: OutputService;
+  private readonly _timer = new Timer(10000);
 
   readonly actualState: ReadOnlyObservable<boolean | null>;
   readonly setState: BooleanState;
@@ -27,6 +29,8 @@ export class Output {
     this.actualState = new ReadOnlyObservable(this._actualState);
 
     this.setState = new BooleanState(false, (on) => this._set(on));
+
+    this._timer.observe(() => this._set(this.setState.value));
   }
 
   private async _set(on: boolean) {
@@ -50,6 +54,8 @@ export class Output {
   private _success(on: boolean) {
     this._actualState.value = on;
 
+    this._timer.stop();
+
     if (!this._indicator) return;
     this._indicator
       .request({
@@ -63,5 +69,7 @@ export class Output {
 
   private _unknown() {
     this._actualState.value = null;
+
+    this._timer.start();
   }
 }
