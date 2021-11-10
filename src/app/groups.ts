@@ -1,6 +1,7 @@
 import { properties as bathtubBathroomProperties } from './rooms/bathtub-bathroom.js';
 import { properties as bedroomProperties } from './rooms/bedroom.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
+import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
 import { properties as officeProperties } from './rooms/office.js';
@@ -28,6 +29,8 @@ export const allLights = outputGrouping([
   diningRoomProperties.kallaxLedW,
   diningRoomProperties.standingLamp,
   diningRoomProperties.tableLight,
+  hallwayProperties.ceilingLightBack,
+  hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,
   kitchenProperties.ledLeftFloodlight,
   kitchenProperties.ledLeftWWhite,
@@ -55,6 +58,8 @@ export const kitchenAdjacentLights = outputGrouping([
   diningRoomProperties.kallaxLedW,
   diningRoomProperties.standingLamp,
   diningRoomProperties.tableLight,
+  hallwayProperties.ceilingLightBack,
+  hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,
   kitchenProperties.ledLeftFloodlight,
   kitchenProperties.ledLeftWWhite,

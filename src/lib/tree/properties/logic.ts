@@ -15,8 +15,12 @@ import {
 } from '../main.js';
 import { Timer } from '../../timer.js';
 
-export function offTimer(time: number, setter: AnyWritableObservable<boolean>) {
-  const enabled = new BooleanState(true);
+export function offTimer(
+  time: number,
+  setter: AnyWritableObservable<boolean>,
+  enableFromStart = true
+) {
+  const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
 
   const triggerTime = new Observable<number | null>(null);
