@@ -102,18 +102,27 @@ export const groups = {
   const timer = new Timer(epochs.second * 5);
 
   instances.workbenchButton.observe(() => {
-    if (!timer.isRunning && groups.workbenchLeds._get.value) {
+    const timerRunning = timer.isRunning;
+
+    timer.start();
+
+    if (!timerRunning && groups.workbenchLeds._get.value) {
       groups.workbenchLeds._set.value = false;
-      timer.start();
       return;
     }
 
-    if (!groups.workbenchLeds._get.value) {
+    if (
+      !properties.workbenchLedCWhite._get.value &&
+      !properties.workbenchLedWWhite._get.value
+    ) {
       groups.workbenchLeds._set.value = true;
       return;
     }
 
-    if (groups.workbenchLeds._get.value) {
+    if (
+      properties.workbenchLedCWhite._get.value &&
+      properties.workbenchLedWWhite._get.value
+    ) {
       properties.workbenchLedCWhite._set.value = false;
       return;
     }

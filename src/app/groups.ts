@@ -10,7 +10,7 @@ import { properties as storageRoomProperties } from './rooms/storage-room.js';
 
 export const allLights = outputGrouping([
   bathtubBathroomProperties.ceilingLight,
-  bathtubBathroomProperties.nightLight,
+  // bathtubBathroomProperties.nightLight,
   bedroomProperties.bedLedB,
   bedroomProperties.bedLedDownlightRed,
   bedroomProperties.bedLedG,
@@ -41,8 +41,8 @@ export const allLights = outputGrouping([
   officeProperties.workbenchLedCWhite,
   officeProperties.workbenchLedWWhite,
   showerBathroomProperties.ceilingLight,
-  showerBathroomProperties.mirrorLight,
-  showerBathroomProperties.nightLight,
+  // showerBathroomProperties.mirrorLight,
+  // showerBathroomProperties.nightLight,
   storageRoomProperties.ceilingLight,
 ]);
 

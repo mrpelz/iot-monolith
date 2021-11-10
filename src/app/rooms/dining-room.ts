@@ -8,7 +8,6 @@ import {
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
-import { kitchenAdjacentLights } from '../groups.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -92,7 +91,9 @@ export const groups = {
   whiteLeds: ledGrouping([properties.kallaxLedSide, properties.kallaxLedW]),
 };
 
-(() => {
+(async () => {
+  const { kitchenAdjacentLights } = await import('../groups.js');
+
   instances.fanButton.up(() => properties.fan._set.flip());
 
   instances.fanRfButton.observe(() => properties.fan._set.flip());

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../lib/tree/main.js';
+import { allLights, kitchenAdjacentLights } from './groups.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { kitchen } from './rooms/kitchen.js';
-import { kitchenAdjacentLights } from './groups.js';
 import { livingRoom } from './rooms/living-room.js';
 import { office } from './rooms/office.js';
 import { showerBathroom } from './rooms/shower-bathroom.js';
@@ -65,6 +65,7 @@ const wurstHome = (() => {
 
 export const system = (() => {
   const result = {
+    allLights,
     wurstHome,
   };
 

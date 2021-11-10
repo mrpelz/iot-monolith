@@ -5,7 +5,6 @@ import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
-import { kitchenAdjacentLights } from '../groups.js';
 import { ledGrouping } from '../../lib/tree/properties/actuators.js';
 import { logger } from '../logging.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -79,7 +78,9 @@ export const groups = {
   ]),
 };
 
-(() => {
+(async () => {
+  const { kitchenAdjacentLights } = await import('../groups.js');
+
   instances.leftButton.observe(() => groups.allLights._set.flip());
 
   instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());

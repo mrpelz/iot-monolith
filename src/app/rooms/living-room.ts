@@ -4,7 +4,6 @@ import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { kitchenAdjacentLights } from '../groups.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
@@ -54,7 +53,9 @@ export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
 };
 
-(() => {
+(async () => {
+  const { kitchenAdjacentLights } = await import('../groups.js');
+
   instances.couchButton.observe(() => {
     if (kitchenAdjacentLights._set.value) {
       kitchenAdjacentLights._set.value = false;
