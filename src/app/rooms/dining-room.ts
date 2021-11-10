@@ -8,11 +8,11 @@ import {
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
+import { kitchenAdjacentLights } from '../groups.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { groups as systemGroups } from '../system.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -21,7 +21,6 @@ export const devices = {
     timings,
     'diningroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
   fan: obiPlug(logger, timings, 'diningroom-fan.iot.wurstsalat.cloud'),
   fanRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   kallaxLeds: h801(
@@ -48,7 +47,6 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton.$,
   fanButton: devices.fan.button.$,
   fanRfButton: devices.fanRfButton.$,
   kallaxSideButton: devices.kallaxSideButton.$,
@@ -95,15 +93,6 @@ export const groups = {
 };
 
 (() => {
-  instances.couchButton.observe(() => {
-    if (systemGroups.kitchenAdjacentLights._set.value) {
-      systemGroups.kitchenAdjacentLights._set.value = false;
-      return;
-    }
-
-    properties.standingLamp._set.flip();
-  });
-
   instances.fanButton.up(() => properties.fan._set.flip());
 
   instances.fanRfButton.observe(() => properties.fan._set.flip());
@@ -114,17 +103,17 @@ export const groups = {
 
   instances.standingLampButton.up(() => properties.standingLamp._set.flip());
   instances.standingLampButton.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
   instances.wallswitchBottom.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchTop.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 })();
 

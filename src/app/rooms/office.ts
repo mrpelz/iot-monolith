@@ -5,6 +5,8 @@ import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
+import { Timer } from '../../lib/timer.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -97,19 +99,21 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
+  const timer = new Timer(epochs.second * 5);
+
   instances.workbenchButton.observe(() => {
-    if (
-      !properties.workbenchLedCWhite._get.value &&
-      !properties.workbenchLedWWhite._get.value
-    ) {
+    if (!timer.isRunning && groups.workbenchLeds._get.value) {
+      groups.workbenchLeds._set.value = false;
+      timer.start();
+      return;
+    }
+
+    if (!groups.workbenchLeds._get.value) {
       groups.workbenchLeds._set.value = true;
       return;
     }
 
-    if (
-      properties.workbenchLedCWhite._get.value &&
-      properties.workbenchLedWWhite._get.value
-    ) {
+    if (groups.workbenchLeds._get.value) {
       properties.workbenchLedCWhite._set.value = false;
       return;
     }

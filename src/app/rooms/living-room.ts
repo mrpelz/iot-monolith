@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import { kitchenAdjacentLights } from '../groups.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { groups as systemGroups } from '../system.js';
 import { timings } from '../timings.js';
 
 export const devices = {
@@ -17,6 +18,7 @@ export const devices = {
     timings,
     'livingroom-ceilinglight.iot.wurstsalat.cloud'
   ),
+  couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
   fan: obiPlug(logger, timings, 'livingroom-fan.iot.wurstsalat.cloud'),
   standingLamp: obiPlug(
     logger,
@@ -32,6 +34,7 @@ export const devices = {
 };
 
 export const instances = {
+  couchButton: devices.couchButton.$,
   fanButton: devices.fan.button.$,
   standingLampButton: devices.standingLamp.button.$,
   wallswitchBottom: devices.wallswitch.button2.$,
@@ -52,26 +55,35 @@ export const groups = {
 };
 
 (() => {
+  instances.couchButton.observe(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    properties.fan._set.flip();
+  });
+
   instances.fanButton.up(() => properties.fan._set.flip());
 
   instances.standingLampButton.up(() => properties.standingLamp._set.flip());
   instances.standingLampButton.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchBottom.up(() => properties.fan._set.flip());
   instances.wallswitchBottom.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
   instances.wallswitchMiddle.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchTop.longPress(
-    () => (systemGroups.kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights._set.value = false)
   );
 })();
 
