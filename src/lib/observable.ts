@@ -29,10 +29,14 @@ export class Observable<T> {
   private readonly _observers: Map<MetaObserverCallback<T>, boolean>;
   private _value: T;
 
-  constructor(initialValue: T, observerCallback?: MetaObserverCallback<T>) {
+  constructor(
+    initialValue: T,
+    observerCallback?: MetaObserverCallback<T>,
+    forcedReport = true
+  ) {
     this._value = initialValue;
     this._observers = observerCallback
-      ? new Map([[observerCallback, true]])
+      ? new Map([[observerCallback, forcedReport]])
       : new Map();
   }
 

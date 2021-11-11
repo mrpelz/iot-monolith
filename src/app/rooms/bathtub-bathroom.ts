@@ -52,7 +52,14 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchDoor.up(() => groups.allLights._set.flip());
+  instances.wallswitchDoor.up(() => {
+    if (!devices.ceilingLight.online._get.value) {
+      properties.nightLight._set.flip();
+      return;
+    }
+
+    properties.ceilingLight._set.flip();
+  });
   instances.wallswitchDoor.longPress(
     () => (groups.allLights._set.value = false)
   );
@@ -64,6 +71,12 @@ export const groups = {
 
   properties.doorOpen._get.observe((value) => {
     if (!value) return;
+
+    if (!devices.ceilingLight.online._get.value) {
+      properties.nightLight._set.value = true;
+      return;
+    }
+
     properties.ceilingLight._set.value = true;
   });
 })();

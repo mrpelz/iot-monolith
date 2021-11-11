@@ -28,7 +28,7 @@ export class Output {
 
     this.actualState = new ReadOnlyObservable(this._actualState);
 
-    this.setState = new BooleanState(false, (on) => this._set(on));
+    this.setState = new BooleanState(false, (on) => this._set(on), false);
 
     this._timer.observe(() => this._set(this.setState.value));
   }

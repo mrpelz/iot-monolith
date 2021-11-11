@@ -38,8 +38,10 @@ export class Led {
       (value) => (value === null ? value : Boolean(value))
     );
 
-    this.setBrightness = new Observable(0, (brightness) =>
-      this._set(brightness)
+    this.setBrightness = new Observable(
+      0,
+      (brightness) => this._set(brightness),
+      false
     );
     this.setOn = new BooleanProxyState(
       this.setBrightness,

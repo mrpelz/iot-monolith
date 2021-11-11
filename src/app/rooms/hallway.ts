@@ -88,7 +88,8 @@ export const properties = {
   );
 
   properties.doorOpen._get.observe((value) => {
-    if (!value) return;
+    if (!value || properties.ceilingLightFront._get.value) return;
+
     properties.lightTimer._set.value = true;
     properties.ceilingLightFront._set.value = true;
   });

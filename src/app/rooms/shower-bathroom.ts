@@ -77,9 +77,26 @@ export const groups = {
   const timer = new Timer(epochs.second * 5);
 
   instances.showerButton.observe(() => {
-    if (!timer.isRunning && groups.allLights._get.value) {
+    const firstPress = !timer.isRunning;
+
+    timer.start();
+
+    if (firstPress) {
+      if (!groups.allLights._get.value) {
+        properties.nightLight._set.value = true;
+        return;
+      }
+
       groups.allLights._set.value = false;
-      timer.start();
+      return;
+    }
+
+    if (
+      properties.ceilingLight._get.value &&
+      properties.mirrorLight._get.value &&
+      properties.nightLight._get.value
+    ) {
+      groups.allLights._set.value = false;
       return;
     }
 
@@ -102,11 +119,6 @@ export const groups = {
 
     if (properties.ceilingLight._get.value) {
       groups.allLights._set.value = true;
-      return;
-    }
-
-    if (groups.allLights._get.value) {
-      groups.allLights._set.value = false;
     }
   });
 
@@ -127,6 +139,10 @@ export const groups = {
 
   properties.doorOpen._get.observe((value) => {
     if (!value) return;
+
+    properties.mirrorLight._set.value = false;
+    properties.nightLight._set.value = false;
+
     properties.ceilingLight._set.value = true;
   });
 })();
