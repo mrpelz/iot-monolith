@@ -69,7 +69,7 @@ export const groups = {
 
 export const properties = {
   ...partialProperties,
-  lightTimer: offTimer(epochs.second * 30, groups.ceilingLight._set, false),
+  lightTimer: offTimer(epochs.minute * 3, groups.ceilingLight._set, false),
 };
 
 (async () => {

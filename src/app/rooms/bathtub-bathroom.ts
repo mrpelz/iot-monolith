@@ -77,6 +77,7 @@ export const groups = {
       return;
     }
 
+    properties.nightLight._set.value = false;
     properties.ceilingLight._set.value = true;
   });
 })();
