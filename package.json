@@ -32,6 +32,7 @@
   "devDependencies": {
     "@types/node": "^14.14.22",
     "@types/node-fetch": "^2.5.10",
+    "@types/suncalc": "^1.8.1",
     "@types/ws": "^7.4.7",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.14.0",
@@ -43,6 +44,7 @@
   "type": "module",
   "dependencies": {
     "node-fetch": "^2.6.1",
+    "suncalc": "^1.8.0",
     "ws": "^7.4.7"
   }
 }

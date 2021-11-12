@@ -3,6 +3,7 @@
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import { isDay } from '../util.js';
 import { logger } from '../logging.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
@@ -53,11 +54,12 @@ export const groups = {
   );
 
   instances.wallswitchDoor.up(() => {
-    properties.ceilingLight._set.flip();
-
-    if (properties.nightLight._get.value) {
-      properties.nightLight._set.value = false;
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
+      return;
     }
+
+    properties.ceilingLight._set.flip();
   });
   instances.wallswitchDoor.longPress(
     () => (groups.allLights._set.value = false)
@@ -71,13 +73,15 @@ export const groups = {
   properties.doorOpen._get.observe((value) => {
     if (!value) return;
 
-    if (!devices.ceilingLight.online._get.value) {
-      properties.nightLight._set.value = true;
+    if (isDay()) {
+      properties.ceilingLight._set.value = true;
+      properties.nightLight._set.value = false;
+
       return;
     }
 
-    properties.nightLight._set.value = false;
-    properties.ceilingLight._set.value = true;
+    properties.ceilingLight._set.value = false;
+    properties.nightLight._set.value = true;
   });
 })();
 
