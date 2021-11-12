@@ -53,12 +53,11 @@ export const groups = {
   );
 
   instances.wallswitchDoor.up(() => {
-    if (!devices.ceilingLight.online._get.value) {
-      properties.nightLight._set.flip();
-      return;
-    }
-
     properties.ceilingLight._set.flip();
+
+    if (properties.nightLight._get.value) {
+      properties.nightLight._set.value = false;
+    }
   });
   instances.wallswitchDoor.longPress(
     () => (groups.allLights._set.value = false)

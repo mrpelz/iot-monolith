@@ -122,7 +122,17 @@ export const groups = {
     }
   });
 
-  instances.wallswitchDoor.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoor.up(() => {
+    properties.ceilingLight._set.flip();
+
+    if (properties.nightLight._get.value) {
+      properties.nightLight._set.value = false;
+    }
+
+    if (properties.mirrorLight._get.value) {
+      properties.mirrorLight._set.value = false;
+    }
+  });
   instances.wallswitchDoor.longPress(
     () => (groups.allLights._set.value = false)
   );
