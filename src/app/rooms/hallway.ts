@@ -82,10 +82,10 @@ export const properties = {
   instances.wallswitchFrontLeft.up(() =>
     properties.ceilingLightFront._set.flip()
   );
-  instances.wallswitchFrontMiddle.up(() => allLights._set.flip());
-  instances.wallswitchFrontRight.up(() =>
+  instances.wallswitchFrontMiddle.up(() =>
     properties.ceilingLightBack._set.flip()
   );
+  instances.wallswitchFrontRight.up(() => allLights._set.flip());
 
   properties.doorOpen._get.observe((value) => {
     if (
