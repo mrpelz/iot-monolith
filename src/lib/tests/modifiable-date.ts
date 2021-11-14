@@ -39,3 +39,37 @@ console.log('round: minute → 15;', test.date.toLocaleString('de'));
 test.truncateTo(Unit.WEEK);
 // eslint-disable-next-line no-console
 console.log('truncateTo: week;', test.date.toLocaleString('de'));
+
+test.forwardUntil({
+  [Unit.HOUR]: 3,
+  [Unit.MINUTE]: 15,
+  [Unit.SECOND]: 6,
+});
+// eslint-disable-next-line no-console
+console.log('forwardUntil: 03:15:06;', test.date.toLocaleString('de'));
+
+test.forwardUntil({
+  [Unit.HOUR]: 3,
+  [Unit.MINUTE]: 15,
+  [Unit.SECOND]: 5,
+});
+// eslint-disable-next-line no-console
+console.log('forwardUntil: 03:15:05;', test.date.toLocaleString('de'));
+
+test.forwardUntil({
+  [Unit.HOUR]: 3,
+  [Unit.MINUTE]: 15,
+  [Unit.SECOND]: 6,
+});
+// eslint-disable-next-line no-console
+console.log('forwardUntil: 03:15:06;', test.date.toLocaleString('de'));
+
+test.forwardUntil({
+  [Unit.HOUR]: 2,
+});
+// eslint-disable-next-line no-console
+console.log('forwardUntil: 02:xx:xx;', test.date.toLocaleString('de'));
+
+test.truncateTo(Unit.MINUTE);
+// eslint-disable-next-line no-console
+console.log('truncateTo: minute;', test.date.toLocaleString('de'));

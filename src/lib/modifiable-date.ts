@@ -27,26 +27,26 @@ export class ModifiableDate {
     // eslint-disable-next-line default-case
     switch (unit) {
       case Unit.SECOND:
-        this._date.setSeconds(this._date.getSeconds() + _amount);
+        this._date.setSeconds(this.get(unit) + _amount);
         break;
       case Unit.MINUTE:
-        this._date.setMinutes(this._date.getMinutes() + _amount);
+        this._date.setMinutes(this.get(unit) + _amount);
         break;
       case Unit.HOUR:
-        this._date.setHours(this._date.getHours() + _amount);
+        this._date.setHours(this.get(unit) + _amount);
         break;
       case Unit.DAY:
-        this._date.setDate(this._date.getDate() + _amount);
+        this._date.setDate(this.get(unit) + _amount);
         break;
       case Unit.WEEK:
         // prettier-ignore
-        this._date.setDate(this._date.getDate() + (_amount * 7));
+        this._date.setDate(this.get(unit) + (_amount * 7));
         break;
       case Unit.MONTH:
-        this._date.setMonth(this._date.getMonth() + _amount);
+        this._date.setMonth(this.get(unit) + _amount);
         break;
       case Unit.YEAR:
-        this._date.setFullYear(this._date.getFullYear() + _amount);
+        this._date.setFullYear(this.get(unit) + _amount);
         break;
     }
 
@@ -61,26 +61,26 @@ export class ModifiableDate {
     // eslint-disable-next-line default-case
     switch (unit) {
       case Unit.SECOND:
-        this._date.setSeconds(Math.ceil(this._date.getSeconds() / mod) * mod);
+        this._date.setSeconds(Math.ceil(this.get(unit) / mod) * mod);
         break;
       case Unit.MINUTE:
-        this._date.setMinutes(Math.ceil(this._date.getMinutes() / mod) * mod);
+        this._date.setMinutes(Math.ceil(this.get(unit) / mod) * mod);
         break;
       case Unit.HOUR:
-        this._date.setHours(Math.ceil(this._date.getHours() / mod) * mod);
+        this._date.setHours(Math.ceil(this.get(unit) / mod) * mod);
         break;
       case Unit.DAY:
-        this._date.setDate(Math.ceil(this._date.getDate() / mod) * mod);
+        this._date.setDate(Math.ceil(this.get(unit) / mod) * mod);
         break;
       case Unit.WEEK:
-        this._date.setDate(Math.ceil(weekNumber(this._date) / mod) * mod * 7);
+        this._date.setDate(Math.ceil(this.get(unit) / mod) * mod * 7);
         this.truncateTo(Unit.WEEK);
         break;
       case Unit.MONTH:
-        this._date.setMonth(Math.ceil(this._date.getMonth() / mod) * mod);
+        this._date.setMonth(Math.ceil(this.get(unit) / mod) * mod);
         break;
       case Unit.YEAR:
-        this._date.setFullYear(Math.ceil(this._date.getFullYear() / mod) * mod);
+        this._date.setFullYear(Math.ceil(this.get(unit) / mod) * mod);
         break;
     }
 
@@ -99,29 +99,90 @@ export class ModifiableDate {
     // eslint-disable-next-line default-case
     switch (unit) {
       case Unit.SECOND:
-        this._date.setSeconds(Math.floor(this._date.getSeconds() / mod) * mod);
+        this._date.setSeconds(Math.floor(this.get(unit) / mod) * mod);
         break;
       case Unit.MINUTE:
-        this._date.setMinutes(Math.floor(this._date.getMinutes() / mod) * mod);
+        this._date.setMinutes(Math.floor(this.get(unit) / mod) * mod);
         break;
       case Unit.HOUR:
-        this._date.setHours(Math.floor(this._date.getHours() / mod) * mod);
+        this._date.setHours(Math.floor(this.get(unit) / mod) * mod);
         break;
       case Unit.DAY:
-        this._date.setDate(Math.floor(this._date.getDate() / mod) * mod);
+        this._date.setDate(Math.floor(this.get(unit) / mod) * mod);
         break;
       case Unit.WEEK:
-        this._date.setDate(Math.floor(weekNumber(this._date) / mod) * mod * 7);
+        this._date.setDate(Math.floor(this.get(unit) / mod) * mod * 7);
         this.truncateTo(Unit.WEEK);
         break;
       case Unit.MONTH:
-        this._date.setMonth(Math.floor(this._date.getMonth() / mod) * mod);
+        this._date.setMonth(Math.floor(this.get(unit) / mod) * mod);
         break;
       case Unit.YEAR:
-        this._date.setFullYear(
-          Math.floor(this._date.getFullYear() / mod) * mod
-        );
+        this._date.setFullYear(Math.floor(this.get(unit) / mod) * mod);
         break;
+    }
+
+    return this;
+  }
+
+  forwardUntil(matcher: Partial<Record<Unit, number>>): this {
+    for (const unit of [
+      Unit.SECOND,
+      Unit.MINUTE,
+      Unit.HOUR,
+      Unit.DAY,
+      Unit.WEEK,
+      Unit.MONTH,
+      Unit.YEAR,
+    ]) {
+      const value = matcher[unit];
+      if (value === undefined) continue;
+
+      while (this.get(unit) !== value) {
+        this.add(1, unit);
+      }
+    }
+
+    return this;
+  }
+
+  get(unit: Unit): number {
+    switch (unit) {
+      case Unit.SECOND:
+        return this._date.getSeconds();
+      case Unit.MINUTE:
+        return this._date.getMinutes();
+      case Unit.HOUR:
+        return this._date.getHours();
+      case Unit.DAY:
+        return this._date.getDate();
+      case Unit.WEEK:
+        return weekNumber(this._date);
+      case Unit.MONTH:
+        return this._date.getMonth();
+      case Unit.YEAR:
+        return this._date.getFullYear();
+      default:
+        return 0;
+    }
+  }
+
+  reverseUntil(matcher: Record<Unit, number>): this {
+    for (const unit of [
+      Unit.SECOND,
+      Unit.MINUTE,
+      Unit.HOUR,
+      Unit.DAY,
+      Unit.WEEK,
+      Unit.MONTH,
+      Unit.YEAR,
+    ]) {
+      const value = matcher[unit];
+      if (value === undefined) continue;
+
+      while (this.get(unit) !== value) {
+        this.subtract(1, unit);
+      }
     }
 
     return this;
@@ -130,26 +191,7 @@ export class ModifiableDate {
   round(unit: Unit, modulo: number): this {
     const mod = Math.abs(Math.trunc(modulo));
 
-    // eslint-disable-next-line consistent-return
-    const value = (() => {
-      // eslint-disable-next-line default-case
-      switch (unit) {
-        case Unit.SECOND:
-          return this._date.getSeconds();
-        case Unit.MINUTE:
-          return this._date.getMinutes();
-        case Unit.HOUR:
-          return this._date.getHours();
-        case Unit.DAY:
-          return this._date.getDate();
-        case Unit.WEEK:
-          return weekNumber(this._date);
-        case Unit.MONTH:
-          return this._date.getMonth();
-        case Unit.YEAR:
-          return this._date.getFullYear();
-      }
-    })();
+    const value = this.get(unit);
 
     if (Math.round(value / mod) * mod <= value) {
       this.floor(unit, modulo);

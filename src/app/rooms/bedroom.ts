@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { ModifiableDate, Unit } from '../../lib/modifiable-date.js';
 import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
+import { Schedule } from '../../lib/schedule.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -147,6 +149,69 @@ export const groups = {
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 30,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 8));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 35,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 16));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 40,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 32));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 45,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 64));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 50,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 128));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 7,
+        [Unit.MINUTE]: 55,
+      }).date
+  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 255));
+
+  new Schedule(
+    logger,
+    () =>
+      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
+        [Unit.HOUR]: 8,
+        [Unit.MINUTE]: 0,
+      }).date
+  ).addTask(() => (groups.nightstandLeds._set.value = false));
 })();
 
 export const bedroom = {
