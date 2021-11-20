@@ -7,12 +7,14 @@ import {
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
 import { Schedule } from '../../lib/schedule.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { scheduledRamp } from '../../lib/tree/properties/logic.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
@@ -52,7 +54,7 @@ export const instances = {
   wallswitchDoorRight: devices.wallswitchDoor.button2.$,
 };
 
-export const properties = {
+const partialProperties = {
   bedLedB: devices.rgbwLeds.ledB,
   bedLedDownlightRed: devices.nightstandLeds.ledB,
   bedLedG: devices.rgbwLeds.ledG,
@@ -72,38 +74,104 @@ export const properties = {
 
 export const groups = {
   allLights: outputGrouping([
-    properties.bedLedR,
-    properties.bedLedG,
-    properties.bedLedB,
-    properties.bedLedW,
-    properties.ceilingLight,
-    properties.nightstandLedLeft,
-    properties.nightstandLedRight,
-    properties.bedLedDownlightRed,
-    properties.stoneLamp,
+    partialProperties.bedLedR,
+    partialProperties.bedLedG,
+    partialProperties.bedLedB,
+    partialProperties.bedLedW,
+    partialProperties.ceilingLight,
+    partialProperties.nightstandLedLeft,
+    partialProperties.nightstandLedRight,
+    partialProperties.bedLedDownlightRed,
+    partialProperties.stoneLamp,
   ]),
   fuckLight: outputGrouping([
-    properties.bedLedDownlightRed,
-    properties.stoneLamp,
+    partialProperties.bedLedDownlightRed,
+    partialProperties.stoneLamp,
   ]),
   leds: ledGrouping([
-    properties.bedLedR,
-    properties.bedLedG,
-    properties.bedLedB,
-    properties.bedLedW,
-    properties.nightstandLedLeft,
-    properties.nightstandLedRight,
-    properties.bedLedDownlightRed,
+    partialProperties.bedLedR,
+    partialProperties.bedLedG,
+    partialProperties.bedLedB,
+    partialProperties.bedLedW,
+    partialProperties.nightstandLedLeft,
+    partialProperties.nightstandLedRight,
+    partialProperties.bedLedDownlightRed,
   ]),
   nightstandLeds: ledGrouping([
-    properties.nightstandLedLeft,
-    properties.nightstandLedRight,
+    partialProperties.nightstandLedLeft,
+    partialProperties.nightstandLedRight,
   ]),
   whiteLeds: ledGrouping([
-    properties.bedLedW,
-    properties.nightstandLedLeft,
-    properties.nightstandLedRight,
+    partialProperties.bedLedW,
+    partialProperties.nightstandLedLeft,
+    partialProperties.nightstandLedRight,
   ]),
+};
+
+export const properties = {
+  ...partialProperties,
+  wakeupLightWeekday: scheduledRamp(
+    [
+      new Schedule(logger, () => {
+        const result = new ModifiableDate().truncateTo(Unit.MINUTE);
+
+        const advance = () => {
+          result.forwardUntil({
+            [Unit.HOUR]: 7,
+            [Unit.MINUTE]: 0,
+          });
+        };
+
+        advance();
+
+        while (result.isWeekend) {
+          advance();
+        }
+
+        return result.date;
+      }),
+      epochs.hour,
+    ],
+    epochs.minute,
+    (active, progress) => {
+      if (!active) {
+        return;
+      }
+
+      groups.whiteLeds.brightness._set.value = progress * 255;
+    }
+  ),
+  wakeupLightWeekend: scheduledRamp(
+    [
+      new Schedule(logger, () => {
+        const result = new ModifiableDate().truncateTo(Unit.MINUTE);
+
+        const advance = () => {
+          result.forwardUntil({
+            [Unit.HOUR]: 8,
+            [Unit.MINUTE]: 0,
+          });
+        };
+
+        advance();
+
+        while (result.isWeekday) {
+          advance();
+        }
+
+        return result.date;
+      }),
+      epochs.hour,
+    ],
+    epochs.minute,
+    (active, progress) => {
+      if (!active) {
+        return;
+      }
+
+      groups.whiteLeds.brightness._set.value = progress * 255;
+    }
+  ),
 };
 
 (() => {
@@ -149,69 +217,6 @@ export const groups = {
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 30,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 8));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 35,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 16));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 40,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 32));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 45,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 64));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 50,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 128));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 7,
-        [Unit.MINUTE]: 55,
-      }).date
-  ).addTask(() => (groups.nightstandLeds.brightness._set.value = 255));
-
-  new Schedule(
-    logger,
-    () =>
-      new ModifiableDate().truncateToNext(Unit.MINUTE).forwardUntil({
-        [Unit.HOUR]: 8,
-        [Unit.MINUTE]: 0,
-      }).date
-  ).addTask(() => (groups.nightstandLeds._set.value = false));
 })();
 
 export const bedroom = {

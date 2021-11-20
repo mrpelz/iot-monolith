@@ -13,6 +13,7 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
+import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
 
 export function offTimer(
@@ -202,6 +203,123 @@ export function offTimer(
 
   metadataStore.set(result, {
     actuated: 'offTimer',
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'actuator',
+    valueType: ValueType.BOOLEAN,
+  });
+
+  return result;
+}
+
+export function scheduledRamp(
+  [schedule, epoch]: ScheduleEpochPair,
+  refresh: number,
+  handler: (active: boolean, progress: number) => void
+) {
+  const enabled = new BooleanState(true);
+
+  let startTime = 0;
+  let timer: NodeJS.Timeout | null = null;
+
+  const handleStop = () => {
+    if (timer) {
+      clearInterval(timer);
+    }
+
+    startTime = 0;
+  };
+
+  const handleRefresh = () => {
+    if (!startTime) {
+      handleStop();
+      return;
+    }
+
+    const now = Date.now();
+    const timeElapsed = now - startTime;
+    const progress = timeElapsed / epoch;
+
+    const active = progress <= 1;
+
+    handler(active, progress);
+
+    if (!active) {
+      handleStop();
+    }
+  };
+
+  schedule.addTask(() => {
+    startTime = Date.now();
+    timer = setInterval(handleRefresh, refresh);
+
+    handleRefresh();
+  });
+
+  enabled.observe((value) => {
+    if (value) {
+      schedule.start();
+      return;
+    }
+
+    handleStop();
+    schedule.stop();
+
+    handler(false, 0);
+  });
+
+  const result = {
+    _get: new ReadOnlyObservable(enabled),
+    _set: enabled,
+    flip: (() => {
+      const _flip = {
+        _set: new NullState(() => enabled.flip()),
+      };
+
+      metadataStore.set(_flip, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _flip;
+    })(),
+    off: (() => {
+      const _off = {
+        _set: new NullState(() => (enabled.value = false)),
+      };
+
+      metadataStore.set(_off, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _off;
+    })(),
+    on: (() => {
+      const _on = {
+        _set: new NullState(() => (enabled.value = true)),
+      };
+
+      metadataStore.set(_on, {
+        actuated: inherit,
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.CONTROL_TRIGGER,
+        type: 'actuator',
+        valueType: ValueType.NULL,
+      });
+
+      return _on;
+    })(),
+  };
+
+  metadataStore.set(result, {
+    actuated: 'scheduledRamp',
     level: Levels.PROPERTY,
     parentRelation: ParentRelation.META_RELATION,
     type: 'actuator',

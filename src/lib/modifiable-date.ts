@@ -10,6 +10,16 @@ export enum Unit {
   YEAR,
 }
 
+export enum Weekday {
+  SUNDAY,
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FIRDAY,
+  SATURDAY,
+}
+
 export class ModifiableDate {
   private _date: Date;
 
@@ -19,6 +29,24 @@ export class ModifiableDate {
 
   get date(): Date {
     return this._date;
+  }
+
+  get isWeekday(): boolean {
+    const weekday = this._date.getDay();
+
+    return [
+      Weekday.MONDAY,
+      Weekday.TUESDAY,
+      Weekday.WEDNESDAY,
+      Weekday.THURSDAY,
+      Weekday.FIRDAY,
+    ].includes(weekday);
+  }
+
+  get isWeekend(): boolean {
+    const weekday = this._date.getDay();
+
+    return [Weekday.SATURDAY, Weekday.SUNDAY].includes(weekday);
   }
 
   add(amount: number, unit: Unit): this {
@@ -126,6 +154,8 @@ export class ModifiableDate {
   }
 
   forwardUntil(matcher: Partial<Record<Unit, number>>): this {
+    let advancedSmallestUnit = false;
+
     for (const unit of [
       Unit.SECOND,
       Unit.MINUTE,
@@ -137,6 +167,11 @@ export class ModifiableDate {
     ]) {
       const value = matcher[unit];
       if (value === undefined) continue;
+
+      if (!advancedSmallestUnit) {
+        advancedSmallestUnit = true;
+        this.add(1, unit);
+      }
 
       while (this.get(unit) !== value) {
         this.add(1, unit);
@@ -168,6 +203,8 @@ export class ModifiableDate {
   }
 
   reverseUntil(matcher: Record<Unit, number>): this {
+    let advancedSmallestUnit = false;
+
     for (const unit of [
       Unit.SECOND,
       Unit.MINUTE,
@@ -179,6 +216,11 @@ export class ModifiableDate {
     ]) {
       const value = matcher[unit];
       if (value === undefined) continue;
+
+      if (!advancedSmallestUnit) {
+        advancedSmallestUnit = true;
+        this.subtract(1, unit);
+      }
 
       while (this.get(unit) !== value) {
         this.subtract(1, unit);
