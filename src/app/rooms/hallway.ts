@@ -69,7 +69,7 @@ export const groups = {
 
 export const properties = {
   ...partialProperties,
-  lightTimer: offTimer(epochs.minute * 3, groups.ceilingLight._set, false),
+  entryDoorTimer: offTimer(epochs.minute * 3),
 };
 
 (async () => {
@@ -88,21 +88,25 @@ export const properties = {
   instances.wallswitchFrontRight.up(() => allLights._set.flip());
 
   properties.doorOpen._get.observe((value) => {
-    if (
-      !value ||
-      (properties.ceilingLightFront._get.value &&
-        !properties.lightTimer.active._get.value)
-    ) {
+    if (!value) {
+      if (!properties.ceilingLightFront._get.value) return;
+
+      properties.entryDoorTimer.active._set.value = true;
+
       return;
     }
 
-    properties.lightTimer._set.value = true;
     properties.ceilingLightFront._set.value = true;
   });
 
-  properties.lightTimer.active._get.observe((value) => {
-    if (value) return;
-    properties.lightTimer._set.value = false;
+  properties.ceilingLightFront._set.observe((value) => {
+    if (value || !properties.entryDoorTimer.active._get) return;
+
+    properties.entryDoorTimer.active._set.value = false;
+  });
+
+  properties.entryDoorTimer.$.observe(() => {
+    properties.ceilingLightFront._set.value = false;
   });
 })();
 

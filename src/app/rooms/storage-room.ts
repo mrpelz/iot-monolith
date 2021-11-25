@@ -29,7 +29,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
   doorSensorTampered: devices.doorSensor.tamperSwitch,
-  lightTimer: offTimer(epochs.minute * 5, devices.ceilingLight.relay._set),
+  lightTimer: offTimer(epochs.minute * 5),
 };
 
 export const groups = {
@@ -37,24 +37,40 @@ export const groups = {
 };
 
 (() => {
+  let indicatorInProgress = false;
+
   instances.wallswitch.up(() => properties.ceilingLight._set.flip());
 
-  instances.wallswitch.longPress(() => {
+  instances.wallswitch.longPress(async () => {
     if (!properties.lightTimer._get.value) return;
 
-    properties.ceilingLight._set.value = true;
-    properties.lightTimer.active._set.value = false;
+    indicatorInProgress = true;
 
     if (properties.ceilingLight._set.value) {
-      ackBlinkFromOn(properties.ceilingLight.effectState.$);
+      await ackBlinkFromOn(properties.ceilingLight._set);
     } else {
-      ackBlinkFromOff(properties.ceilingLight.effectState.$);
+      await ackBlinkFromOff(properties.ceilingLight._set);
     }
+
+    indicatorInProgress = false;
+
+    // eslint-disable-next-line require-atomic-updates
+    properties.lightTimer.active._set.value = false;
   });
 
   properties.doorOpen._get.observe((value) => {
     if (!value) return;
     properties.ceilingLight._set.value = true;
+  });
+
+  properties.ceilingLight._set.observe((value) => {
+    if (indicatorInProgress) return;
+
+    properties.lightTimer.active._set.value = value;
+  });
+
+  properties.lightTimer.$.observe(() => {
+    properties.ceilingLight._set.value = false;
   });
 })();
 

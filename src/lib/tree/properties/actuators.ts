@@ -83,26 +83,10 @@ function actuatorStaleness<T>(
 }
 
 export function led(device: Device, index = 0, indicator = false) {
-  const {
-    actualBrightness,
-    actualOn,
-    setBrightness,
-    setOn: _setOn,
-  } = new Led(
+  const { actualBrightness, actualOn, setBrightness, setOn } = new Led(
     device.addService(new LedService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
   );
-
-  const setOn = new BooleanState(false);
-  const effectState = new BooleanState(true);
-
-  const _combined = new BooleanStateGroup(
-    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-    [setOn, effectState]
-  );
-
-  _combined.observe((value) => (_setOn.value = value));
-  _setOn.observe((value) => (setOn.value = value));
 
   const result = {
     _get: actualOn,
@@ -128,9 +112,6 @@ export function led(device: Device, index = 0, indicator = false) {
 
       return _brightness;
     })(),
-    effectState: {
-      $: effectState,
-    },
     flip: (() => {
       const _flip = {
         _set: new NullState(() => setOn.flip()),
@@ -194,29 +175,15 @@ export function output(
   indicator = false,
   actuated = 'light'
 ) {
-  const { actualState, setState: _setState } = new Output(
+  const { actualState, setState } = new Output(
     device.addService(new OutputService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
   );
-
-  const setState = new BooleanState(false);
-  const effectState = new BooleanState(true);
-
-  const _combined = new BooleanStateGroup(
-    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-    [setState, effectState]
-  );
-
-  _combined.observe((value) => (_setState.value = value));
-  _setState.observe((value) => (setState.value = value));
 
   const result = {
     _get: actualState,
     _set: setState,
     ...actuatorStaleness(actualState, new ReadOnlyObservable(setState), device),
-    effectState: {
-      $: effectState,
-    },
     flip: (() => {
       const _flip = {
         _set: new NullState(() => setState.flip()),

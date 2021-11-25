@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import {
-  AnyWritableObservable,
-  Observable,
-  ReadOnlyObservable,
-} from '../../observable.js';
 import { BooleanState, NullState } from '../../state.js';
 import {
   Levels,
@@ -13,14 +8,11 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
+import { Observable, ReadOnlyObservable } from '../../observable.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
 
-export function offTimer(
-  time: number,
-  setter: AnyWritableObservable<boolean>,
-  enableFromStart = true
-) {
+export function offTimer(time: number, enableFromStart = true) {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
 
@@ -37,6 +29,12 @@ export function offTimer(
 
   active.observe((value) => {
     if (value) {
+      if (!enabled.value) {
+        active.value = false;
+
+        return;
+      }
+
       timer.start();
 
       const now = Date.now();
@@ -53,20 +51,18 @@ export function offTimer(
     if (!timer.isRunning) return;
 
     timer.stop();
-  }, true);
+  });
 
   timer.observe(() => {
-    setter.value = false;
     active.value = false;
   });
-  setter.observe((value) => (active.value = enabled.value && value), true);
 
   const result = {
+    $: timer,
     _get: new ReadOnlyObservable(enabled),
     _set: enabled,
     active: (() => {
       const _active = {
-        $: active,
         _get: new ReadOnlyObservable(active),
         _set: active,
         flip: (() => {
