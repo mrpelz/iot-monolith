@@ -101,7 +101,8 @@ export function led(device: Device, index = 0, indicator = false) {
     [setOn, effectState]
   );
 
-  _combined.observe((value) => (_setOn.value = value), true);
+  _combined.observe((value) => (_setOn.value = value));
+  _setOn.observe((value) => (setOn.value = value));
 
   const result = {
     _get: actualOn,
@@ -206,7 +207,8 @@ export function output(
     [setState, effectState]
   );
 
-  _combined.observe((value) => (_setState.value = value), true);
+  _combined.observe((value) => (_setState.value = value));
+  _setState.observe((value) => (setState.value = value));
 
   const result = {
     _get: actualState,
