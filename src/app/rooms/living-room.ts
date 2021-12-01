@@ -55,6 +55,7 @@ export const groups = {
 
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
+  const { kitchenAdjacentChillax } = await import('../scenes.js');
 
   instances.couchButton.observe(() => {
     if (kitchenAdjacentLights._set.value) {
@@ -62,7 +63,7 @@ export const groups = {
       return;
     }
 
-    properties.fan._set.flip();
+    kitchenAdjacentChillax._set.trigger();
   });
 
   instances.fanButton.up(() => properties.fan._set.flip());

@@ -7,6 +7,7 @@ import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { hallway } from './rooms/hallway.js';
 import { kitchen } from './rooms/kitchen.js';
+import { kitchenAdjacentChillax } from './scenes.js';
 import { livingRoom } from './rooms/living-room.js';
 import { office } from './rooms/office.js';
 import { showerBathroom } from './rooms/shower-bathroom.js';
@@ -20,6 +21,7 @@ const firstFloor = (() => {
     diningRoom,
     hallway,
     kitchen,
+    kitchenAdjacentChillax,
     kitchenAdjacentLights,
     livingRoom,
     office,

@@ -441,3 +441,18 @@ export function outputGrouping(
 
   return result;
 }
+
+export function scene(handler: () => void, actuated = 'light') {
+  const result = {
+    _set: new NullState(() => handler()),
+  };
+
+  metadataStore.set(result, {
+    actuated,
+    level: Levels.PROPERTY,
+    type: 'actuator',
+    valueType: ValueType.NULL,
+  });
+
+  return result;
+}
