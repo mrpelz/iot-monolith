@@ -12,6 +12,7 @@ export enum Level {
 export type Log = {
   body: string;
   head?: string;
+  stack?: string;
 };
 
 export type LogWithLevel = Log & {
@@ -33,14 +34,22 @@ const logLevelNames = [
   'DEBUG',
 ];
 
-function logMerge(input: Log | string): Log {
-  if (typeof input === 'string') {
+function logMerge(input: Log | string, includeStack = false): Log {
+  const result =
+    typeof input === 'string'
+      ? {
+          body: input,
+        }
+      : input;
+
+  if (!result.stack && includeStack) {
     return {
-      body: input,
+      ...result,
+      stack: new Error().stack,
     };
   }
 
-  return input;
+  return result;
 }
 
 export class Output {
@@ -63,13 +72,22 @@ export class Output {
 }
 
 export class DevOutput extends Output {
-  private static _callback(log: LogWithLevel) {
+  private static _callback({ body, head, level, stack }: LogWithLevel) {
+    let output = `[${new Date().toLocaleTimeString('en', { hour12: false })}]`;
+    output += `${logLevelNames[level]}:\t`;
+
+    if (head) {
+      output += `\t${head}`;
+    }
+
+    output += `\t${body}`;
+
+    if (stack) {
+      output += `\n${stack}`;
+    }
+
     // eslint-disable-next-line no-console
-    console.log(
-      `[${new Date().toLocaleTimeString('en', { hour12: false })}] ${
-        logLevelNames[log.level]
-      }:\t${log.head ? `${log.head}:` : ''}\t${log.body}`
-    );
+    console.log(output);
 
     return Promise.resolve();
   }
@@ -92,9 +110,21 @@ export class DevOutput extends Output {
 }
 
 export class JournaldOutput extends Output {
-  private static _callback(log: LogWithLevel) {
+  private static _callback({ body, head, level, stack }: LogWithLevel) {
+    let output = `<${level}>`;
+
+    if (head) {
+      output += ` ${head}`;
+    }
+
+    output += ` ${body}`;
+
+    if (stack) {
+      output += `\n${stack}`;
+    }
+
     // eslint-disable-next-line no-console
-    console.log(`<${log.level}>${log.head ? `${log.head}:` : ''} ${log.body}`);
+    console.log(output);
 
     return Promise.resolve();
   }
@@ -159,7 +189,7 @@ export class Input {
 
   private _log(level: Level, initiator: Initiator) {
     const amendedInitiator = () => {
-      const log = logMerge(initiator());
+      const log = logMerge(initiator(), level <= Level.NOTICE);
 
       return {
         ...this._options,

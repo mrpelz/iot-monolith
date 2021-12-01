@@ -16,7 +16,7 @@
     "lint:fix": "eslint --fix --ext js,ts src",
     "lint:ts-only": "tsc --noEmit; eslint --ext ts src",
     "push": "git push origin HEAD --force && git push github HEAD --force",
-    "run": "LOG_LEVEL=6 LOG_TELEGRAM=0 node --use_strict --experimental-modules --enable-source-maps",
+    "run": "LOG_LEVEL=6 LOG_TELEGRAM=0 node --use_strict --experimental-modules --enable-source-maps --stack-trace-limit=100",
     "start": "echo \"use systemd with 'iot-monolith.service'-file to start this service in a production environment\nfor testing purposes, use 'npm run start:dev'\"",
     "start:dev": "npm run --silent run dist/index.js",
     "start:file": "npm run --silent run",

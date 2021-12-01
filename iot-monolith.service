@@ -9,7 +9,7 @@ Environment="LOG_TELEGRAM=0"
 Environment="PROD_ENV=1"
 # Environment="TELEGRAM_TOKEN=SECRET"
 WorkingDirectory=/opt/iot-monolith/
-ExecStart=/usr/bin/node --use_strict --experimental-modules --enable-source-maps dist/index.js
+ExecStart=/usr/bin/node --use_strict --experimental-modules --enable-source-maps --stack-trace-limit=100 dist/index.js
 Restart=always
 RestartSec=5
 StandardOutput=journal

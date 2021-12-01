@@ -5,7 +5,6 @@ const logger = globalLogger.getInput({
   head: 'root',
 });
 
-Error.stackTraceLimit = 250;
 process.stdin.resume();
 
 logger.info(() => ({
