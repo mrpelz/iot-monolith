@@ -213,7 +213,7 @@ export function scheduledRamp(
   refresh: number,
   handler: (active: boolean, progress: number) => void
 ) {
-  const enabled = new BooleanState(true);
+  const enabled = new BooleanState(false);
 
   let startTime = 0;
   let timer: NodeJS.Timeout | null = null;

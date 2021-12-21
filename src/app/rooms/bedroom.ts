@@ -181,7 +181,7 @@ export const properties = {
       return;
     }
 
-    properties.nightstandLedLeft.brightness._set.value = 8;
+    properties.nightstandLedLeft.brightness._set.value = 4;
   });
 
   instances.nightstandButtonRight.observe(() => {
@@ -190,10 +190,17 @@ export const properties = {
       return;
     }
 
-    properties.nightstandLedRight.brightness._set.value = 8;
+    properties.nightstandLedRight.brightness._set.value = 4;
   });
 
-  instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchBed.up(() => {
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.ceilingLight._set.flip();
+  });
   instances.wallswitchBed.longPress(
     () => (groups.allLights._set.value = false)
   );
