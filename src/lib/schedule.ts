@@ -1,4 +1,5 @@
 import { Input, Logger } from './log.js';
+import { Observable, ReadOnlyObservable } from './observable.js';
 
 export type ScheduleEpochPair = [Schedule, number];
 
@@ -16,11 +17,14 @@ const MAX_TIMEOUT = 2147483647;
 
 export class Schedule {
   private readonly _log: Input;
+  private readonly _nextExecution = new Observable<Date | null>(null);
   private readonly _nextExecutionProvider: NextExecutionProvider;
   private readonly _once: boolean;
   private _previousExecution: Date | null = null;
   private readonly _tasks = new Set<Task>();
   private _timeout: NodeJS.Timeout | null = null;
+
+  readonly nextExecution: ReadOnlyObservable<Date | null>;
 
   constructor(
     logger: Logger,
@@ -31,6 +35,8 @@ export class Schedule {
     this._log = logger.getInput({ head: 'Schedule' });
     this._nextExecutionProvider = nextExecutionProvider;
     this._once = once;
+
+    this.nextExecution = new ReadOnlyObservable(this._nextExecution);
 
     if (!start) return;
     this.start();
@@ -51,12 +57,13 @@ export class Schedule {
       carriedOverExecution ||
       this._nextExecutionProvider(this._previousExecution || undefined);
 
+    this._nextExecution.value = nextExecution;
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
       this._log.notice(() => ({
-        body: String(this),
-        head: 'next execution missing or not in the future, stopping execution',
+        body: 'next execution missing or not in the future, stopping execution',
+        stack: new Error().stack,
       }));
 
       this._previousExecution = null;
@@ -104,6 +111,7 @@ export class Schedule {
     if (this._timeout) {
       clearTimeout(this._timeout);
       this._timeout = null;
+      this._nextExecution.value = null;
     }
   }
 }

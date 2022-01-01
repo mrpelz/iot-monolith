@@ -112,65 +112,63 @@ export const properties = {
   ...partialProperties,
   wakeupLightWeekday: scheduledRamp(
     [
-      new Schedule(logger, () => {
-        const result = new ModifiableDate().truncateTo(Unit.MINUTE);
+      new Schedule(
+        logger,
+        () => {
+          const result = new ModifiableDate().truncateToNext(Unit.MINUTE);
 
-        const advance = () => {
-          result.forwardUntil({
-            [Unit.HOUR]: 7,
-            [Unit.MINUTE]: 0,
-          });
-        };
+          const advance = () => {
+            result.forwardUntil({
+              [Unit.HOUR]: 7,
+              [Unit.MINUTE]: 0,
+            });
+          };
 
-        advance();
-
-        while (result.isWeekend) {
           advance();
-        }
 
-        return result.date;
-      }),
+          while (result.isWeekend) {
+            advance();
+          }
+
+          return result.date;
+        },
+        false
+      ),
       epochs.hour,
     ],
-    epochs.minute,
-    (active, progress) => {
-      if (!active) {
-        return;
-      }
-
-      groups.whiteLeds.brightness._set.value = progress * 255;
-    }
+    epochs.second * 10,
+    (progress) =>
+      (groups.whiteLeds.brightness._set.value = Math.round(progress * 255))
   ),
   wakeupLightWeekend: scheduledRamp(
     [
-      new Schedule(logger, () => {
-        const result = new ModifiableDate().truncateTo(Unit.MINUTE);
+      new Schedule(
+        logger,
+        () => {
+          const result = new ModifiableDate().truncateToNext(Unit.MINUTE);
 
-        const advance = () => {
-          result.forwardUntil({
-            [Unit.HOUR]: 8,
-            [Unit.MINUTE]: 0,
-          });
-        };
+          const advance = () => {
+            result.forwardUntil({
+              [Unit.HOUR]: 8,
+              [Unit.MINUTE]: 0,
+            });
+          };
 
-        advance();
-
-        while (result.isWeekday) {
           advance();
-        }
 
-        return result.date;
-      }),
+          while (result.isWeekday) {
+            advance();
+          }
+
+          return result.date;
+        },
+        false
+      ),
       epochs.hour,
     ],
-    epochs.minute,
-    (active, progress) => {
-      if (!active) {
-        return;
-      }
-
-      groups.whiteLeds.brightness._set.value = progress * 255;
-    }
+    epochs.second * 10,
+    (progress) =>
+      (groups.whiteLeds.brightness._set.value = Math.round(progress * 255))
   ),
 };
 

@@ -8,7 +8,11 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
-import { Observable, ReadOnlyObservable } from '../../observable.js';
+import {
+  Observable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../../observable.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
 
@@ -211,9 +215,10 @@ export function offTimer(time: number, enableFromStart = true) {
 export function scheduledRamp(
   [schedule, epoch]: ScheduleEpochPair,
   refresh: number,
-  handler: (active: boolean, progress: number) => void
+  handler: (progress: number) => void
 ) {
   const enabled = new BooleanState(false);
+  schedule[enabled.value ? 'start' : 'stop']();
 
   let startTime = 0;
   let timer: NodeJS.Timeout | null = null;
@@ -236,11 +241,9 @@ export function scheduledRamp(
     const timeElapsed = now - startTime;
     const progress = timeElapsed / epoch;
 
-    const active = progress <= 1;
+    handler(progress);
 
-    handler(active, progress);
-
-    if (!active) {
+    if (progress > 1) {
       handleStop();
     }
   };
@@ -258,10 +261,9 @@ export function scheduledRamp(
       return;
     }
 
-    handleStop();
     schedule.stop();
-
-    handler(false, 0);
+    handleStop();
+    handler(0);
   });
 
   const result = {
@@ -281,6 +283,23 @@ export function scheduledRamp(
       });
 
       return _flip;
+    })(),
+    nextExecution: (() => {
+      const _nextExecution = {
+        _get: new ReadOnlyProxyObservable<Date | null, number>(
+          schedule.nextExecution,
+          (date) => date?.getTime() || 0
+        ),
+      };
+
+      metadataStore.set(_nextExecution, {
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        valueType: ValueType.NUMBER,
+      });
+
+      return _nextExecution;
     })(),
     off: (() => {
       const _off = {
