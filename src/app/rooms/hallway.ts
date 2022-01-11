@@ -89,7 +89,7 @@ export const properties = {
 
   properties.doorOpen._get.observe((value) => {
     if (!value) {
-      if (!properties.ceilingLightFront._get.value) return;
+      if (!groups.ceilingLight._get.value) return;
 
       properties.entryDoorTimer.active._set.value = true;
 
@@ -99,14 +99,14 @@ export const properties = {
     properties.ceilingLightFront._set.value = true;
   });
 
-  properties.ceilingLightFront._set.observe((value) => {
+  properties.ceilingLightFront._get.observe((value) => {
     if (value || !properties.entryDoorTimer.active._get) return;
 
     properties.entryDoorTimer.active._set.value = false;
   });
 
   properties.entryDoorTimer.$.observe(() => {
-    properties.ceilingLightFront._set.value = false;
+    groups.ceilingLight._set.value = false;
   });
 })();
 
