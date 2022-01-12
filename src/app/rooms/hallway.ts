@@ -99,11 +99,10 @@ export const properties = {
     properties.ceilingLightFront._set.value = true;
   });
 
-  properties.ceilingLightFront._get.observe((value) => {
-    if (value || !properties.entryDoorTimer.active._get) return;
-
-    properties.entryDoorTimer.active._set.value = false;
-  });
+  groups.ceilingLight._get.observe(
+    () => (properties.entryDoorTimer.active._set.value = false),
+    true
+  );
 
   properties.entryDoorTimer.$.observe(() => {
     groups.ceilingLight._set.value = false;

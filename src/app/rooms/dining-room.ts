@@ -125,6 +125,7 @@ export const diningRoom = {
 };
 
 metadataStore.set(diningRoom, {
+  isConnectingRoom: true,
   level: Levels.ROOM,
   name: 'diningRoom',
 });
