@@ -34,11 +34,6 @@ export const devices = {
     timings,
     'hallway-wallswitchfront.iot.wurstsalat.cloud'
   ),
-  wallswitchMiddle: shellyi3(
-    logger,
-    timings,
-    'hallway-wallswitchmiddle.iot.wurstsalat.cloud'
-  ),
 };
 
 export const instances = {
@@ -46,7 +41,7 @@ export const instances = {
   wallswitchFrontLeft: devices.wallswitchFront.button0.$,
   wallswitchFrontMiddle: devices.wallswitchFront.button1.$,
   wallswitchFrontRight: devices.wallswitchFront.button2.$,
-  wallswitchMiddle: devices.wallswitchMiddle.button0.$,
+  wallswitchMiddle: devices.wallswitchBack.button1.$,
 };
 
 const partialProperties = {
