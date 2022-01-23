@@ -206,7 +206,7 @@ export class NullState<T = null> {
   }
 }
 
-export class ReadOnlyNullState<T> {
+export class ReadOnlyNullState<T = null> {
   private readonly _nullState: NullState<T>;
 
   constructor(nullState: NullState<T>) {

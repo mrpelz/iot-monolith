@@ -6,6 +6,7 @@ import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { Logger } from '../../log.js';
 import { MultiValueEvent } from '../../items/event.js';
+import { lastSeen } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,
@@ -50,6 +51,7 @@ export const ev1527WindowSensor = (
 
       return _tamperSwitch;
     })(),
+    ...lastSeen(device.seen),
   };
 
   metadataStore.set(result, {

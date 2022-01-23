@@ -85,7 +85,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
         measured: 'temperature',
         name: 'compoundTemperature',
         type: 'sensor',
-        unit: 'celsius',
+        unit: 'deg-c',
         valueType: ValueType.NUMBER,
       });
 

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { BooleanState, ReadOnlyNullState } from '../../state.js';
 import { Levels, ParentRelation, ValueType, metadataStore } from '../main.js';
 import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
 import { Observable, ReadOnlyObservable } from '../../observable.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
-import { BooleanState } from '../../state.js';
 import { Device } from '../../device/main.js';
 import { ESPNow } from '../../events/esp-now.js';
 import { Hello } from '../../services/hello.js';
@@ -59,11 +59,13 @@ function metricStaleness<T>(
   };
 }
 
-export function lastSeen<T>(state: ReadOnlyObservable<T | null>) {
+export function lastSeen<T>(
+  state: ReadOnlyObservable<T | null> | ReadOnlyNullState
+) {
   const seen = new Observable<number | null>(null);
 
   state.observe((value) => {
-    if (value === null) return;
+    if (state instanceof ReadOnlyObservable && value === null) return;
 
     seen.value = Date.now();
   }, true);
@@ -157,7 +159,7 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'temperature',
         type: 'sensor',
-        unit: 'celsius',
+        unit: 'deg-c',
         valueType: ValueType.NUMBER,
       });
 
@@ -220,7 +222,7 @@ export function mcp9808(device: Device, [schedule, epoch]: ScheduleEpochPair) {
     level: Levels.PROPERTY,
     measured: 'temperature',
     type: 'sensor',
-    unit: 'celsius',
+    unit: 'deg-c',
     valueType: ValueType.NUMBER,
   });
 
@@ -289,7 +291,7 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         measured: 'temperature',
         parentRelation: ParentRelation.DATA_QUALIFIER,
         type: 'sensor',
-        unit: 'celsius',
+        unit: 'deg-c',
         valueType: ValueType.NUMBER,
       });
 
@@ -414,7 +416,7 @@ export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'pm025',
         type: 'sensor',
-        unit: 'ppm',
+        unit: 'micrograms/m3',
         valueType: ValueType.NUMBER,
       });
 
@@ -430,7 +432,7 @@ export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'pm10',
         type: 'sensor',
-        unit: 'ppm',
+        unit: 'micrograms/m3',
         valueType: ValueType.NUMBER,
       });
 

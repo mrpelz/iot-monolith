@@ -167,11 +167,13 @@ export class Device {
   );
 
   private readonly _requests = new Map<number, RequestResolver>();
+  private readonly _seen = new NullState();
   private readonly _services = new Set<Service<unknown, unknown>>();
   private readonly _transport: TransportDevice;
 
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
+  readonly seen: ReadOnlyNullState;
 
   constructor(
     logger: Logger,
@@ -192,6 +194,8 @@ export class Device {
         this._isOnline,
       ])
     );
+
+    this.seen = new ReadOnlyNullState(this._seen);
 
     this.isOnline.observe((online) =>
       this._log.info(() => (online ? 'online' : 'offline'))
@@ -306,6 +310,8 @@ export class Device {
    */
   matchDataToRequest(message: Buffer): void {
     if (!message.length) return;
+
+    this._seen.trigger();
 
     const requestIdentifier = readNumber(message.subarray(0, 1));
     const payload = message.subarray(1);

@@ -80,7 +80,7 @@ export const roomSensor = (
         measured: 'temperature',
         name: 'compoundTemperature',
         type: 'sensor',
-        unit: 'celsius',
+        unit: 'deg-c',
         valueType: ValueType.NUMBER,
       });
 
