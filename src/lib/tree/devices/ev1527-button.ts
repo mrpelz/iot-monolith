@@ -43,6 +43,7 @@ export const ev1527ButtonX1 = (
     $: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomRight',
     ]).state.bottomRight,
+    ...lastSeen(device.seen),
   };
 
   metadataStore.set(result, {

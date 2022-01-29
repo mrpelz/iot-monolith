@@ -180,6 +180,7 @@ export function offTimer(time: number, enableFromStart = true) {
         level: Levels.PROPERTY,
         parentRelation: ParentRelation.META_RELATION,
         type: 'sensor',
+        unit: 'date',
         valueType: ValueType.NUMBER,
       });
 
@@ -194,6 +195,7 @@ export function offTimer(time: number, enableFromStart = true) {
         level: Levels.PROPERTY,
         parentRelation: ParentRelation.META_RELATION,
         type: 'sensor',
+        unit: 'date',
         valueType: ValueType.NUMBER,
       });
 
@@ -296,6 +298,7 @@ export function scheduledRamp(
         level: Levels.PROPERTY,
         parentRelation: ParentRelation.META_RELATION,
         type: 'sensor',
+        unit: 'date',
         valueType: ValueType.NUMBER,
       });
 

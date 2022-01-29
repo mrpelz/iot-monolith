@@ -78,6 +78,7 @@ export function lastSeen<T>(
     level: Levels.PROPERTY,
     parentRelation: ParentRelation.DATA_QUALIFIER,
     type: 'sensor',
+    unit: 'date',
     valueType: ValueType.NUMBER,
   });
 
@@ -127,7 +128,7 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'relativeHumidity',
         type: 'sensor',
-        unit: 'percent',
+        unit: 'percent-rh',
         valueType: ValueType.NUMBER,
       });
 
@@ -143,7 +144,7 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'pressure',
         type: 'sensor',
-        unit: 'pascal',
+        unit: 'hpa',
         valueType: ValueType.NUMBER,
       });
 
@@ -497,7 +498,6 @@ export function vcc(device: Device) {
     measured: 'voltage',
     parentRelation: ParentRelation.META_RELATION,
     type: 'sensor',
-    unit: 'volt',
     valueType: ValueType.NUMBER,
   });
 
