@@ -61,7 +61,7 @@ export class Schedule {
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
-      this._log.notice(() => ({
+      this._log.error(() => ({
         body: 'next execution missing or not in the future, stopping execution',
         stack: new Error().stack,
       }));

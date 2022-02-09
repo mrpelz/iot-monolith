@@ -6,12 +6,10 @@ import {
   ReadOnlyNullState,
 } from '../state.js';
 import { Input, Logger } from '../log.js';
-import { ModifiableDate, Unit } from '../modifiable-date.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { readNumber, writeNumber } from '../data.js';
 import { ReadOnlyObservable } from '../observable.js';
-import { Schedule } from '../schedule.js';
 import { Timer } from '../timer.js';
 
 type DeviceEvents = Set<Event<unknown>>;
@@ -146,18 +144,9 @@ export class Service<T = void, S = void> extends Property {
 }
 
 export class Device {
-  private static _setUpSchedule(logger: Logger): Schedule {
-    return new Schedule(
-      logger,
-      () => new ModifiableDate().set().truncateToNext(Unit.SECOND).date,
-      false
-    );
-  }
-
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
   private readonly _keepAliveReceiveTimer: Timer;
-  private readonly _keepAliveSendSchedule: Schedule;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
@@ -205,18 +194,10 @@ export class Device {
 
     this._keepAliveReceiveTimer = new Timer(keepAlive);
 
-    this._keepAliveSendSchedule = Device._setUpSchedule(logger);
-    this._keepAliveSendSchedule.addTask(() => this._sendKeepAlive());
-
     transport.isConnected.observe((transportConnected) => {
-      if (transportConnected) {
-        this._sendKeepAlive();
-        this._keepAliveSendSchedule.start();
+      if (!transportConnected) return;
 
-        return;
-      }
-
-      this._keepAliveSendSchedule.stop();
+      this._sendKeepAlive();
     });
 
     this._keepAliveReceiveTimer.observe(() => {
@@ -226,6 +207,8 @@ export class Device {
         request.reject(new Error('request aborted due to disconnection'));
       }
     });
+
+    setInterval(() => this._sendKeepAlive(), 1000);
   }
 
   private _handleEvent(payload: Buffer): void {
@@ -247,7 +230,7 @@ export class Device {
   }
 
   private _receiveKeepAlive() {
-    this._keepAliveReceiveTimer.stop();
+    this._keepAliveReceiveTimer.start();
     this._isOnline.value = true;
   }
 
@@ -256,12 +239,9 @@ export class Device {
 
     try {
       this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
-    } catch (_) {
-      // noop
+    } catch {
+      this._log.error(() => 'error writing keepalive packet');
     }
-
-    if (this._keepAliveReceiveTimer.isRunning) return;
-    this._keepAliveReceiveTimer.start();
   }
 
   /**
