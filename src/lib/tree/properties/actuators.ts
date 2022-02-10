@@ -127,36 +127,6 @@ export function led(device: Device, index = 0, indicator = false) {
 
       return _flip;
     })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (setOn.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (setOn.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
-    })(),
   };
 
   metadataStore.set(result, {
@@ -198,36 +168,6 @@ export function output(
       });
 
       return _flip;
-    })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (setState.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (setState.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
     })(),
   };
 
@@ -324,36 +264,6 @@ export function ledGrouping(
 
       return _flip;
     })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (setOn.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (setOn.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
-    })(),
   };
 
   metadataStore.set(result, {
@@ -399,36 +309,6 @@ export function outputGrouping(
       });
 
       return _flip;
-    })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (set.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (set.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
     })(),
   };
 

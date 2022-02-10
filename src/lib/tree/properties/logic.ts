@@ -84,36 +84,6 @@ export function offTimer(time: number, enableFromStart = true) {
 
           return _flip;
         })(),
-        off: (() => {
-          const _off = {
-            _set: new NullState(() => (active.value = false)),
-          };
-
-          metadataStore.set(_off, {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          });
-
-          return _off;
-        })(),
-        on: (() => {
-          const _on = {
-            _set: new NullState(() => (active.value = true)),
-          };
-
-          metadataStore.set(_on, {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          });
-
-          return _on;
-        })(),
       };
 
       metadataStore.set(_active, {
@@ -140,36 +110,6 @@ export function offTimer(time: number, enableFromStart = true) {
       });
 
       return _flip;
-    })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (enabled.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (enabled.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
     })(),
     runoutTime: (() => {
       const _runoutTime = {
@@ -303,36 +243,6 @@ export function scheduledRamp(
       });
 
       return _nextExecution;
-    })(),
-    off: (() => {
-      const _off = {
-        _set: new NullState(() => (enabled.value = false)),
-      };
-
-      metadataStore.set(_off, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _off;
-    })(),
-    on: (() => {
-      const _on = {
-        _set: new NullState(() => (enabled.value = true)),
-      };
-
-      metadataStore.set(_on, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _on;
     })(),
   };
 

@@ -60,6 +60,7 @@ const wurstHome = (() => {
   };
 
   metadataStore.set(result, {
+    isPrimary: true,
     level: Levels.HOME,
     name: 'wurstHome',
   });

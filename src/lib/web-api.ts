@@ -3,16 +3,18 @@ import { Input, Logger } from './log.js';
 import { Duplex } from 'stream';
 import { IncomingMessage } from 'http';
 import { Socket } from 'net';
+import { Timer } from './timer.js';
 import { Tree } from './tree/main.js';
 import WebSocket from 'ws';
 import { multiline } from './string.js';
 
-const PATH_HIERARCHY = '/api/hierarchy' as const;
-const PATH_ID = '/api/id' as const;
-const PATH_STREAM = '/api/stream' as const;
-const PATH_VALUES = '/api/values' as const;
+const PATH_HIERARCHY = '/api/hierarchy';
+const PATH_ID = '/api/id';
+const PATH_STREAM = '/api/stream';
+const PATH_VALUES = '/api/values';
 
 const WEBSOCKET_PING_INTERVAL = 5000;
+const WEBSOCKET_MARCOPOLO_PAYLOAD = '9B864FA5-F0DE-4182-A868-B4DBB81EEC16';
 
 export class WebApi {
   private readonly _httpServer: HttpServer;
@@ -81,8 +83,15 @@ export class WebApi {
       });
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
+      const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
 
       ws.on('message', (data) => {
+        if (data === WEBSOCKET_MARCOPOLO_PAYLOAD) {
+          ws.send(WEBSOCKET_MARCOPOLO_PAYLOAD);
+
+          return;
+        }
+
         const payload = (() => {
           if (typeof data !== 'string') return null;
 
@@ -100,11 +109,20 @@ export class WebApi {
         this._tree.set(index, value);
       });
 
-      ws.on('close', () => {
+      ws.on('pong', () => {
+        pingPongTimer.start();
+      });
+
+      const handleStreamClose = () => {
         clearInterval(pingPong);
+        pingPongTimer.stop();
+
         observer.remove();
         ws.close();
-      });
+      };
+
+      ws.on('close', handleStreamClose);
+      pingPongTimer.observe(handleStreamClose);
     } catch (_error) {
       const error = new Error(`error handling WebSocket: ${_error}`);
 
