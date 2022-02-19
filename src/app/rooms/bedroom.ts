@@ -137,8 +137,10 @@ export const properties = {
       epochs.hour,
     ],
     epochs.second * 10,
-    (progress) =>
-      (groups.whiteLeds.brightness._set.value = Math.round(progress * 255))
+    (progress) => {
+      groups.whiteLeds.brightness._set.value = Math.round(progress * 255);
+      if (progress === 1) partialProperties.ceilingLight._set.value = true;
+    }
   ),
   wakeupLightWeekend: scheduledRamp(
     [
@@ -167,8 +169,10 @@ export const properties = {
       epochs.hour,
     ],
     epochs.second * 10,
-    (progress) =>
-      (groups.whiteLeds.brightness._set.value = Math.round(progress * 255))
+    (progress) => {
+      groups.whiteLeds.brightness._set.value = Math.round(progress * 255);
+      if (progress === 1) partialProperties.ceilingLight._set.value = true;
+    }
   ),
 };
 

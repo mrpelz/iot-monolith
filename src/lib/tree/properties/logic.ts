@@ -185,7 +185,7 @@ export function scheduledRamp(
 
     handler(progress);
 
-    if (progress > 1) {
+    if (progress >= 1) {
       handleStop();
     }
   };
