@@ -144,7 +144,7 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
         level: Levels.PROPERTY,
         measured: 'pressure',
         type: 'sensor',
-        unit: 'hpa',
+        unit: 'pa',
         valueType: ValueType.NUMBER,
       });
 
