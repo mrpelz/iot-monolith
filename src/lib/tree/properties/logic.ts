@@ -15,6 +15,7 @@ import {
 } from '../../observable.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
+import { maxmin } from '../../number.js';
 
 export function offTimer(time: number, enableFromStart = true) {
   const enabled = new BooleanState(enableFromStart);
@@ -181,11 +182,11 @@ export function scheduledRamp(
 
     const now = Date.now();
     const timeElapsed = now - startTime;
-    const progress = timeElapsed / epoch;
+    const progress = maxmin(timeElapsed / epoch);
 
     handler(progress);
 
-    if (progress >= 1) {
+    if (progress === 1) {
       handleStop();
     }
   };

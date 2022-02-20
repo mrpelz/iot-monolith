@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
+  AnyReadOnlyObservable,
+  ObservableGroup,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../../observable.js';
+import {
   BooleanGroupStrategy,
   BooleanNullableStateGroup,
   BooleanState,
@@ -14,11 +20,6 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
-import {
-  ObservableGroup,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../observable.js';
 import { Device } from '../../device/main.js';
 import { Indicator } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
@@ -27,8 +28,8 @@ import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
 
 function actuatorStaleness<T>(
-  state: ReadOnlyObservable<T | null>,
-  setState: ReadOnlyObservable<T | null>,
+  state: AnyReadOnlyObservable<T | null>,
+  setState: AnyReadOnlyObservable<T | null>,
   device: Device
 ) {
   const stale = new BooleanState(true);

@@ -138,7 +138,7 @@ export const properties = {
     ],
     epochs.second * 10,
     (progress) => {
-      groups.whiteLeds.brightness._set.value = Math.round(progress * 255);
+      groups.whiteLeds.brightness._set.value = progress;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
     }
   ),
@@ -170,7 +170,7 @@ export const properties = {
     ],
     epochs.second * 10,
     (progress) => {
-      groups.whiteLeds.brightness._set.value = Math.round(progress * 255);
+      groups.whiteLeds.brightness._set.value = progress;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
     }
   ),
