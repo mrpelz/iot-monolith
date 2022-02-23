@@ -178,7 +178,6 @@ export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   const result = {
     _get: state,
     ...metricStaleness(state, epoch),
-    ...lastSeen(state),
   };
 
   metadataStore.set(result, {
@@ -490,7 +489,6 @@ export function vcc(device: Device) {
 
   const result = {
     _get: state,
-    ...lastSeen(state),
   };
 
   metadataStore.set(result, {

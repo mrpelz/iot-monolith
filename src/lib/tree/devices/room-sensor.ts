@@ -14,6 +14,7 @@ import {
   bme280,
   hello,
   input,
+  lastSeen,
   mcp9808,
   mhz19,
   online,
@@ -40,6 +41,7 @@ export const roomSensor = (
 
   const result = {
     ...hello(device, timings.moderate || timings.default),
+    ...lastSeen(device.seen),
     ...mhz19(device, timings.slow || timings.default),
     ...online(device),
     ...tsl2561(device, timings.default),

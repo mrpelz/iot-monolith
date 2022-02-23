@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../main.js';
-import { Timings, hello, online } from '../properties/sensors.js';
+import { Timings, hello, lastSeen, online } from '../properties/sensors.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
 import { led } from '../properties/actuators.js';
@@ -21,6 +21,7 @@ export const h801 = (
 
   const result = {
     ...hello(device, timings.moderate || timings.default),
+    ...lastSeen(device.seen),
     ...online(device),
     ledB,
     ledG,

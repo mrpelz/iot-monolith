@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../main.js';
-import { Timings, hello, online } from '../properties/sensors.js';
+import { Timings, hello, lastSeen, online } from '../properties/sensors.js';
 import { Button } from '../../items/button.js';
 import { Button as ButtonEvent } from '../../events/button.js';
 import { Logger } from '../../log.js';
@@ -21,6 +21,7 @@ export const obiPlug = (
 
   const result = {
     ...hello(device, timings.moderate || timings.default),
+    ...lastSeen(device.seen),
     ...online(device),
     button,
     relay,

@@ -2,7 +2,13 @@
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, ValueType, metadataStore } from '../main.js';
-import { Timings, hello, online, vcc } from '../properties/sensors.js';
+import {
+  Timings,
+  hello,
+  lastSeen,
+  online,
+  vcc,
+} from '../properties/sensors.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Input } from '../../events/input.js';
@@ -79,6 +85,7 @@ export const espNowWindowSensor = (
 
     const result = {
       ...children(device),
+      ...lastSeen(device.seen),
       ...vcc(device),
     };
 
@@ -97,6 +104,7 @@ export const espNowWindowSensor = (
     const result = {
       ...children(device),
       ...hello(device, timings.moderate || timings.default),
+      ...lastSeen(device.seen),
       ...online(device),
     };
 

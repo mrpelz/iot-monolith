@@ -15,6 +15,7 @@ import {
   bme280,
   hello,
   input,
+  lastSeen,
   mcp9808,
   mhz19,
   online,
@@ -43,6 +44,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
   const result = {
     ...async(device, timings.slow || timings.default),
     ...hello(device, timings.moderate || timings.default),
+    ...lastSeen(device.seen),
     ...mhz19(device, timings.slow || timings.default),
     ...online(device),
     ...sds011(device, timings.slow || timings.default),

@@ -183,7 +183,7 @@ export const properties = {
       return;
     }
 
-    properties.nightstandLedLeft.brightness._set.value = 4;
+    properties.nightstandLedLeft.brightness._set.value = 0.3;
   });
 
   instances.nightstandButtonRight.observe(() => {
@@ -192,7 +192,7 @@ export const properties = {
       return;
     }
 
-    properties.nightstandLedRight.brightness._set.value = 4;
+    properties.nightstandLedRight.brightness._set.value = 0.3;
   });
 
   instances.wallswitchBed.up(() => {
