@@ -4,6 +4,7 @@ import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import fetch from 'node-fetch';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
@@ -75,7 +76,27 @@ export const groups = {
 
     kitchenAdjacentChillax._set.trigger();
   });
-  testRoomInstances.espNowButton1.up(() => properties.fan._set.flip());
+
+  testRoomInstances.espNowButton1.up(() => {
+    try {
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
+        method: 'POST',
+        timeout: 1000,
+      });
+    } catch {
+      // noop
+    }
+  });
+  testRoomInstances.espNowButton1.longPress(() => {
+    try {
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
+        method: 'POST',
+        timeout: 1000,
+      });
+    } catch {
+      // noop
+    }
+  });
 
   instances.fanButton.up(() => properties.fan._set.flip());
 
