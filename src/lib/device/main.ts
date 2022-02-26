@@ -20,11 +20,12 @@ type Request<T = Buffer> = Promise<T>;
 type RequestResolver = {
   reject: (reason?: unknown) => void;
   resolver: (value: Buffer) => void;
-  timer: Timer;
+  timer: Timer | null;
 };
 
 type DeviceIdentifier = Buffer | null;
 
+const KEEPALIVE_INTERVAL = 4000;
 const KEEPALIVE_IDENTIFIER = 0xff;
 const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_PAYLOAD = Buffer.from([
@@ -146,7 +147,7 @@ export class Service<T = void, S = void> extends Property {
 export class Device {
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
-  private readonly _keepAliveReceiveTimer: Timer;
+  private readonly _keepAliveReceiveTimer: Timer | null = null;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
@@ -168,7 +169,7 @@ export class Device {
     logger: Logger,
     transport: Transport,
     identifier: DeviceIdentifier = null,
-    keepAlive = 5000
+    keepAlive = KEEPALIVE_INTERVAL + 1000
   ) {
     this._log = logger.getInput({
       head: `Device "${transport.friendlyName || identifier}"`,
@@ -208,7 +209,7 @@ export class Device {
       }
     });
 
-    setInterval(() => this._sendKeepAlive(), 1000);
+    setInterval(() => this._sendKeepAlive(), KEEPALIVE_INTERVAL);
   }
 
   private _handleEvent(payload: Buffer): void {
@@ -225,12 +226,12 @@ export class Device {
 
     this._requests.delete(identifier);
 
-    timer.stop();
+    timer?.stop();
     resolver(payload);
   }
 
   private _receiveKeepAlive() {
-    this._keepAliveReceiveTimer.start();
+    this._keepAliveReceiveTimer?.start();
     this._isOnline.value = true;
   }
 
@@ -343,9 +344,10 @@ export class Device {
 
     return new Promise((resolver, reject) => {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
-      const timer = new Timer(timeout);
 
-      timer.observe((_, observer) => {
+      const timer = timeout ? new Timer(timeout) : null;
+
+      timer?.observe((_, observer) => {
         observer.remove();
         const error = new Error('request timed out');
 
@@ -356,7 +358,7 @@ export class Device {
         reject(error);
       });
 
-      timer.start();
+      timer?.start();
 
       this._requests.set(id, {
         reject,
