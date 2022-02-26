@@ -56,6 +56,7 @@ export const groups = {
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
   const { kitchenAdjacentChillax } = await import('../scenes.js');
+  const { instances: testRoomInstances } = await import('./test-room.js');
 
   instances.couchButton.observe(() => {
     if (kitchenAdjacentLights._set.value) {
@@ -65,6 +66,16 @@ export const groups = {
 
     kitchenAdjacentChillax._set.trigger();
   });
+
+  testRoomInstances.espNowButton0.up(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
+  testRoomInstances.espNowButton1.up(() => properties.fan._set.flip());
 
   instances.fanButton.up(() => properties.fan._set.flip());
 

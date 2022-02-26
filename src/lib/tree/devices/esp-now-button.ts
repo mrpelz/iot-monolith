@@ -4,13 +4,12 @@ import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, metadataStore } from '../main.js';
 import {
   Timings,
+  button,
   hello,
   lastSeen,
   online,
   vcc,
 } from '../properties/sensors.js';
-import { Button } from '../../items/button.js';
-import { Button as ButtonEvent } from '../../events/button.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';
@@ -33,8 +32,8 @@ export const espNowButton = (
   options: EspNowButtonOptions
 ) => {
   const children = (device: Device) => ({
-    button0: { $: new Button(device.addEvent(new ButtonEvent(0))) },
-    button1: { $: new Button(device.addEvent(new ButtonEvent(1))) },
+    button0: button(device, 0),
+    button1: button(device, 1),
   });
 
   const espNow = (() => {

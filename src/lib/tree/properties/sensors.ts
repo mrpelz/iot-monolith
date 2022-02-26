@@ -6,6 +6,8 @@ import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
 import { Observable, ReadOnlyObservable } from '../../observable.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
+import { Button } from '../../items/button.js';
+import { Button as ButtonEvent } from '../../events/button.js';
 import { Device } from '../../device/main.js';
 import { ESPNow } from '../../events/esp-now.js';
 import { Hello } from '../../services/hello.js';
@@ -26,6 +28,34 @@ import { epochs } from '../../epochs.js';
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
 };
+
+export function lastSeen<T>(
+  state: ReadOnlyObservable<T> | ReadOnlyNullState<T>
+) {
+  const seen = new Observable<number | null>(null);
+
+  state.observe((value) => {
+    if (state instanceof ReadOnlyObservable && value === null) return;
+
+    seen.value = Date.now();
+  }, true);
+
+  const result = {
+    _get: new ReadOnlyObservable(seen),
+  };
+
+  metadataStore.set(result, {
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'sensor',
+    unit: 'date',
+    valueType: ValueType.NUMBER,
+  });
+
+  return {
+    lastSeen: result,
+  };
+}
 
 function metricStaleness<T>(
   state: ReadOnlyObservable<T | null>,
@@ -56,34 +86,7 @@ function metricStaleness<T>(
 
   return {
     stale: result,
-  };
-}
-
-export function lastSeen<T>(
-  state: ReadOnlyObservable<T | null> | ReadOnlyNullState
-) {
-  const seen = new Observable<number | null>(null);
-
-  state.observe((value) => {
-    if (state instanceof ReadOnlyObservable && value === null) return;
-
-    seen.value = Date.now();
-  }, true);
-
-  const result = {
-    _get: new ReadOnlyObservable(seen),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.DATA_QUALIFIER,
-    type: 'sensor',
-    unit: 'date',
-    valueType: ValueType.NUMBER,
-  });
-
-  return {
-    lastSeen: result,
+    ...lastSeen(state),
   };
 }
 
@@ -166,6 +169,16 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
 
       return result;
     })(),
+  };
+}
+
+export function button(device: Device, index = 0) {
+  const buttonEvent = new ButtonEvent(index);
+  device.addEvent(buttonEvent);
+
+  return {
+    $: new Button(buttonEvent),
+    ...lastSeen(buttonEvent.observable),
   };
 }
 
