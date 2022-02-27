@@ -16,10 +16,10 @@ const isOrchestrationTimedSteps = <T>(
   return Array.isArray(orchestration[0]);
 };
 
-export function orchestrate<T>(
+export const orchestrate = <T>(
   orchestration: Orchestration<T>,
   _includeEndSleep?: boolean
-): (state: Observable<T>, includeEndSleep?: boolean) => Promise<void> {
+): ((state: Observable<T>, includeEndSleep?: boolean) => Promise<void>) => {
   return async (state, includeEndSleep = _includeEndSleep) => {
     let count = 1;
 
@@ -51,4 +51,4 @@ export function orchestrate<T>(
       await sleep(time);
     }
   };
-}
+};

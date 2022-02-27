@@ -4,7 +4,7 @@ import { HttpServer } from './http-server.js';
 const PATH_HOOKS = '/hooks' as const;
 const PATH_DELIMITER = '.' as const;
 
-export function hooks(httpServer: HttpServer, tree: Tree): void {
+export const hooks = (httpServer: HttpServer, tree: Tree): void => {
   httpServer.route(PATH_HOOKS, ({ request, response, url, utils }) => {
     const { method } = request;
     const { searchParams } = url;
@@ -105,4 +105,4 @@ export function hooks(httpServer: HttpServer, tree: Tree): void {
 
     utils.notFound();
   });
-}
+};

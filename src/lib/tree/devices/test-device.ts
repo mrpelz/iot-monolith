@@ -13,18 +13,16 @@ import {
   Timings,
   async,
   bme280,
-  hello,
   input,
-  lastSeen,
   mcp9808,
   mhz19,
-  online,
   sds011,
   tsl2561,
   uvIndex,
 } from '../properties/sensors.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
+import { defaultsIpDevice } from './utils.js';
 
 export const testDevice = (logger: Logger, timings: Timings) => {
   const device = new UDPDevice(
@@ -43,10 +41,8 @@ export const testDevice = (logger: Logger, timings: Timings) => {
 
   const result = {
     ...async(device, timings.slow || timings.default),
-    ...hello(device, timings.moderate || timings.default),
-    ...lastSeen(device.seen),
+    ...defaultsIpDevice(device, timings),
     ...mhz19(device, timings.slow || timings.default),
-    ...online(device),
     ...sds011(device, timings.slow || timings.default),
     ...tsl2561(device, timings.default),
     ...uvIndex(device, timings.default),

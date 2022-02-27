@@ -12,16 +12,14 @@ import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import {
   Timings,
   bme280,
-  hello,
   input,
-  lastSeen,
   mcp9808,
   mhz19,
-  online,
   tsl2561,
 } from '../properties/sensors.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
+import { defaultsIpDevice } from './utils.js';
 
 export const roomSensor = (
   logger: Logger,
@@ -40,10 +38,8 @@ export const roomSensor = (
   const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
 
   const result = {
-    ...hello(device, timings.moderate || timings.default),
-    ...lastSeen(device.seen),
+    ...defaultsIpDevice(device, timings),
     ...mhz19(device, timings.slow || timings.default),
-    ...online(device),
     ...tsl2561(device, timings.default),
     humidity,
     motion: input(device),

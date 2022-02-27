@@ -17,7 +17,7 @@ import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
 import { maxmin } from '../../number.js';
 
-export function offTimer(time: number, enableFromStart = true) {
+export const offTimer = (time: number, enableFromStart = true) => {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
 
@@ -153,13 +153,13 @@ export function offTimer(time: number, enableFromStart = true) {
   });
 
   return result;
-}
+};
 
-export function scheduledRamp(
+export const scheduledRamp = (
   [schedule, epoch]: ScheduleEpochPair,
   refresh: number,
   handler: (progress: number) => void
-) {
+) => {
   const enabled = new BooleanState(false);
   schedule[enabled.value ? 'start' : 'stop']();
 
@@ -256,4 +256,4 @@ export function scheduledRamp(
   });
 
   return result;
-}
+};

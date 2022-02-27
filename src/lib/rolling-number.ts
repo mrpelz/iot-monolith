@@ -1,14 +1,14 @@
-export function bitRange(count: number): number {
+export const bitRange = (count: number): number => {
   return 2 ** count - 1;
-}
+};
 
-export function byteRange(count: number): number {
+export const byteRange = (count: number): number => {
   return bitRange(count * 8);
-}
+};
 
-export function bytesRequiredForBitLength(count: number): number {
+export const bytesRequiredForBitLength = (count: number): number => {
   return Math.ceil(count / 8);
-}
+};
 
 export const NUMBER_RANGES = {
   uint16: bitRange(16),

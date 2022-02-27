@@ -3,7 +3,7 @@ import { Tree } from '../lib/tree/main.js';
 import { WebApi } from '../lib/web-api.js';
 import { hooks } from '../lib/hooks.js';
 
-export async function app(): Promise<void> {
+export const app = async (): Promise<void> => {
   const { logger } = await import('./logging.js');
   const { system } = await import('./system.js');
 
@@ -18,4 +18,4 @@ export async function app(): Promise<void> {
   new WebApi(logger, httpServer, run, tree);
 
   hooks(httpServer, tree);
-}
+};

@@ -4,35 +4,35 @@ export const emptyBuffer = Buffer.from([]);
 export const falseBuffer = Buffer.of(0);
 export const trueBuffer = Buffer.of(1);
 
-export function arrayPadLeft<T>(
+export const arrayPadLeft = <T>(
   input: T[],
   length: number,
   value: T = null as unknown as T
-): T[] {
+): T[] => {
   while (input.length < length) {
     input.unshift(value);
   }
 
   return input;
-}
+};
 
-export function arrayPadRight<T>(
+export const arrayPadRight = <T>(
   input: T[],
   length: number,
   value: T = null as unknown as T
-): T[] {
+): T[] => {
   while (input.length >= length) {
     input.push(value);
   }
 
   return input;
-}
+};
 
-export function concatBytes(input: number[]): Buffer {
+export const concatBytes = (input: number[]): Buffer => {
   return Buffer.from(input);
-}
+};
 
-export function humanPayload(input: Buffer): string {
+export const humanPayload = (input: Buffer): string => {
   const payload = [...input];
 
   return [
@@ -55,9 +55,13 @@ export function humanPayload(input: Buffer): string {
       })
       .join(' | '),
   ].join('\n');
-}
+};
 
-export function numberToDigits(input: number, pad = 0, radix = 10): number[] {
+export const numberToDigits = (
+  input: number,
+  pad = 0,
+  radix = 10
+): number[] => {
   const number = Math.abs(input);
 
   if (Math.floor(number) !== number) {
@@ -71,14 +75,14 @@ export function numberToDigits(input: number, pad = 0, radix = 10): number[] {
     .map((x) => {
       return Number.parseInt(x, radix);
     });
-}
+};
 
-export function randomString(length = 2): string {
+export const randomString = (length = 2): string => {
   const cache = Buffer.alloc(Math.max(1, length / 2));
   return randomFillSync(cache).toString('hex');
-}
+};
 
-export function readNumber(input: Buffer, bytes = 1): number {
+export const readNumber = (input: Buffer, bytes = 1): number => {
   if (input.length < bytes) {
     throw new Error('number cannot be represented');
   }
@@ -93,17 +97,17 @@ export function readNumber(input: Buffer, bytes = 1): number {
     default:
       throw new Error('illegal number of bytes specified');
   }
-}
+};
 
-export function booleanToBuffer(input: boolean): Buffer {
+export const booleanToBuffer = (input: boolean): Buffer => {
   return input ? trueBuffer : falseBuffer;
-}
+};
 
-export function bufferToBoolean(input: Buffer): boolean {
+export const bufferToBoolean = (input: Buffer): boolean => {
   return Boolean(readNumber(input, 1));
-}
+};
 
-export function swapByte(input: number): number {
+export const swapByte = (input: number): number => {
   let byte = input;
   /* eslint-disable no-bitwise */
   byte = ((byte & 0b11110000) >> 4) | ((byte & 0b1111) << 4);
@@ -111,9 +115,9 @@ export function swapByte(input: number): number {
   byte = ((byte & 0b10101010) >> 1) | ((byte & 0b1010101) << 1);
   /* eslint-enable no-bitwise */
   return byte;
-}
+};
 
-export function writeNumber(input: number, bytes = 1): Buffer {
+export const writeNumber = (input: number, bytes = 1): Buffer => {
   if (input < 0 || input >= 2 ** (bytes * 8)) {
     throw new Error('number cannot be represented');
   }
@@ -134,4 +138,4 @@ export function writeNumber(input: number, bytes = 1): Buffer {
       throw new Error('illegal number of bytes specified');
   }
   return cache;
-}
+};

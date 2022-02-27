@@ -34,7 +34,7 @@ const logLevelNames = [
   'DEBUG',
 ];
 
-function logMerge(input: Log | string, includeStack = false): Log {
+const logMerge = (input: Log | string, includeStack = false): Log => {
   const result =
     typeof input === 'string'
       ? {
@@ -50,7 +50,7 @@ function logMerge(input: Log | string, includeStack = false): Log {
   }
 
   return result;
-}
+};
 
 export class Output {
   private readonly _callback: Callback;

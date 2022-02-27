@@ -152,7 +152,7 @@ export const valueTypeMap = {
   },
 };
 
-export function isValidValue(value: unknown, valueType: ValueType): boolean {
+export const isValidValue = (value: unknown, valueType: ValueType): boolean => {
   const valueTypeMapItem = valueTypeMap[valueType];
   if (!valueTypeMapItem) return false;
 
@@ -172,7 +172,7 @@ export function isValidValue(value: unknown, valueType: ValueType): boolean {
   }
 
   return true;
-}
+};
 
 export class Tree {
   private _getterIndex = new RollingNumber(0, Infinity);

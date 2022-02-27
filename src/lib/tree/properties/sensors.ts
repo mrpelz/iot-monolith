@@ -29,9 +29,35 @@ export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
 };
 
-export function lastSeen<T>(
+export const lastChange = <T>(state: ReadOnlyObservable<T>) => {
+  const seen = new Observable<number | null>(null);
+
+  state.observe((value) => {
+    if (value === null) return;
+
+    seen.value = Date.now();
+  });
+
+  const result = {
+    _get: new ReadOnlyObservable(seen),
+  };
+
+  metadataStore.set(result, {
+    level: Levels.PROPERTY,
+    parentRelation: ParentRelation.META_RELATION,
+    type: 'sensor',
+    unit: 'date',
+    valueType: ValueType.NUMBER,
+  });
+
+  return {
+    lastChange: result,
+  };
+};
+
+export const lastSeen = <T>(
   state: ReadOnlyObservable<T> | ReadOnlyNullState<T>
-) {
+) => {
   const seen = new Observable<number | null>(null);
 
   state.observe((value) => {
@@ -55,12 +81,12 @@ export function lastSeen<T>(
   return {
     lastSeen: result,
   };
-}
+};
 
-function metricStaleness<T>(
+const metricStaleness = <T>(
   state: ReadOnlyObservable<T | null>,
   timeout: number
-) {
+) => {
   const stale = new BooleanState(true);
 
   const timer = new Timer(timeout + epochs.second * 10);
@@ -88,9 +114,9 @@ function metricStaleness<T>(
     stale: result,
     ...lastSeen(state),
   };
-}
+};
 
-export function async(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const { state } = new SingleValueSensor(
     device.addService(new Async()),
     schedule
@@ -109,9 +135,12 @@ export function async(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { async: result };
-}
+};
 
-export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const bme280 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair
+) => {
   const metrics = ['humidity', 'pressure', 'temperature'] as const;
 
   const { state } = new MultiValueSensor(
@@ -170,9 +199,9 @@ export function bme280(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       return result;
     })(),
   };
-}
+};
 
-export function button(device: Device, index = 0) {
+export const button = (device: Device, index = 0) => {
   const buttonEvent = new ButtonEvent(index);
   device.addEvent(buttonEvent);
 
@@ -180,9 +209,9 @@ export function button(device: Device, index = 0) {
     $: new Button(buttonEvent),
     ...lastSeen(buttonEvent.observable),
   };
-}
+};
 
-export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const { state } = new SingleValueSensor(
     device.addService(new Hello()),
     schedule
@@ -201,9 +230,9 @@ export function hello(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { hello: result };
-}
+};
 
-export function input(device: Device, index = 0) {
+export const input = (device: Device, index = 0) => {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
   const result = {
@@ -218,9 +247,12 @@ export function input(device: Device, index = 0) {
   });
 
   return result;
-}
+};
 
-export function mcp9808(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const mcp9808 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair
+) => {
   const { state } = new SingleValueSensor(
     device.addService(new Mcp9808()),
     schedule
@@ -240,9 +272,9 @@ export function mcp9808(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { temperature: result };
-}
+};
 
-export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const metrics = [
     'abc',
     'accuracy',
@@ -338,11 +370,12 @@ export function mhz19(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { co2: result };
-}
+};
 
-export function online(device: Device) {
+export const online = (device: Device) => {
   const result = {
     _get: device.isOnline,
+    ...lastChange(device.isOnline),
   };
 
   metadataStore.set(result, {
@@ -354,9 +387,9 @@ export function online(device: Device) {
   });
 
   return { online: result };
-}
+};
 
-export function rfReadout(espNowEvent: ESPNow, rf433Event: Rf433) {
+export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const state = new Observable<any>({});
 
@@ -407,9 +440,12 @@ export function rfReadout(espNowEvent: ESPNow, rf433Event: Rf433) {
   });
 
   return { rfReadout: result };
-}
+};
 
-export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const sds011 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair
+) => {
   const metrics = ['pm025', 'pm10'] as const;
 
   const { state } = new MultiValueSensor(
@@ -452,9 +488,12 @@ export function sds011(device: Device, [schedule, epoch]: ScheduleEpochPair) {
       return result;
     })(),
   };
-}
+};
 
-export function tsl2561(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const tsl2561 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair
+) => {
   const { state } = new SingleValueSensor(
     device.addService(new Tsl2561()),
     schedule
@@ -474,9 +513,12 @@ export function tsl2561(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { brightness: result };
-}
+};
 
-export function uvIndex(device: Device, [schedule, epoch]: ScheduleEpochPair) {
+export const uvIndex = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair
+) => {
   const { state } = new SingleValueSensor(
     device.addService(new Veml6070()),
     schedule
@@ -495,9 +537,9 @@ export function uvIndex(device: Device, [schedule, epoch]: ScheduleEpochPair) {
   });
 
   return { uvIndex: result };
-}
+};
 
-export function vcc(device: Device) {
+export const vcc = (device: Device) => {
   const { state } = new SingleValueEvent(device.addEvent(new VCC()));
 
   const result = {
@@ -513,4 +555,4 @@ export function vcc(device: Device) {
   });
 
   return { vcc: result };
-}
+};

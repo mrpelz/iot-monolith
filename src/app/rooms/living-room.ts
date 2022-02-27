@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { outputGrouping, scene } from '../../lib/tree/properties/actuators.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import fetch from 'node-fetch';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -54,6 +54,29 @@ export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
 };
 
+export const scenes = {
+  mediaOff: scene(() => {
+    try {
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
+        method: 'POST',
+        timeout: 1000,
+      });
+    } catch {
+      // noop
+    }
+  }, 'media'),
+  mediaOnOrSwitch: scene(() => {
+    try {
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
+        method: 'POST',
+        timeout: 1000,
+      });
+    } catch {
+      // noop
+    }
+  }, 'media'),
+};
+
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
   const { kitchenAdjacentChillax } = await import('../scenes.js');
@@ -77,26 +100,12 @@ export const groups = {
     kitchenAdjacentChillax._set.trigger();
   });
 
-  testRoomInstances.espNowButton1.up(() => {
-    try {
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
-        method: 'POST',
-        timeout: 1000,
-      });
-    } catch {
-      // noop
-    }
-  });
-  testRoomInstances.espNowButton1.longPress(() => {
-    try {
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
-        method: 'POST',
-        timeout: 1000,
-      });
-    } catch {
-      // noop
-    }
-  });
+  testRoomInstances.espNowButton1.up(() =>
+    scenes.mediaOnOrSwitch._set.trigger()
+  );
+  testRoomInstances.espNowButton1.longPress(() =>
+    scenes.mediaOff._set.trigger()
+  );
 
   instances.fanButton.up(() => properties.fan._set.flip());
 
@@ -124,6 +133,7 @@ export const groups = {
 export const livingRoom = {
   ...groups,
   ...properties,
+  ...scenes,
   devices,
 };
 

@@ -2,14 +2,8 @@
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, metadataStore } from '../main.js';
-import {
-  Timings,
-  button,
-  hello,
-  lastSeen,
-  online,
-  vcc,
-} from '../properties/sensors.js';
+import { Timings, button } from '../properties/sensors.js';
+import { defaultsEspNow, defaultsIpDevice } from './utils.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';
@@ -42,8 +36,7 @@ export const espNowButton = (
 
     const result = {
       ...children(device),
-      ...lastSeen(device.seen),
-      ...vcc(device),
+      ...defaultsEspNow(device),
     };
 
     metadataStore.set(result, {
@@ -60,9 +53,7 @@ export const espNowButton = (
 
     const result = {
       ...children(device),
-      ...hello(device, timings.moderate || timings.default),
-      ...lastSeen(device.seen),
-      ...online(device),
+      ...defaultsIpDevice(device, timings),
     };
 
     metadataStore.set(result, {

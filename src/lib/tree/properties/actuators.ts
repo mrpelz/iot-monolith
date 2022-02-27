@@ -27,11 +27,11 @@ import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
 
-function actuatorStaleness<T>(
+const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
   setState: AnyReadOnlyObservable<T | null>,
   device: Device
-) {
+) => {
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
@@ -81,9 +81,9 @@ function actuatorStaleness<T>(
       return result;
     })(),
   };
-}
+};
 
-export function led(device: Device, index = 0, indicator = false) {
+export const led = (device: Device, index = 0, indicator = false) => {
   const { actualBrightness, actualOn, setBrightness, setOn } = new Led(
     device.addService(new LedService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
@@ -138,14 +138,14 @@ export function led(device: Device, index = 0, indicator = false) {
   });
 
   return result;
-}
+};
 
-export function output(
+export const output = (
   device: Device,
   index = 0,
   indicator = false,
   actuated = 'light'
-) {
+) => {
   const { actualState, setState } = new Output(
     device.addService(new OutputService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
@@ -180,12 +180,12 @@ export function output(
   });
 
   return result;
-}
+};
 
-export function ledGrouping(
+export const ledGrouping = (
   lights: ReturnType<typeof led>[],
   actuated = 'light'
-) {
+) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
@@ -275,12 +275,12 @@ export function ledGrouping(
   });
 
   return result;
-}
+};
 
-export function outputGrouping(
+export const outputGrouping = (
   lights: (ReturnType<typeof output> | ReturnType<typeof led>)[],
   actuated = 'light'
-) {
+) => {
   const actual = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
@@ -321,9 +321,9 @@ export function outputGrouping(
   });
 
   return result;
-}
+};
 
-export function scene(handler: () => void, actuated = 'light') {
+export const scene = (handler: () => void, actuated: string) => {
   const result = {
     _set: new NullState(() => handler()),
   };
@@ -336,4 +336,4 @@ export function scene(handler: () => void, actuated = 'light') {
   });
 
   return result;
-}
+};

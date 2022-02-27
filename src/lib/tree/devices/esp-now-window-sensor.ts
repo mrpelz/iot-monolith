@@ -2,18 +2,13 @@
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, ValueType, metadataStore } from '../main.js';
-import {
-  Timings,
-  hello,
-  lastSeen,
-  online,
-  vcc,
-} from '../properties/sensors.js';
+import { defaultsEspNow, defaultsIpDevice } from './utils.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Input } from '../../events/input.js';
 import { Logger } from '../../log.js';
 import { SingleValueEvent } from '../../items/event.js';
+import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
 
 export type EspNowWindowSensorOptions = {
@@ -27,7 +22,7 @@ export type EspNowWindowSensorOptions = {
   };
 };
 
-function children(device: Device) {
+const children = (device: Device) => {
   return {
     input0: (() => {
       const result = {
@@ -72,7 +67,7 @@ function children(device: Device) {
       return result;
     })(),
   };
-}
+};
 
 export const espNowWindowSensor = (
   logger: Logger,
@@ -85,8 +80,7 @@ export const espNowWindowSensor = (
 
     const result = {
       ...children(device),
-      ...lastSeen(device.seen),
-      ...vcc(device),
+      ...defaultsEspNow(device),
     };
 
     metadataStore.set(result, {
@@ -103,9 +97,7 @@ export const espNowWindowSensor = (
 
     const result = {
       ...children(device),
-      ...hello(device, timings.moderate || timings.default),
-      ...lastSeen(device.seen),
-      ...online(device),
+      ...defaultsIpDevice(device, timings),
     };
 
     metadataStore.set(result, {

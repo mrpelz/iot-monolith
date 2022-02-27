@@ -5,12 +5,12 @@ export const LONGITUDE = 10.01598;
 
 const DEGREES_PER_RADIAN = 180 / Math.PI;
 
-export function radiansToDegrees(input: number): number {
+export const radiansToDegrees = (input: number): number => {
   return input * DEGREES_PER_RADIAN;
-}
+};
 
-export function isDay(): boolean {
+export const isDay = (): boolean => {
   const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
 
   return radiansToDegrees(altitude) > 0;
-}
+};
