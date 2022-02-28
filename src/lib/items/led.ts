@@ -33,7 +33,7 @@ export class Led {
         return;
       }
 
-      this._set(this.setBrightness.value);
+      this._set(this._setBrightness.value);
     });
 
     this.actualBrightness = new ReadOnlyProxyObservable(
