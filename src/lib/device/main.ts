@@ -25,7 +25,7 @@ type RequestResolver = {
 
 type DeviceIdentifier = Buffer | null;
 
-const KEEPALIVE_INTERVAL = 4000;
+const KEEPALIVE_INTERVAL = 1000;
 const KEEPALIVE_IDENTIFIER = 0xff;
 const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_PAYLOAD = Buffer.from([
@@ -161,6 +161,7 @@ export class Device {
   private readonly _services = new Set<Service<unknown, unknown>>();
   private readonly _transport: TransportDevice;
 
+  readonly friendlyName: string;
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
   readonly seen: ReadOnlyNullState;
@@ -169,12 +170,16 @@ export class Device {
     logger: Logger,
     transport: Transport,
     identifier: DeviceIdentifier = null,
-    keepAlive = KEEPALIVE_INTERVAL + 1000
+    keepAlive = 5000
   ) {
     this._log = logger.getInput({
       head: `Device "${transport.friendlyName || identifier}"`,
     });
     this._transport = transport.addDevice(this);
+
+    this.friendlyName = identifier
+      ? `${transport.friendlyName}/${identifier.toString('hex')}`
+      : transport.friendlyName;
 
     this.identifier = identifier;
 

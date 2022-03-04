@@ -14,6 +14,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { persistence } from '../persistence.js';
 import { scheduledRamp } from '../../lib/tree/properties/logic.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -22,6 +23,7 @@ import { timings } from '../timings.js';
 export const devices = {
   ceilingLight: shelly1(
     logger,
+    persistence,
     timings,
     'bedroom-ceilinglight.iot.wurstsalat.cloud'
   ),
@@ -30,11 +32,22 @@ export const devices = {
   nightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
   nightstandLeds: h801(
     logger,
+    persistence,
     timings,
     'bedroom-nightstandleds.iot.wurstsalat.cloud'
   ),
-  rgbwLeds: h801(logger, timings, 'bedroom-bedrgbwleds.iot.wurstsalat.cloud'),
-  stoneLamp: obiPlug(logger, timings, 'bedroom-stonelamp.iot.wurstsalat.cloud'),
+  rgbwLeds: h801(
+    logger,
+    persistence,
+    timings,
+    'bedroom-bedrgbwleds.iot.wurstsalat.cloud'
+  ),
+  stoneLamp: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'bedroom-stonelamp.iot.wurstsalat.cloud'
+  ),
   wallswitchDoor: shellyi3(
     logger,
     timings,
@@ -140,7 +153,8 @@ export const properties = {
     (progress) => {
       groups.whiteLeds.brightness._set.value = progress;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
-    }
+    },
+    ['bedroom/wakeupLightWeekday', persistence]
   ),
   wakeupLightWeekend: scheduledRamp(
     [
@@ -172,7 +186,8 @@ export const properties = {
     (progress) => {
       groups.whiteLeds.brightness._set.value = progress;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
-    }
+    },
+    ['bedroom/wakeupLightWeekend', persistence]
   ),
 };
 

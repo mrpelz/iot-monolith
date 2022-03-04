@@ -10,6 +10,7 @@ import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -17,24 +18,33 @@ import { timings } from '../timings.js';
 export const devices = {
   ceilingLight: sonoffBasic(
     logger,
+    persistence,
     timings,
     'diningroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  fan: obiPlug(logger, timings, 'diningroom-fan.iot.wurstsalat.cloud'),
+  fan: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'diningroom-fan.iot.wurstsalat.cloud'
+  ),
   fanRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   kallaxLeds: h801(
     logger,
+    persistence,
     timings,
     'diningroom-kallaxleds.iot.wurstsalat.cloud'
   ),
   kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
   standingLamp: obiPlug(
     logger,
+    persistence,
     timings,
     'diningroom-standinglamp.iot.wurstsalat.cloud'
   ),
   tableLight: sonoffBasic(
     logger,
+    persistence,
     timings,
     'diningroom-tablelight.iot.wurstsalat.cloud'
   ),

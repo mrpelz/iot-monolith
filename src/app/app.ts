@@ -5,6 +5,7 @@ import { hooks } from '../lib/hooks.js';
 
 export const app = async (): Promise<void> => {
   const { logger } = await import('./logging.js');
+  const { persistence } = await import('./persistence.js');
   const { system } = await import('./system.js');
 
   const run = Date.now().toString();
@@ -18,4 +19,7 @@ export const app = async (): Promise<void> => {
   new WebApi(logger, httpServer, run, tree);
 
   hooks(httpServer, tree);
+
+  process.on('exit', () => persistence.persist());
+  await persistence.restore();
 };

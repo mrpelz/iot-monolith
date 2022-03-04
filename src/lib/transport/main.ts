@@ -3,8 +3,6 @@ import { BooleanState } from '../state.js';
 import { Device } from '../device/main.js';
 import { ReadOnlyObservable } from '../observable.js';
 
-type FriendlyName = string | null;
-
 export class TransportDevice {
   static _isValidDeviceForTransport(
     devices: Set<TransportDevice>,
@@ -84,13 +82,13 @@ export class Transport {
 
   protected readonly _isConnected = new BooleanState(false);
 
-  readonly friendlyName: FriendlyName;
+  readonly friendlyName: string;
   readonly identifierLength: number;
   readonly isConnected: ReadOnlyObservable<boolean>;
 
   constructor(
     logger: Logger,
-    friendlyName: FriendlyName = null,
+    friendlyName: string,
     identifierLength = 0,
     singleDevice = true
   ) {

@@ -7,12 +7,23 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { ledGrouping } from '../../lib/tree/properties/actuators.js';
 import { logger } from '../logging.js';
+import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../timings.js';
 
 export const devices = {
-  ledsLeft: h801(logger, timings, 'kitchen-ledsleft.iot.wurstsalat.cloud'),
-  ledsRight: h801(logger, timings, 'kitchen-ledsright.iot.wurstsalat.cloud'),
+  ledsLeft: h801(
+    logger,
+    persistence,
+    timings,
+    'kitchen-ledsleft.iot.wurstsalat.cloud'
+  ),
+  ledsRight: h801(
+    logger,
+    persistence,
+    timings,
+    'kitchen-ledsright.iot.wurstsalat.cloud'
+  ),
   leftButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
   wallswitchBack: shellyi3(
     logger,

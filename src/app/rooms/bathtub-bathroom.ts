@@ -6,6 +6,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { isDay } from '../util.js';
 import { logger } from '../logging.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
+import { persistence } from '../persistence.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
@@ -14,12 +15,14 @@ import { timings } from '../timings.js';
 export const devices = {
   ceilingLight: shelly1(
     logger,
+    persistence,
     timings,
     'bathtubbathroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, ev1527Transport, 721216),
   nightLight: sonoffBasic(
     logger,
+    persistence,
     timings,
     'bathtubbathroom-nightlight.iot.wurstsalat.cloud'
   ),

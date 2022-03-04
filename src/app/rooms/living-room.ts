@@ -8,6 +8,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import fetch from 'node-fetch';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -15,13 +16,20 @@ import { timings } from '../timings.js';
 export const devices = {
   ceilingLight: sonoffBasic(
     logger,
+    persistence,
     timings,
     'livingroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
-  fan: obiPlug(logger, timings, 'livingroom-fan.iot.wurstsalat.cloud'),
+  fan: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'livingroom-fan.iot.wurstsalat.cloud'
+  ),
   standingLamp: obiPlug(
     logger,
+    persistence,
     timings,
     'livingroom-standinglamp.iot.wurstsalat.cloud'
   ),

@@ -26,6 +26,7 @@ import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
+import { Persistence } from '../../persistence.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -83,11 +84,20 @@ const actuatorStaleness = <T>(
   };
 };
 
-export const led = (device: Device, index = 0, indicator = false) => {
+export const led = (
+  device: Device,
+  index = 0,
+  indicator = false,
+  persistence?: Persistence
+) => {
   const { actualBrightness, actualOn, setBrightness, setOn } = new Led(
     device.addService(new LedService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
   );
+
+  if (persistence) {
+    persistence.observe(`led/${device.friendlyName}/${index}`, setBrightness);
+  }
 
   const result = {
     _get: actualOn,
@@ -144,12 +154,17 @@ export const output = (
   device: Device,
   index = 0,
   indicator = false,
-  actuated = 'light'
+  actuated = 'light',
+  persistence?: Persistence
 ) => {
   const { actualState, setState } = new Output(
     device.addService(new OutputService(index)),
     indicator ? device.addService(new Indicator(0)) : undefined
   );
+
+  if (persistence) {
+    persistence.observe(`output/${device.friendlyName}/${index}`, setState);
+  }
 
   const result = {
     _get: actualState,

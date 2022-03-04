@@ -16,7 +16,7 @@ export class Ev1527Transport extends Transport {
   private readonly _log: Input;
 
   constructor(logger: Logger, event: Rf433) {
-    super(logger, null, 3, false);
+    super(logger, 'Ev1527Transport', 3, false);
 
     this._log = logger.getInput({ head: 'Ev1527Transport' });
 

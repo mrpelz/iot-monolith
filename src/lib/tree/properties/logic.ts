@@ -13,11 +13,16 @@ import {
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '../../observable.js';
+import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
 import { maxmin } from '../../number.js';
 
-export const offTimer = (time: number, enableFromStart = true) => {
+export const offTimer = (
+  time: number,
+  enableFromStart = true,
+  persistenceSet?: [string, Persistence]
+) => {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
 
@@ -61,6 +66,11 @@ export const offTimer = (time: number, enableFromStart = true) => {
   timer.observe(() => {
     active.value = false;
   });
+
+  if (persistenceSet) {
+    const [name, persistence] = persistenceSet;
+    persistence.observe(`offTimer/${name}`, enabled);
+  }
 
   const result = {
     $: timer,
@@ -158,7 +168,8 @@ export const offTimer = (time: number, enableFromStart = true) => {
 export const scheduledRamp = (
   [schedule, epoch]: ScheduleEpochPair,
   refresh: number,
-  handler: (progress: number) => void
+  handler: (progress: number) => void,
+  persistenceSet?: [string, Persistence]
 ) => {
   const enabled = new BooleanState(false);
   schedule[enabled.value ? 'start' : 'stop']();
@@ -208,6 +219,11 @@ export const scheduledRamp = (
     handleStop();
     handler(0);
   });
+
+  if (persistenceSet) {
+    const [name, persistence] = persistenceSet;
+    persistence.observe(`scheduledRamp/${name}`, enabled);
+  }
 
   const result = {
     _get: new ReadOnlyObservable(enabled),

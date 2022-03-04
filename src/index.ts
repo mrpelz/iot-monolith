@@ -20,8 +20,6 @@ const quit = (code: number) => {
 const exit = async (code = 0) => {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
-  process.removeListener('SIGUSR1', exit);
-  process.removeListener('SIGUSR2', exit);
 
   await logger.info(() => ({
     body: `stopping process with exit code "${code}"`,

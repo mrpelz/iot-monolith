@@ -34,22 +34,12 @@ const logLevelNames = [
   'DEBUG',
 ];
 
-const logMerge = (input: Log | string, includeStack = false): Log => {
-  const result =
-    typeof input === 'string'
-      ? {
-          body: input,
-        }
-      : input;
-
-  if (!result.stack && includeStack) {
-    return {
-      ...result,
-      stack: new Error().stack,
-    };
-  }
-
-  return result;
+const logMerge = (input: Log | string): Log => {
+  return typeof input === 'string'
+    ? {
+        body: input,
+      }
+    : input;
 };
 
 export class Output {
@@ -188,11 +178,19 @@ export class Input {
   }
 
   private _log(level: Level, initiator: Initiator) {
+    const stackLog =
+      level <= Level.NOTICE
+        ? {
+            stack: new Error().stack,
+          }
+        : {};
+
     const amendedInitiator = () => {
-      const log = logMerge(initiator(), level <= Level.NOTICE);
+      const log = logMerge(initiator());
 
       return {
         ...this._options,
+        ...stackLog,
         ...log,
       };
     };

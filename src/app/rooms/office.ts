@@ -13,6 +13,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -20,12 +21,14 @@ import { timings } from '../timings.js';
 export const devices = {
   ceilingLight: sonoffBasic(
     logger,
+    persistence,
     timings,
     'office-ceilinglight.iot.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55696),
   floodlight: obiPlug(
     logger,
+    persistence,
     timings,
     'office-floodlight.iot.wurstsalat.cloud'
   ),
@@ -39,6 +42,7 @@ export const devices = {
   workbenchButton: ev1527ButtonX1(ev1527Transport, 903326, logger),
   workbenchLeds: h801(
     logger,
+    persistence,
     timings,
     'office-workbenchleds.iot.wurstsalat.cloud'
   ),

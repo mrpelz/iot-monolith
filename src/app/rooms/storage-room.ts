@@ -8,12 +8,14 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { logger } from '../logging.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
+import { persistence } from '../persistence.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { timings } from '../timings.js';
 
 export const devices = {
   ceilingLight: shelly1(
     logger,
+    persistence,
     timings,
     'storage-ceilinglight.iot.wurstsalat.cloud'
   ),
@@ -29,7 +31,10 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
   doorSensorTampered: devices.doorSensor.tamperSwitch,
-  lightTimer: offTimer(epochs.minute * 5),
+  lightTimer: offTimer(epochs.minute * 5, undefined, [
+    'storageRoom/lightTimer',
+    persistence,
+  ]),
 };
 
 export const groups = {
