@@ -16,7 +16,7 @@ export type RouteHandle = {
   utils: RouteUtils;
 };
 
-export type RouteHandler = (handle: RouteHandle) => void;
+export type RouteHandler = (handle: RouteHandle) => void | Promise<void>;
 
 export type Route = {
   remove: () => void;

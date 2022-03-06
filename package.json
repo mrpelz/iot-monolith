@@ -44,6 +44,7 @@
   "type": "module",
   "dependencies": {
     "node-fetch": "^2.6.1",
+    "prom-client": "^14.0.1",
     "suncalc": "^1.8.0",
     "ws": "^7.4.7"
   }

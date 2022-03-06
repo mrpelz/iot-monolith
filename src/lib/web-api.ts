@@ -34,9 +34,9 @@ export class WebApi {
       this._handleHierarchyGet(handle)
     );
 
-    this._httpServer.route(PATH_ID, ({ response }) =>
-      response.end(this._id.toString())
-    );
+    this._httpServer.route(PATH_ID, ({ response }) => {
+      response.end(this._id.toString());
+    });
 
     this._httpServer.route(PATH_STREAM, (handle) =>
       this._handleStreamGet(handle)
