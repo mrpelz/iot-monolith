@@ -10,7 +10,13 @@ import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { readNumber, writeNumber } from '../data.js';
 import { ReadOnlyObservable } from '../observable.js';
+import { TCPDevice } from './tcp.js';
+import { TCPTransport } from '../transport/tcp.js';
 import { Timer } from '../timer.js';
+import { UDPDevice } from './udp.js';
+import { UDPTransport } from '../transport/udp.js';
+
+export type IpDevice = TCPDevice | UDPDevice;
 
 type DeviceEvents = Set<Event<unknown>>;
 type DeviceServices = Set<Service<unknown, unknown>>;
@@ -31,6 +37,12 @@ const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_PAYLOAD = Buffer.from([
   KEEPALIVE_IDENTIFIER,
   KEEPALIVE_COMMAND,
+]);
+
+const RESET_PAYLOAD = Buffer.from([
+  KEEPALIVE_IDENTIFIER,
+  KEEPALIVE_COMMAND,
+  0x01,
 ]);
 
 export const EVENT_IDENTIFIER = 0x00;
@@ -144,7 +156,7 @@ export class Service<T = void, S = void> extends Property {
   }
 }
 
-export class Device {
+export class Device<T extends Transport = Transport> {
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
   private readonly _keepAliveReceiveTimer: Timer | null = null;
@@ -161,27 +173,35 @@ export class Device {
   private readonly _services = new Set<Service<unknown, unknown>>();
   private readonly _transport: TransportDevice;
 
-  readonly friendlyName: string;
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
   readonly seen: ReadOnlyNullState;
+  readonly transport: T;
 
   constructor(
     logger: Logger,
-    transport: Transport,
+    transport: T,
     identifier: DeviceIdentifier = null,
     keepAlive = 5000
   ) {
-    this._log = logger.getInput({
-      head: `Device "${transport.friendlyName || identifier}"`,
-    });
-    this._transport = transport.addDevice(this);
-
-    this.friendlyName = identifier
-      ? `${transport.friendlyName}/${identifier.toString('hex')}`
-      : transport.friendlyName;
-
+    this.transport = transport;
     this.identifier = identifier;
+
+    this._log = logger.getInput({
+      head: [
+        this.constructor.name,
+        this.transport.constructor.name,
+        this.transport instanceof TCPTransport ||
+        this.transport instanceof UDPTransport
+          ? `${this.transport.host}:${this.transport.port}`
+          : null,
+        this.identifier?.toString('hex'),
+      ]
+        .filter(Boolean)
+        .join('/'),
+    });
+
+    this._transport = this.transport.addDevice(this);
 
     this.isOnline = new ReadOnlyObservable(
       new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE, [
@@ -270,7 +290,7 @@ export class Device {
   /**
    * add an instance of Event to this device
    */
-  addEvent<T extends Event<unknown>>(event: T): T {
+  addEvent<E extends Event<unknown>>(event: E): E {
     Event.isValidPropertyIdentifier(this._events, event.identifier);
 
     event._setDevice(this);
@@ -282,7 +302,7 @@ export class Device {
   /**
    * add an instance of Service to this device
    */
-  addService<T extends Service<unknown, unknown>>(service: T): T {
+  addService<S extends Service<unknown, unknown>>(service: S): S {
     Service.isValidPropertyIdentifier(this._services, service.identifier);
 
     service._setDevice(this);
@@ -371,5 +391,15 @@ export class Device {
         timer,
       });
     });
+  }
+
+  triggerReset(): void {
+    if (!this._transport.isConnected.value) return;
+
+    try {
+      this._transport._writeToTransport(RESET_PAYLOAD);
+    } catch {
+      this._log.error(() => 'error triggering reset');
+    }
   }
 }

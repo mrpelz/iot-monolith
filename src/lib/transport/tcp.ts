@@ -34,15 +34,15 @@ const { lookup } = promises;
 export class TCPTransport extends Transport {
   private _connectionTime: number;
   private _currentLength: number;
-  private readonly _host: string;
   private readonly _keepAlive: number;
   private readonly _lengthPreamble: number;
   private readonly _log: Input;
   private readonly _messageTimer: Timer;
-  private readonly _port: number;
   private readonly _shouldBeConnected = new BooleanState(false);
   private _socket: Socket | null = null;
 
+  readonly host: string;
+  readonly port: number;
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
   constructor(
@@ -56,19 +56,20 @@ export class TCPTransport extends Transport {
       throw new Error('insufficient options provided');
     }
 
-    super(logger, `${host}:${port}`);
+    super(logger);
+
+    this.host = host;
+    this._keepAlive = keepAlive;
+    this._lengthPreamble = lengthPreamble;
+    this.port = port;
 
     this._log = logger.getInput({
-      head: `TCPTransport "${this.friendlyName}"`,
+      head: `${this.constructor.name} "${this.host}:${this.port}"`,
     });
 
     rebind(this, '_handleReadable', '_onConnection', '_onDisconnection');
 
-    this._host = host;
-    this._keepAlive = keepAlive;
-    this._lengthPreamble = lengthPreamble;
-    this._messageTimer = new Timer(keepAlive * 2);
-    this._port = port;
+    this._messageTimer = new Timer(this._keepAlive * 2);
 
     this.shouldBeConnected = new ReadOnlyObservable(this._shouldBeConnected);
 
@@ -204,11 +205,11 @@ export class TCPTransport extends Transport {
     this._socket = socket;
 
     (async () => {
-      const { address } = await lookup(this._host, 4);
+      const { address } = await lookup(this.host, 4);
 
       socket.connect({
         host: address,
-        port: this._port,
+        port: this.port,
       });
 
       socket.setNoDelay(true);

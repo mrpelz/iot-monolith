@@ -4,7 +4,7 @@ import { Logger } from '../log.js';
 
 export type MACAddress = [number, number, number, number, number, number];
 
-export class ESPNowDevice extends Device {
+export class ESPNowDevice extends Device<ESPNowTransport> {
   constructor(
     logger: Logger,
     transport: ESPNowTransport,

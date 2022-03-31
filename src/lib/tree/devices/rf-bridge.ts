@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../main.js';
 import { Timings, rfReadout } from '../properties/sensors.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { ESPNow } from '../../events/esp-now.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Logger } from '../../log.js';
 import { Rf433 } from '../../events/rf433.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
+import { metadataStore } from '../main.js';
 
 export const rfBridge = (
   logger: Logger,
@@ -37,8 +37,7 @@ export const rfBridge = (
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
-    name: 'rfBridge',
+    ...deviceMeta(device),
   });
 
   return result;

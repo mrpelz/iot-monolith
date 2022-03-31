@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../main.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
 import { led } from '../properties/actuators.js';
+import { metadataStore } from '../main.js';
 
 export const h801 = (
   logger: Logger,
@@ -32,7 +32,7 @@ export const h801 = (
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
+    ...deviceMeta(device),
   });
 
   return result;

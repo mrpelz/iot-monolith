@@ -16,9 +16,9 @@ export class ESPNowTransport extends Transport {
   private readonly _log: Input;
 
   constructor(logger: Logger, event: ESPNow) {
-    super(logger, 'ESPNowTransport', 6, false);
+    super(logger, 6, false);
 
-    this._log = logger.getInput({ head: 'ESPNowTransport' });
+    this._log = logger.getInput({ head: this.constructor.name });
 
     event.observable.observe((payload: ESPNowPayload) =>
       this._handleMessage(payload)

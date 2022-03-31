@@ -11,9 +11,9 @@ export const byteLengthAddress = bytesRequiredForBitLength(bitLengthAddress);
 export const maxAddress = bitRange(bitLengthAddress);
 export const maxPayload = bitRange(bitLengthPayload);
 
-export class Ev1527Device extends Device {
+export class Ev1527Device extends Device<Ev1527Transport> {
   constructor(logger: Logger, transport: Ev1527Transport, address: number) {
-    if (address > maxAddress) throw new RangeError('address to big');
+    if (address > maxAddress) throw new RangeError('address too big');
 
     const deviceIdentifier = Buffer.alloc(byteLengthAddress);
     // eslint-disable-next-line no-bitwise

@@ -32,7 +32,7 @@ export class Schedule {
     start = true,
     once = false
   ) {
-    this._log = logger.getInput({ head: 'Schedule' });
+    this._log = logger.getInput({ head: this.constructor.name });
     this._nextExecutionProvider = nextExecutionProvider;
     this._once = once;
 

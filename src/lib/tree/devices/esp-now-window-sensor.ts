@@ -2,7 +2,7 @@
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, ValueType, metadataStore } from '../main.js';
-import { defaultsEspNow, defaultsIpDevice } from './utils.js';
+import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './utils.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Input } from '../../events/input.js';
@@ -85,7 +85,7 @@ export const espNowWindowSensor = (
 
     metadataStore.set(result, {
       isSubDevice: true,
-      level: Levels.DEVICE,
+      ...deviceMeta(device),
     });
 
     return { espNow: result };
@@ -102,7 +102,7 @@ export const espNowWindowSensor = (
 
     metadataStore.set(result, {
       isSubDevice: true,
-      level: Levels.DEVICE,
+      ...deviceMeta(device),
     });
 
     return { wifi: result };

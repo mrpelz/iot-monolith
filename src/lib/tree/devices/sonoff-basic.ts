@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../main.js';
 import { Timings, button } from '../properties/sensors.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
+import { metadataStore } from '../main.js';
 import { output } from '../properties/actuators.js';
 
 export const sonoffBasic = (
@@ -25,7 +25,7 @@ export const sonoffBasic = (
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
+    ...deviceMeta(device),
   });
 
   return result;

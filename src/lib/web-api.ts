@@ -27,7 +27,7 @@ export class WebApi {
     this._tree = tree;
     this._httpServer = httpServer;
     this._id = id;
-    this._log = logger.getInput({ head: 'WebApi' });
+    this._log = logger.getInput({ head: this.constructor.name });
     this._wss = new WebSocket.Server({ noServer: true });
 
     this._httpServer.route(PATH_HIERARCHY, (handle) =>

@@ -17,9 +17,9 @@ import {
   mhz19,
   tsl2561,
 } from '../properties/sensors.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
 
 export const roomSensor = (
   logger: Logger,
@@ -87,8 +87,7 @@ export const roomSensor = (
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
-    name: 'roomSensor',
+    ...deviceMeta(device),
   });
 
   return result;

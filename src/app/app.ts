@@ -9,9 +9,9 @@ export const app = async (): Promise<void> => {
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
-  const { system } = await import('./system.js');
-
-  const run = Date.now().toString();
+  const {
+    system: { id, system },
+  } = await import('./system.js');
 
   const httpServer = new HttpServer(logger, 1337);
   httpServer.listen();
@@ -19,7 +19,7 @@ export const app = async (): Promise<void> => {
   const tree = new Tree(system);
 
   // eslint-disable-next-line no-new
-  new WebApi(logger, httpServer, run, tree);
+  new WebApi(logger, httpServer, id, tree);
 
   hooks(httpServer, tree);
 

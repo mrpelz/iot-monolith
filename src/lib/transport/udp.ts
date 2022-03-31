@@ -52,7 +52,6 @@ const { lookup } = promises;
 const sequenceRepeatOutgoing = 5;
 
 export class UDPTransport extends Transport {
-  private readonly _host: string;
   private readonly _keepAlive: number;
   private readonly _log: Input;
   private _messageIncomingSequence = 0;
@@ -62,11 +61,12 @@ export class UDPTransport extends Transport {
     NUMBER_RANGES.uint8
   );
 
-  private readonly _port: number;
   private readonly _sequenceHandling: boolean;
   private readonly _shouldBeConnected = new BooleanState(false);
   private _socket: Socket | null = null;
 
+  readonly host: string;
+  readonly port: number;
   readonly shouldBeConnected: ReadOnlyObservable<boolean>;
 
   constructor(
@@ -76,18 +76,18 @@ export class UDPTransport extends Transport {
     keepAlive = 2000,
     sequenceHandling = false
   ) {
-    super(logger, `${host}:${port}`);
+    super(logger);
+
+    this.host = host;
+    this._keepAlive = keepAlive;
+    this.port = port;
+    this._sequenceHandling = sequenceHandling;
 
     this._log = logger.getInput({
-      head: `UDPTransport "${this.friendlyName}"`,
+      head: `${this.constructor.name} "${this.host}:${this.port}"`,
     });
 
     rebind(this, '_handleMessage', '_onConnection', '_onDisconnection');
-
-    this._host = host;
-    this._keepAlive = keepAlive;
-    this._port = port;
-    this._sequenceHandling = sequenceHandling;
 
     this.shouldBeConnected = new ReadOnlyObservable(this._shouldBeConnected);
 
@@ -203,8 +203,8 @@ export class UDPTransport extends Transport {
     this._socket = socket;
 
     (async () => {
-      const { address } = await lookup(this._host, 4);
-      socket.connect(this._port, address);
+      const { address } = await lookup(this.host, 4);
+      socket.connect(this.port, address);
     })().catch((error) => {
       this._log.error(() => `error connecting socket: ${error}`);
       this._nukeSocket();
@@ -258,14 +258,14 @@ export class UDPTransport extends Transport {
             Buffer.from([this._messageOutgoingSequence.get()]),
             payload,
           ]),
-          this._port,
-          this._host
+          this.port,
+          this.host
         );
       }
 
       return;
     }
 
-    this._socket.send(payload, this._port, this._host);
+    this._socket.send(payload, this.port, this.host);
   }
 }

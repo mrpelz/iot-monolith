@@ -13,6 +13,7 @@ import {
   BooleanStateGroup,
   NullState,
 } from '../../state.js';
+import { Device, IpDevice } from '../../device/main.js';
 import {
   Levels,
   ParentRelation,
@@ -20,7 +21,6 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
-import { Device } from '../../device/main.js';
 import { Indicator } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
@@ -85,7 +85,7 @@ const actuatorStaleness = <T>(
 };
 
 export const led = (
-  device: Device,
+  device: IpDevice,
   index = 0,
   indicator = false,
   persistence?: Persistence
@@ -96,7 +96,10 @@ export const led = (
   );
 
   if (persistence) {
-    persistence.observe(`led/${device.friendlyName}/${index}`, setBrightness);
+    persistence.observe(
+      `led/${device.transport.host}:${device.transport.port}/${index}`,
+      setBrightness
+    );
   }
 
   const result = {
@@ -151,7 +154,7 @@ export const led = (
 };
 
 export const output = (
-  device: Device,
+  device: IpDevice,
   index = 0,
   indicator = false,
   actuated = 'light',
@@ -163,7 +166,10 @@ export const output = (
   );
 
   if (persistence) {
-    persistence.observe(`output/${device.friendlyName}/${index}`, setState);
+    persistence.observe(
+      `output/${device.transport.host}:${device.transport.port}/${index}`,
+      setState
+    );
   }
 
   const result = {
@@ -337,6 +343,22 @@ export const outputGrouping = (
 
   return result;
 };
+
+export const resetDevice = (device: Device) => ({
+  resetDevice: (() => {
+    const result = {
+      _set: new NullState(() => device.triggerReset()),
+    };
+
+    metadataStore.set(result, {
+      level: Levels.PROPERTY,
+      type: 'actuator',
+      valueType: ValueType.NULL,
+    });
+
+    return result;
+  })(),
+});
 
 export const scene = (handler: () => void, actuated: string) => {
   const result = {

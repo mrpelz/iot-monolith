@@ -17,7 +17,7 @@ export class Persistence {
     this._path = path;
 
     this._log = logger.getInput({
-      head: `Persistence "${path}"`,
+      head: `${this.constructor.name} "${path}"`,
     });
   }
 

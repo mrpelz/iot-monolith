@@ -110,7 +110,7 @@ export class HttpServer {
   readonly server: Server;
 
   constructor(logger: Logger, port: number) {
-    this._log = logger.getInput({ head: 'HttpServer' });
+    this._log = logger.getInput({ head: this.constructor.name });
     this._port = port;
 
     this.server = new Server();

@@ -20,9 +20,9 @@ import {
   tsl2561,
   uvIndex,
 } from '../properties/sensors.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
 
 export const testDevice = (logger: Logger, timings: Timings) => {
   const device = new UDPDevice(
@@ -92,8 +92,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
-    name: 'testDevice',
+    ...deviceMeta(device),
   });
 
   return result;

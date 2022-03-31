@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../main.js';
 import { Timings, button } from '../properties/sensors.js';
+import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
-import { defaultsIpDevice } from './utils.js';
+import { metadataStore } from '../main.js';
 
 export const shellyi3 = (
   logger: Logger,
@@ -22,7 +22,7 @@ export const shellyi3 = (
   };
 
   metadataStore.set(result, {
-    level: Levels.DEVICE,
+    ...deviceMeta(device),
   });
 
   return result;

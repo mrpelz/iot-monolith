@@ -69,14 +69,17 @@ const wurstHome = (() => {
 })();
 
 export const system = (() => {
+  const id = Date.now().toString();
+
   const result = {
     allLights,
     wurstHome,
   };
 
   metadataStore.set(result, {
+    id,
     level: Levels.SYSTEM,
   });
 
-  return result;
+  return { id, system: result };
 })();

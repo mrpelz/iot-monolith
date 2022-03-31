@@ -3,7 +3,7 @@
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, metadataStore } from '../main.js';
 import { Timings, button } from '../properties/sensors.js';
-import { defaultsEspNow, defaultsIpDevice } from './utils.js';
+import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './utils.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';
@@ -41,7 +41,7 @@ export const espNowButton = (
 
     metadataStore.set(result, {
       isSubDevice: true,
-      level: Levels.DEVICE,
+      ...deviceMeta(device),
     });
 
     return { espNow: result };
@@ -58,7 +58,7 @@ export const espNowButton = (
 
     metadataStore.set(result, {
       isSubDevice: true,
-      level: Levels.DEVICE,
+      ...deviceMeta(device),
     });
 
     return { wifi: result };

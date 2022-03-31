@@ -31,7 +31,7 @@ export class TransportDevice {
   readonly isConnected: ReadOnlyObservable<boolean>;
 
   constructor(transport: Transport, device: Device, logger: Logger) {
-    this._log = logger.getInput({ head: 'Device' });
+    this._log = logger.getInput({ head: this.constructor.name });
     this._transport = transport;
     this.device = device;
     this.isConnected = transport.isConnected;
@@ -82,16 +82,10 @@ export class Transport {
 
   protected readonly _isConnected = new BooleanState(false);
 
-  readonly friendlyName: string;
   readonly identifierLength: number;
   readonly isConnected: ReadOnlyObservable<boolean>;
 
-  constructor(
-    logger: Logger,
-    friendlyName: string,
-    identifierLength = 0,
-    singleDevice = true
-  ) {
+  constructor(logger: Logger, identifierLength = 0, singleDevice = true) {
     if (!singleDevice && !identifierLength) {
       throw new Error('identifier is required for multi device transport');
     }
@@ -99,7 +93,6 @@ export class Transport {
     this._logger = logger;
     this._singleDevice = singleDevice;
 
-    this.friendlyName = friendlyName;
     this.identifierLength = identifierLength;
     this.isConnected = new ReadOnlyObservable(this._isConnected);
   }
