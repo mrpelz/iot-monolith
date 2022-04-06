@@ -2,6 +2,7 @@
 
 import { Timings, button } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './utils.js';
+import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
@@ -16,11 +17,17 @@ export const sonoffBasic = (
   port = 1337
 ) => {
   const device = new UDPDevice(logger, host, port);
-  const relay = output(device, 0, true, undefined, persistence);
+
+  const indicator = device.addService(new Indicator(0));
+
+  const relay = output(device, 0, indicator, undefined, persistence);
 
   const result = {
-    ...defaultsIpDevice(device, timings),
+    ...defaultsIpDevice(device, timings, indicator),
     button: button(device, 0),
+    indicator: {
+      $: indicator,
+    },
     relay,
   };
 

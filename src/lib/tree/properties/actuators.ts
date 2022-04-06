@@ -14,6 +14,7 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
+import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import {
   Levels,
   ParentRelation,
@@ -21,7 +22,6 @@ import {
   inherit,
   metadataStore,
 } from '../main.js';
-import { Indicator } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
@@ -87,12 +87,12 @@ const actuatorStaleness = <T>(
 export const led = (
   device: IpDevice,
   index = 0,
-  indicator = false,
+  indicator?: Indicator,
   persistence?: Persistence
 ) => {
   const { actualBrightness, actualOn, setBrightness, setOn } = new Led(
     device.addService(new LedService(index)),
-    indicator ? device.addService(new Indicator(0)) : undefined
+    indicator
   );
 
   if (persistence) {
@@ -156,13 +156,13 @@ export const led = (
 export const output = (
   device: IpDevice,
   index = 0,
-  indicator = false,
+  indicator?: Indicator,
   actuated = 'light',
   persistence?: Persistence
 ) => {
   const { actualState, setState } = new Output(
     device.addService(new OutputService(index)),
-    indicator ? device.addService(new Indicator(0)) : undefined
+    indicator
   );
 
   if (persistence) {
@@ -348,6 +348,31 @@ export const resetDevice = (device: Device) => ({
   resetDevice: (() => {
     const result = {
       _set: new NullState(() => device.triggerReset()),
+    };
+
+    metadataStore.set(result, {
+      level: Levels.PROPERTY,
+      type: 'actuator',
+      valueType: ValueType.NULL,
+    });
+
+    return result;
+  })(),
+});
+
+export const identifyDevice = (indicator: Indicator) => ({
+  identifyDevice: (() => {
+    const result = {
+      _set: new NullState(() =>
+        indicator
+          .request({
+            blink: 10,
+            mode: IndicatorMode.BLINK,
+          })
+          .catch(() => {
+            // noop
+          })
+      ),
     };
 
     metadataStore.set(result, {

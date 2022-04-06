@@ -7,14 +7,15 @@ import {
   online,
   vcc,
 } from '../properties/sensors.js';
+import { identifyDevice, resetDevice } from '../properties/actuators.js';
 import { Device } from '../../device/main.js';
 import { ESPNowDevice } from '../../device/esp-now.js';
+import { Indicator } from '../../services/indicator.js';
 import { Levels } from '../main.js';
 import { TCPDevice } from '../../device/tcp.js';
 import { TCPTransport } from '../../transport/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
 import { UDPTransport } from '../../transport/udp.js';
-import { resetDevice } from '../properties/actuators.js';
 
 export const defaultsEspNow = (device: ESPNowDevice) => ({
   ...lastSeen(device.seen),
@@ -23,11 +24,13 @@ export const defaultsEspNow = (device: ESPNowDevice) => ({
 
 export const defaultsIpDevice = (
   device: UDPDevice | TCPDevice,
-  timings: Timings
+  timings: Timings,
+  indicator?: Indicator
 ) => ({
   ...hello(device, timings.moderate || timings.default),
   ...online(device),
   ...resetDevice(device),
+  ...(indicator ? identifyDevice(indicator) : {}),
 });
 
 export const deviceMeta = (device: Device) => ({

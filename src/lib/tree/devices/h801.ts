@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { defaultsIpDevice, deviceMeta } from './utils.js';
+import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Timings } from '../properties/sensors.js';
@@ -16,14 +17,20 @@ export const h801 = (
   port = 1337
 ) => {
   const device = new UDPDevice(logger, host, port);
-  const ledR = led(device, 0, true, persistence);
+
+  const indicator = device.addService(new Indicator(0));
+
+  const ledR = led(device, 0, indicator, persistence);
   const ledG = led(device, 1, undefined, persistence);
   const ledB = led(device, 2, undefined, persistence);
   const ledW1 = led(device, 3, undefined, persistence);
   const ledW2 = led(device, 4, undefined, persistence);
 
   const result = {
-    ...defaultsIpDevice(device, timings),
+    ...defaultsIpDevice(device, timings, indicator),
+    indicator: {
+      $: indicator,
+    },
     ledB,
     ledG,
     ledR,
