@@ -55,7 +55,6 @@ export const properties = {
   fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
   windowOpen: devices.windowSensor.open,
-  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const groups = {

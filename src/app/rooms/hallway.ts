@@ -51,7 +51,6 @@ const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
   doorOpen: devices.doorSensor.open,
-  doorSensorTampered: devices.doorSensor.tamperSwitch,
 };
 
 export const groups = {

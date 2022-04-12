@@ -61,7 +61,7 @@ export const offTimer = (
     if (!timer.isRunning) return;
 
     timer.stop();
-  });
+  }, true);
 
   timer.observe(() => {
     active.value = false;

@@ -30,7 +30,6 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
-  doorSensorTampered: devices.doorSensor.tamperSwitch,
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
     persistence,
@@ -72,7 +71,7 @@ export const groups = {
     if (indicatorInProgress) return;
 
     properties.lightTimer.active._set.value = value;
-  });
+  }, true);
 
   properties.lightTimer.$.observe(() => {
     properties.ceilingLight._set.value = false;

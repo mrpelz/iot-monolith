@@ -28,7 +28,6 @@ export const devices = {
     timings,
     'diningroom-fan.iot.wurstsalat.cloud'
   ),
-  fanRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   kallaxLeds: h801(
     logger,
     persistence,
@@ -48,6 +47,7 @@ export const devices = {
     timings,
     'diningroom-tablelight.iot.wurstsalat.cloud'
   ),
+  tableRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   wallswitch: shellyi3(
     logger,
     timings,
@@ -57,9 +57,9 @@ export const devices = {
 
 export const instances = {
   fanButton: devices.fan.button.$,
-  fanRfButton: devices.fanRfButton.$,
   kallaxSideButton: devices.kallaxSideButton.$,
   standingLampButton: devices.standingLamp.button.$,
+  tableRfButton: devices.tableRfButton.$,
   wallswitchBottom: devices.wallswitch.button1.$,
   wallswitchTop: devices.wallswitch.button0.$,
 };
@@ -106,8 +106,6 @@ export const groups = {
 
   instances.fanButton.up(() => properties.fan._set.flip());
 
-  instances.fanRfButton.observe(() => properties.fan._set.flip());
-
   instances.kallaxSideButton.observe(() =>
     properties.kallaxLedSide._set.flip()
   );
@@ -116,6 +114,8 @@ export const groups = {
   instances.standingLampButton.longPress(
     () => (kitchenAdjacentLights._set.value = false)
   );
+
+  instances.tableRfButton.observe(() => properties.tableLight._set.flip());
 
   instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
   instances.wallswitchBottom.longPress(

@@ -59,12 +59,10 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
-  doorSensorTampered: devices.doorSensor.tamperSwitch,
   floodLight: devices.floodlight.relay,
   // windowLeftOpen: devices.windowSensorLeft.open,
   // windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
   windowRightOpen: devices.windowSensorRight.open,
-  windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
   workbenchLedCWhite: devices.workbenchLeds.ledB,
   workbenchLedWWhite: devices.workbenchLeds.ledG,
 };

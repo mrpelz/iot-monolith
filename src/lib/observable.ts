@@ -40,6 +40,10 @@ export class Observable<T> {
       : new Map();
   }
 
+  get listeners(): number {
+    return this._observers.size;
+  }
+
   get value(): T {
     return this._value;
   }
@@ -85,6 +89,10 @@ export class ReadOnlyObservable<T> {
     this._observable = observable;
   }
 
+  get listeners(): number {
+    return this._observable.listeners;
+  }
+
   get value(): T {
     return this._observable.value;
   }
@@ -104,6 +112,10 @@ export class ReadOnlyProxyObservable<T, S = T> {
   constructor(observable: AnyObservable<T>, get: ProxyFn<T, S>) {
     this._observable = observable;
     this._get = get;
+  }
+
+  get listeners(): number {
+    return this._observable.listeners;
   }
 
   get value(): S {
@@ -145,6 +157,10 @@ export class ProxyObservable<T, S = T> {
     this._observable = observable;
     this._get = get;
     this._set = set;
+  }
+
+  get listeners(): number {
+    return this._observable.listeners;
   }
 
   get value(): S {

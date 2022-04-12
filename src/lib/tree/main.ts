@@ -189,28 +189,12 @@ export class Tree {
     [AnyWritableObservable<unknown>, ValueType]
   >();
 
-  private _stream: Stream | null = null;
-
+  readonly stream: Stream;
   readonly structure: any;
 
   constructor(input: any) {
     this.structure = this._serialize(input);
-  }
-
-  get stream(): Stream {
-    if (this._stream) return this._stream;
-
-    const observable = new Observable<[number, unknown] | null>(null);
-
-    for (const [getter, key] of this._getters) {
-      (getter as unknown as AnyReadOnlyObservable<unknown>).observe(
-        (value) => (observable.value = [key, value])
-      );
-    }
-
-    this._stream = new ReadOnlyObservable(observable);
-
-    return this._stream;
+    this.stream = this._stream();
   }
 
   private _getGetterIndex(value: AnyReadOnlyObservable<unknown>) {
@@ -306,6 +290,18 @@ export class Tree {
       meta,
       set,
     };
+  }
+
+  private _stream(): Stream {
+    const observable = new Observable<[number, unknown] | null>(null);
+
+    for (const [getter, key] of this._getters) {
+      (getter as unknown as AnyReadOnlyObservable<unknown>).observe(
+        (value) => (observable.value = [key, value])
+      );
+    }
+
+    return new ReadOnlyObservable(observable);
   }
 
   getter(index: number): AnyReadOnlyObservable<unknown> | undefined {

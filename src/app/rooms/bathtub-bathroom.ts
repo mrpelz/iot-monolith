@@ -42,7 +42,6 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
-  doorSensorTampered: devices.doorSensor.tamperSwitch,
   nightLight: devices.nightLight.relay,
 };
 

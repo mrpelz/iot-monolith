@@ -54,7 +54,6 @@ export const properties = {
   ledRightFloodlight: devices.ledsRight.ledW1,
   ledRightWWhite: devices.ledsRight.ledG,
   windowOpen: devices.windowSensor.open,
-  windowSensorTampered: devices.windowSensor.tamperSwitch,
 };
 
 export const groups = {

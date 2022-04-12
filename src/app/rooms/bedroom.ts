@@ -75,12 +75,10 @@ const partialProperties = {
   bedLedW: devices.rgbwLeds.ledW1,
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
-  doorSensorTampered: devices.doorSensor.tamperSwitch,
   nightstandLedLeft: devices.nightstandLeds.ledR,
   nightstandLedRight: devices.nightstandLeds.ledG,
   stoneLamp: devices.stoneLamp.relay,
   windowLeftOpen: devices.windowSensorLeft.open,
-  windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
   // windowRightOpen: devices.windowSensorRight.open,
   // windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
 };

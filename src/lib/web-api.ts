@@ -2,6 +2,7 @@ import { HttpServer, RouteHandle } from './http-server.js';
 import { Input, Logger } from './log.js';
 import { Duplex } from 'stream';
 import { IncomingMessage } from 'http';
+import { Observable } from './observable.js';
 import { Socket } from 'net';
 import { Timer } from './timer.js';
 import { Tree } from './tree/main.js';
@@ -20,15 +21,21 @@ export class WebApi {
   private readonly _httpServer: HttpServer;
   private readonly _id: string;
   private readonly _log: Input;
+  private readonly _streamCount: Observable<number>;
   private readonly _tree: Tree;
   private readonly _wss: WebSocket.Server;
 
   constructor(logger: Logger, httpServer: HttpServer, id: string, tree: Tree) {
-    this._tree = tree;
-    this._httpServer = httpServer;
-    this._id = id;
     this._log = logger.getInput({ head: this.constructor.name });
+
+    this._tree = tree;
+
+    this._httpServer = httpServer;
     this._wss = new WebSocket.Server({ noServer: true });
+
+    this._id = id;
+
+    this._streamCount = new Observable(0);
 
     this._httpServer.route(PATH_HIERARCHY, (handle) =>
       this._handleHierarchyGet(handle)
@@ -76,11 +83,17 @@ export class WebApi {
         ws.send(JSON.stringify(entry));
       }
 
+      const streamCountObserver = this._streamCount.observe((value) => {
+        ws.send(JSON.stringify([-1, value]));
+      });
+
       const observer = this._tree.stream.observe((entry) => {
         if (!entry) return;
 
         ws.send(JSON.stringify(entry));
       });
+
+      this._streamCount.value = this._tree.stream.listeners;
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
@@ -117,7 +130,11 @@ export class WebApi {
         clearInterval(pingPong);
         pingPongTimer.stop();
 
+        streamCountObserver.remove();
         observer.remove();
+
+        this._streamCount.value = this._tree.stream.listeners;
+
         ws.close();
       };
 

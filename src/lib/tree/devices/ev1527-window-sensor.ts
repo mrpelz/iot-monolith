@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, ValueType, inherit, metadataStore } from '../main.js';
+import { lastChange, lastSeen } from '../properties/sensors.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { Logger } from '../../log.js';
 import { MultiValueEvent } from '../../items/event.js';
 import { deviceMeta } from './utils.js';
-import { lastSeen } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,
@@ -25,6 +25,23 @@ export const ev1527WindowSensor = (
     open: (() => {
       const _open = {
         _get: open,
+        tamperSwitch: (() => {
+          const _tamperSwitch = {
+            _get: tamperSwitch,
+            ...lastSeen(tamperSwitch),
+          };
+
+          metadataStore.set(_tamperSwitch, {
+            level: Levels.PROPERTY,
+            measured: 'windowTamperSwitch',
+            name: inherit,
+            type: 'sensor',
+            valueType: ValueType.BOOLEAN,
+          });
+
+          return _tamperSwitch;
+        })(),
+        ...lastChange(open),
       };
 
       metadataStore.set(_open, {
@@ -36,21 +53,6 @@ export const ev1527WindowSensor = (
       });
 
       return _open;
-    })(),
-    tamperSwitch: (() => {
-      const _tamperSwitch = {
-        _get: tamperSwitch,
-      };
-
-      metadataStore.set(_tamperSwitch, {
-        level: Levels.PROPERTY,
-        measured: 'windowTamperSwitch',
-        name: inherit,
-        type: 'sensor',
-        valueType: ValueType.BOOLEAN,
-      });
-
-      return _tamperSwitch;
     })(),
     ...lastSeen(device.seen),
   };
