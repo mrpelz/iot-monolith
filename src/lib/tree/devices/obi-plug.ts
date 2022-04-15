@@ -14,13 +14,14 @@ export const obiPlug = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  actuated?: string
 ) => {
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
 
-  const relay = output(device, 0, indicator, undefined, persistence);
+  const relay = output(device, 0, indicator, actuated, persistence);
 
   const result = {
     ...defaultsIpDevice(device, timings, indicator),

@@ -26,7 +26,9 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'diningroom-fan.iot.wurstsalat.cloud'
+    'diningroom-fan.iot.wurstsalat.cloud',
+    undefined,
+    'fan'
   ),
   kallaxLeds: h801(
     logger,

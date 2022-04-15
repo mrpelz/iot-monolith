@@ -13,10 +13,11 @@ export const shelly1 = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  actuated?: string
 ) => {
   const device = new UDPDevice(logger, host, port);
-  const relay = output(device, 0, undefined, undefined, persistence);
+  const relay = output(device, 0, undefined, actuated, persistence);
 
   const result = {
     ...defaultsIpDevice(device, timings),

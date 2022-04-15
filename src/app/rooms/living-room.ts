@@ -25,7 +25,9 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'livingroom-fan.iot.wurstsalat.cloud'
+    'livingroom-fan.iot.wurstsalat.cloud',
+    undefined,
+    'fan'
   ),
   standingLamp: obiPlug(
     logger,
