@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, ValueType, inherit, metadataStore } from '../main.js';
+import { Levels, ValueType, metadataStore } from '../main.js';
 import { lastChange, lastSeen } from '../properties/sensors.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
@@ -34,7 +34,6 @@ export const ev1527WindowSensor = (
           metadataStore.set(_tamperSwitch, {
             level: Levels.PROPERTY,
             measured: 'windowTamperSwitch',
-            name: inherit,
             type: 'sensor',
             valueType: ValueType.BOOLEAN,
           });
@@ -47,7 +46,6 @@ export const ev1527WindowSensor = (
       metadataStore.set(_open, {
         level: Levels.PROPERTY,
         measured: 'windowOpen',
-        name: inherit,
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
