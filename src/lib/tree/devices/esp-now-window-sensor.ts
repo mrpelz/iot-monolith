@@ -31,7 +31,7 @@ const children = (device: Device) => {
 
       metadataStore.set(result, {
         level: Levels.PROPERTY,
-        measured: 'windowOpen',
+        measured: 'open',
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
@@ -45,7 +45,7 @@ const children = (device: Device) => {
 
       metadataStore.set(result, {
         level: Levels.PROPERTY,
-        measured: 'windowOpen',
+        measured: 'open',
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
@@ -59,7 +59,7 @@ const children = (device: Device) => {
 
       metadataStore.set(result, {
         level: Levels.PROPERTY,
-        measured: 'windowOpen',
+        measured: 'open',
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });

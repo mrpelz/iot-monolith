@@ -33,7 +33,7 @@ export const ev1527WindowSensor = (
 
           metadataStore.set(_tamperSwitch, {
             level: Levels.PROPERTY,
-            measured: 'windowTamperSwitch',
+            measured: 'tamperSwitch',
             type: 'sensor',
             valueType: ValueType.BOOLEAN,
           });
@@ -45,7 +45,7 @@ export const ev1527WindowSensor = (
 
       metadataStore.set(_open, {
         level: Levels.PROPERTY,
-        measured: 'windowOpen',
+        measured: 'open',
         type: 'sensor',
         valueType: ValueType.BOOLEAN,
       });
