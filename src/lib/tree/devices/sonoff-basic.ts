@@ -13,15 +13,15 @@ export const sonoffBasic = (
   logger: Logger,
   persistence: Persistence,
   timings: Timings,
+  actuated: string,
   host: string,
-  port = 1337,
-  actuated?: string
+  port = 1337
 ) => {
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
 
-  const relay = output(device, 0, indicator, actuated, persistence);
+  const relay = output(device, 0, actuated, indicator, persistence);
 
   const result = {
     ...defaultsIpDevice(device, timings, indicator),

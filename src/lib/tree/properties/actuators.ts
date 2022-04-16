@@ -144,7 +144,7 @@ export const led = (
   };
 
   metadataStore.set(result, {
-    actuated: 'light',
+    actuated: 'lighting',
     level: Levels.PROPERTY,
     type: 'actuator',
     valueType: ValueType.BOOLEAN,
@@ -156,8 +156,8 @@ export const led = (
 export const output = (
   device: IpDevice,
   index = 0,
+  actuated: string,
   indicator?: Indicator,
-  actuated = 'light',
   persistence?: Persistence
 ) => {
   const { actualState, setState } = new Output(
@@ -203,10 +203,7 @@ export const output = (
   return result;
 };
 
-export const ledGrouping = (
-  lights: ReturnType<typeof led>[],
-  actuated = 'light'
-) => {
+export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
@@ -289,7 +286,7 @@ export const ledGrouping = (
   };
 
   metadataStore.set(result, {
-    actuated,
+    actuated: 'lighting',
     level: Levels.PROPERTY,
     type: 'actuator',
     valueType: ValueType.BOOLEAN,
@@ -300,7 +297,7 @@ export const ledGrouping = (
 
 export const outputGrouping = (
   lights: (ReturnType<typeof output> | ReturnType<typeof led>)[],
-  actuated = 'light'
+  actuated = 'lighting'
 ) => {
   const actual = new ReadOnlyObservable(
     new BooleanNullableStateGroup(

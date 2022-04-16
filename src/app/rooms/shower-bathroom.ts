@@ -20,6 +20,7 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'showerbathroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, ev1527Transport, 720256),
@@ -27,12 +28,14 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'showerbathroom-mirrorlight.iot.wurstsalat.cloud'
   ),
   nightLight: sonoffBasic(
     logger,
     persistence,
     timings,
+    'lighting',
     'showerbathroom-nightlight.iot.wurstsalat.cloud'
   ),
   showerButton: ev1527ButtonX1(ev1527Transport, 628217, logger),

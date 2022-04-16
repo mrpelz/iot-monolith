@@ -24,4 +24,4 @@ export const kitchenAdjacentChillax = scene(() => {
   diningRoomProperties.kallaxLedSide.brightness._set.value = 0.5;
   kitchenProperties.ledLeftWWhite.brightness._set.value = 0.5;
   kitchenProperties.ledRightWWhite.brightness._set.value = 0.5;
-}, 'light');
+}, 'lighting');

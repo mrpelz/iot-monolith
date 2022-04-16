@@ -25,6 +25,7 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'bedroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, ev1527Transport, 724720),
@@ -46,6 +47,7 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'bedroom-stonelamp.iot.wurstsalat.cloud'
   ),
   wallswitchDoor: shellyi3(

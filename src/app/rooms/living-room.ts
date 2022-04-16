@@ -18,6 +18,7 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'livingroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
@@ -25,14 +26,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'livingroom-fan.iot.wurstsalat.cloud',
-    undefined,
-    'fan'
+    'fan',
+    'livingroom-fan.iot.wurstsalat.cloud'
   ),
   standingLamp: obiPlug(
     logger,
     persistence,
     timings,
+    'lighting',
     'livingroom-standinglamp.iot.wurstsalat.cloud'
   ),
   wallswitch: shellyi3(

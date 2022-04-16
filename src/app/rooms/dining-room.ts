@@ -20,15 +20,15 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'diningroom-ceilinglight.iot.wurstsalat.cloud'
   ),
   fan: obiPlug(
     logger,
     persistence,
     timings,
-    'diningroom-fan.iot.wurstsalat.cloud',
-    undefined,
-    'fan'
+    'fan',
+    'diningroom-fan.iot.wurstsalat.cloud'
   ),
   kallaxLeds: h801(
     logger,
@@ -41,12 +41,14 @@ export const devices = {
     logger,
     persistence,
     timings,
+    'lighting',
     'diningroom-standinglamp.iot.wurstsalat.cloud'
   ),
   tableLight: sonoffBasic(
     logger,
     persistence,
     timings,
+    'lighting',
     'diningroom-tablelight.iot.wurstsalat.cloud'
   ),
   tableRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
