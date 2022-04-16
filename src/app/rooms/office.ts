@@ -13,6 +13,7 @@ import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { offTimer } from '../../lib/tree/properties/logic.js';
 import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
@@ -62,6 +63,10 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   doorOpen: devices.doorSensor.open,
   floodLight: devices.floodlight.relay,
+  floodLightTimer: offTimer(epochs.hour, undefined, [
+    'office/floodLightTimer',
+    persistence,
+  ]),
   // windowLeftOpen: devices.windowSensorLeft.open,
   // windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
   windowRightOpen: devices.windowSensorRight.open,
@@ -146,6 +151,14 @@ export const groups = {
     ) {
       groups.workbenchLeds._set.value = false;
     }
+  });
+
+  properties.floodLight._set.observe((value) => {
+    properties.floodLightTimer.active._set.value = value;
+  }, true);
+
+  properties.floodLightTimer.$.observe(() => {
+    properties.floodLight._set.value = false;
   });
 })();
 
