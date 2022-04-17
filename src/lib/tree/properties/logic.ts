@@ -78,11 +78,11 @@ export const offTimer = (
     _set: enabled,
     active: (() => {
       const _active = {
+        $: active,
         _get: new ReadOnlyObservable(active),
-        _set: active,
-        flip: (() => {
+        cancel: (() => {
           const _flip = {
-            _set: new NullState(() => active.flip()),
+            _set: new NullState(() => (active.value = false)),
           };
 
           metadataStore.set(_flip, {

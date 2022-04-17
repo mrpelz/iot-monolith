@@ -154,7 +154,7 @@ export const groups = {
   });
 
   properties.floodLight._set.observe((value) => {
-    properties.floodLightTimer.active._set.value = value;
+    properties.floodLightTimer.active.$.value = value;
   }, true);
 
   properties.floodLightTimer.$.observe(() => {
