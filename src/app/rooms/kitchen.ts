@@ -35,7 +35,12 @@ export const devices = {
     timings,
     'kitchen-wallswitchfront.iot.wurstsalat.cloud'
   ),
-  windowSensor: ev1527WindowSensor(logger, ev1527Transport, 841520),
+  windowSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    841520
+  ),
 };
 
 export const instances = {

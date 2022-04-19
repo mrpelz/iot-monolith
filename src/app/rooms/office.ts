@@ -27,7 +27,7 @@ export const devices = {
     'lighting',
     'office-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55696),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
   floodlight: obiPlug(
     logger,
     persistence,
@@ -41,7 +41,12 @@ export const devices = {
     'office-wallswitch.iot.wurstsalat.cloud'
   ),
   // windowSensorLeft: ev1527WindowSensor(logger, ev1527Transport, 0),
-  windowSensorRight: ev1527WindowSensor(logger, ev1527Transport, 839280),
+  windowSensorRight: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    839280
+  ),
   workbenchButton: ev1527ButtonX1(ev1527Transport, 903326, logger),
   workbenchLeds: h801(
     logger,

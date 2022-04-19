@@ -24,7 +24,7 @@ export const devices = {
     'lighting',
     'showerbathroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, ev1527Transport, 720256),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 720256),
   mirrorLight: sonoffBasic(
     logger,
     persistence,

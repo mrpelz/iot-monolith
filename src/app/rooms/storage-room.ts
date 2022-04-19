@@ -20,7 +20,7 @@ export const devices = {
     'lighting',
     'storage-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, ev1527Transport, 55632),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55632),
   rfBridge,
 };
 

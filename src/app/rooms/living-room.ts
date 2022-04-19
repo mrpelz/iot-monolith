@@ -41,7 +41,12 @@ export const devices = {
     timings,
     'livingroom-wallswitch.iot.wurstsalat.cloud'
   ),
-  windowSensor: ev1527WindowSensor(logger, ev1527Transport, 670496),
+  windowSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    670496
+  ),
 };
 
 export const instances = {

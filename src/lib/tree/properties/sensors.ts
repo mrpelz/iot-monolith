@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import {
+  AnyReadOnlyObservable,
+  Observable,
+  ReadOnlyObservable,
+} from '../../observable.js';
 import { BooleanState, ReadOnlyNullState } from '../../state.js';
 import { Levels, ParentRelation, ValueType, metadataStore } from '../main.js';
 import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
-import { Observable, ReadOnlyObservable } from '../../observable.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
 import { Button } from '../../items/button.js';
@@ -29,7 +33,7 @@ export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
 };
 
-export const lastChange = <T>(state: ReadOnlyObservable<T>) => {
+export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
   const seen = new Observable<number | null>(null);
 
   state.observe((value) => {
