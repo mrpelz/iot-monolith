@@ -122,9 +122,9 @@ export const groups = {
 })();
 
 export const kitchen = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(kitchen, {

@@ -151,7 +151,7 @@ export class HttpServer {
         utils,
       });
     } catch (_error) {
-      const error = new Error(`error handling request: ${_error}`);
+      const error = new Error('error handling request', { cause: _error });
 
       this._log.error(() => error.message);
 

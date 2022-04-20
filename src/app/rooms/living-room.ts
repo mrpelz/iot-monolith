@@ -146,10 +146,10 @@ export const scenes = {
 })();
 
 export const livingRoom = {
+  devices,
   ...groups,
   ...properties,
   ...scenes,
-  devices,
 };
 
 metadataStore.set(livingRoom, {

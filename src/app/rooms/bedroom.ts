@@ -249,9 +249,9 @@ export const properties = {
 })();
 
 export const bedroom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(bedroom, {

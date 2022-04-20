@@ -182,9 +182,9 @@ export const groups = {
 })();
 
 export const showerBathroom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(showerBathroom, {

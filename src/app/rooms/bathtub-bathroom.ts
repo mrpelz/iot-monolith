@@ -104,9 +104,9 @@ export const groups = {
 })();
 
 export const bathtubBathroom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(bathtubBathroom, {

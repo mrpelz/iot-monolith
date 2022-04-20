@@ -168,9 +168,9 @@ export const groups = {
 })();
 
 export const office = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(office, {

@@ -133,9 +133,9 @@ export const groups = {
 })();
 
 export const diningRoom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(diningRoom, {

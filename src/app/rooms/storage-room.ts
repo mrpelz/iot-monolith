@@ -80,9 +80,9 @@ export const groups = {
 })();
 
 export const storageRoom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(storageRoom, {

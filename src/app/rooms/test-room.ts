@@ -59,9 +59,9 @@ export const groups = {};
 })();
 
 export const testRoom = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(testRoom, {

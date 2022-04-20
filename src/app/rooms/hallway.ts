@@ -112,9 +112,9 @@ export const properties = {
 })();
 
 export const hallway = {
+  devices,
   ...groups,
   ...properties,
-  devices,
 };
 
 metadataStore.set(hallway, {

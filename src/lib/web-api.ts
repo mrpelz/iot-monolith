@@ -141,7 +141,7 @@ export class WebApi {
       ws.on('close', handleStreamClose);
       pingPongTimer.observe(handleStreamClose);
     } catch (_error) {
-      const error = new Error(`error handling WebSocket: ${_error}`);
+      const error = new Error('error handling WebSocket', { cause: _error });
 
       this._log.error(() => error.stack as string);
 
