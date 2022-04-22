@@ -10,9 +10,9 @@ import { lastSeen } from '../properties/sensors.js';
 import { metadataStore } from '../main.js';
 
 export const ev1527ButtonX4 = (
-  logger: Logger,
   transport: Ev1527Transport,
-  address: number
+  address: number,
+  logger: Logger
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
@@ -42,8 +42,8 @@ export const ev1527ButtonX1 = (
 
   const result = {
     $: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
-      'bottomRight',
-    ]).state.bottomRight,
+      'bottomLeft',
+    ]).state.bottomLeft,
     ...lastSeen(device.seen),
   };
 

@@ -2,7 +2,7 @@
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { outputGrouping, scene } from '../../lib/tree/properties/actuators.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
+import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import fetch from 'node-fetch';
@@ -21,7 +21,7 @@ export const devices = {
     'lighting',
     'livingroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  couchButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
+  couchButton: ev1527ButtonX4(ev1527Transport, 822302, logger),
   fan: obiPlug(
     logger,
     persistence,
@@ -97,7 +97,7 @@ export const scenes = {
   const { kitchenAdjacentChillax } = await import('../scenes.js');
   const { instances: testRoomInstances } = await import('./test-room.js');
 
-  instances.couchButton.observe(() => {
+  instances.couchButton.topLeft.observe(() => {
     if (kitchenAdjacentLights._set.value) {
       kitchenAdjacentLights._set.value = false;
       return;
@@ -105,6 +105,13 @@ export const scenes = {
 
     kitchenAdjacentChillax._set.trigger();
   });
+  instances.couchButton.topRight.observe(() => properties.fan._set.flip());
+  instances.couchButton.bottomLeft.observe(() =>
+    scenes.mediaOnOrSwitch._set.trigger()
+  );
+  instances.couchButton.bottomRight.observe(() =>
+    scenes.mediaOff._set.trigger()
+  );
 
   testRoomInstances.espNowButton0.up(() => {
     if (kitchenAdjacentLights._set.value) {

@@ -27,8 +27,8 @@ export class Ev1527Button extends Event<Ev1527ButtonPayload> {
 
     /* eslint-disable no-bitwise */
     return {
-      bottomLeft: Boolean(byte & 0b0010),
-      bottomRight: Boolean(byte & 0b0001),
+      bottomLeft: Boolean(byte & 0b0001),
+      bottomRight: Boolean(byte & 0b0010),
       topLeft: Boolean(byte & 0b0100),
       topRight: Boolean(byte & 0b1000),
     };
