@@ -22,7 +22,13 @@ export const devices = {
     'lighting',
     'bathtubbathroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 721216),
+  doorSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    721216,
+    'doorOpen'
+  ),
   nightLight: sonoffBasic(
     logger,
     persistence,

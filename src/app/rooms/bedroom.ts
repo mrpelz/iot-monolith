@@ -28,7 +28,13 @@ export const devices = {
     'lighting',
     'bedroom-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
+  doorSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    724720,
+    'doorOpen'
+  ),
   nightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
   nightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
   nightstandLeds: h801(

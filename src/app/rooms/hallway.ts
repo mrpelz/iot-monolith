@@ -28,7 +28,13 @@ export const devices = {
     'lighting',
     'hallway-ceilinglightfront.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55024),
+  doorSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    55024,
+    'doorOpen'
+  ),
   wallswitchBack: shellyi3(
     logger,
     timings,

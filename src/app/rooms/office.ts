@@ -27,7 +27,13 @@ export const devices = {
     'lighting',
     'office-ceilinglight.iot.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
+  doorSensor: ev1527WindowSensor(
+    logger,
+    persistence,
+    ev1527Transport,
+    55696,
+    'doorOpen'
+  ),
   floodlight: obiPlug(
     logger,
     persistence,

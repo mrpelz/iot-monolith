@@ -244,12 +244,11 @@ export class Tree {
         }
       }
 
+      if (result.level !== Levels.SYSTEM && !('name' in result) && property) {
+        result.name = property;
+      }
+
       return {
-        ...(result.level === Levels.SYSTEM || !property
-          ? undefined
-          : {
-              name: property,
-            }),
         ...result,
         ...metaExtension,
       };
