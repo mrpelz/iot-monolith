@@ -3,12 +3,15 @@
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import { ModifiableDate, Unit } from '../../lib/modifiable-date.js';
 import {
+  ev1527ButtonX1,
+  ev1527ButtonX4,
+} from '../../lib/tree/devices/ev1527-button.js';
+import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
 import { Schedule } from '../../lib/schedule.js';
 import { epochs } from '../../lib/epochs.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -43,6 +46,8 @@ export const devices = {
     timings,
     'bedroom-nightstandleds.iot.wurstsalat.cloud'
   ),
+  nightstandMultiButtonLeft: ev1527ButtonX4(ev1527Transport, 831834, logger),
+  nightstandMultiButtonRight: ev1527ButtonX4(ev1527Transport, 714410, logger),
   rgbwLeds: h801(
     logger,
     persistence,
@@ -73,6 +78,8 @@ export const devices = {
 export const instances = {
   nightstandButtonLeft: devices.nightstandButtonLeft.$,
   nightstandButtonRight: devices.nightstandButtonRight.$,
+  nightstandMultiButtonLeft: devices.nightstandMultiButtonLeft.$,
+  nightstandMultiButtonRight: devices.nightstandMultiButtonRight.$,
   stoneLampButton: devices.stoneLamp.button.$,
   wallswitchBed: devices.ceilingLight.button.$,
   wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
@@ -110,7 +117,7 @@ export const groups = {
   ]),
   fuckLight: outputGrouping([
     partialProperties.bedLedDownlightRed,
-    partialProperties.stoneLamp,
+    partialProperties.bedLedR,
   ]),
   leds: ledGrouping([
     partialProperties.bedLedR,
@@ -220,6 +227,32 @@ export const properties = {
 
     properties.nightstandLedRight.brightness._set.value = 0.3;
   });
+
+  instances.nightstandMultiButtonLeft.topLeft.observe(() =>
+    groups.whiteLeds._set.flip()
+  );
+  instances.nightstandMultiButtonLeft.topRight.observe(() =>
+    groups.fuckLight._set.flip()
+  );
+  instances.nightstandMultiButtonLeft.bottomLeft.observe(() =>
+    properties.bedLedG._set.flip()
+  );
+  instances.nightstandMultiButtonLeft.bottomRight.observe(() =>
+    properties.bedLedB._set.flip()
+  );
+
+  instances.nightstandMultiButtonRight.topLeft.observe(() =>
+    groups.whiteLeds._set.flip()
+  );
+  instances.nightstandMultiButtonRight.topRight.observe(() =>
+    groups.fuckLight._set.flip()
+  );
+  instances.nightstandMultiButtonRight.bottomLeft.observe(() =>
+    properties.bedLedG._set.flip()
+  );
+  instances.nightstandMultiButtonRight.bottomRight.observe(() =>
+    properties.bedLedB._set.flip()
+  );
 
   instances.wallswitchBed.up(() => {
     if (groups.allLights._get.value) {

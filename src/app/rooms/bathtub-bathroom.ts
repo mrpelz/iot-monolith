@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { isDay } from '../util.js';
@@ -15,6 +17,7 @@ import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
+  bathtubButton: ev1527ButtonX1(ev1527Transport, 823914, logger),
   ceilingLight: shelly1(
     logger,
     persistence,
@@ -44,6 +47,7 @@ export const devices = {
 };
 
 export const instances = {
+  bathtubButton: devices.bathtubButton.$,
   nightLightButton: devices.nightLight.button.$,
   wallswitchDoor: devices.ceilingLight.button.$,
   wallswitchMirror: devices.wallswitchMirror.button0.$,
@@ -64,6 +68,47 @@ export const groups = {
 };
 
 (() => {
+  const timer = new Timer(epochs.second * 5);
+
+  instances.bathtubButton.observe(() => {
+    const firstPress = !timer.isRunning;
+
+    timer.start();
+
+    if (firstPress) {
+      if (!groups.allLights._get.value) {
+        properties.nightLight._set.value = true;
+        return;
+      }
+
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    if (
+      !properties.nightLight._get.value &&
+      !properties.ceilingLight._get.value
+    ) {
+      properties.nightLight._set.value = true;
+      return;
+    }
+
+    if (
+      properties.nightLight._get.value &&
+      !properties.ceilingLight._get.value
+    ) {
+      groups.allLights._set.value = true;
+      return;
+    }
+
+    if (
+      properties.nightLight._get.value &&
+      properties.ceilingLight._get.value
+    ) {
+      groups.allLights._set.value = false;
+    }
+  });
+
   instances.nightLightButton.up(() => properties.nightLight._set.flip());
   instances.nightLightButton.longPress(
     () => (groups.allLights._set.value = false)

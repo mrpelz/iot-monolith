@@ -2,10 +2,13 @@
 
 import { Levels, metadataStore } from '../../lib/tree/main.js';
 import {
+  ev1527ButtonX1,
+  ev1527ButtonX4,
+} from '../../lib/tree/devices/ev1527-button.js';
+import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
@@ -44,6 +47,7 @@ export const devices = {
     'lighting',
     'diningroom-standinglamp.iot.wurstsalat.cloud'
   ),
+  tableButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   tableLight: sonoffBasic(
     logger,
     persistence,
@@ -51,7 +55,7 @@ export const devices = {
     'lighting',
     'diningroom-tablelight.iot.wurstsalat.cloud'
   ),
-  tableRfButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+  tableMultiButton: ev1527ButtonX4(ev1527Transport, 426506, logger),
   wallswitch: shellyi3(
     logger,
     timings,
@@ -63,7 +67,8 @@ export const instances = {
   fanButton: devices.fan.button.$,
   kallaxSideButton: devices.kallaxSideButton.$,
   standingLampButton: devices.standingLamp.button.$,
-  tableRfButton: devices.tableRfButton.$,
+  tableButton: devices.tableButton.$,
+  tableMultiButton: devices.tableMultiButton.$,
   wallswitchBottom: devices.wallswitch.button1.$,
   wallswitchTop: devices.wallswitch.button0.$,
 };
@@ -119,7 +124,20 @@ export const groups = {
     () => (kitchenAdjacentLights._set.value = false)
   );
 
-  instances.tableRfButton.observe(() => properties.tableLight._set.flip());
+  instances.tableButton.observe(() => properties.tableLight._set.flip());
+
+  instances.tableMultiButton.topLeft.observe(() =>
+    properties.kallaxLedR._set.flip()
+  );
+  instances.tableMultiButton.topRight.observe(() =>
+    properties.kallaxLedG._set.flip()
+  );
+  instances.tableMultiButton.bottomLeft.observe(() =>
+    properties.kallaxLedB._set.flip()
+  );
+  instances.tableMultiButton.bottomRight.observe(() =>
+    properties.kallaxLedW._set.flip()
+  );
 
   instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
   instances.wallswitchBottom.longPress(
