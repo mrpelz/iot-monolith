@@ -58,7 +58,7 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.ledB,
   ledRightFloodlight: devices.ledsRight.ledW1,
   ledRightWWhite: devices.ledsRight.ledG,
-  windowOpen: devices.windowSensor.open,
+  window: devices.windowSensor.open,
 };
 
 export const groups = {

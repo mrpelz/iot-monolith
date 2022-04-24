@@ -72,15 +72,15 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  doorOpen: devices.doorSensor.open,
+  door: devices.doorSensor.open,
   floodLight: devices.floodlight.relay,
   floodLightTimer: offTimer(epochs.hour, undefined, [
     'office/floodLightTimer',
     persistence,
   ]),
-  // windowLeftOpen: devices.windowSensorLeft.open,
+  // windowLeft: devices.windowSensorLeft.open,
   // windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
-  windowRightOpen: devices.windowSensorRight.open,
+  windowRight: devices.windowSensorRight.open,
   workbenchLedCWhite: devices.workbenchLeds.ledB,
   workbenchLedWWhite: devices.workbenchLeds.ledG,
 };

@@ -9,7 +9,7 @@ import fetch from 'node-fetch';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../persistence.js';
-import { promiseGuard } from '../../lib/oop.js';
+import { promiseGuard } from '../../lib/promise.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -63,7 +63,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
-  windowOpen: devices.windowSensor.open,
+  window: devices.windowSensor.open,
 };
 
 export const groups = {

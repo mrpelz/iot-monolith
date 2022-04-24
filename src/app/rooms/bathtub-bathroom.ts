@@ -59,7 +59,7 @@ export const properties = {
     persistence,
   ]),
   ceilingLight: devices.ceilingLight.relay,
-  doorOpen: devices.doorSensor.open,
+  door: devices.doorSensor.open,
   nightLight: devices.nightLight.relay,
 };
 
@@ -131,7 +131,7 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  properties.doorOpen._get.observe((value) => {
+  properties.door._get.observe((value) => {
     if (!value) return;
 
     if (isDay()) {

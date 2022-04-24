@@ -1,4 +1,5 @@
-import { Constructor, promiseGuard } from './oop.js';
+import { Constructor } from './oop.js';
+import { promiseGuard } from './promise.js';
 
 export type Observer = {
   remove: () => void;

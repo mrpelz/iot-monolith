@@ -94,12 +94,12 @@ const partialProperties = {
   bedLedR: devices.rgbwLeds.ledR,
   bedLedW: devices.rgbwLeds.ledW1,
   ceilingLight: devices.ceilingLight.relay,
-  doorOpen: devices.doorSensor.open,
+  door: devices.doorSensor.open,
   nightstandLedLeft: devices.nightstandLeds.ledR,
   nightstandLedRight: devices.nightstandLeds.ledG,
   stoneLamp: devices.stoneLamp.relay,
-  windowLeftOpen: devices.windowSensorLeft.open,
-  // windowRightOpen: devices.windowSensorRight.open,
+  windowLeft: devices.windowSensorLeft.open,
+  // windowRight: devices.windowSensorRight.open,
   // windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
 };
 

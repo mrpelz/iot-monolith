@@ -1,4 +1,4 @@
-import { isPromise } from './oop.js';
+import { isPromise } from './promise.js';
 
 type PromiseResolver<T> = (value: T | PromiseLike<T>) => void;
 type PromiseRejector = (reason: Error) => void;

@@ -27,7 +27,10 @@ export const offTimer = (
   const active = new BooleanState(false);
 
   const triggerTime = new Observable<number | null>(null);
-  const runoutTime = new Observable<number | null>(null);
+  const runoutTime = new ReadOnlyProxyObservable(triggerTime, (input) => {
+    if (input === null) return null;
+    return input + time;
+  });
 
   const timer = new Timer(time);
 
@@ -46,20 +49,14 @@ export const offTimer = (
       }
 
       timer.start();
-
-      const now = Date.now();
-
-      triggerTime.value = now;
-      runoutTime.value = now + time;
+      triggerTime.value = Date.now();
 
       return;
     }
 
     triggerTime.value = null;
-    runoutTime.value = null;
 
     if (!timer.isRunning) return;
-
     timer.stop();
   }, true);
 
@@ -81,11 +78,11 @@ export const offTimer = (
         $: active,
         _get: new ReadOnlyObservable(active),
         cancel: (() => {
-          const _flip = {
+          const _cancel = {
             _set: new NullState(() => (active.value = false)),
           };
 
-          metadataStore.set(_flip, {
+          metadataStore.set(_cancel, {
             actuated: inherit,
             level: Levels.PROPERTY,
             parentRelation: ParentRelation.CONTROL_TRIGGER,
@@ -93,7 +90,25 @@ export const offTimer = (
             valueType: ValueType.NULL,
           });
 
-          return _flip;
+          return _cancel;
+        })(),
+        reset: (() => {
+          const _reset = {
+            _set: new NullState(() => {
+              if (!active.value) return;
+              active.value = true;
+            }),
+          };
+
+          metadataStore.set(_reset, {
+            actuated: inherit,
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.CONTROL_TRIGGER,
+            type: 'actuator',
+            valueType: ValueType.NULL,
+          });
+
+          return _reset;
         })(),
       };
 
@@ -124,7 +139,7 @@ export const offTimer = (
     })(),
     runoutTime: (() => {
       const _runoutTime = {
-        _get: new ReadOnlyObservable(runoutTime),
+        _get: runoutTime,
       };
 
       metadataStore.set(_runoutTime, {

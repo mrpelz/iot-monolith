@@ -58,7 +58,7 @@ export const instances = {
 const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
-  doorOpen: devices.doorSensor.open,
+  door: devices.doorSensor.open,
 };
 
 export const groups = {
@@ -95,7 +95,7 @@ export const properties = {
   );
   instances.wallswitchFrontRight.up(() => allLights._set.flip());
 
-  properties.doorOpen._get.observe((value) => {
+  properties.door._get.observe((value) => {
     if (!value) {
       if (!groups.ceilingLight._get.value) return;
 

@@ -21,11 +21,6 @@ export const instanceMethods = (
   );
 };
 
-export const isPromise = <T>(input: T | Promise<T>): input is Promise<T> => {
-  /* eslint-disable-next-line eqeqeq */
-  return Promise.resolve(input) == input;
-};
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rebind = (context: any, ...names: string[]): void => {
   for (const name of names) {
@@ -33,23 +28,5 @@ export const rebind = (context: any, ...names: string[]): void => {
     if (typeof fn !== 'function') return;
 
     context[name] = fn.bind(context);
-  }
-};
-
-export const promiseGuard = <T>(promise: T | Promise<T>): Promise<T | null> => {
-  if (!isPromise(promise)) {
-    return Promise.resolve(null);
-  }
-
-  try {
-    return promise
-      .then((value) => {
-        return value === undefined ? null : value;
-      })
-      .catch(() => {
-        return null;
-      });
-  } catch {
-    return Promise.resolve(null);
   }
 };
