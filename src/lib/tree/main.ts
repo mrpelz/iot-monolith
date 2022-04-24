@@ -50,13 +50,13 @@ export type MetaSystem = {
 export type MetaHome = {
   isPrimary?: true;
   level: Levels.HOME;
-  name?: string;
+  name: string;
 };
 
 export type MetaBuilding = {
   isPrimary?: true;
   level: Levels.BUILDING;
-  name?: string;
+  name: string;
 };
 
 export type MetaFloor = {
@@ -65,19 +65,19 @@ export type MetaFloor = {
   isPartiallyOutside?: true;
   isPrimary?: true;
   level: Levels.FLOOR;
-  name?: string;
+  name: string;
 };
 
 export type MetaRoom = {
   isConnectingRoom?: true;
   isDaylit?: true;
   level: Levels.ROOM;
-  name?: string;
+  name: string;
 };
 
 export type MetaArea = {
   level: Levels.AREA;
-  name?: string;
+  name: string;
 };
 
 export type MetaDevice = {
@@ -85,7 +85,7 @@ export type MetaDevice = {
   identifier?: number[];
   isSubDevice?: true;
   level: Levels.DEVICE;
-  name?: string;
+  name: string;
   port?: number;
   transportType?: string;
   type?: string;
@@ -93,7 +93,7 @@ export type MetaDevice = {
 
 type MetaProperty = {
   level: Levels.PROPERTY;
-  name?: string | Inherit;
+  name: string | Inherit;
   parentRelation?: ParentRelation;
 };
 
@@ -136,7 +136,7 @@ interface MetadataExtensionStore {
 export type Stream = ReadOnlyObservable<[number, unknown] | null>;
 export type Values = [number, unknown][];
 
-export const metadataStore = new WeakMap<object, Meta>();
+export const metadataStore = new WeakMap<object, Partial<Meta>>();
 export const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
 
 export const valueTypeMap = {
@@ -244,14 +244,18 @@ export class Tree {
         }
       }
 
-      if (result.level !== Levels.SYSTEM && !('name' in result) && property) {
-        result.name = property;
+      if (
+        result.level !== Levels.SYSTEM &&
+        (!('name' in result) || !result.name) &&
+        property
+      ) {
+        (result as Partial<Exclude<Meta, MetaSystem>>).name = property;
       }
 
       return {
         ...result,
         ...metaExtension,
-      };
+      } as Meta;
     })();
 
     const children = ((): any => {

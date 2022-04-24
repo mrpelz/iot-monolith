@@ -9,6 +9,7 @@ import fetch from 'node-fetch';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../persistence.js';
+import { promiseGuard } from '../../lib/oop.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
@@ -71,24 +72,20 @@ export const groups = {
 
 export const scenes = {
   mediaOff: scene(() => {
-    try {
+    promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
         timeout: 1000,
-      });
-    } catch {
-      // noop
-    }
+      })
+    );
   }, 'media'),
   mediaOnOrSwitch: scene(() => {
-    try {
+    promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
         timeout: 1000,
-      });
-    } catch {
-      // noop
-    }
+      })
+    );
   }, 'media'),
 };
 
