@@ -66,13 +66,14 @@ export const devices = {
     timings,
     'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
   ),
+  wardrobeButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
   windowSensorLeft: ev1527WindowSensor(
     logger,
     persistence,
     ev1527Transport,
     762272
   ),
-  // windowSensorRight: ev1527WindowSensor(logger, ev1527Transport, 0),
+  // windowSensorRight: ev1527WindowSensor(logger, persistence, ev1527Transport, 0),
 };
 
 export const instances = {
@@ -85,6 +86,7 @@ export const instances = {
   wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
   wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
   wallswitchDoorRight: devices.wallswitchDoor.button2.$,
+  wardrobeButton: devices.wardrobeButton.$,
 };
 
 const partialProperties = {
@@ -285,6 +287,15 @@ export const properties = {
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
+
+  instances.wardrobeButton.observe(() => {
+    if (groups.allLights._get.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.ceilingLight._set.flip();
+  });
 })();
 
 export const bedroom = {

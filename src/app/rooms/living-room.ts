@@ -134,19 +134,34 @@ export const scenes = {
   );
 
   instances.wallswitchBottom.up(() => properties.fan._set.flip());
-  instances.wallswitchBottom.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchBottom.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 
   instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
-  instances.wallswitchMiddle.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchMiddle.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchTop.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchTop.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 })();
 
 export const livingRoom = {

@@ -95,6 +95,7 @@ export const groups = {
 
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
+  const { kitchenAdjacentChillax } = await import('../scenes.js');
 
   instances.leftButton.observe(() => groups.allLights._set.flip());
 
@@ -106,19 +107,34 @@ export const groups = {
   instances.wallswitchFrontBottomLeft.up(() =>
     groups.worklightWWhite._set.flip()
   );
-  instances.wallswitchFrontBottomLeft.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchFrontBottomLeft.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 
   instances.wallswitchFrontBottomRight.up(() => groups.floodlight._set.flip());
-  instances.wallswitchFrontBottomRight.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchFrontBottomRight.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 
   instances.wallswitchBack.up(() => groups.allLights._set.flip());
-  instances.wallswitchBack.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchBack.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax._set.trigger();
+  });
 })();
 
 export const kitchen = {

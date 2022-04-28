@@ -63,7 +63,7 @@ export const instances = {
 };
 
 export const properties = {
-  allLightsTimer: offTimer(epochs.hour, true, [
+  allLightsTimer: offTimer(epochs.minute * 30, true, [
     'showerBathroom/allLightsTimer',
     persistence,
   ]),
