@@ -291,6 +291,7 @@ export class Tree {
       children,
       get,
       meta,
+      property,
       set,
     };
   }
