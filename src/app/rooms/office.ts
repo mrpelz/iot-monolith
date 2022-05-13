@@ -11,6 +11,7 @@ import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
+import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
@@ -92,6 +93,7 @@ export const groups = {
     properties.workbenchLedCWhite,
     properties.workbenchLedWWhite,
   ]),
+  allWindows: inputGrouping([properties.windowRight._get], 'windowOpen'),
   workbenchLeds: ledGrouping([
     properties.workbenchLedCWhite,
     properties.workbenchLedWWhite,

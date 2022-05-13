@@ -6,6 +6,7 @@ import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import fetch from 'node-fetch';
+import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../persistence.js';
@@ -68,6 +69,7 @@ export const properties = {
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
+  allWindows: inputGrouping([properties.window._get], 'windowOpen'),
 };
 
 export const scenes = {

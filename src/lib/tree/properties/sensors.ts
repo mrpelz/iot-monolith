@@ -1,11 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
+  AnyObservable,
   AnyReadOnlyObservable,
   Observable,
   ReadOnlyObservable,
+  ReadOnlyProxyObservable,
 } from '../../observable.js';
-import { BooleanState, ReadOnlyNullState } from '../../state.js';
+import {
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+  ReadOnlyNullState,
+} from '../../state.js';
 import { Levels, ParentRelation, ValueType, metadataStore } from '../main.js';
 import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
 import { Async } from '../../services/async.js';
@@ -236,7 +243,7 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   return { hello: result };
 };
 
-export const input = (device: Device, index = 0) => {
+export const input = (device: Device, index = 0, measured: string) => {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
   const result = {
@@ -245,7 +252,33 @@ export const input = (device: Device, index = 0) => {
 
   metadataStore.set(result, {
     level: Levels.PROPERTY,
-    measured: 'motion',
+    measured,
+    type: 'sensor',
+    valueType: ValueType.BOOLEAN,
+  });
+
+  return result;
+};
+
+export const inputGrouping = (
+  inputs: AnyObservable<boolean | null>[],
+  measured: string
+) => {
+  const state = new BooleanStateGroup(
+    BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+    inputs.map(
+      (anInput) =>
+        new ReadOnlyProxyObservable(anInput, (value) => Boolean(value))
+    )
+  );
+
+  const result = {
+    _get: new ReadOnlyObservable(state),
+  };
+
+  metadataStore.set(result, {
+    level: Levels.PROPERTY,
+    measured,
     type: 'sensor',
     valueType: ValueType.BOOLEAN,
   });

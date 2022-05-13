@@ -42,7 +42,7 @@ export const roomSensor = (
     ...mhz19(device, timings.slow || timings.default),
     ...tsl2561(device, timings.default),
     humidity,
-    motion: input(device),
+    motion: input(device, undefined, 'motion'),
     pressure,
     temperature: (() => {
       const _temperature = {

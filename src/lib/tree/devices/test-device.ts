@@ -47,7 +47,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
     ...tsl2561(device, timings.default),
     ...uvIndex(device, timings.default),
     humidity,
-    motion: input(device),
+    motion: input(device, undefined, 'motion'),
     pressure,
     temperature: (() => {
       const _temperature = {
