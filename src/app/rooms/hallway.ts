@@ -19,14 +19,14 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'hallway-ceilinglightback.iot.wurstsalat.cloud'
+    'hallway-ceilinglightback.lan.wurstsalat.cloud'
   ),
   ceilingLightFront: shelly1(
     logger,
     persistence,
     timings,
     'lighting',
-    'hallway-ceilinglightfront.iot.wurstsalat.cloud'
+    'hallway-ceilinglightfront.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(
     logger,
@@ -38,12 +38,12 @@ export const devices = {
   wallswitchBack: shellyi3(
     logger,
     timings,
-    'hallway-wallswitchback.iot.wurstsalat.cloud'
+    'hallway-wallswitchback.lan.wurstsalat.cloud'
   ),
   wallswitchFront: shellyi3(
     logger,
     timings,
-    'hallway-wallswitchfront.iot.wurstsalat.cloud'
+    'hallway-wallswitchfront.lan.wurstsalat.cloud'
   ),
 };
 

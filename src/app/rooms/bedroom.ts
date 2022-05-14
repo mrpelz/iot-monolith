@@ -30,7 +30,7 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'bedroom-ceilinglight.iot.wurstsalat.cloud'
+    'bedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(
     logger,
@@ -45,7 +45,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'bedroom-nightstandleds.iot.wurstsalat.cloud'
+    'bedroom-nightstandleds.lan.wurstsalat.cloud'
   ),
   nightstandMultiButtonLeft: ev1527ButtonX4(ev1527Transport, 831834, logger),
   nightstandMultiButtonRight: ev1527ButtonX4(ev1527Transport, 714410, logger),
@@ -53,19 +53,19 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'bedroom-bedrgbwleds.iot.wurstsalat.cloud'
+    'bedroom-bedrgbwleds.lan.wurstsalat.cloud'
   ),
   stoneLamp: obiPlug(
     logger,
     persistence,
     timings,
     'lighting',
-    'bedroom-stonelamp.iot.wurstsalat.cloud'
+    'bedroom-stonelamp.lan.wurstsalat.cloud'
   ),
   wallswitchDoor: shellyi3(
     logger,
     timings,
-    'bedroom-wallswitchdoor.iot.wurstsalat.cloud'
+    'bedroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),
   wardrobeButton: ev1527ButtonX1(ev1527Transport, 374680, logger),
   windowSensorLeft: ev1527WindowSensor(

@@ -17,24 +17,24 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'kitchen-ledsleft.iot.wurstsalat.cloud'
+    'kitchen-ledsleft.lan.wurstsalat.cloud'
   ),
   ledsRight: h801(
     logger,
     persistence,
     timings,
-    'kitchen-ledsright.iot.wurstsalat.cloud'
+    'kitchen-ledsright.lan.wurstsalat.cloud'
   ),
   leftButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
   wallswitchBack: shellyi3(
     logger,
     timings,
-    'kitchen-wallswitchback.iot.wurstsalat.cloud'
+    'kitchen-wallswitchback.lan.wurstsalat.cloud'
   ),
   wallswitchFront: shellyi3(
     logger,
     timings,
-    'kitchen-wallswitchfront.iot.wurstsalat.cloud'
+    'kitchen-wallswitchfront.lan.wurstsalat.cloud'
   ),
   windowSensor: ev1527WindowSensor(
     logger,

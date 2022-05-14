@@ -24,20 +24,20 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'diningroom-ceilinglight.iot.wurstsalat.cloud'
+    'diningroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   fan: obiPlug(
     logger,
     persistence,
     timings,
     'fan',
-    'diningroom-fan.iot.wurstsalat.cloud'
+    'diningroom-fan.lan.wurstsalat.cloud'
   ),
   kallaxLeds: h801(
     logger,
     persistence,
     timings,
-    'diningroom-kallaxleds.iot.wurstsalat.cloud'
+    'diningroom-kallaxleds.lan.wurstsalat.cloud'
   ),
   kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
   standingLamp: obiPlug(
@@ -45,7 +45,7 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'diningroom-standinglamp.iot.wurstsalat.cloud'
+    'diningroom-standinglamp.lan.wurstsalat.cloud'
   ),
   tableButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   tableLight: sonoffBasic(
@@ -53,13 +53,13 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'diningroom-tablelight.iot.wurstsalat.cloud'
+    'diningroom-tablelight.lan.wurstsalat.cloud'
   ),
   tableMultiButton: ev1527ButtonX4(ev1527Transport, 426506, logger),
   wallswitch: shellyi3(
     logger,
     timings,
-    'diningroom-wallswitch.iot.wurstsalat.cloud'
+    'diningroom-wallswitch.lan.wurstsalat.cloud'
   ),
 };
 

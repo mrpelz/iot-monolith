@@ -26,7 +26,7 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'office-ceilinglight.iot.wurstsalat.cloud'
+    'office-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(
     logger,
@@ -40,12 +40,12 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'office-floodlight.iot.wurstsalat.cloud'
+    'office-floodlight.lan.wurstsalat.cloud'
   ),
   wallswitch: shellyi3(
     logger,
     timings,
-    'office-wallswitch.iot.wurstsalat.cloud'
+    'office-wallswitch.lan.wurstsalat.cloud'
   ),
   // windowSensorLeft: ev1527WindowSensor(logger, ev1527Transport, 0),
   windowSensorRight: ev1527WindowSensor(
@@ -59,7 +59,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'office-workbenchleds.iot.wurstsalat.cloud'
+    'office-workbenchleds.lan.wurstsalat.cloud'
   ),
 };
 

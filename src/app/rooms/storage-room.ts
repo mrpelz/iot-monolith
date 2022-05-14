@@ -18,7 +18,7 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'storage-ceilinglight.iot.wurstsalat.cloud'
+    'storage-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(
     logger,
