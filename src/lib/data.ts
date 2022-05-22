@@ -28,9 +28,7 @@ export const arrayPadRight = <T>(
   return input;
 };
 
-export const concatBytes = (input: number[]): Buffer => {
-  return Buffer.from(input);
-};
+export const concatBytes = (input: number[]): Buffer => Buffer.from(input);
 
 export const humanPayload = (input: Buffer): string => {
   const payload = [...input];
@@ -72,9 +70,7 @@ export const numberToDigits = (
     .toString(radix)
     .padStart(pad, '0')
     .split('')
-    .map((x) => {
-      return Number.parseInt(x, radix);
-    });
+    .map((x) => Number.parseInt(x, radix));
 };
 
 export const randomString = (length = 2): string => {
@@ -99,13 +95,11 @@ export const readNumber = (input: Buffer, bytes = 1): number => {
   }
 };
 
-export const booleanToBuffer = (input: boolean): Buffer => {
-  return input ? trueBuffer : falseBuffer;
-};
+export const booleanToBuffer = (input: boolean): Buffer =>
+  input ? trueBuffer : falseBuffer;
 
-export const bufferToBoolean = (input: Buffer): boolean => {
-  return Boolean(readNumber(input, 1));
-};
+export const bufferToBoolean = (input: Buffer): boolean =>
+  Boolean(readNumber(input, 1));
 
 export const swapByte = (input: number): number => {
   let byte = input;

@@ -1,12 +1,9 @@
-export const daysInMonth = (month: number, year: number): number => {
-  return new Date(year, month + 1, 0).getDate();
-};
+export const daysInMonth = (month: number, year: number): number =>
+  new Date(year, month + 1, 0).getDate();
 
-export const isLeapYear = (year: number): boolean => {
+export const isLeapYear = (year: number): boolean =>
   // eslint-disable-next-line no-bitwise
-  return !((year & 3 || !(year % 25)) && year & 15);
-};
-
+  !((year & 3 || !(year % 25)) && year & 15);
 export const weekNumber = (input: Date): number => {
   const date = new Date(input.getTime());
   date.setDate(date.getDate() + 4 - (date.getDay() || 7));
@@ -42,9 +39,7 @@ export const epochs = (() => {
     hour,
     leapYear,
     minute,
-    month: (m: number, y: number) => {
-      return daysInMonth(m, y) * day;
-    },
+    month: (m: number, y: number) => daysInMonth(m, y) * day,
     nonLeapYear,
     second,
     week,

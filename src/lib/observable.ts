@@ -231,8 +231,8 @@ export class ObservableGroup<T> extends Observable<T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) => {
-  return class extends aClass {
+export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) =>
+  class extends aClass {
     addObservable(observable: AnyObservable<T>): Observer {
       this._observables.add(observable);
 
@@ -247,7 +247,6 @@ export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) => {
       };
     }
   };
-};
 
 export const observify = <T>(fn: ObservifyGetter<T>): ObservifyResult<T> => {
   const observable = new Observable<T | null>(null);

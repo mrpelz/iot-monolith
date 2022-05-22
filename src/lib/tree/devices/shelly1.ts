@@ -5,7 +5,7 @@ import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { metadataStore } from '../main.js';
+import { addMeta } from '../main.js';
 import { output } from '../properties/actuators.js';
 
 export const shelly1 = (
@@ -19,15 +19,14 @@ export const shelly1 = (
   const device = new UDPDevice(logger, host, port);
   const relay = output(device, 0, actuated, undefined, persistence);
 
-  const result = {
-    ...defaultsIpDevice(device, timings),
-    button: button(device, 0),
-    relay,
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+  return addMeta(
+    {
+      ...defaultsIpDevice(device, timings),
+      button: button(device, 0),
+      relay,
+    },
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

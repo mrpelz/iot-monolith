@@ -6,7 +6,7 @@ import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { metadataStore } from '../main.js';
+import { addMeta } from '../main.js';
 import { output } from '../properties/actuators.js';
 
 export const sonoffBasic = (
@@ -23,18 +23,17 @@ export const sonoffBasic = (
 
   const relay = output(device, 0, actuated, indicator, persistence);
 
-  const result = {
-    ...defaultsIpDevice(device, timings, indicator),
-    button: button(device, 0),
-    indicator: {
-      $: indicator,
+  return addMeta(
+    {
+      ...defaultsIpDevice(device, timings, indicator),
+      button: button(device, 0),
+      indicator: {
+        $: indicator,
+      },
+      relay,
     },
-    relay,
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

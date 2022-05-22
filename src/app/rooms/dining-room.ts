@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
@@ -76,9 +76,14 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   fan: devices.fan.relay,
-  kallaxLedB: devices.kallaxLeds.ledB,
-  kallaxLedG: devices.kallaxLeds.ledG,
-  kallaxLedR: devices.kallaxLeds.ledR,
+  kallaxLedRGB: addMeta(
+    {
+      b: devices.kallaxLeds.ledB,
+      g: devices.kallaxLeds.ledG,
+      r: devices.kallaxLeds.ledR,
+    },
+    { level: Levels.AREA }
+  ),
   kallaxLedSide: devices.kallaxLeds.ledW2,
   kallaxLedW: devices.kallaxLeds.ledW1,
   standingLamp: devices.standingLamp.relay,
@@ -92,18 +97,18 @@ export const groups = {
   ]),
   allLights: outputGrouping([
     properties.ceilingLight,
-    properties.kallaxLedB,
-    properties.kallaxLedG,
-    properties.kallaxLedR,
+    properties.kallaxLedRGB.r,
+    properties.kallaxLedRGB.g,
+    properties.kallaxLedRGB.b,
     properties.kallaxLedSide,
     properties.kallaxLedW,
     properties.standingLamp,
     properties.tableLight,
   ]),
   leds: ledGrouping([
-    properties.kallaxLedB,
-    properties.kallaxLedG,
-    properties.kallaxLedR,
+    properties.kallaxLedRGB.r,
+    properties.kallaxLedRGB.g,
+    properties.kallaxLedRGB.b,
     properties.kallaxLedSide,
     properties.kallaxLedW,
   ]),
@@ -128,13 +133,13 @@ export const groups = {
   instances.tableButton.observe(() => properties.tableLight._set.flip());
 
   instances.tableMultiButton.topLeft.observe(() =>
-    properties.kallaxLedR._set.flip()
+    properties.kallaxLedRGB.r._set.flip()
   );
   instances.tableMultiButton.topRight.observe(() =>
-    properties.kallaxLedG._set.flip()
+    properties.kallaxLedRGB.g._set.flip()
   );
   instances.tableMultiButton.bottomLeft.observe(() =>
-    properties.kallaxLedB._set.flip()
+    properties.kallaxLedRGB.b._set.flip()
   );
   instances.tableMultiButton.bottomRight.observe(() =>
     properties.kallaxLedW._set.flip()
@@ -161,14 +166,15 @@ export const groups = {
   });
 })();
 
-export const diningRoom = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(diningRoom, {
-  isConnectingRoom: true,
-  level: Levels.ROOM,
-  name: 'diningRoom',
-});
+export const diningRoom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    isConnectingRoom: true,
+    level: Levels.ROOM,
+    name: 'diningRoom',
+  }
+);

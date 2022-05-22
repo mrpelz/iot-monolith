@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
 import { epochs } from '../../lib/epochs.js';
@@ -20,13 +20,7 @@ export const devices = {
     'lighting',
     'storage-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    55632,
-    'doorOpen'
-  ),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55632),
   rfBridge,
 };
 
@@ -36,7 +30,7 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  door: devices.doorSensor.open,
+  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
     persistence,
@@ -69,7 +63,7 @@ export const groups = {
     properties.lightTimer.active.$.value = false;
   });
 
-  properties.door._get.observe((value) => {
+  properties.door.open._get.observe((value) => {
     if (!value) return;
     properties.ceilingLight._set.value = true;
   });
@@ -85,13 +79,14 @@ export const groups = {
   });
 })();
 
-export const storageRoom = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(storageRoom, {
-  level: Levels.ROOM,
-  name: 'storageRoom',
-});
+export const storageRoom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    level: Levels.ROOM,
+    name: 'storageRoom',
+  }
+);

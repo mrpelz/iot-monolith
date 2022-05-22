@@ -8,7 +8,7 @@ import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Logger } from '../../log.js';
 import { Rf433 } from '../../events/rf433.js';
 import { UDPDevice } from '../../device/udp.js';
-import { metadataStore } from '../main.js';
+import { addMeta } from '../main.js';
 
 export const rfBridge = (
   logger: Logger,
@@ -30,15 +30,14 @@ export const rfBridge = (
     },
   };
 
-  const result = {
-    ...children,
-    ...defaultsIpDevice(device, timings),
-    ...rfReadout(espNowEvent, rf433Event),
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+  return addMeta(
+    {
+      ...children,
+      ...defaultsIpDevice(device, timings),
+      ...rfReadout(espNowEvent, rf433Event),
+    },
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

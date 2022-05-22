@@ -4,7 +4,7 @@ import { Timings, button } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
 import { UDPDevice } from '../../device/udp.js';
-import { metadataStore } from '../main.js';
+import { addMeta } from '../main.js';
 
 export const shellyi3 = (
   logger: Logger,
@@ -14,16 +14,15 @@ export const shellyi3 = (
 ) => {
   const device = new UDPDevice(logger, host, port);
 
-  const result = {
-    ...defaultsIpDevice(device, timings),
-    button0: button(device, 0),
-    button1: button(device, 1),
-    button2: button(device, 2),
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+  return addMeta(
+    {
+      ...defaultsIpDevice(device, timings),
+      button0: button(device, 0),
+      button1: button(device, 1),
+      button2: button(device, 2),
+    },
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

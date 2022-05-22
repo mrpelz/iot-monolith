@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { ModifiableDate, Unit } from '../../lib/modifiable-date.js';
 import {
   ev1527ButtonX1,
@@ -32,13 +32,7 @@ export const devices = {
     'lighting',
     'bedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    724720,
-    'doorOpen'
-  ),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
   nightstandButtonLeft: ev1527ButtonX1(ev1527Transport, 74160, logger),
   nightstandButtonRight: ev1527ButtonX1(ev1527Transport, 4448, logger),
   nightstandLeds: h801(
@@ -91,26 +85,34 @@ export const instances = {
 };
 
 const partialProperties = {
-  bedLedB: devices.rgbwLeds.ledB,
   bedLedDownlightRed: devices.nightstandLeds.ledB,
-  bedLedG: devices.rgbwLeds.ledG,
-  bedLedR: devices.rgbwLeds.ledR,
+  bedLedRGB: addMeta(
+    {
+      b: devices.rgbwLeds.ledB,
+      g: devices.rgbwLeds.ledG,
+      r: devices.rgbwLeds.ledR,
+    },
+    { level: Levels.AREA }
+  ),
   bedLedW: devices.rgbwLeds.ledW1,
   ceilingLight: devices.ceilingLight.relay,
-  door: devices.doorSensor.open,
+  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   nightstandLedLeft: devices.nightstandLeds.ledR,
   nightstandLedRight: devices.nightstandLeds.ledG,
   stoneLamp: devices.stoneLamp.relay,
-  windowLeft: devices.windowSensorLeft.open,
+  windowLeft: addMeta(
+    { open: devices.windowSensorLeft.open },
+    { level: Levels.AREA, name: 'window' }
+  ),
   // windowRight: devices.windowSensorRight.open,
   // windowRightSensorTampered: devices.windowSensorRight.tamperSwitch,
 };
 
 export const groups = {
   allLights: outputGrouping([
-    partialProperties.bedLedR,
-    partialProperties.bedLedG,
-    partialProperties.bedLedB,
+    partialProperties.bedLedRGB.r,
+    partialProperties.bedLedRGB.g,
+    partialProperties.bedLedRGB.b,
     partialProperties.bedLedW,
     partialProperties.ceilingLight,
     partialProperties.nightstandLedLeft,
@@ -118,15 +120,15 @@ export const groups = {
     partialProperties.bedLedDownlightRed,
     partialProperties.stoneLamp,
   ]),
-  allWindows: inputGrouping([partialProperties.windowLeft._get], 'windowOpen'),
+  allWindows: inputGrouping(partialProperties.windowLeft.open._get),
   fuckLight: outputGrouping([
     partialProperties.bedLedDownlightRed,
-    partialProperties.bedLedR,
+    partialProperties.bedLedRGB.r,
   ]),
   leds: ledGrouping([
-    partialProperties.bedLedR,
-    partialProperties.bedLedG,
-    partialProperties.bedLedB,
+    partialProperties.bedLedRGB.r,
+    partialProperties.bedLedRGB.g,
+    partialProperties.bedLedRGB.b,
     partialProperties.bedLedW,
     partialProperties.nightstandLedLeft,
     partialProperties.nightstandLedRight,
@@ -239,10 +241,10 @@ export const properties = {
     groups.fuckLight._set.flip()
   );
   instances.nightstandMultiButtonLeft.bottomLeft.observe(() =>
-    properties.bedLedG._set.flip()
+    properties.bedLedRGB.g._set.flip()
   );
   instances.nightstandMultiButtonLeft.bottomRight.observe(() =>
-    properties.bedLedB._set.flip()
+    properties.bedLedRGB.b._set.flip()
   );
 
   instances.nightstandMultiButtonRight.topLeft.observe(() =>
@@ -252,10 +254,10 @@ export const properties = {
     groups.fuckLight._set.flip()
   );
   instances.nightstandMultiButtonRight.bottomLeft.observe(() =>
-    properties.bedLedG._set.flip()
+    properties.bedLedRGB.g._set.flip()
   );
   instances.nightstandMultiButtonRight.bottomRight.observe(() =>
-    properties.bedLedB._set.flip()
+    properties.bedLedRGB.b._set.flip()
   );
 
   instances.wallswitchBed.up(() => {
@@ -300,14 +302,15 @@ export const properties = {
   });
 })();
 
-export const bedroom = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(bedroom, {
-  isDaylit: true,
-  level: Levels.ROOM,
-  name: 'bedroom',
-});
+export const bedroom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    isDaylit: true,
+    level: Levels.ROOM,
+    name: 'bedroom',
+  }
+);

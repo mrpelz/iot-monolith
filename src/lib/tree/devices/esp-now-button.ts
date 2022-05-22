@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
-import { Levels, metadataStore } from '../main.js';
+import { Levels, addMeta } from '../main.js';
 import { Timings, button } from '../properties/sensors.js';
 import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './utils.js';
 import { Device } from '../../device/main.js';
@@ -34,46 +34,46 @@ export const espNowButton = (
     const { macAddress, transport } = options.espNow;
     const device = new ESPNowDevice(logger, transport, macAddress);
 
-    const result = {
-      ...children(device),
-      ...defaultsEspNow(device),
+    return {
+      espNow: addMeta(
+        {
+          ...children(device),
+          ...defaultsEspNow(device),
+        },
+        {
+          isSubDevice: true,
+          ...deviceMeta(device),
+        }
+      ),
     };
-
-    metadataStore.set(result, {
-      isSubDevice: true,
-      ...deviceMeta(device),
-    });
-
-    return { espNow: result };
   })();
 
   const wifi = (() => {
     const { host, port = 1337 } = options.wifi;
     const device = new UDPDevice(logger, host, port);
 
-    const result = {
-      ...children(device),
-      ...defaultsIpDevice(device, timings),
+    return {
+      wifi: addMeta(
+        {
+          ...children(device),
+          ...defaultsIpDevice(device, timings),
+        },
+        {
+          isSubDevice: true,
+          ...deviceMeta(device),
+        }
+      ),
     };
-
-    metadataStore.set(result, {
-      isSubDevice: true,
-      ...deviceMeta(device),
-    });
-
-    return { wifi: result };
   })();
 
-  return (() => {
-    const result = {
-      ...espNow,
-      ...wifi,
-    };
-
-    metadataStore.set(result, {
-      level: Levels.DEVICE,
-    });
-
-    return result;
-  })();
+  return (() =>
+    addMeta(
+      {
+        ...espNow,
+        ...wifi,
+      },
+      {
+        level: Levels.DEVICE,
+      }
+    ))();
 };

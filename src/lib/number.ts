@@ -1,6 +1,5 @@
-export const maxmin = (input: number, max = 1, min = 0): number => {
-  return Math.max(Math.min(input, max), min);
-};
+export const maxmin = (input: number, max = 1, min = 0): number =>
+  Math.max(Math.min(input, max), min);
 
 export const gammaCorrect = (
   input: number,

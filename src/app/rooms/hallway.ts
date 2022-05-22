@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -28,13 +28,7 @@ export const devices = {
     'lighting',
     'hallway-ceilinglightfront.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    55024,
-    'doorOpen'
-  ),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55024),
   wallswitchBack: shellyi3(
     logger,
     timings,
@@ -58,7 +52,10 @@ export const instances = {
 const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
-  door: devices.doorSensor.open,
+  door: addMeta(
+    { open: devices.doorSensor.open },
+    { level: Levels.AREA, name: 'entryDoor' }
+  ),
 };
 
 export const groups = {
@@ -95,7 +92,7 @@ export const properties = {
   );
   instances.wallswitchFrontRight.up(() => allLights._set.flip());
 
-  properties.door._get.observe((value) => {
+  properties.door.open._get.observe((value) => {
     if (!value) {
       if (!groups.ceilingLight._get.value) return;
 
@@ -117,14 +114,15 @@ export const properties = {
   });
 })();
 
-export const hallway = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(hallway, {
-  isConnectingRoom: true,
-  level: Levels.ROOM,
-  name: 'hallway',
-});
+export const hallway = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    isConnectingRoom: true,
+    level: Levels.ROOM,
+    name: 'hallway',
+  }
+);

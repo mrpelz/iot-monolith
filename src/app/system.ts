@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../lib/tree/main.js';
+import { Levels, addMeta } from '../lib/tree/main.js';
 import { allLights, kitchenAdjacentLights } from './groups.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
@@ -17,59 +17,49 @@ import { showerBathroom } from './rooms/shower-bathroom.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { testRoom } from './rooms/test-room.js';
 
-const firstFloor = (() => {
-  const result = {
-    bathtubBathroom,
-    bedroom,
-    diningRoom,
-    hallway,
-    kitchen,
-    kitchenAdjacentChillax,
-    kitchenAdjacentLights,
-    livingRoom,
-    office,
-    showerBathroom,
-    storageRoom,
-    testRoom,
-  };
+const firstFloor = (() =>
+  addMeta(
+    {
+      bathtubBathroom,
+      bedroom,
+      diningRoom,
+      hallway,
+      kitchen,
+      kitchenAdjacentChillax,
+      kitchenAdjacentLights,
+      livingRoom,
+      office,
+      showerBathroom,
+      storageRoom,
+      testRoom,
+    },
+    {
+      isPartiallyOutside: true,
+      isPrimary: true,
+      level: Levels.FLOOR,
+      name: 'firstFloor',
+    }
+  ))();
 
-  metadataStore.set(result, {
-    isPartiallyOutside: true,
-    isPrimary: true,
-    level: Levels.FLOOR,
-    name: 'firstFloor',
-  });
+const sonninstraße16 = (() =>
+  addMeta(
+    { firstFloor },
+    {
+      isPrimary: true,
+      level: Levels.BUILDING,
+      name: 'sonninstraße16',
+    }
+  ))();
 
-  return result;
-})();
-
-const sonninstraße16 = (() => {
-  const result = {
-    firstFloor,
-  };
-
-  metadataStore.set(result, {
-    isPrimary: true,
-    level: Levels.BUILDING,
-    name: 'sonninstraße16',
-  });
-
-  return result;
-})();
-
-const wurstHome = (() => {
-  const result = {
-    sonninstraße16,
-  };
-
-  metadataStore.set(result, {
-    isPrimary: true,
-    level: Levels.HOME,
-    name: 'wurstHome',
-  });
-
-  return result;
-})();
+const wurstHome = (() =>
+  addMeta(
+    { sonninstraße16 },
+    {
+      isPrimary: true,
+      level: Levels.HOME,
+      name: 'wurstHome',
+    }
+  ))();
 
 export const system = (() => {
   const id = Date.now().toString();
@@ -87,16 +77,18 @@ export const system = (() => {
     allLights._set.value = false;
   });
 
-  const result = {
-    allLights,
-    allLightsTimer,
-    wurstHome,
-  };
-
-  metadataStore.set(result, {
+  return {
     id,
-    level: Levels.SYSTEM,
-  });
-
-  return { id, system: result };
+    system: addMeta(
+      {
+        allLights,
+        allLightsTimer,
+        wurstHome,
+      },
+      {
+        id,
+        level: Levels.SYSTEM,
+      }
+    ),
+  };
 })();

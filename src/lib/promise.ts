@@ -1,8 +1,6 @@
-export const isPromise = <T>(input: T | Promise<T>): input is Promise<T> => {
+export const isPromise = <T>(input: T | Promise<T>): input is Promise<T> =>
   /* eslint-disable-next-line eqeqeq */
-  return Promise.resolve(input) == input;
-};
-
+  Promise.resolve(input) == input;
 export const promiseGuard = <T>(promise: T | Promise<T>): Promise<T | null> => {
   if (!isPromise(promise)) {
     return Promise.resolve(null);
@@ -10,12 +8,8 @@ export const promiseGuard = <T>(promise: T | Promise<T>): Promise<T | null> => {
 
   try {
     return promise
-      .then((value) => {
-        return value === undefined ? null : value;
-      })
-      .catch(() => {
-        return null;
-      });
+      .then((value) => (value === undefined ? null : value))
+      .catch(() => null);
   } catch {
     return Promise.resolve(null);
   }

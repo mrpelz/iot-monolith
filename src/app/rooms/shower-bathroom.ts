@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
@@ -24,13 +24,7 @@ export const devices = {
     'lighting',
     'showerbathroom-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    720256,
-    'doorOpen'
-  ),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 720256),
   mirrorLight: sonoffBasic(
     logger,
     persistence,
@@ -68,7 +62,7 @@ export const properties = {
     persistence,
   ]),
   ceilingLight: devices.ceilingLight.relay,
-  door: devices.doorSensor.open,
+  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   mirrorLight: devices.mirrorLight.relay,
   nightLight: devices.nightLight.relay,
 };
@@ -162,7 +156,7 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  properties.door._get.observe((value) => {
+  properties.door.open._get.observe((value) => {
     if (!value) return;
 
     if (isDay()) {
@@ -187,13 +181,14 @@ export const groups = {
   });
 })();
 
-export const showerBathroom = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(showerBathroom, {
-  level: Levels.ROOM,
-  name: 'showerBathroom',
-});
+export const showerBathroom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    level: Levels.ROOM,
+    name: 'showerBathroom',
+  }
+);

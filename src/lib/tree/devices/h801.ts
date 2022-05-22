@@ -6,8 +6,8 @@ import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
+import { addMeta } from '../main.js';
 import { led } from '../properties/actuators.js';
-import { metadataStore } from '../main.js';
 
 export const h801 = (
   logger: Logger,
@@ -26,21 +26,20 @@ export const h801 = (
   const ledW1 = led(device, 3, undefined, persistence);
   const ledW2 = led(device, 4, undefined, persistence);
 
-  const result = {
-    ...defaultsIpDevice(device, timings, indicator),
-    indicator: {
-      $: indicator,
+  return addMeta(
+    {
+      ...defaultsIpDevice(device, timings, indicator),
+      indicator: {
+        $: indicator,
+      },
+      ledB,
+      ledG,
+      ledR,
+      ledW1,
+      ledW2,
     },
-    ledB,
-    ledG,
-    ledR,
-    ledW1,
-    ledW2,
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

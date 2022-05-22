@@ -125,19 +125,35 @@ interface MetadataExtensionStore {
   delete(key: object): boolean;
   get<T extends Meta, K extends object>(
     key: K
-  ): { [P in keyof K]?: Partial<T> } | undefined;
+  ): Partial<Record<keyof K, Partial<T>>> | undefined;
   has(key: object): boolean;
   set<T extends Meta, K extends object>(
     key: K,
-    value: { [P in keyof K]?: Partial<T> }
+    value: Partial<Record<keyof K, Partial<T>>>
   ): this;
 }
 
 export type Stream = ReadOnlyObservable<[number, unknown] | null>;
 export type Values = [number, unknown][];
 
-export const metadataStore = new WeakMap<object, Partial<Meta>>();
-export const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
+const metadataStore = new WeakMap<object, Partial<Meta>>();
+const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
+
+export const addMeta = <T extends object, S extends Partial<Meta>>(
+  object: T,
+  meta: S
+): T => {
+  metadataStore.set(object, meta);
+  return object;
+};
+
+export const addMetaExtension = <S extends Meta, T extends object>(
+  object: T,
+  meta: Partial<Record<keyof T, Partial<S>>>
+): T => {
+  metadataExtensionStore.set(object, meta);
+  return object;
+};
 
 export const valueTypeMap = {
   [ValueType.BOOLEAN]: {

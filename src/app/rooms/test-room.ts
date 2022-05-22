@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
@@ -58,13 +58,14 @@ export const groups = {};
   // noop
 })();
 
-export const testRoom = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(testRoom, {
-  level: Levels.ROOM,
-  name: 'testRoom',
-});
+export const testRoom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    level: Levels.ROOM,
+    name: 'testRoom',
+  }
+);

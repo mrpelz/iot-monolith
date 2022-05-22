@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import {
   ledGrouping,
   outputGrouping,
@@ -28,13 +28,7 @@ export const devices = {
     'lighting',
     'office-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    55696,
-    'doorOpen'
-  ),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
   floodlight: obiPlug(
     logger,
     persistence,
@@ -73,7 +67,7 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  door: devices.doorSensor.open,
+  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   floodLight: devices.floodlight.relay,
   floodLightTimer: offTimer(epochs.hour, undefined, [
     'office/floodLightTimer',
@@ -81,7 +75,10 @@ export const properties = {
   ]),
   // windowLeft: devices.windowSensorLeft.open,
   // windowLeftSensorTampered: devices.windowSensorLeft.tamperSwitch,
-  windowRight: devices.windowSensorRight.open,
+  windowRight: addMeta(
+    { open: devices.windowSensorRight.open },
+    { level: Levels.AREA, name: 'window' }
+  ),
   workbenchLedCWhite: devices.workbenchLeds.ledB,
   workbenchLedWWhite: devices.workbenchLeds.ledG,
 };
@@ -93,7 +90,7 @@ export const groups = {
     properties.workbenchLedCWhite,
     properties.workbenchLedWWhite,
   ]),
-  allWindows: inputGrouping([properties.windowRight._get], 'windowOpen'),
+  allWindows: inputGrouping(properties.windowRight.open._get),
   workbenchLeds: ledGrouping([
     properties.workbenchLedCWhite,
     properties.workbenchLedWWhite,
@@ -175,14 +172,15 @@ export const groups = {
   });
 })();
 
-export const office = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(office, {
-  isDaylit: true,
-  level: Levels.ROOM,
-  name: 'office',
-});
+export const office = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    isDaylit: true,
+    level: Levels.ROOM,
+    name: 'office',
+  }
+);

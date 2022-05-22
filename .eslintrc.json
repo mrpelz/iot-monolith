@@ -206,7 +206,7 @@
     ],
     "array-callback-return": "error",
     "array-element-newline": "off",
-    "arrow-body-style": "off",
+    "arrow-body-style": "warn",
     "arrow-parens": [
       "error",
       "always"
@@ -364,7 +364,7 @@
     "no-class-assign": "error",
     "no-compare-neg-zero": "error",
     "no-cond-assign": "error",
-    "no-confusing-arrow": "error",
+    "no-confusing-arrow": "off",
     "no-console": "error",
     "no-const-assign": "off",
     "no-constant-condition": "error",

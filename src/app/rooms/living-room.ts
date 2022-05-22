@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { outputGrouping, scene } from '../../lib/tree/properties/actuators.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
@@ -64,12 +64,12 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
-  window: devices.windowSensor.open,
+  window: addMeta({ open: devices.windowSensor.open }, { level: Levels.AREA }),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
-  allWindows: inputGrouping([properties.window._get], 'windowOpen'),
+  allWindows: inputGrouping(properties.window.open._get),
 };
 
 export const scenes = {
@@ -166,15 +166,16 @@ export const scenes = {
   });
 })();
 
-export const livingRoom = {
-  devices,
-  ...groups,
-  ...properties,
-  ...scenes,
-};
-
-metadataStore.set(livingRoom, {
-  isDaylit: true,
-  level: Levels.ROOM,
-  name: 'livingRoom',
-});
+export const livingRoom = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+    ...scenes,
+  },
+  {
+    isDaylit: true,
+    level: Levels.ROOM,
+    name: 'livingRoom',
+  }
+);

@@ -5,8 +5,8 @@ import {
   Levels,
   ParentRelation,
   ValueType,
+  addMeta,
   inherit,
-  metadataStore,
 } from '../main.js';
 import {
   Observable,
@@ -69,115 +69,94 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  const result = {
-    $: timer,
-    _get: new ReadOnlyObservable(enabled),
-    _set: enabled,
-    active: (() => {
-      const _active = {
-        $: active,
-        _get: new ReadOnlyObservable(active),
-        cancel: (() => {
-          const _cancel = {
-            _set: new NullState(() => (active.value = false)),
-          };
-
-          metadataStore.set(_cancel, {
+  return addMeta(
+    {
+      $: timer,
+      _get: new ReadOnlyObservable(enabled),
+      _set: enabled,
+      active: (() =>
+        addMeta(
+          {
+            $: active,
+            _get: new ReadOnlyObservable(active),
+            cancel: (() =>
+              addMeta(
+                { _set: new NullState(() => (active.value = false)) },
+                {
+                  actuated: inherit,
+                  level: Levels.PROPERTY,
+                  parentRelation: ParentRelation.CONTROL_TRIGGER,
+                  type: 'actuator',
+                  valueType: ValueType.NULL,
+                }
+              ))(),
+            reset: (() =>
+              addMeta(
+                {
+                  _set: new NullState(() => {
+                    if (!active.value) return;
+                    active.value = true;
+                  }),
+                },
+                {
+                  actuated: inherit,
+                  level: Levels.PROPERTY,
+                  parentRelation: ParentRelation.CONTROL_TRIGGER,
+                  type: 'actuator',
+                  valueType: ValueType.NULL,
+                }
+              ))(),
+          },
+          {
+            actuated: inherit,
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'actuator',
+            valueType: ValueType.BOOLEAN,
+          }
+        ))(),
+      flip: (() =>
+        addMeta(
+          { _set: new NullState(() => enabled.flip()) },
+          {
             actuated: inherit,
             level: Levels.PROPERTY,
             parentRelation: ParentRelation.CONTROL_TRIGGER,
             type: 'actuator',
             valueType: ValueType.NULL,
-          });
-
-          return _cancel;
-        })(),
-        reset: (() => {
-          const _reset = {
-            _set: new NullState(() => {
-              if (!active.value) return;
-              active.value = true;
-            }),
-          };
-
-          metadataStore.set(_reset, {
-            actuated: inherit,
+          }
+        ))(),
+      runoutTime: (() =>
+        addMeta(
+          { _get: runoutTime },
+          {
             level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          });
-
-          return _reset;
-        })(),
-      };
-
-      metadataStore.set(_active, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'actuator',
-        valueType: ValueType.BOOLEAN,
-      });
-
-      return _active;
-    })(),
-    flip: (() => {
-      const _flip = {
-        _set: new NullState(() => enabled.flip()),
-      };
-
-      metadataStore.set(_flip, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _flip;
-    })(),
-    runoutTime: (() => {
-      const _runoutTime = {
-        _get: runoutTime,
-      };
-
-      metadataStore.set(_runoutTime, {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        unit: 'date',
-        valueType: ValueType.NUMBER,
-      });
-
-      return _runoutTime;
-    })(),
-    triggerTime: (() => {
-      const _triggerTime = {
-        _get: new ReadOnlyObservable(triggerTime),
-      };
-
-      metadataStore.set(_triggerTime, {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        unit: 'date',
-        valueType: ValueType.NUMBER,
-      });
-
-      return _triggerTime;
-    })(),
-  };
-
-  metadataStore.set(result, {
-    actuated: 'offTimer',
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'actuator',
-    valueType: ValueType.BOOLEAN,
-  });
-
-  return result;
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'sensor',
+            unit: 'date',
+            valueType: ValueType.NUMBER,
+          }
+        ))(),
+      triggerTime: (() =>
+        addMeta(
+          { _get: new ReadOnlyObservable(triggerTime) },
+          {
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'sensor',
+            unit: 'date',
+            valueType: ValueType.NUMBER,
+          }
+        ))(),
+    },
+    {
+      actuated: 'offTimer',
+      level: Levels.PROPERTY,
+      parentRelation: ParentRelation.META_RELATION,
+      type: 'actuator',
+      valueType: ValueType.BOOLEAN,
+    }
+  );
 };
 
 export const scheduledRamp = (
@@ -240,51 +219,44 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  const result = {
-    _get: new ReadOnlyObservable(enabled),
-    _set: enabled,
-    flip: (() => {
-      const _flip = {
-        _set: new NullState(() => enabled.flip()),
-      };
-
-      metadataStore.set(_flip, {
-        actuated: inherit,
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.CONTROL_TRIGGER,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      });
-
-      return _flip;
-    })(),
-    nextExecution: (() => {
-      const _nextExecution = {
-        _get: new ReadOnlyProxyObservable<Date | null, number>(
-          schedule.nextExecution,
-          (date) => date?.getTime() || 0
-        ),
-      };
-
-      metadataStore.set(_nextExecution, {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        unit: 'date',
-        valueType: ValueType.NUMBER,
-      });
-
-      return _nextExecution;
-    })(),
-  };
-
-  metadataStore.set(result, {
-    actuated: 'scheduledRamp',
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'actuator',
-    valueType: ValueType.BOOLEAN,
-  });
-
-  return result;
+  return addMeta(
+    {
+      _get: new ReadOnlyObservable(enabled),
+      _set: enabled,
+      flip: (() =>
+        addMeta(
+          { _set: new NullState(() => enabled.flip()) },
+          {
+            actuated: inherit,
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.CONTROL_TRIGGER,
+            type: 'actuator',
+            valueType: ValueType.NULL,
+          }
+        ))(),
+      nextExecution: (() =>
+        addMeta(
+          {
+            _get: new ReadOnlyProxyObservable<Date | null, number>(
+              schedule.nextExecution,
+              (date) => date?.getTime() || 0
+            ),
+          },
+          {
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'sensor',
+            unit: 'date',
+            valueType: ValueType.NUMBER,
+          }
+        ))(),
+    },
+    {
+      actuated: 'scheduledRamp',
+      level: Levels.PROPERTY,
+      parentRelation: ParentRelation.META_RELATION,
+      type: 'actuator',
+      valueType: ValueType.BOOLEAN,
+    }
+  );
 };

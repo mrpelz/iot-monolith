@@ -12,15 +12,15 @@ export type Orchestration<T> =
 
 const isOrchestrationTimedSteps = <T>(
   orchestration: Orchestration<T>
-): orchestration is OrchestrationTimedSteps<T> => {
-  return Array.isArray(orchestration[0]);
-};
+): orchestration is OrchestrationTimedSteps<T> =>
+  Array.isArray(orchestration[0]);
 
-export const orchestrate = <T>(
-  orchestration: Orchestration<T>,
-  _includeEndSleep?: boolean
-): ((state: Observable<T>, includeEndSleep?: boolean) => Promise<void>) => {
-  return async (state, includeEndSleep = _includeEndSleep) => {
+export const orchestrate =
+  <T>(
+    orchestration: Orchestration<T>,
+    _includeEndSleep?: boolean
+  ): ((state: Observable<T>, includeEndSleep?: boolean) => Promise<void>) =>
+  async (state, includeEndSleep = _includeEndSleep) => {
     let count = 1;
 
     if (isOrchestrationTimedSteps(orchestration)) {
@@ -51,4 +51,3 @@ export const orchestrate = <T>(
       await sleep(time);
     }
   };
-};

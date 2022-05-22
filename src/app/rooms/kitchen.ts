@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, metadataStore } from '../../lib/tree/main.js';
+import { Levels, addMeta } from '../../lib/tree/main.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -59,7 +59,7 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.ledB,
   ledRightFloodlight: devices.ledsRight.ledW1,
   ledRightWWhite: devices.ledsRight.ledG,
-  window: devices.windowSensor.open,
+  window: addMeta({ open: devices.windowSensor.open }, { level: Levels.AREA }),
 };
 
 export const groups = {
@@ -71,7 +71,7 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping([properties.window._get], 'windowOpen'),
+  allWindows: inputGrouping(properties.window.open._get),
   cWhite: ledGrouping([properties.ledLeftCWhite, properties.ledRightCWhite]),
   floodlight: ledGrouping([
     properties.ledLeftFloodlight,
@@ -139,14 +139,15 @@ export const groups = {
   });
 })();
 
-export const kitchen = {
-  devices,
-  ...groups,
-  ...properties,
-};
-
-metadataStore.set(kitchen, {
-  isDaylit: true,
-  level: Levels.ROOM,
-  name: 'kitchen',
-});
+export const kitchen = addMeta(
+  {
+    devices,
+    ...groups,
+    ...properties,
+  },
+  {
+    isDaylit: true,
+    level: Levels.ROOM,
+    name: 'kitchen',
+  }
+);

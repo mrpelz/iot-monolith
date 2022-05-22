@@ -4,8 +4,8 @@ import {
   Levels,
   ParentRelation,
   ValueType,
+  addMeta,
   inherit,
-  metadataStore,
 } from '../main.js';
 import { Observable, ReadOnlyProxyObservable } from '../../observable.js';
 import { lastChange, lastSeen } from '../properties/sensors.js';
@@ -21,8 +21,7 @@ export const ev1527WindowSensor = (
   logger: Logger,
   persistence: Persistence,
   transport: Ev1527Transport,
-  address: number,
-  measured = 'windowOpen'
+  address: number
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
@@ -53,15 +52,13 @@ export const ev1527WindowSensor = (
     persistedTamperSwitch.value = value;
   });
 
-  const open = new ReadOnlyProxyObservable(receivedOpen, (input) => {
-    return input === null ? persistedOpen.value : input;
-  });
+  const isOpen = new ReadOnlyProxyObservable(receivedOpen, (input) =>
+    input === null ? persistedOpen.value : input
+  );
 
   const tamperSwitch = new ReadOnlyProxyObservable(
     receivedTamperSwitch,
-    (input) => {
-      return input === null ? persistedTamperSwitch.value : input;
-    }
+    (input) => (input === null ? persistedTamperSwitch.value : input)
   );
 
   const isReceivedValue = new ReadOnlyProxyObservable(
@@ -69,59 +66,49 @@ export const ev1527WindowSensor = (
     (input) => input !== null
   );
 
-  const result = {
-    open: (() => {
-      const _open = {
-        _get: open,
-        isReceivedValue: (() => {
-          const _isReceivedValue = {
-            _get: isReceivedValue,
-          };
-
-          metadataStore.set(_isReceivedValue, {
+  return addMeta(
+    {
+      open: (() =>
+        addMeta(
+          {
+            _get: isOpen,
+            isReceivedValue: (() =>
+              addMeta(
+                { _get: isReceivedValue },
+                {
+                  level: Levels.PROPERTY,
+                  measured: inherit,
+                  parentRelation: ParentRelation.DATA_QUALIFIER,
+                  type: 'sensor',
+                  valueType: ValueType.BOOLEAN,
+                }
+              ))(),
+            tamperSwitch: (() =>
+              addMeta(
+                {
+                  _get: tamperSwitch,
+                  ...lastSeen(receivedTamperSwitch),
+                },
+                {
+                  level: Levels.PROPERTY,
+                  measured: 'tamperSwitch',
+                  parentRelation: ParentRelation.DATA_QUALIFIER,
+                  type: 'sensor',
+                  valueType: ValueType.BOOLEAN,
+                }
+              ))(),
+            ...lastChange(receivedOpen),
+          },
+          {
             level: Levels.PROPERTY,
-            measured: inherit,
-            parentRelation: ParentRelation.DATA_QUALIFIER,
             type: 'sensor',
             valueType: ValueType.BOOLEAN,
-          });
-
-          return _isReceivedValue;
-        })(),
-        tamperSwitch: (() => {
-          const _tamperSwitch = {
-            _get: tamperSwitch,
-            ...lastSeen(receivedTamperSwitch),
-          };
-
-          metadataStore.set(_tamperSwitch, {
-            level: Levels.PROPERTY,
-            measured: 'tamperSwitch',
-            parentRelation: ParentRelation.DATA_QUALIFIER,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          });
-
-          return _tamperSwitch;
-        })(),
-        ...lastChange(receivedOpen),
-      };
-
-      metadataStore.set(_open, {
-        level: Levels.PROPERTY,
-        measured,
-        type: 'sensor',
-        valueType: ValueType.BOOLEAN,
-      });
-
-      return _open;
-    })(),
-    ...lastSeen(device.seen),
-  };
-
-  metadataStore.set(result, {
-    ...deviceMeta(device),
-  });
-
-  return result;
+          }
+        ))(),
+      ...lastSeen(device.seen),
+    },
+    {
+      ...deviceMeta(device),
+    }
+  );
 };

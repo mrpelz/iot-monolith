@@ -34,13 +34,12 @@ const logLevelNames = [
   'DEBUG',
 ];
 
-const logMerge = (input: Log | string): Log => {
-  return typeof input === 'string'
+const logMerge = (input: Log | string): Log =>
+  typeof input === 'string'
     ? {
         body: input,
       }
     : input;
-};
 
 export class Output {
   private readonly _callback: Callback;

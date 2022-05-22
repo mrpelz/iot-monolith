@@ -3,23 +3,15 @@ export type Constructor<T> = { new (...args: any[]): T };
 
 export const classMethods = (
   classDefinition: Constructor<Record<string, unknown>>
-): string[] => {
-  return Object.keys(
+): string[] =>
+  Object.keys(
     Object.getOwnPropertyDescriptors(classDefinition.prototype)
-  ).filter((name) => {
-    return name !== 'constructor' && name[0] !== '_';
-  });
-};
+  ).filter((name) => name !== 'constructor' && name[0] !== '_');
 
-export const instanceMethods = (
-  instance: Record<string, unknown>
-): string[] => {
-  return Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
-    (name) => {
-      return name !== 'constructor' && name[0] !== '_';
-    }
+export const instanceMethods = (instance: Record<string, unknown>): string[] =>
+  Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
+    (name) => name !== 'constructor' && name[0] !== '_'
   );
-};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rebind = (context: any, ...names: string[]): void => {

@@ -6,8 +6,8 @@ import { scene } from '../lib/tree/properties/actuators.js';
 
 export const kitchenAdjacentChillax = scene(() => {
   diningRoomProperties.ceilingLight._set.value = false;
-  diningRoomProperties.kallaxLedB._set.value = false;
-  diningRoomProperties.kallaxLedG._set.value = false;
+  diningRoomProperties.kallaxLedRGB.b._set.value = false;
+  diningRoomProperties.kallaxLedRGB.g._set.value = false;
   diningRoomProperties.kallaxLedW._set.value = false;
   diningRoomProperties.tableLight._set.value = false;
   hallwayProperties.ceilingLightBack._set.value = false;
@@ -20,7 +20,7 @@ export const kitchenAdjacentChillax = scene(() => {
 
   diningRoomProperties.standingLamp._set.value = true;
   livingRoomProperties.standingLamp._set.value = true;
-  diningRoomProperties.kallaxLedR.brightness._set.value = 0.5;
+  diningRoomProperties.kallaxLedRGB.r.brightness._set.value = 0.5;
   diningRoomProperties.kallaxLedSide.brightness._set.value = 0.5;
   kitchenProperties.ledLeftWWhite.brightness._set.value = 0.5;
   kitchenProperties.ledRightWWhite.brightness._set.value = 0.5;

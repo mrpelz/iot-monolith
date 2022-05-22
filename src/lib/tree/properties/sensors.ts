@@ -13,7 +13,7 @@ import {
   BooleanStateGroup,
   ReadOnlyNullState,
 } from '../../state.js';
-import { Levels, ParentRelation, ValueType, metadataStore } from '../main.js';
+import { Levels, ParentRelation, ValueType, addMeta } from '../main.js';
 import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
@@ -49,20 +49,17 @@ export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
     seen.value = Date.now();
   });
 
-  const result = {
-    _get: new ReadOnlyObservable(seen),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'sensor',
-    unit: 'date',
-    valueType: ValueType.NUMBER,
-  });
-
   return {
-    lastChange: result,
+    lastChange: addMeta(
+      { _get: new ReadOnlyObservable(seen) },
+      {
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        unit: 'date',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
 };
 
@@ -77,20 +74,17 @@ export const lastSeen = <T>(
     seen.value = Date.now();
   }, true);
 
-  const result = {
-    _get: new ReadOnlyObservable(seen),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'sensor',
-    unit: 'date',
-    valueType: ValueType.NUMBER,
-  });
-
   return {
-    lastSeen: result,
+    lastSeen: addMeta(
+      { _get: new ReadOnlyObservable(seen) },
+      {
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        unit: 'date',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
 };
 
@@ -110,19 +104,16 @@ const metricStaleness = <T>(
     timer.start();
   }, true);
 
-  const result = {
-    _get: new ReadOnlyObservable(stale),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    parentRelation: ParentRelation.DATA_QUALIFIER,
-    type: 'sensor',
-    valueType: ValueType.BOOLEAN,
-  });
-
   return {
-    stale: result,
+    stale: addMeta(
+      { _get: new ReadOnlyObservable(stale) },
+      {
+        level: Levels.PROPERTY,
+        parentRelation: ParentRelation.DATA_QUALIFIER,
+        type: 'sensor',
+        valueType: ValueType.BOOLEAN,
+      }
+    ),
     ...lastSeen(state),
   };
 };
@@ -133,19 +124,20 @@ export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
     schedule
   );
 
-  const result = {
-    _get: state,
-    ...metricStaleness(state, epoch),
+  return {
+    async: addMeta(
+      {
+        _get: state,
+        ...metricStaleness(state, epoch),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'async',
+        type: 'sensor',
+        valueType: ValueType.RAW,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'async',
-    type: 'sensor',
-    valueType: ValueType.RAW,
-  });
-
-  return { async: result };
 };
 
 export const bme280 = (
@@ -161,54 +153,48 @@ export const bme280 = (
   );
 
   return {
-    humidity: (() => {
-      const result = {
-        _get: state.humidity,
-        ...metricStaleness(state.humidity, epoch),
-      };
-
-      metadataStore.set(result, {
-        level: Levels.PROPERTY,
-        measured: 'relativeHumidity',
-        type: 'sensor',
-        unit: 'percent-rh',
-        valueType: ValueType.NUMBER,
-      });
-
-      return result;
-    })(),
-    pressure: (() => {
-      const result = {
-        _get: state.pressure,
-        ...metricStaleness(state.pressure, epoch),
-      };
-
-      metadataStore.set(result, {
-        level: Levels.PROPERTY,
-        measured: 'pressure',
-        type: 'sensor',
-        unit: 'pa',
-        valueType: ValueType.NUMBER,
-      });
-
-      return result;
-    })(),
-    temperature: (() => {
-      const result = {
-        _get: state.temperature,
-        ...metricStaleness(state.temperature, epoch),
-      };
-
-      metadataStore.set(result, {
-        level: Levels.PROPERTY,
-        measured: 'temperature',
-        type: 'sensor',
-        unit: 'deg-c',
-        valueType: ValueType.NUMBER,
-      });
-
-      return result;
-    })(),
+    humidity: (() =>
+      addMeta(
+        {
+          _get: state.humidity,
+          ...metricStaleness(state.humidity, epoch),
+        },
+        {
+          level: Levels.PROPERTY,
+          measured: 'relativeHumidity',
+          type: 'sensor',
+          unit: 'percent-rh',
+          valueType: ValueType.NUMBER,
+        }
+      ))(),
+    pressure: (() =>
+      addMeta(
+        {
+          _get: state.pressure,
+          ...metricStaleness(state.pressure, epoch),
+        },
+        {
+          level: Levels.PROPERTY,
+          measured: 'pressure',
+          type: 'sensor',
+          unit: 'pa',
+          valueType: ValueType.NUMBER,
+        }
+      ))(),
+    temperature: (() =>
+      addMeta(
+        {
+          _get: state.temperature,
+          ...metricStaleness(state.temperature, epoch),
+        },
+        {
+          level: Levels.PROPERTY,
+          measured: 'temperature',
+          type: 'sensor',
+          unit: 'deg-c',
+          valueType: ValueType.NUMBER,
+        }
+      ))(),
   };
 };
 
@@ -228,42 +214,37 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
     schedule
   );
 
-  const result = {
-    _get: state,
-    ...metricStaleness(state, epoch),
+  return {
+    hello: addMeta(
+      {
+        _get: state,
+        ...metricStaleness(state, epoch),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'hello',
+        type: 'sensor',
+        valueType: ValueType.STRING,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'hello',
-    type: 'sensor',
-    valueType: ValueType.STRING,
-  });
-
-  return { hello: result };
 };
 
 export const input = (device: Device, index = 0, measured: string) => {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
-  const result = {
-    _get: state,
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured,
-    type: 'sensor',
-    valueType: ValueType.BOOLEAN,
-  });
-
-  return result;
+  return addMeta(
+    { _get: state },
+    {
+      level: Levels.PROPERTY,
+      measured,
+      type: 'sensor',
+      valueType: ValueType.BOOLEAN,
+    }
+  );
 };
 
-export const inputGrouping = (
-  inputs: AnyObservable<boolean | null>[],
-  measured: string
-) => {
+export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
   const state = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
     inputs.map(
@@ -272,18 +253,14 @@ export const inputGrouping = (
     )
   );
 
-  const result = {
-    _get: new ReadOnlyObservable(state),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured,
-    type: 'sensor',
-    valueType: ValueType.BOOLEAN,
-  });
-
-  return result;
+  return addMeta(
+    { _get: new ReadOnlyObservable(state) },
+    {
+      level: Levels.PROPERTY,
+      type: 'sensor',
+      valueType: ValueType.BOOLEAN,
+    }
+  );
 };
 
 export const mcp9808 = (
@@ -295,20 +272,21 @@ export const mcp9808 = (
     schedule
   );
 
-  const result = {
-    _get: state,
-    ...metricStaleness(state, epoch),
+  return {
+    temperature: addMeta(
+      {
+        _get: state,
+        ...metricStaleness(state, epoch),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'temperature',
+        type: 'sensor',
+        unit: 'deg-c',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'temperature',
-    type: 'sensor',
-    unit: 'deg-c',
-    valueType: ValueType.NUMBER,
-  });
-
-  return { temperature: result };
 };
 
 export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
@@ -326,105 +304,97 @@ export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
     schedule
   );
 
-  const result = {
-    _get: state.co2,
-    ...metricStaleness(state.co2, epoch),
-    abc: (() => {
-      const _abc = {
-        _get: state.abc,
-        ...metricStaleness(state.abc, epoch),
-      };
-
-      metadataStore.set(_abc, {
+  return {
+    co2: addMeta(
+      {
+        _get: state.co2,
+        ...metricStaleness(state.co2, epoch),
+        abc: (() =>
+          addMeta(
+            {
+              _get: state.abc,
+              ...metricStaleness(state.abc, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'abc',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              valueType: ValueType.BOOLEAN,
+            }
+          ))(),
+        accuracy: (() =>
+          addMeta(
+            {
+              _get: state.accuracy,
+              ...metricStaleness(state.accuracy, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'accuracy',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'percent',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+        temperature: (() =>
+          addMeta(
+            {
+              _get: state.temperature,
+              ...metricStaleness(state.temperature, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'temperature',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'deg-c',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+        transmittance: (() =>
+          addMeta(
+            {
+              _get: state.transmittance,
+              ...metricStaleness(state.transmittance, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'transmittance',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'percent',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+      },
+      {
         level: Levels.PROPERTY,
-        measured: 'abc',
-        parentRelation: ParentRelation.DATA_QUALIFIER,
+        measured: 'co2',
         type: 'sensor',
-        valueType: ValueType.BOOLEAN,
-      });
-
-      return _abc;
-    })(),
-    accuracy: (() => {
-      const _accuracy = {
-        _get: state.accuracy,
-        ...metricStaleness(state.accuracy, epoch),
-      };
-
-      metadataStore.set(_accuracy, {
-        level: Levels.PROPERTY,
-        measured: 'accuracy',
-        parentRelation: ParentRelation.DATA_QUALIFIER,
-        type: 'sensor',
-        unit: 'percent',
+        unit: 'ppm',
         valueType: ValueType.NUMBER,
-      });
-
-      return _accuracy;
-    })(),
-    temperature: (() => {
-      const _temperature = {
-        _get: state.temperature,
-        ...metricStaleness(state.temperature, epoch),
-      };
-
-      metadataStore.set(_temperature, {
-        level: Levels.PROPERTY,
-        measured: 'temperature',
-        parentRelation: ParentRelation.DATA_QUALIFIER,
-        type: 'sensor',
-        unit: 'deg-c',
-        valueType: ValueType.NUMBER,
-      });
-
-      return _temperature;
-    })(),
-    transmittance: (() => {
-      const _transmittance = {
-        _get: state.transmittance,
-        ...metricStaleness(state.transmittance, epoch),
-      };
-
-      metadataStore.set(_transmittance, {
-        level: Levels.PROPERTY,
-        measured: 'transmittance',
-        parentRelation: ParentRelation.DATA_QUALIFIER,
-        type: 'sensor',
-        unit: 'percent',
-        valueType: ValueType.NUMBER,
-      });
-
-      return _transmittance;
-    })(),
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'co2',
-    type: 'sensor',
-    unit: 'ppm',
-    valueType: ValueType.NUMBER,
-  });
-
-  return { co2: result };
 };
 
-export const online = (device: Device) => {
-  const result = {
-    _get: device.isOnline,
-    ...lastChange(device.isOnline),
-  };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'isOnline',
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'sensor',
-    valueType: ValueType.BOOLEAN,
-  });
-
-  return { online: result };
-};
+export const online = (device: Device) => ({
+  online: addMeta(
+    {
+      _get: device.isOnline,
+      ...lastChange(device.isOnline),
+    },
+    {
+      level: Levels.PROPERTY,
+      measured: 'isOnline',
+      parentRelation: ParentRelation.META_RELATION,
+      type: 'sensor',
+      valueType: ValueType.BOOLEAN,
+    }
+  ),
+});
 
 export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -464,19 +434,20 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
 
   const readOnlyState = new ReadOnlyObservable(state);
 
-  const result = {
-    _get: readOnlyState,
-    ...lastSeen(readOnlyState),
+  return {
+    rfReadout: addMeta(
+      {
+        _get: readOnlyState,
+        ...lastSeen(readOnlyState),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'rfReadout',
+        type: 'sensor',
+        valueType: ValueType.RAW,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'rfReadout',
-    type: 'sensor',
-    valueType: ValueType.RAW,
-  });
-
-  return { rfReadout: result };
 };
 
 export const sds011 = (
@@ -492,38 +463,34 @@ export const sds011 = (
   );
 
   return {
-    pm025: (() => {
-      const result = {
-        _get: state.pm025,
-        ...metricStaleness(state.pm025, epoch),
-      };
-
-      metadataStore.set(result, {
-        level: Levels.PROPERTY,
-        measured: 'pm025',
-        type: 'sensor',
-        unit: 'micrograms/m3',
-        valueType: ValueType.NUMBER,
-      });
-
-      return result;
-    })(),
-    pm10: (() => {
-      const result = {
-        _get: state.pm10,
-        ...metricStaleness(state.pm10, epoch),
-      };
-
-      metadataStore.set(result, {
-        level: Levels.PROPERTY,
-        measured: 'pm10',
-        type: 'sensor',
-        unit: 'micrograms/m3',
-        valueType: ValueType.NUMBER,
-      });
-
-      return result;
-    })(),
+    pm025: (() =>
+      addMeta(
+        {
+          _get: state.pm025,
+          ...metricStaleness(state.pm025, epoch),
+        },
+        {
+          level: Levels.PROPERTY,
+          measured: 'pm025',
+          type: 'sensor',
+          unit: 'micrograms/m3',
+          valueType: ValueType.NUMBER,
+        }
+      ))(),
+    pm10: (() =>
+      addMeta(
+        {
+          _get: state.pm10,
+          ...metricStaleness(state.pm10, epoch),
+        },
+        {
+          level: Levels.PROPERTY,
+          measured: 'pm10',
+          type: 'sensor',
+          unit: 'micrograms/m3',
+          valueType: ValueType.NUMBER,
+        }
+      ))(),
   };
 };
 
@@ -536,20 +503,21 @@ export const tsl2561 = (
     schedule
   );
 
-  const result = {
-    _get: state,
-    ...metricStaleness(state, epoch),
+  return {
+    brightness: addMeta(
+      {
+        _get: state,
+        ...metricStaleness(state, epoch),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'brightness',
+        type: 'sensor',
+        unit: 'lux',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'brightness',
-    type: 'sensor',
-    unit: 'lux',
-    valueType: ValueType.NUMBER,
-  });
-
-  return { brightness: result };
 };
 
 export const uvIndex = (
@@ -561,35 +529,35 @@ export const uvIndex = (
     schedule
   );
 
-  const result = {
-    _get: state,
-    ...metricStaleness(state, epoch),
+  return {
+    uvIndex: addMeta(
+      {
+        _get: state,
+        ...metricStaleness(state, epoch),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'uvIndex',
+        type: 'sensor',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'uvIndex',
-    type: 'sensor',
-    valueType: ValueType.NUMBER,
-  });
-
-  return { uvIndex: result };
 };
 
 export const vcc = (device: Device) => {
   const { state } = new SingleValueEvent(device.addEvent(new VCC()));
 
-  const result = {
-    _get: state,
+  return {
+    vcc: addMeta(
+      { _get: state },
+      {
+        level: Levels.PROPERTY,
+        measured: 'voltage',
+        parentRelation: ParentRelation.META_RELATION,
+        type: 'sensor',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
-
-  metadataStore.set(result, {
-    level: Levels.PROPERTY,
-    measured: 'voltage',
-    parentRelation: ParentRelation.META_RELATION,
-    type: 'sensor',
-    valueType: ValueType.NUMBER,
-  });
-
-  return { vcc: result };
 };
