@@ -357,3 +357,56 @@ export const scene = (handler: () => void, actuated: string) =>
       valueType: ValueType.NULL,
     }
   );
+
+export const setOnline = (
+  device: IpDevice,
+  persistence: Persistence,
+  initiallyOnline = true
+) => {
+  const state = new BooleanState(initiallyOnline);
+
+  if (initiallyOnline) {
+    device.transport.connect();
+  }
+
+  state.observe((value) => {
+    if (value) {
+      device.transport.connect();
+
+      return;
+    }
+
+    device.transport.disconnect();
+  });
+
+  persistence.observe(
+    `setOnline/${device.transport.host}:${device.transport.port}`,
+    state
+  );
+
+  return {
+    setOnline: addMeta(
+      {
+        _get: new ReadOnlyObservable(state),
+        _set: state,
+        flip: (() =>
+          addMeta(
+            { _set: new NullState(() => state.flip()) },
+            {
+              actuated: inherit,
+              level: Levels.PROPERTY,
+              parentRelation: ParentRelation.CONTROL_TRIGGER,
+              type: 'actuator',
+              valueType: ValueType.NULL,
+            }
+          ))(),
+      },
+      {
+        actuated: 'isOnline',
+        level: Levels.PROPERTY,
+        type: 'actuator',
+        valueType: ValueType.BOOLEAN,
+      }
+    ),
+  };
+};

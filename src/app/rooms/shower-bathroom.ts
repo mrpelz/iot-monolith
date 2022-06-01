@@ -42,6 +42,7 @@ export const devices = {
   showerButton: ev1527ButtonX1(ev1527Transport, 628217, logger),
   wallswitchDoor: shellyi3(
     logger,
+    persistence,
     timings,
     'showerbathroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),

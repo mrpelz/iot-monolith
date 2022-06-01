@@ -7,6 +7,7 @@ import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Input } from '../../events/input.js';
 import { Logger } from '../../log.js';
+import { Persistence } from '../../persistence.js';
 import { SingleValueEvent } from '../../items/event.js';
 import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
@@ -57,6 +58,7 @@ const children = (device: Device) => ({
 
 export const espNowWindowSensor = (
   logger: Logger,
+  persistence: Persistence,
   timings: Timings,
   options: EspNowWindowSensorOptions
 ) => {
@@ -86,7 +88,7 @@ export const espNowWindowSensor = (
       wifi: addMeta(
         {
           ...children(device),
-          ...defaultsIpDevice(device, timings),
+          ...defaultsIpDevice(device, persistence, timings),
         },
         {
           isSubDevice: true,

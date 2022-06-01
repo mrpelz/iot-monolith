@@ -7,7 +7,5 @@ export class UDPDevice extends Device<UDPTransport> {
     const transport = new UDPTransport(host, port, logger);
 
     super(logger, transport);
-
-    transport.connect();
   }
 }

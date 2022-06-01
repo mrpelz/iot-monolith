@@ -120,10 +120,10 @@ export class UDPTransport extends Transport {
     this._log.debug(() => 'connection/disconnection handling');
 
     if (this._shouldBeConnected.value && !this._isConnected.value) {
-      this._nukeSocket();
+      this._onDisconnection();
       this._setUpSocket();
     } else if (!this._shouldBeConnected.value && this._isConnected.value) {
-      this._nukeSocket();
+      this._onDisconnection();
     }
   }
 

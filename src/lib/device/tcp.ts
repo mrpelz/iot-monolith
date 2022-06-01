@@ -7,7 +7,5 @@ export class TCPDevice extends Device<TCPTransport> {
     const transport = new TCPTransport(host, port, logger);
 
     super(logger, transport);
-
-    transport.connect();
   }
 }

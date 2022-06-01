@@ -28,7 +28,7 @@ export const h801 = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, timings, indicator),
+      ...defaultsIpDevice(device, persistence, timings, indicator),
       indicator: {
         $: indicator,
       },

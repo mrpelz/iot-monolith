@@ -58,6 +58,7 @@ export const devices = {
   tableMultiButton: ev1527ButtonX4(ev1527Transport, 426506, logger),
   wallswitch: shellyi3(
     logger,
+    persistence,
     timings,
     'diningroom-wallswitch.lan.wurstsalat.cloud'
   ),

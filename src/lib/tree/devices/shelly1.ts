@@ -21,7 +21,7 @@ export const shelly1 = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, timings),
+      ...defaultsIpDevice(device, persistence, timings),
       button: button(device, 0),
       relay,
     },

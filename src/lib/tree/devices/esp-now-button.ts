@@ -7,6 +7,7 @@ import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './utils.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';
+import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
 
 export type EspNowButtonOptions = {
@@ -22,6 +23,7 @@ export type EspNowButtonOptions = {
 
 export const espNowButton = (
   logger: Logger,
+  persistence: Persistence,
   timings: Timings,
   options: EspNowButtonOptions
 ) => {
@@ -56,7 +58,7 @@ export const espNowButton = (
       wifi: addMeta(
         {
           ...children(device),
-          ...defaultsIpDevice(device, timings),
+          ...defaultsIpDevice(device, persistence, timings),
         },
         {
           isSubDevice: true,

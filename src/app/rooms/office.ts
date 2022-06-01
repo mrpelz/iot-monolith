@@ -38,6 +38,7 @@ export const devices = {
   ),
   wallswitch: shellyi3(
     logger,
+    persistence,
     timings,
     'office-wallswitch.lan.wurstsalat.cloud'
   ),

@@ -25,7 +25,7 @@ export const sonoffBasic = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, timings, indicator),
+      ...defaultsIpDevice(device, persistence, timings, indicator),
       button: button(device, 0),
       indicator: {
         $: indicator,

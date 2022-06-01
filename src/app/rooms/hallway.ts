@@ -31,11 +31,13 @@ export const devices = {
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55024),
   wallswitchBack: shellyi3(
     logger,
+    persistence,
     timings,
     'hallway-wallswitchback.lan.wurstsalat.cloud'
   ),
   wallswitchFront: shellyi3(
     logger,
+    persistence,
     timings,
     'hallway-wallswitchfront.lan.wurstsalat.cloud'
   ),

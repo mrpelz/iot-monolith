@@ -68,43 +68,42 @@ export const ev1527WindowSensor = (
 
   return addMeta(
     {
-      open: (() =>
-        addMeta(
-          {
-            _get: isOpen,
-            isReceivedValue: (() =>
-              addMeta(
-                { _get: isReceivedValue },
-                {
-                  level: Levels.PROPERTY,
-                  measured: inherit,
-                  parentRelation: ParentRelation.DATA_QUALIFIER,
-                  type: 'sensor',
-                  valueType: ValueType.BOOLEAN,
-                }
-              ))(),
-            tamperSwitch: (() =>
-              addMeta(
-                {
-                  _get: tamperSwitch,
-                  ...lastSeen(receivedTamperSwitch),
-                },
-                {
-                  level: Levels.PROPERTY,
-                  measured: 'tamperSwitch',
-                  parentRelation: ParentRelation.DATA_QUALIFIER,
-                  type: 'sensor',
-                  valueType: ValueType.BOOLEAN,
-                }
-              ))(),
-            ...lastChange(receivedOpen),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ))(),
+      open: addMeta(
+        {
+          _get: isOpen,
+          isReceivedValue: (() =>
+            addMeta(
+              { _get: isReceivedValue },
+              {
+                level: Levels.PROPERTY,
+                measured: inherit,
+                parentRelation: ParentRelation.DATA_QUALIFIER,
+                type: 'sensor',
+                valueType: ValueType.BOOLEAN,
+              }
+            ))(),
+          tamperSwitch: (() =>
+            addMeta(
+              {
+                _get: tamperSwitch,
+                ...lastSeen(receivedTamperSwitch),
+              },
+              {
+                level: Levels.PROPERTY,
+                measured: 'tamperSwitch',
+                parentRelation: ParentRelation.DATA_QUALIFIER,
+                type: 'sensor',
+                valueType: ValueType.BOOLEAN,
+              }
+            ))(),
+          ...lastChange(receivedOpen),
+        },
+        {
+          level: Levels.PROPERTY,
+          type: 'sensor',
+          valueType: ValueType.BOOLEAN,
+        }
+      ),
       ...lastSeen(device.seen),
     },
     {

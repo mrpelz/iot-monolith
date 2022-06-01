@@ -28,11 +28,13 @@ export const devices = {
   leftButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
   wallswitchBack: shellyi3(
     logger,
+    persistence,
     timings,
     'kitchen-wallswitchback.lan.wurstsalat.cloud'
   ),
   wallswitchFront: shellyi3(
     logger,
+    persistence,
     timings,
     'kitchen-wallswitchfront.lan.wurstsalat.cloud'
   ),

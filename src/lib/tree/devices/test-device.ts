@@ -22,9 +22,14 @@ import {
 } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
+import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
 
-export const testDevice = (logger: Logger, timings: Timings) => {
+export const testDevice = (
+  logger: Logger,
+  persistence: Persistence,
+  timings: Timings
+) => {
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
@@ -42,7 +47,7 @@ export const testDevice = (logger: Logger, timings: Timings) => {
   return addMeta(
     {
       ...async(device, timings.slow || timings.default),
-      ...defaultsIpDevice(device, timings),
+      ...defaultsIpDevice(device, persistence, timings),
       ...mhz19(device, timings.slow || timings.default),
       ...sds011(device, timings.slow || timings.default),
       ...tsl2561(device, timings.default),

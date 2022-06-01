@@ -35,6 +35,7 @@ export const devices = {
   ),
   wallswitchMirror: shellyi3(
     logger,
+    persistence,
     timings,
     'bathtubbathroom-wallswitchmirror.lan.wurstsalat.cloud'
   ),

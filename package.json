@@ -20,6 +20,7 @@
     "remote:restart:watch": "scripts/remote-restart-watch.sh",
     "remote:restart": "scripts/remote-restart.sh",
     "remote:watch": "scripts/remote-watch.sh",
+    "remote:view-persistence": "scripts/remote-view-persistence.sh",
     "run": "LOG_LEVEL=7 LOG_TELEGRAM=0 node --use_strict --experimental-modules --enable-source-maps --stack-trace-limit=100",
     "start:dev": "npm run --silent run dist/index.js",
     "start:file": "npm run --silent run",

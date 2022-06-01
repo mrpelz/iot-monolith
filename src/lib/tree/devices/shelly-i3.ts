@@ -3,11 +3,13 @@
 import { Timings, button } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
+import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
 import { addMeta } from '../main.js';
 
 export const shellyi3 = (
   logger: Logger,
+  persistence: Persistence,
   timings: Timings,
   host: string,
   port = 1337
@@ -16,7 +18,7 @@ export const shellyi3 = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, timings),
+      ...defaultsIpDevice(device, persistence, timings),
       button0: button(device, 0),
       button1: button(device, 1),
       button2: button(device, 2),

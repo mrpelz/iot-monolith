@@ -19,10 +19,12 @@ import {
 } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './utils.js';
 import { Logger } from '../../log.js';
+import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
 
 export const roomSensor = (
   logger: Logger,
+  persistence: Persistence,
   timings: Timings,
   host: string,
   port = 1337
@@ -39,7 +41,7 @@ export const roomSensor = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, timings),
+      ...defaultsIpDevice(device, persistence, timings),
       ...mhz19(device, timings.slow || timings.default),
       ...tsl2561(device, timings.default),
       humidity,

@@ -58,6 +58,7 @@ export const devices = {
   ),
   wallswitchDoor: shellyi3(
     logger,
+    persistence,
     timings,
     'bedroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),

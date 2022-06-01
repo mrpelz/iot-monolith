@@ -5,11 +5,12 @@ import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
 import { logger } from '../logging.js';
+import { persistence } from '../persistence.js';
 import { testDevice } from '../../lib/tree/devices/test-device.js';
 import { timings } from '../timings.js';
 
 export const devices = {
-  espNowButton: espNowButton(logger, timings, {
+  espNowButton: espNowButton(logger, persistence, timings, {
     espNow: {
       // prettier-ignore
       macAddress: [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf],
@@ -19,7 +20,7 @@ export const devices = {
       host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
     },
   }),
-  espNowWindowSensor: espNowWindowSensor(logger, timings, {
+  espNowWindowSensor: espNowWindowSensor(logger, persistence, timings, {
     espNow: {
       // prettier-ignore
       macAddress: [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0],
@@ -29,7 +30,7 @@ export const devices = {
       host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
     },
   }),
-  testDevice: testDevice(logger, timings),
+  testDevice: testDevice(logger, persistence, timings),
 };
 
 export const instances = {
