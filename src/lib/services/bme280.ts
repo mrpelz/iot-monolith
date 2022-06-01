@@ -7,8 +7,8 @@ export type Bme280Response = {
 };
 
 export class Bme280 extends Service<Bme280Response, void> {
-  constructor() {
-    super(Buffer.from([5]));
+  constructor(index = 0) {
+    super(Buffer.from([5, index]));
   }
 
   protected decode(input: Buffer): Bme280Response | null {

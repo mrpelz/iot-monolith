@@ -13,10 +13,10 @@ const { lookup } = promises;
 // PACKET FORMAT
 //
 // request (to device):
-// |                                |                      |                                    |                      |
-// | length (1–n octets, default 1) | request id (1 octet) | service id (1–n octets, default 1) | payload (0–n octets) |
-// |  packet length (incl. headers) |            0x01–0xFF |                          0x00–0xFF |                      |
-// |                                |                      |                                    |                      |
+// |                                |                      |                                    |                            |                      |
+// | length (1–n octets, default 1) | request id (1 octet) | service id (1–n octets, default 1) | service index (1–n octets) | payload (0–n octets) |
+// |  packet length (incl. headers) |            0x01–0xFF |                          0x00–0xFF |                  0x00–0xFF |                      |
+// |                                |                      |                                    |                            |                      |
 //
 // response (from device):
 // |                                |                      |                      |
@@ -25,10 +25,10 @@ const { lookup } = promises;
 // |                                |                      |                      |
 //
 // event (from device):
-// |                                |                      |                                  |                      |
-// | length (1–n octets, default 1) | request id (1 octet) | event id (1–n octets, default 1) | payload (0–n octets) |
-// |  packet length (incl. headers) |          always 0x00 |                        0x00–0xFF |                      |
-// |                                |                      |                                  |                      |
+// |                                |                      |                                  |                          |                      |
+// | length (1–n octets, default 1) | request id (1 octet) | event id (1–n octets, default 1) | event index (1–n octets) | payload (0–n octets) |
+// |  packet length (incl. headers) |          always 0x00 |                        0x00–0xFF |                0x00–0xFF |                      |
+// |                                |                      |                                  |                          |                      |
 //
 
 export class TCPTransport extends Transport {

@@ -13,7 +13,7 @@ export type IndicatorRequest = {
 
 export class Indicator extends Service<null, IndicatorRequest> {
   constructor(index: number) {
-    super(Buffer.from([0xc0 + index]));
+    super(Buffer.from([0xc0, index]));
   }
 
   protected encode(input: IndicatorRequest): Buffer {

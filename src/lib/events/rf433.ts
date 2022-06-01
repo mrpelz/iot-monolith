@@ -18,8 +18,8 @@ export type Rf433Payload = {
 } & Ev1527Payload;
 
 export class Rf433 extends Event<Rf433Payload> {
-  constructor() {
-    super(Buffer.from([0xfc]));
+  constructor(index = 0) {
+    super(Buffer.from([0xfc, index]));
   }
 
   protected decode(input: Buffer): Rf433Payload | null {

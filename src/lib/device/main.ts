@@ -8,7 +8,7 @@ import {
 import { Input, Logger } from '../log.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { Transport, TransportDevice } from '../transport/main.js';
-import { readNumber, writeNumber } from '../data.js';
+import { emptyBuffer, falseBuffer, readNumber, writeNumber } from '../data.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { TCPDevice } from './tcp.js';
 import { TCPTransport } from '../transport/tcp.js';
@@ -32,20 +32,29 @@ type RequestResolver = {
 type DeviceIdentifier = Buffer | null;
 
 const KEEPALIVE_INTERVAL = 1000;
+
+const VERSION = 2;
+
 const KEEPALIVE_IDENTIFIER = 0xff;
 const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_PAYLOAD = Buffer.from([
   KEEPALIVE_IDENTIFIER,
+  VERSION,
   KEEPALIVE_COMMAND,
+  0,
 ]);
 
 const RESET_PAYLOAD = Buffer.from([
   KEEPALIVE_IDENTIFIER,
+  VERSION,
   KEEPALIVE_COMMAND,
-  0x01,
+  0,
+  1,
 ]);
 
 export const EVENT_IDENTIFIER = 0x00;
+
+const versionBuffer = Buffer.from([VERSION]);
 
 export class Property {
   static isValidPropertyIdentifier(
@@ -109,8 +118,8 @@ export class Event<T = void> extends Property {
    * ingest event from Device instance
    */
   ingest(payload: Buffer): void {
-    const serviceIdentifier = payload.subarray(0, this.identifier.length);
-    if (!serviceIdentifier.equals(this.identifier)) return;
+    const eventIdentifier = payload.subarray(0, this.identifier.length);
+    if (!eventIdentifier.equals(this.identifier)) return;
 
     const eventData = this.decode(payload.subarray(this.identifier.length));
 
@@ -281,8 +290,11 @@ export class Device<T extends Transport = Transport> {
     this._transport._writeToTransport(
       Buffer.concat([
         requestIdentifier,
+        versionBuffer,
         serviceIdentifier,
-        ...(payload ? [payload] : []),
+        // insert 0 service index when service identifier doesn't include index already
+        serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
+        payload ? payload : emptyBuffer,
       ])
     );
   }

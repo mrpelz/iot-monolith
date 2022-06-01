@@ -6,8 +6,8 @@ export type ESPNowPayload = {
 };
 
 export class ESPNow extends Event<ESPNowPayload> {
-  constructor() {
-    super(Buffer.from([0xfe]));
+  constructor(index = 0) {
+    super(Buffer.from([0xfe, index]));
   }
 
   protected decode(input: Buffer): ESPNowPayload | null {

@@ -2,5 +2,7 @@
 
 ssh root@iot.lan.wurstsalat.cloud << EOF
   cd /opt/iot-monolith/
-  scripts/pull-restart-watch.sh
+
+  scripts/restart.sh
+  scripts/watch.sh
 EOF

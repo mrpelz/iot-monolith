@@ -13,10 +13,10 @@ const { lookup } = promises;
 // PACKET FORMAT
 //
 // request, without sequence number (default, to device):
-// |                      |                                    |                      |
-// | request id (1 octet) | service id (1–n octets, default 1) | payload (0–n octets) |
-// |            0x01–0xFF |                          0x00–0xFF |                      |
-// |                      |                                    |                      |
+// |                      |                                    |                            |                      |
+// | request id (1 octet) | service id (1–n octets, default 1) | service index (1–n octets) | payload (0–n octets) |
+// |            0x01–0xFF |                          0x00–0xFF |                  0x00–0xFF |                      |
+// |                      |                                    |                            |                      |
 //
 // response, without sequence number (default, from device):
 // |                      |                      |
@@ -25,16 +25,16 @@ const { lookup } = promises;
 // |                      |                      |
 //
 // event, without sequence number (default, from device):
-// |                      |                                  |                      |
-// | request id (1 octet) | event id (1–n octets, default 1) | payload (0–n octets) |
-// |          always 0x00 |                        0x00–0xFF |                      |
-// |                      |                                  |                      |
+// |                      |                                  |                          |                      |
+// | request id (1 octet) | event id (1–n octets, default 1) | event index (1–n octets) | payload (0–n octets) |
+// |          always 0x00 |                        0x00–0xFF |                0x00–0xFF |                      |
+// |                      |                                  |                          |                      |
 //
 // request, with sequence number (to device):
-// |                           |                      |                                    |                      |
-// | sequence number (1 octet) | request id (1 octet) | service id (1–n octets, default 1) | payload (0–n octets) |
-// |                 0x00–0xFF |            0x01–0xFF |                          0x00–0xFF |                      |
-// |                           |                      |                                    |                      |
+// |                           |                      |                                    |                            |                      |
+// | sequence number (1 octet) | request id (1 octet) | service id (1–n octets, default 1) | service index (1–n octets) | payload (0–n octets) |
+// |                 0x00–0xFF |            0x01–0xFF |                          0x00–0xFF |                  0x00–0xFF |                      |
+// |                           |                      |                                    |                            |                      |
 //
 // response, with sequence number (from device):
 // |                           |                      |                      |
@@ -43,10 +43,10 @@ const { lookup } = promises;
 // |                           |                      |                      |
 //
 // event, with sequence number (from device):
-// |                           |                      |                                  |                      |
-// | sequence number (1 octet) | request id (1 octet) | event id (1–n octets, default 1) | payload (0–n octets) |
-// |                 0x00–0xFF |          always 0x00 |                        0x00–0xFF |                      |
-// |                           |                      |                                  |                      |
+// |                           |                      |                                  |                          |                      |
+// | sequence number (1 octet) | request id (1 octet) | event id (1–n octets, default 1) | event index (1–n octets) | payload (0–n octets) |
+// |                 0x00–0xFF |          always 0x00 |                        0x00–0xFF |                0x00–0xFF |                      |
+// |                           |                      |                                  |                          |                      |
 //
 
 const sequenceRepeatOutgoing = 5;

@@ -6,8 +6,8 @@ export type Sds011Response = {
 };
 
 export class Sds011 extends Service<Sds011Response, void> {
-  constructor() {
-    super(Buffer.from([10]), 35000);
+  constructor(index = 0) {
+    super(Buffer.from([10, index]), 35000);
   }
 
   protected decode(input: Buffer): Sds011Response | null {

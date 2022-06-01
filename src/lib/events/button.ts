@@ -11,7 +11,7 @@ export type ButtonPayload = {
 
 export class Button extends Event<ButtonPayload> {
   constructor(index: number) {
-    super(Buffer.from([index]));
+    super(Buffer.from([0, index]));
   }
 
   protected decode(input: Buffer): ButtonPayload | null {

@@ -9,8 +9,8 @@ export type Mhz19Response = {
 };
 
 export class Mhz19 extends Service<Mhz19Response, void> {
-  constructor() {
-    super(Buffer.from([11]));
+  constructor(index = 0) {
+    super(Buffer.from([11, index]));
   }
 
   protected decode(input: Buffer): Mhz19Response | null {
