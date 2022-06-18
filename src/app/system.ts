@@ -2,11 +2,11 @@
 
 import { Levels, addMeta } from '../lib/tree/main.js';
 import { allLights, kitchenAdjacentLights } from './groups.js';
+import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { epochs } from '../lib/epochs.js';
-import { hallway } from './rooms/hallway.js';
 import { kitchen } from './rooms/kitchen.js';
 import { kitchenAdjacentChillax } from './scenes.js';
 import { livingRoom } from './rooms/living-room.js';
@@ -43,7 +43,11 @@ const firstFloor = (() =>
 
 const sonninstraße16 = (() =>
   addMeta(
-    { firstFloor },
+    {
+      firstFloor,
+      // eslint-disable-next-line sort-keys
+      entryDoor: hallwayProperties.door,
+    },
     {
       isPrimary: true,
       level: Levels.BUILDING,

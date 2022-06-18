@@ -177,6 +177,7 @@ export const properties = {
     epochs.second * 10,
     (progress) => {
       groups.whiteLeds.brightness._set.value = progress;
+      if (progress === 0) partialProperties.ceilingLight._set.value = false;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
     },
     ['bedroom/wakeupLightWeekday', persistence]
@@ -210,6 +211,7 @@ export const properties = {
     epochs.second * 10,
     (progress) => {
       groups.whiteLeds.brightness._set.value = progress;
+      if (progress === 0) partialProperties.ceilingLight._set.value = false;
       if (progress === 1) partialProperties.ceilingLight._set.value = true;
     },
     ['bedroom/wakeupLightWeekend', persistence]
