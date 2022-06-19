@@ -1,3 +1,4 @@
+import { allLights } from './groups.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
@@ -24,4 +25,8 @@ export const kitchenAdjacentChillax = scene(() => {
   diningRoomProperties.kallaxLedSide.brightness._set.value = 0.5;
   kitchenProperties.ledLeftWWhite.brightness._set.value = 0.5;
   kitchenProperties.ledRightWWhite.brightness._set.value = 0.5;
+}, 'lighting');
+
+export const allLightsOff = scene(() => {
+  allLights._set.value = false;
 }, 'lighting');
