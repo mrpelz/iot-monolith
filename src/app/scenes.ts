@@ -30,3 +30,10 @@ export const kitchenAdjacentChillax = scene(() => {
 export const allLightsOff = scene(() => {
   allLights._set.value = false;
 }, 'lighting');
+
+export const allOff = scene(() => {
+  allLightsOff._set.trigger();
+
+  diningRoomProperties.fan._set.value = false;
+  livingRoomProperties.fan._set.value = false;
+}, 'scene');

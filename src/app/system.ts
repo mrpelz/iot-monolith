@@ -2,7 +2,7 @@
 
 import { Levels, addMeta } from '../lib/tree/main.js';
 import { allLights, kitchenAdjacentLights } from './groups.js';
-import { allLightsOff, kitchenAdjacentChillax } from './scenes.js';
+import { allLightsOff, allOff, kitchenAdjacentChillax } from './scenes.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
@@ -68,16 +68,13 @@ const wurstHome = (() =>
 export const system = (() => {
   const id = Date.now().toString();
 
-  const allLightsTimer = offTimer(epochs.day, true, [
-    'system/allLightsTimer',
-    persistence,
-  ]);
+  const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
   allLights._set.observe((value) => {
-    allLightsTimer.active.$.value = value;
+    allTimer.active.$.value = value;
   }, true);
 
-  allLightsTimer.$.observe(() => {
+  allTimer.$.observe(() => {
     allLights._set.value = false;
   });
 
@@ -87,7 +84,8 @@ export const system = (() => {
       {
         allLights,
         allLightsOff,
-        allLightsTimer,
+        allOff,
+        allTimer,
         wurstHome,
       },
       {

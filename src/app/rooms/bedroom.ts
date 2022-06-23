@@ -122,7 +122,7 @@ export const groups = {
     partialProperties.stoneLamp,
   ]),
   allWindows: inputGrouping(partialProperties.windowLeft.open._get),
-  fuckLight: outputGrouping([
+  fuckLight: ledGrouping([
     partialProperties.bedLedDownlightRed,
     partialProperties.bedLedRGB.r,
   ]),

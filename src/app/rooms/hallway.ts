@@ -81,7 +81,7 @@ export const properties = {
 
 (async () => {
   const { allLights } = await import('../groups.js');
-  const { allLightsOff } = await import('../scenes.js');
+  const { allOff } = await import('../scenes.js');
 
   instances.wallswitchBack.up(() => groups.ceilingLight._set.flip());
 
@@ -93,7 +93,7 @@ export const properties = {
   instances.wallswitchFrontMiddle.up(() =>
     properties.ceilingLightBack._set.flip()
   );
-  instances.wallswitchFrontRight.up(() => allLightsOff._set.trigger());
+  instances.wallswitchFrontRight.up(() => allOff._set.trigger());
   instances.wallswitchFrontRight.longPress(() => (allLights._set.value = true));
 
   properties.door.open._get.observe((value) => {
