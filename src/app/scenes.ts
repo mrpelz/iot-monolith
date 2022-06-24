@@ -1,4 +1,4 @@
-import { allLights } from './groups.js';
+import { all, allLights } from './groups.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
@@ -32,8 +32,5 @@ export const allLightsOff = scene(() => {
 }, 'lighting');
 
 export const allOff = scene(() => {
-  allLightsOff._set.trigger();
-
-  diningRoomProperties.fan._set.value = false;
-  livingRoomProperties.fan._set.value = false;
+  all._set.value = false;
 }, 'scene');

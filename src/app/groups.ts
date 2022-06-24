@@ -9,6 +9,51 @@ import { outputGrouping } from '../lib/tree/properties/actuators.js';
 import { properties as showerBathroomProperties } from './rooms/shower-bathroom.js';
 import { properties as storageRoomProperties } from './rooms/storage-room.js';
 
+export const all = outputGrouping(
+  [
+    bathtubBathroomProperties.ceilingLight,
+    bathtubBathroomProperties.nightLight,
+    bedroomProperties.bedLedDownlightRed,
+    bedroomProperties.bedLedRGB.b,
+    bedroomProperties.bedLedRGB.g,
+    bedroomProperties.bedLedRGB.r,
+    bedroomProperties.bedLedW,
+    bedroomProperties.ceilingLight,
+    bedroomProperties.nightstandLedLeft,
+    bedroomProperties.nightstandLedRight,
+    bedroomProperties.stoneLamp,
+    diningRoomProperties.ceilingLight,
+    diningRoomProperties.fan,
+    diningRoomProperties.kallaxLedRGB.b,
+    diningRoomProperties.kallaxLedRGB.g,
+    diningRoomProperties.kallaxLedRGB.r,
+    diningRoomProperties.kallaxLedSide,
+    diningRoomProperties.kallaxLedW,
+    diningRoomProperties.standingLamp,
+    diningRoomProperties.tableLight,
+    hallwayProperties.ceilingLightBack,
+    hallwayProperties.ceilingLightFront,
+    kitchenProperties.ledLeftCWhite,
+    kitchenProperties.ledLeftFloodlight,
+    kitchenProperties.ledLeftWWhite,
+    kitchenProperties.ledRightCWhite,
+    kitchenProperties.ledRightFloodlight,
+    kitchenProperties.ledRightWWhite,
+    livingRoomProperties.ceilingLight,
+    livingRoomProperties.fan,
+    livingRoomProperties.standingLamp,
+    officeProperties.ceilingLight,
+    officeProperties.floodLight,
+    officeProperties.workbenchLedCWhite,
+    officeProperties.workbenchLedWWhite,
+    showerBathroomProperties.ceilingLight,
+    showerBathroomProperties.mirrorLight,
+    showerBathroomProperties.nightLight,
+    storageRoomProperties.ceilingLight,
+  ],
+  'group'
+);
+
 export const allLights = outputGrouping([
   bathtubBathroomProperties.ceilingLight,
   bathtubBathroomProperties.nightLight,

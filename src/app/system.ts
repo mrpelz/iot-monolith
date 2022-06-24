@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../lib/tree/main.js';
-import { allLights, kitchenAdjacentLights } from './groups.js';
+import { all, allLights, kitchenAdjacentLights } from './groups.js';
 import { allLightsOff, allOff, kitchenAdjacentChillax } from './scenes.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
@@ -70,18 +70,19 @@ export const system = (() => {
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  allLights._set.observe((value) => {
+  all._set.observe((value) => {
     allTimer.active.$.value = value;
   }, true);
 
   allTimer.$.observe(() => {
-    allLights._set.value = false;
+    all._set.value = false;
   });
 
   return {
     id,
     system: addMeta(
       {
+        all,
         allLights,
         allLightsOff,
         allOff,
