@@ -10,6 +10,9 @@ import {
   isWritableObservable,
 } from '../observable.js';
 import { RollingNumber } from '../rolling-number.js';
+import { randomUUID } from 'crypto';
+
+const ROOT_IDENTIFIER = '$';
 
 export const inherit = Symbol('inherit');
 
@@ -209,7 +212,7 @@ export class Tree {
   readonly structure: any;
 
   constructor(input: any) {
-    this.structure = this._serialize(input);
+    this.structure = this._serialize(input, ROOT_IDENTIFIER);
     this.stream = this._stream();
   }
 
@@ -240,7 +243,7 @@ export class Tree {
 
   private _serialize<T extends Meta>(
     object: any,
-    property?: string,
+    property: string,
     parentMeta?: T,
     metaExtension?: Partial<Meta>
   ) {
@@ -303,9 +306,12 @@ export class Tree {
       return this._getSetterIndex(object._set, meta.valueType);
     })();
 
+    const id = property === ROOT_IDENTIFIER ? ROOT_IDENTIFIER : randomUUID();
+
     return {
       children,
       get,
+      id,
       meta,
       property,
       set,
