@@ -86,7 +86,7 @@ export const ev1527WindowSensor = (
             addMeta(
               {
                 _get: tamperSwitch,
-                ...lastSeen(receivedTamperSwitch),
+                ...lastChange(receivedTamperSwitch),
               },
               {
                 level: Levels.PROPERTY,
