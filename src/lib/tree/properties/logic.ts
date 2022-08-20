@@ -203,15 +203,19 @@ export const scheduledRamp = (
     handleRefresh();
   });
 
+  const cancel = () => {
+    schedule.stop();
+    handleStop();
+    handler(0);
+  };
+
   enabled.observe((value) => {
     if (value) {
       schedule.start();
       return;
     }
 
-    schedule.stop();
-    handleStop();
-    handler(0);
+    cancel();
   });
 
   if (persistenceSet) {
@@ -223,6 +227,17 @@ export const scheduledRamp = (
     {
       _get: new ReadOnlyObservable(enabled),
       _set: enabled,
+      cancel: (() =>
+        addMeta(
+          { _set: new NullState(() => cancel()) },
+          {
+            actuated: inherit,
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.CONTROL_TRIGGER,
+            type: 'actuator',
+            valueType: ValueType.NULL,
+          }
+        ))(),
       flip: (() =>
         addMeta(
           { _set: new NullState(() => enabled.flip()) },

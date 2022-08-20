@@ -122,6 +122,9 @@ export class HttpServer {
   }
 
   private _handleRequest(request: IncomingMessage, response: ServerResponse) {
+    const { url: requestUrl } = request;
+    if (!requestUrl) return;
+
     const utils: RouteUtils = {
       badRequest: (body) => HttpServer.badRequest(response, body),
       constrainMethod: (method, body) =>
@@ -132,12 +135,12 @@ export class HttpServer {
     };
 
     try {
-      const url = this.requestUrl(request);
+      const url = this.requestUrl(requestUrl);
 
       const handler = this._routes.get(url.pathname);
 
       if (!handler) {
-        this._log.notice(() => `${url}: 404`);
+        this._log.notice(() => `${url.href}: 404`);
 
         utils.notFound();
 
@@ -171,24 +174,33 @@ export class HttpServer {
     this._log.info(() => `listen on port ${this._port}`);
   }
 
-  requestUrl(request: IncomingMessage): URL {
-    return new URL(request.url || '/', `http://[::]:${this._port}/`);
+  requestUrl(url: string): URL {
+    const result = new URL(url, `http://[::]:${this._port}/`);
+
+    const { pathname } = result;
+    if (!pathname.endsWith('/')) {
+      result.pathname = `${pathname}/`;
+    }
+
+    return result;
   }
 
   route(path: string, handler: RouteHandler): Route {
-    if (this._routes.has(path)) {
-      const error = new Error(`route with path "${path}" already set`);
+    const { pathname } = this.requestUrl(path);
+
+    if (this._routes.has(pathname)) {
+      const error = new Error(`route with path "${pathname}" already set`);
 
       this._log.error(() => error.message);
 
       throw error;
     }
 
-    this._routes.set(path, handler);
+    this._routes.set(pathname, handler);
 
     return {
       remove: () => {
-        this._routes.delete(path);
+        this._routes.delete(pathname);
       },
     };
   }

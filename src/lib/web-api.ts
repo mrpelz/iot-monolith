@@ -176,7 +176,7 @@ export class WebApi {
   ) {
     if (!request.url) return;
 
-    const url = this._httpServer.requestUrl(request);
+    const url = this._httpServer.requestUrl(request.url);
 
     if (url.pathname !== PATH_STREAM) {
       socket.destroy();
