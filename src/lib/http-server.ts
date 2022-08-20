@@ -178,8 +178,8 @@ export class HttpServer {
     const result = new URL(url, `http://[::]:${this._port}/`);
 
     const { pathname } = result;
-    if (!pathname.endsWith('/')) {
-      result.pathname = `${pathname}/`;
+    if (pathname !== '/' && pathname.endsWith('/')) {
+      result.pathname = pathname.slice(0, -1);
     }
 
     return result;
