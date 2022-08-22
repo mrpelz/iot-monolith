@@ -204,7 +204,6 @@ export const scheduledRamp = (
   });
 
   const cancel = () => {
-    schedule.stop();
     handleStop();
     handler(0);
   };
@@ -215,6 +214,7 @@ export const scheduledRamp = (
       return;
     }
 
+    schedule.stop();
     cancel();
   });
 
