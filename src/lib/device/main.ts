@@ -191,7 +191,7 @@ export class Device<T extends Transport = Transport> {
     logger: Logger,
     transport: T,
     identifier: DeviceIdentifier = null,
-    keepAlive = 5000
+    keepAlive = 2500
   ) {
     this.transport = transport;
     this.identifier = identifier;
