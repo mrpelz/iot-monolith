@@ -22,12 +22,24 @@ const firstFloor = (() =>
     {
       bathtubBathroom,
       bedroom,
-      diningRoom,
-      hallway,
-      kitchen,
+      diningRoom: Object.assign(diningRoom, {
+        kitchenAdjacentChillax,
+        kitchenAdjacentLights,
+      }),
+      hallway: Object.assign(hallway, {
+        kitchenAdjacentChillax,
+        kitchenAdjacentLights,
+      }),
+      kitchen: Object.assign(kitchen, {
+        kitchenAdjacentChillax,
+        kitchenAdjacentLights,
+      }),
       kitchenAdjacentChillax,
       kitchenAdjacentLights,
-      livingRoom,
+      livingRoom: Object.assign(livingRoom, {
+        kitchenAdjacentChillax,
+        kitchenAdjacentLights,
+      }),
       office,
       showerBathroom,
       storageRoom,

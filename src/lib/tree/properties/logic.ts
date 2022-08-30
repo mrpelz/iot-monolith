@@ -168,6 +168,8 @@ export const scheduledRamp = (
   const enabled = new BooleanState(false);
   schedule[enabled.value ? 'start' : 'stop']();
 
+  const progress = new Observable(0);
+
   let startTime = 0;
   let timer: NodeJS.Timeout | null = null;
 
@@ -187,11 +189,11 @@ export const scheduledRamp = (
 
     const now = Date.now();
     const timeElapsed = now - startTime;
-    const progress = maxmin(timeElapsed / epoch);
+    progress.value = maxmin(timeElapsed / epoch);
 
-    handler(progress);
+    handler(progress.value);
 
-    if (progress === 1) {
+    if (progress.value === 1) {
       handleStop();
     }
   };
@@ -249,6 +251,25 @@ export const scheduledRamp = (
             valueType: ValueType.NULL,
           }
         ))(),
+      nextCompletion: (() =>
+        addMeta(
+          {
+            _get: new ReadOnlyProxyObservable<Date | null, number>(
+              schedule.nextExecution,
+              (date) => {
+                if (!date) return 0;
+                return date.getTime() + epoch;
+              }
+            ),
+          },
+          {
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'sensor',
+            unit: 'date',
+            valueType: ValueType.NUMBER,
+          }
+        ))(),
       nextExecution: (() =>
         addMeta(
           {
@@ -262,6 +283,18 @@ export const scheduledRamp = (
             parentRelation: ParentRelation.META_RELATION,
             type: 'sensor',
             unit: 'date',
+            valueType: ValueType.NUMBER,
+          }
+        ))(),
+      progress: (() =>
+        addMeta(
+          {
+            _get: new ReadOnlyObservable(progress),
+          },
+          {
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.META_RELATION,
+            type: 'sensor',
             valueType: ValueType.NUMBER,
           }
         ))(),
