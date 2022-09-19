@@ -23,15 +23,18 @@ type DeviceServices = Set<Service<unknown, unknown>>;
 
 type Request<T = Buffer> = Promise<T>;
 
-type RequestResolver = {
-  reject: (reason?: unknown) => void;
-  resolver: (value: Buffer) => void;
-  timer: Timer | null;
-};
+type RequestResolver = <T extends boolean = boolean>(
+  success: T,
+  result: T extends true ? Buffer : Error
+) => void;
 
 type DeviceIdentifier = Buffer | null;
 
+const DEFAULT_TIMEOUT = 500;
+
 const KEEPALIVE_INTERVAL = 1000;
+// const KEEPALIVE_TIMEOUT = KEEPALIVE_INTERVAL + DEFAULT_TIMEOUT;
+const KEEPALIVE_TIMEOUT = DEFAULT_TIMEOUT;
 
 const VERSION = 2;
 
@@ -168,7 +171,7 @@ export class Service<T = void, S = void> extends Property {
 export class Device<T extends Transport = Transport> {
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
-  private readonly _keepAliveReceiveTimer: Timer | null = null;
+  private readonly _keepaliveTimer: Timer | null = null;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
@@ -191,7 +194,7 @@ export class Device<T extends Transport = Transport> {
     logger: Logger,
     transport: T,
     identifier: DeviceIdentifier = null,
-    keepAlive = 2500
+    timeout = DEFAULT_TIMEOUT
   ) {
     this.transport = transport;
     this.identifier = identifier;
@@ -221,26 +224,21 @@ export class Device<T extends Transport = Transport> {
 
     this.seen = new ReadOnlyNullState(this._seen);
 
-    this.isOnline.observe((online) =>
-      this._log.info(() => (online ? 'online' : 'offline'))
-    );
+    this.isOnline.observe((online) => {
+      this._log.info(() => (online ? 'online' : 'offline'));
 
-    if (!keepAlive) return;
-
-    this._keepAliveReceiveTimer = new Timer(keepAlive);
-
-    transport.isConnected.observe((transportConnected) => {
-      if (!transportConnected) return;
-
-      this._sendKeepAlive();
+      if (online) return;
+      for (const [, resolver] of this._requests) {
+        resolver(false, new Error('request aborted due to disconnection'));
+      }
     });
 
-    this._keepAliveReceiveTimer.observe(() => {
-      this._isOnline.value = false;
+    if (!timeout) return;
 
-      for (const [, request] of this._requests) {
-        request.reject(new Error('request aborted due to disconnection'));
-      }
+    this._keepaliveTimer = new Timer(KEEPALIVE_TIMEOUT);
+
+    this._keepaliveTimer.observe(() => {
+      this._isOnline.value = false;
     });
 
     setInterval(() => this._sendKeepAlive(), KEEPALIVE_INTERVAL);
@@ -253,20 +251,9 @@ export class Device<T extends Transport = Transport> {
   }
 
   private _handleRequest(identifier: number, payload: Buffer): void {
-    const request = this._requests.get(identifier);
-    if (!request) return;
+    const resolver = this._requests.get(identifier);
 
-    const { resolver, timer } = request;
-
-    this._requests.delete(identifier);
-
-    timer?.stop();
-    resolver(payload);
-  }
-
-  private _receiveKeepAlive() {
-    this._keepAliveReceiveTimer?.start();
-    this._isOnline.value = true;
+    resolver?.(true, payload);
   }
 
   private _sendKeepAlive() {
@@ -277,6 +264,8 @@ export class Device<T extends Transport = Transport> {
     } catch {
       this._log.error(() => 'error writing keepalive packet');
     }
+
+    this._keepaliveTimer?.start();
   }
 
   /**
@@ -335,7 +324,8 @@ export class Device<T extends Transport = Transport> {
     const payload = message.subarray(1);
 
     if (requestIdentifier === KEEPALIVE_IDENTIFIER && !payload.length) {
-      this._receiveKeepAlive();
+      this._keepaliveTimer?.stop();
+      this._isOnline.value = true;
       return;
     }
 
@@ -367,7 +357,7 @@ export class Device<T extends Transport = Transport> {
     timeout: number,
     suppressErrors = false
   ): Request {
-    if (!this._isOnline.value) {
+    if (!this.isOnline.value) {
       const error = new Error('device is not online');
 
       if (!suppressErrors) {
@@ -377,31 +367,65 @@ export class Device<T extends Transport = Transport> {
       return Promise.reject(error);
     }
 
-    const id = this._requestIdentifier.get();
+    const id = (() => {
+      let result: number;
+      let initialResult: number | null = null;
 
-    return new Promise((resolver, reject) => {
+      do {
+        result = this._requestIdentifier.get();
+
+        if (initialResult === result) break;
+        if (initialResult === null) initialResult = result;
+      } while (this._requests.has(result));
+
+      return result;
+    })();
+
+    if (this._requests.has(id)) {
+      const error = new Error(
+        `request id "${id}" rolled over to itself but is still running`
+      );
+
+      if (!suppressErrors) {
+        this._log.error(() => error.message);
+      }
+
+      return Promise.reject(error);
+    }
+
+    return new Promise((resolve, reject) => {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
 
       const timer = timeout ? new Timer(timeout) : null;
 
+      const resolver: RequestResolver = (success, result) => {
+        timer?.stop();
+        this._requests.delete(id);
+
+        if (success) {
+          resolve(result as Buffer);
+        } else {
+          this._isOnline.value = false;
+
+          const error = new Error(
+            `could not complete request "${id}": "${(result as Error).message}"`
+          );
+
+          if (!suppressErrors) {
+            this._log.error(() => error.message);
+          }
+
+          reject(error);
+        }
+      };
+
       timer?.observe((_, observer) => {
         observer.remove();
-        const error = new Error('request timed out');
-
-        if (!suppressErrors) {
-          this._log.error(() => error.message);
-        }
-
-        reject(error);
+        resolver(false, new Error('request timed out'));
       });
 
+      this._requests.set(id, resolver);
       timer?.start();
-
-      this._requests.set(id, {
-        reject,
-        resolver,
-        timer,
-      });
     });
   }
 

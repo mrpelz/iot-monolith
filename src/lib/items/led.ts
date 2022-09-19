@@ -33,7 +33,7 @@ export class Led {
         return;
       }
 
-      this._set(this._setBrightness.value);
+      this._set(this._setBrightness.value, true);
     });
 
     this.actualBrightness = new ReadOnlyProxyObservable(
@@ -60,7 +60,7 @@ export class Led {
     this._timer.observe(() => this._set(this.setBrightness.value));
   }
 
-  private async _set(brightness: number) {
+  private async _set(brightness: number, skipIndicator = false) {
     const success = await (async () => {
       try {
         await this._service.request(gammaCorrect(brightness, MAX_DUTY_CYCLE));
@@ -71,19 +71,19 @@ export class Led {
     })();
 
     if (success) {
-      this._success(brightness);
+      this._success(brightness, skipIndicator);
       return;
     }
 
     this._unknown();
   }
 
-  private _success(brightness: number) {
+  private _success(brightness: number, skipIndicator: boolean) {
     this._actualBrightness.value = brightness;
 
     this._timer.stop();
 
-    if (!this._indicator) return;
+    if (!this._indicator || skipIndicator) return;
     this._indicator
       .request({
         blink: brightness ? 3 : 2,

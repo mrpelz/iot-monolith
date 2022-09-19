@@ -23,7 +23,7 @@ export class Output {
         return;
       }
 
-      this._set(this.setState.value);
+      this._set(this.setState.value, true);
     });
 
     this.actualState = new ReadOnlyObservable(this._actualState);
@@ -33,7 +33,7 @@ export class Output {
     this._timer.observe(() => this._set(this.setState.value));
   }
 
-  private async _set(on: boolean) {
+  private async _set(on: boolean, skipIndicator = false) {
     const success = await (async () => {
       try {
         await this._service.request(on);
@@ -44,19 +44,19 @@ export class Output {
     })();
 
     if (success) {
-      this._success(on);
+      this._success(on, skipIndicator);
       return;
     }
 
     this._unknown();
   }
 
-  private _success(on: boolean) {
+  private _success(on: boolean, skipIndicator: boolean) {
     this._actualState.value = on;
 
     this._timer.stop();
 
-    if (!this._indicator) return;
+    if (!this._indicator || skipIndicator) return;
     this._indicator
       .request({
         blink: on ? 3 : 2,

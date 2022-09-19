@@ -46,8 +46,18 @@ export class Output {
 
   readonly levels: Level[];
 
-  constructor(levels: Level[], callback: Callback) {
-    this.levels = levels;
+  constructor(logLevel: number, callback: Callback) {
+    this.levels = [
+      Level.EMERGENCY,
+      Level.ALERT,
+      Level.CRITICAL,
+      Level.ERROR,
+      Level.WARNING,
+      Level.NOTICE,
+      Level.INFO,
+      Level.DEBUG,
+    ].slice(0, logLevel + 1);
+
     this._callback = callback;
   }
 
@@ -82,19 +92,7 @@ export class DevOutput extends Output {
   }
 
   constructor(logLevel = 7) {
-    super(
-      [
-        Level.EMERGENCY,
-        Level.ALERT,
-        Level.CRITICAL,
-        Level.ERROR,
-        Level.WARNING,
-        Level.NOTICE,
-        Level.INFO,
-        Level.DEBUG,
-      ].slice(0, logLevel + 1),
-      DevOutput._callback
-    );
+    super(logLevel, DevOutput._callback);
   }
 }
 
@@ -119,19 +117,7 @@ export class JournaldOutput extends Output {
   }
 
   constructor(logLevel = 7) {
-    super(
-      [
-        Level.EMERGENCY,
-        Level.ALERT,
-        Level.CRITICAL,
-        Level.ERROR,
-        Level.WARNING,
-        Level.NOTICE,
-        Level.INFO,
-        Level.DEBUG,
-      ].slice(0, logLevel + 1),
-      JournaldOutput._callback
-    );
+    super(logLevel, JournaldOutput._callback);
   }
 }
 
@@ -148,19 +134,7 @@ export class JournaldOutput extends Output {
 //   }
 
 //   constructor(logLevel = 7) {
-//     super(
-//       [
-//         Level.EMERGENCY,
-//         Level.ALERT,
-//         Level.CRITICAL,
-//         Level.ERROR,
-//         Level.WARNING,
-//         Level.NOTICE,
-//         Level.INFO,
-//         Level.DEBUG,
-//       ].slice(0, logLevel + 1),
-//       TelegramOutput._callback
-//     );
+//     super(logLevel, TelegramOutput._callback);
 //   }
 // }
 
