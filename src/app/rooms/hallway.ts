@@ -97,7 +97,7 @@ export const properties = {
 
   properties.door.open._get.observe((value) => {
     if (!value) {
-      if (!groups.ceilingLight._get.value) return;
+      if (!groups.ceilingLight._set.value) return;
 
       properties.entryDoorTimer.active.$.value = true;
 
@@ -107,7 +107,7 @@ export const properties = {
     properties.ceilingLightFront._set.value = true;
   });
 
-  groups.ceilingLight._get.observe(
+  groups.ceilingLight._set.observe(
     () => (properties.entryDoorTimer.active.$.value = false),
     true
   );

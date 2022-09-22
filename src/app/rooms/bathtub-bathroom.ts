@@ -71,7 +71,7 @@ export const groups = {
     timer.start();
 
     if (firstPress) {
-      if (!groups.allLights._get.value) {
+      if (!groups.allLights._set.value) {
         properties.nightLight._set.value = true;
         return;
       }
@@ -110,7 +110,7 @@ export const groups = {
   );
 
   instances.wallswitchDoor.up(() => {
-    if (groups.allLights._get.value) {
+    if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }

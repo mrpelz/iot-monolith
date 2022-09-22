@@ -220,7 +220,7 @@ export const properties = {
 
 (() => {
   instances.nightstandButtonLeft.observe(() => {
-    if (groups.allLights._get.value) {
+    if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }
@@ -229,7 +229,7 @@ export const properties = {
   });
 
   instances.nightstandButtonRight.observe(() => {
-    if (groups.allLights._get.value) {
+    if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }
@@ -264,7 +264,7 @@ export const properties = {
   );
 
   instances.wallswitchBed.up(() => {
-    if (groups.allLights._get.value) {
+    if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }
@@ -296,7 +296,7 @@ export const properties = {
   );
 
   instances.wardrobeButton.observe(() => {
-    if (groups.allLights._get.value) {
+    if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }

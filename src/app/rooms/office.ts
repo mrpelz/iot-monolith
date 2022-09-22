@@ -126,7 +126,7 @@ export const groups = {
 
     timer.start();
 
-    if (!timerRunning && groups.workbenchLeds._get.value) {
+    if (!timerRunning && groups.workbenchLeds._set.value) {
       groups.workbenchLeds._set.value = false;
       return;
     }
