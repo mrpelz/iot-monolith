@@ -30,29 +30,18 @@ type RequestResolver = <T extends boolean = boolean>(
 
 type DeviceIdentifier = Buffer | null;
 
+const VERSION = 2;
+const REPEAT = 5;
 const DEFAULT_TIMEOUT = 500;
 
-const KEEPALIVE_INTERVAL = 1000;
-const KEEPALIVE_TIMEOUT = DEFAULT_TIMEOUT;
-
-const VERSION = 2;
-
-const KEEPALIVE_IDENTIFIER = 0xff;
+const KEEPALIVE_INTERVAL = 5000;
 const KEEPALIVE_COMMAND = 0xff;
-const KEEPALIVE_PAYLOAD = Buffer.from([
-  KEEPALIVE_IDENTIFIER,
-  VERSION,
-  KEEPALIVE_COMMAND,
-  0,
-]);
 
-const RESET_PAYLOAD = Buffer.from([
-  KEEPALIVE_IDENTIFIER,
-  VERSION,
-  KEEPALIVE_COMMAND,
-  0,
-  1,
-]);
+const RESET_OPTIONS = [
+  Buffer.from([0xff]),
+  Buffer.from([KEEPALIVE_COMMAND]),
+  Buffer.from([1]),
+] as const;
 
 export const EVENT_IDENTIFIER = 0x00;
 
@@ -151,7 +140,11 @@ export class Service<T = void, S = void> extends Property {
   /**
    * issue request on Device instance
    */
-  request(payload: S, suppressErrors = false): Request<T | null> {
+  request(
+    payload: S,
+    suppressErrors = false,
+    ignoreOffline = false
+  ): Request<T | null> {
     if (!this._device) {
       throw new Error('no device is present on this property');
     }
@@ -161,7 +154,8 @@ export class Service<T = void, S = void> extends Property {
         this.identifier,
         this.encode(payload),
         this._timeout,
-        suppressErrors
+        suppressErrors,
+        ignoreOffline
       )
       .then((result) => this.decode(result));
   }
@@ -170,13 +164,13 @@ export class Service<T = void, S = void> extends Property {
 export class Device<T extends Transport = Transport> {
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
-  private readonly _keepaliveTimer: Timer | null = null;
+  private readonly _keepalive?: Service<void, void>;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
     0,
     NUMBER_RANGES.uint8,
-    [EVENT_IDENTIFIER, KEEPALIVE_IDENTIFIER]
+    [EVENT_IDENTIFIER]
   );
 
   private readonly _requests = new Map<number, RequestResolver>();
@@ -234,11 +228,9 @@ export class Device<T extends Transport = Transport> {
 
     if (!timeout) return;
 
-    this._keepaliveTimer = new Timer(KEEPALIVE_TIMEOUT);
-
-    this._keepaliveTimer.observe(() => {
-      this._isOnline.value = false;
-    });
+    this._keepalive = this.addService(
+      new Service(Buffer.from([KEEPALIVE_COMMAND]))
+    );
 
     setInterval(() => this._sendKeepAlive(), KEEPALIVE_INTERVAL);
   }
@@ -255,16 +247,17 @@ export class Device<T extends Transport = Transport> {
     resolver?.(true, payload);
   }
 
-  private _sendKeepAlive() {
+  private async _sendKeepAlive() {
     if (!this._transport.isConnected.value) return;
+    if (!this._keepalive) return;
 
     try {
-      this._transport._writeToTransport(KEEPALIVE_PAYLOAD);
-    } catch {
-      this._log.error(() => 'error writing keepalive packet');
-    }
+      await this._keepalive.request(undefined, true, true);
 
-    this._keepaliveTimer?.start();
+      this._isOnline.value = true;
+    } catch {
+      this._isOnline.value = false;
+    }
   }
 
   /**
@@ -273,18 +266,21 @@ export class Device<T extends Transport = Transport> {
   _writeToTransport(
     requestIdentifier: Buffer,
     serviceIdentifier: Buffer,
-    payload: Buffer | null = null
+    message: Buffer | null = null,
+    repeat = REPEAT
   ): void {
-    this._transport._writeToTransport(
-      Buffer.concat([
-        requestIdentifier,
-        versionBuffer,
-        serviceIdentifier,
-        // insert 0 service index when service identifier doesn't include index already
-        serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
-        payload ? payload : emptyBuffer,
-      ])
-    );
+    const payload = Buffer.concat([
+      requestIdentifier,
+      versionBuffer,
+      serviceIdentifier,
+      // insert 0 service index when service identifier doesn't include index already
+      serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
+      message ? message : emptyBuffer,
+    ]);
+
+    for (let index = 0; index < repeat; index += 1) {
+      this._transport._writeToTransport(payload);
+    }
   }
 
   /**
@@ -322,12 +318,6 @@ export class Device<T extends Transport = Transport> {
     const requestIdentifier = readNumber(message.subarray(0, 1));
     const payload = message.subarray(1);
 
-    if (requestIdentifier === KEEPALIVE_IDENTIFIER && !payload.length) {
-      this._keepaliveTimer?.stop();
-      this._isOnline.value = true;
-      return;
-    }
-
     if (requestIdentifier === EVENT_IDENTIFIER) {
       this._handleEvent(payload);
       return;
@@ -354,9 +344,10 @@ export class Device<T extends Transport = Transport> {
     serviceIdentifier: Buffer,
     payload: Buffer | null = null,
     timeout: number,
-    suppressErrors = false
+    suppressErrors: boolean,
+    ignoreOffline: boolean
   ): Request {
-    if (!this.isOnline.value) {
+    if (!this.isOnline.value && !ignoreOffline) {
       const error = new Error('device is not online');
 
       if (!suppressErrors) {
@@ -432,7 +423,7 @@ export class Device<T extends Transport = Transport> {
     if (!this._transport.isConnected.value) return;
 
     try {
-      this._transport._writeToTransport(RESET_PAYLOAD);
+      this._writeToTransport(...RESET_OPTIONS);
     } catch {
       this._log.error(() => 'error triggering reset');
     }
