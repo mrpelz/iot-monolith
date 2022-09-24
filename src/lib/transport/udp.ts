@@ -252,23 +252,21 @@ export class UDPTransport extends Transport {
     this._log.debug(() => `send ${payload.length} byte payload`);
     this._log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
-    if (this._sequenceHandling) {
-      for (let index = 0; index < REPEAT; index += 1) {
-        this._socket.send(
-          Buffer.concat([
+    for (let index = 0; index < REPEAT; index += 1) {
+      const data = this._sequenceHandling
+        ? Buffer.concat([
             Buffer.from([this._messageOutgoingSequence.get()]),
             payload,
-          ]),
-          this.port,
-          this.host
-        );
+          ])
+        : payload;
+
+      const sendOptions = [data, this.port, this.host] as const;
+
+      if (index) {
+        queueMicrotask(() => this._socket?.send(...sendOptions));
+      } else {
+        this._socket.send(...sendOptions);
       }
-
-      return;
-    }
-
-    for (let index = 0; index < REPEAT; index += 1) {
-      this._socket.send(payload, this.port, this.host);
     }
   }
 }
