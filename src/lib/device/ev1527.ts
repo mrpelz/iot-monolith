@@ -19,6 +19,6 @@ export class Ev1527Device extends Device<Ev1527Transport> {
     // eslint-disable-next-line no-bitwise
     deviceIdentifier.writeUIntBE(address, 0, byteLengthAddress);
 
-    super(logger, transport, deviceIdentifier, 0);
+    super(logger, transport, deviceIdentifier, false);
   }
 }

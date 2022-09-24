@@ -122,7 +122,7 @@ export class Event<T = void> extends Property {
 export class Service<T = void, S = void> extends Property {
   private readonly _timeout: number;
 
-  constructor(identifier: Buffer, timeout = 5000) {
+  constructor(identifier: Buffer, timeout = DEFAULT_TIMEOUT) {
     super(identifier);
 
     this._timeout = timeout;
@@ -187,7 +187,7 @@ export class Device<T extends Transport = Transport> {
     logger: Logger,
     transport: T,
     identifier: DeviceIdentifier = null,
-    timeout = DEFAULT_TIMEOUT
+    timeout = true
   ) {
     this.transport = transport;
     this.identifier = identifier;
@@ -394,19 +394,18 @@ export class Device<T extends Transport = Transport> {
 
         if (success) {
           resolve(result as Buffer);
-        } else {
-          this._isOnline.value = false;
-
-          const error = new Error(
-            `could not complete request "${id}": "${(result as Error).message}"`
-          );
-
-          if (!suppressErrors) {
-            this._log.error(() => error.message);
-          }
-
-          reject(error);
+          return;
         }
+
+        const error = new Error(
+          `could not complete request "${id}": "${(result as Error).message}"`
+        );
+
+        if (!suppressErrors) {
+          this._log.error(() => error.message);
+        }
+
+        reject(error);
       };
 
       timer?.observe((_, observer) => {

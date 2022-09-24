@@ -10,6 +10,6 @@ export class ESPNowDevice extends Device<ESPNowTransport> {
     transport: ESPNowTransport,
     macAddress: MACAddress
   ) {
-    super(logger, transport, Buffer.from(macAddress), 0);
+    super(logger, transport, Buffer.from(macAddress), false);
   }
 }
