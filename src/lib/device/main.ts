@@ -7,9 +7,9 @@ import {
 } from '../state.js';
 import { Input, Logger } from '../log.js';
 import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
+import { Observer, ReadOnlyObservable } from '../observable.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { emptyBuffer, falseBuffer, readNumber, writeNumber } from '../data.js';
-import { ReadOnlyObservable } from '../observable.js';
 import { TCPDevice } from './tcp.js';
 import { TCPTransport } from '../transport/tcp.js';
 import { Timer } from '../timer.js';
@@ -262,6 +262,8 @@ export class Device<T extends Transport = Transport> {
       this._keepaliveMissedPackets = 0;
       this._isOnline.value = true;
     } catch {
+      this._log.info(() => 'missed keepalive response');
+
       this._keepaliveMissedPackets += 1;
 
       if (
@@ -269,6 +271,11 @@ export class Device<T extends Transport = Transport> {
       ) {
         return;
       }
+
+      this._log.warning(
+        () =>
+          `missed more keepalive responses (${this._keepaliveMissedPackets}) than tolerated (${this._keepaliveTolerateMissedPackets})`
+      );
 
       this._keepaliveMissedPackets = 0;
       this._isOnline.value = false;
@@ -399,9 +406,12 @@ export class Device<T extends Transport = Transport> {
       this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
 
       const timer = timeout ? new Timer(timeout) : null;
+      let observer: Observer | undefined;
 
       const resolver: RequestResolver = (success, result) => {
+        observer?.remove();
         timer?.stop();
+
         this._requests.delete(id);
 
         if (success) {
@@ -420,10 +430,9 @@ export class Device<T extends Transport = Transport> {
         reject(error);
       };
 
-      timer?.observe((_, observer) => {
-        observer.remove();
-        resolver(false, new Error('request timed out'));
-      });
+      observer = timer?.observe(() =>
+        resolver(false, new Error('request timed out'))
+      );
 
       this._requests.set(id, resolver);
       timer?.start();
