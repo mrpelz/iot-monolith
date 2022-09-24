@@ -49,7 +49,7 @@ const { lookup } = promises;
 // |                           |                      |                                  |                          |                      |
 //
 
-const sequenceRepeatOutgoing = 5;
+const REPEAT = 2;
 
 export class UDPTransport extends Transport {
   private readonly _keepAlive: number;
@@ -61,6 +61,7 @@ export class UDPTransport extends Transport {
     NUMBER_RANGES.uint8
   );
 
+  private readonly _repeat: number;
   private readonly _sequenceHandling: boolean;
   private readonly _shouldBeConnected = new BooleanState(false);
   private _socket: Socket | null = null;
@@ -252,7 +253,7 @@ export class UDPTransport extends Transport {
     this._log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
     if (this._sequenceHandling) {
-      for (let index = 0; index < sequenceRepeatOutgoing; index += 1) {
+      for (let index = 0; index < REPEAT; index += 1) {
         this._socket.send(
           Buffer.concat([
             Buffer.from([this._messageOutgoingSequence.get()]),
@@ -266,6 +267,8 @@ export class UDPTransport extends Transport {
       return;
     }
 
-    this._socket.send(payload, this.port, this.host);
+    for (let index = 0; index < REPEAT; index += 1) {
+      this._socket.send(payload, this.port, this.host);
+    }
   }
 }

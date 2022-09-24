@@ -31,11 +31,10 @@ type RequestResolver = <T extends boolean = boolean>(
 type DeviceIdentifier = Buffer | null;
 
 const VERSION = 2;
-const REPEAT = 2;
 const DEFAULT_TIMEOUT = 500;
 
-const KEEPALIVE_INTERVAL = 2000;
 const KEEPALIVE_COMMAND = 0xff;
+const KEEPALIVE_INTERVAL = 2000;
 
 const RESET_OPTIONS = [
   Buffer.from([0xff]),
@@ -266,21 +265,18 @@ export class Device<T extends Transport = Transport> {
   _writeToTransport(
     requestIdentifier: Buffer,
     serviceIdentifier: Buffer,
-    message: Buffer | null = null,
-    repeat = REPEAT
+    message: Buffer | null = null
   ): void {
-    const payload = Buffer.concat([
-      requestIdentifier,
-      versionBuffer,
-      serviceIdentifier,
-      // insert 0 service index when service identifier doesn't include index already
-      serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
-      message ? message : emptyBuffer,
-    ]);
-
-    for (let index = 0; index < repeat; index += 1) {
-      this._transport._writeToTransport(payload);
-    }
+    this._transport._writeToTransport(
+      Buffer.concat([
+        requestIdentifier,
+        versionBuffer,
+        serviceIdentifier,
+        // insert 0 service index when service identifier doesn't include index already
+        serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
+        message ? message : emptyBuffer,
+      ])
+    );
   }
 
   /**
