@@ -35,6 +35,7 @@ const DEFAULT_TIMEOUT = 500;
 
 const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_INTERVAL = 2000;
+const KEEPALIVE_TOLERATE_MISSED_PACKETS = 1;
 
 const RESET_OPTIONS = [
   Buffer.from([0xff]),
@@ -164,6 +165,8 @@ export class Device<T extends Transport = Transport> {
   private readonly _events = new Set<Event<unknown>>();
   private readonly _isOnline = new BooleanState(false);
   private readonly _keepalive?: Service<void, void>;
+  private _keepaliveMissedPackets = 0;
+  private readonly _keepaliveTolerateMissedPackets: number;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
@@ -186,7 +189,8 @@ export class Device<T extends Transport = Transport> {
     logger: Logger,
     transport: T,
     identifier: DeviceIdentifier = null,
-    timeout = true
+    keepalive = true,
+    keepaliveTolerateMissedPackets = KEEPALIVE_TOLERATE_MISSED_PACKETS
   ) {
     this.transport = transport;
     this.identifier = identifier;
@@ -225,11 +229,13 @@ export class Device<T extends Transport = Transport> {
       }
     });
 
-    if (!timeout) return;
+    if (!keepalive) return;
 
     this._keepalive = this.addService(
       new Service(Buffer.from([KEEPALIVE_COMMAND]))
     );
+
+    this._keepaliveTolerateMissedPackets = keepaliveTolerateMissedPackets;
 
     setInterval(() => this._sendKeepAlive(), KEEPALIVE_INTERVAL);
   }
@@ -253,8 +259,18 @@ export class Device<T extends Transport = Transport> {
     try {
       await this._keepalive.request(undefined, true, true);
 
+      this._keepaliveMissedPackets = 0;
       this._isOnline.value = true;
     } catch {
+      this._keepaliveMissedPackets += 1;
+
+      if (
+        this._keepaliveMissedPackets <= this._keepaliveTolerateMissedPackets
+      ) {
+        return;
+      }
+
+      this._keepaliveMissedPackets = 0;
       this._isOnline.value = false;
     }
   }
