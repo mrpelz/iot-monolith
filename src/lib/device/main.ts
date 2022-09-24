@@ -262,7 +262,7 @@ export class Device<T extends Transport = Transport> {
       this._keepaliveMissedPackets = 0;
       this._isOnline.value = true;
     } catch {
-      if (!this.isOnline) return;
+      if (!this.isOnline.value) return;
 
       this._log.info(() => 'missed keepalive response');
 
