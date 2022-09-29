@@ -269,7 +269,7 @@ export const properties = {
       return;
     }
 
-    properties.ceilingLight._set.flip();
+    groups.fuckLight._set.flip();
   });
   instances.wallswitchBed.longPress(
     () => (groups.allLights._set.value = false)
