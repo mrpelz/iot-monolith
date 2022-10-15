@@ -2,7 +2,12 @@
 
 import { Levels, addMeta } from '../lib/tree/main.js';
 import { all, allLights, kitchenAdjacentLights } from './groups.js';
-import { allLightsOff, allOff, kitchenAdjacentChillax } from './scenes.js';
+import {
+  allLightsOff,
+  allOff,
+  kitchenAdjacentBright,
+  kitchenAdjacentChillax,
+} from './scenes.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { bathtubBathroom } from './rooms/bathtub-bathroom.js';
 import { bedroom } from './rooms/bedroom.js';
@@ -23,6 +28,7 @@ const firstFloor = (() =>
       bathtubBathroom,
       bedroom,
       diningRoom: Object.assign(diningRoom, {
+        kitchenAdjacentBright,
         kitchenAdjacentChillax,
         kitchenAdjacentLights,
       }),
@@ -31,12 +37,15 @@ const firstFloor = (() =>
         kitchenAdjacentLights,
       }),
       kitchen: Object.assign(kitchen, {
+        kitchenAdjacentBright,
         kitchenAdjacentChillax,
         kitchenAdjacentLights,
       }),
+      kitchenAdjacentBright,
       kitchenAdjacentChillax,
       kitchenAdjacentLights,
       livingRoom: Object.assign(livingRoom, {
+        kitchenAdjacentBright,
         kitchenAdjacentChillax,
         kitchenAdjacentLights,
       }),

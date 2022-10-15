@@ -27,6 +27,25 @@ export const kitchenAdjacentChillax = scene(() => {
   kitchenProperties.ledRightWWhite.brightness._set.value = 0.5;
 }, 'lighting');
 
+export const kitchenAdjacentBright = scene(() => {
+  diningRoomProperties.ceilingLight._set.value = true;
+  diningRoomProperties.kallaxLedRGB.b._set.value = false;
+  diningRoomProperties.kallaxLedRGB.g._set.value = false;
+  diningRoomProperties.kallaxLedRGB.r._set.value = false;
+  diningRoomProperties.kallaxLedSide.brightness._set.value = 1;
+  diningRoomProperties.kallaxLedW.brightness._set.value = 1;
+  diningRoomProperties.standingLamp._set.value = true;
+  diningRoomProperties.tableLight._set.value = true;
+  kitchenProperties.ledLeftCWhite.brightness._set.value = 1;
+  kitchenProperties.ledLeftFloodlight.brightness._set.value = 1;
+  kitchenProperties.ledLeftWWhite.brightness._set.value = 1;
+  kitchenProperties.ledRightCWhite.brightness._set.value = 1;
+  kitchenProperties.ledRightFloodlight.brightness._set.value = 1;
+  kitchenProperties.ledRightWWhite.brightness._set.value = 1;
+  livingRoomProperties.ceilingLight._set.value = true;
+  livingRoomProperties.standingLamp._set.value = true;
+}, 'lighting');
+
 export const allLightsOff = scene(() => {
   allLights._set.value = false;
 }, 'lighting');

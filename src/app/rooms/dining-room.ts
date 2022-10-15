@@ -118,7 +118,9 @@ export const groups = {
 
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
-  const { kitchenAdjacentChillax } = await import('../scenes.js');
+  const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
+    '../scenes.js'
+  );
 
   instances.fanButton.up(() => properties.fan._set.flip());
 
@@ -163,7 +165,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentBright._set.trigger();
   });
 })();
 

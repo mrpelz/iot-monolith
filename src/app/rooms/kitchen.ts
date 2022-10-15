@@ -99,14 +99,21 @@ export const groups = {
 
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
-  const { kitchenAdjacentChillax } = await import('../scenes.js');
+  const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
+    '../scenes.js'
+  );
 
   instances.leftButton.observe(() => groups.allLights._set.flip());
 
   instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());
-  instances.wallswitchFrontTop.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
-  );
+  instances.wallswitchFrontTop.longPress(() => {
+    if (kitchenAdjacentLights._set.value) {
+      kitchenAdjacentLights._set.value = false;
+      return;
+    }
+
+    kitchenAdjacentBright._set.trigger();
+  });
 
   instances.wallswitchFrontBottomLeft.up(() =>
     groups.worklightWWhite._set.flip()

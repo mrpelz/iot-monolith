@@ -94,7 +94,9 @@ export const scenes = {
 
 (async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
-  const { kitchenAdjacentChillax } = await import('../scenes.js');
+  const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
+    '../scenes.js'
+  );
   const { instances: testRoomInstances } = await import('./test-room.js');
 
   instances.couchButton.topLeft.observe(() => {
@@ -163,7 +165,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentBright._set.trigger();
   });
 })();
 
