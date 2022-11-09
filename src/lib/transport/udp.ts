@@ -50,6 +50,7 @@ const { lookup } = promises;
 //
 
 const REPEAT = 2;
+const REPEAT_PADDING_MS = 10;
 
 export class UDPTransport extends Transport {
   private readonly _keepAlive: number;
@@ -260,12 +261,12 @@ export class UDPTransport extends Transport {
           ])
         : payload;
 
-      const sendOptions = [data, this.port, this.host] as const;
+      const send = () => this._socket?.send(data, this.port, this.host);
 
       if (index) {
-        queueMicrotask(() => this._socket?.send(...sendOptions));
+        setTimeout(send, REPEAT_PADDING_MS * index);
       } else {
-        this._socket.send(...sendOptions);
+        send();
       }
     }
   }
