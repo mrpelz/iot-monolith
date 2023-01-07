@@ -12,13 +12,20 @@ export const shellyi3 = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, persistence, timings),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        undefined,
+        initiallyOnline
+      ),
       button0: button(device, 0),
       button1: button(device, 1),
       button2: button(device, 2),

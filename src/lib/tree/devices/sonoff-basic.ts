@@ -15,7 +15,8 @@ export const sonoffBasic = (
   timings: Timings,
   actuated: string,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
 
@@ -25,7 +26,13 @@ export const sonoffBasic = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, persistence, timings, indicator),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        indicator,
+        initiallyOnline
+      ),
       button: button(device, 0),
       indicator: {
         $: indicator,

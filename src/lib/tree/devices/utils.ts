@@ -31,11 +31,12 @@ export const defaultsIpDevice = (
   device: UDPDevice | TCPDevice,
   persistence: Persistence,
   timings: Timings,
-  indicator?: Indicator
+  indicator?: Indicator,
+  initiallyOnline?: boolean
 ) => ({
   ...hello(device, timings.moderate || timings.default),
   ...online(device),
-  ...setOnline(device, persistence),
+  ...setOnline(device, persistence, initiallyOnline),
   ...resetDevice(device),
   ...(indicator ? identifyDevice(indicator) : {}),
 });

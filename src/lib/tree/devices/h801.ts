@@ -14,7 +14,8 @@ export const h801 = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
 
@@ -28,7 +29,13 @@ export const h801 = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, persistence, timings, indicator),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        indicator,
+        initiallyOnline
+      ),
       indicator: {
         $: indicator,
       },

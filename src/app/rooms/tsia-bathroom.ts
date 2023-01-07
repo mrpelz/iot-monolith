@@ -6,6 +6,7 @@ import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import { h801 } from '../../lib/tree/devices/h801.js';
 import { isDay } from '../util.js';
 import { logger } from '../logging.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
@@ -23,26 +24,44 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'bathtubbathroom-ceilinglight.lan.wurstsalat.cloud'
+    'tsiabathroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 721216),
+  leds: h801(
+    logger,
+    persistence,
+    timings,
+    'tsiabathroom-leds.lan.wurstsalat.cloud',
+    undefined,
+    false
+  ),
+  mirrorLight: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'lighting',
+    'tsiabathroom-mirrorlight.lan.wurstsalat.cloud',
+    undefined,
+    false
+  ),
   nightLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting',
-    'bathtubbathroom-nightlight.lan.wurstsalat.cloud'
+    'tsiabathroom-nightlight.lan.wurstsalat.cloud'
   ),
   wallswitchMirror: shellyi3(
     logger,
     persistence,
     timings,
-    'bathtubbathroom-wallswitchmirror.lan.wurstsalat.cloud'
+    'tsiabathroom-wallswitchmirror.lan.wurstsalat.cloud'
   ),
 };
 
 export const instances = {
   bathtubButton: devices.bathtubButton.$,
+  mirrorLightButton: devices.mirrorLight.button.$,
   nightLightButton: devices.nightLight.button.$,
   wallswitchDoor: devices.ceilingLight.button.$,
   wallswitchMirror: devices.wallswitchMirror.button0.$,
@@ -50,16 +69,23 @@ export const instances = {
 
 export const properties = {
   allLightsTimer: offTimer(epochs.minute * 30, true, [
-    'bathtubBathroom/allLightsTimer',
+    'tsiabathroom/allLightsTimer',
     persistence,
   ]),
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  mirrorLed: devices.leds.ledR,
+  mirrorLight: devices.mirrorLight.relay,
   nightLight: devices.nightLight.relay,
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight, properties.nightLight]),
+  allLights: outputGrouping([
+    properties.ceilingLight,
+    properties.mirrorLed,
+    properties.mirrorLight,
+    properties.nightLight,
+  ]),
 };
 
 (() => {
@@ -81,28 +107,40 @@ export const groups = {
     }
 
     if (
-      !properties.nightLight._get.value &&
-      !properties.ceilingLight._get.value
+      properties.ceilingLight._get.value &&
+      properties.mirrorLight._get.value &&
+      properties.nightLight._get.value
     ) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    if (!groups.allLights._set.value) {
       properties.nightLight._set.value = true;
       return;
     }
 
-    if (
-      properties.nightLight._get.value &&
-      !properties.ceilingLight._get.value
-    ) {
-      groups.allLights._set.value = true;
+    if (properties.nightLight._get.value) {
+      properties.nightLight._set.value = false;
+      properties.mirrorLight._set.value = true;
       return;
     }
 
-    if (
-      properties.nightLight._get.value &&
-      properties.ceilingLight._get.value
-    ) {
-      groups.allLights._set.value = false;
+    if (properties.mirrorLight._get.value) {
+      properties.mirrorLight._set.value = false;
+      properties.ceilingLight._set.value = true;
+      return;
+    }
+
+    if (properties.ceilingLight._get.value) {
+      groups.allLights._set.value = true;
     }
   });
+
+  instances.mirrorLightButton.up(() => properties.mirrorLight._set.flip());
+  instances.mirrorLightButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
 
   instances.nightLightButton.up(() => properties.nightLight._set.flip());
   instances.nightLightButton.longPress(
@@ -149,7 +187,7 @@ export const groups = {
   });
 })();
 
-export const bathtubBathroom = addMeta(
+export const tsiaBathroom = addMeta(
   {
     devices,
     ...groups,
@@ -157,6 +195,6 @@ export const bathtubBathroom = addMeta(
   },
   {
     level: Levels.ROOM,
-    name: 'bathtubBathroom',
+    name: 'tsiaBathroom',
   }
 );

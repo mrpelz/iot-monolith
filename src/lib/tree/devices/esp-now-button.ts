@@ -17,6 +17,7 @@ export type EspNowButtonOptions = {
   };
   wifi: {
     host: string;
+    initiallyOnline?: boolean;
     port?: number;
   };
 };
@@ -51,14 +52,20 @@ export const espNowButton = (
   })();
 
   const wifi = (() => {
-    const { host, port = 1337 } = options.wifi;
+    const { host, initiallyOnline, port = 1337 } = options.wifi;
     const device = new UDPDevice(logger, host, port);
 
     return {
       wifi: addMeta(
         {
           ...children(device),
-          ...defaultsIpDevice(device, persistence, timings),
+          ...defaultsIpDevice(
+            device,
+            persistence,
+            timings,
+            undefined,
+            initiallyOnline
+          ),
         },
         {
           isSubDevice: true,

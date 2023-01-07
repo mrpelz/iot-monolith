@@ -14,14 +14,21 @@ export const shelly1 = (
   timings: Timings,
   actuated: string,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
   const relay = output(device, 0, actuated, undefined, persistence);
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, persistence, timings),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        undefined,
+        initiallyOnline
+      ),
       button: button(device, 0),
       relay,
     },

@@ -27,7 +27,8 @@ export const roomSensor = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
 
@@ -41,7 +42,13 @@ export const roomSensor = (
 
   return addMeta(
     {
-      ...defaultsIpDevice(device, persistence, timings),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        undefined,
+        initiallyOnline
+      ),
       ...mhz19(device, timings.slow || timings.default),
       ...tsl2561(device, timings.default),
       humidity,

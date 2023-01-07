@@ -16,7 +16,8 @@ export const rfBridge = (
   persistence: Persistence,
   timings: Timings,
   host: string,
-  port = 1337
+  port = 1337,
+  initiallyOnline?: boolean
 ) => {
   const device = new UDPDevice(logger, host, port);
 
@@ -35,7 +36,13 @@ export const rfBridge = (
   return addMeta(
     {
       ...children,
-      ...defaultsIpDevice(device, persistence, timings),
+      ...defaultsIpDevice(
+        device,
+        persistence,
+        timings,
+        undefined,
+        initiallyOnline
+      ),
       ...rfReadout(espNowEvent, rf433Event),
     },
     {
