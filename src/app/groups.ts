@@ -41,6 +41,8 @@ export const all = outputGrouping(
     livingRoomProperties.fan,
     livingRoomProperties.standingLamp,
     mrpelzBathroomProperties.ceilingLight,
+    mrpelzBathroomProperties.mirrorHeating,
+    mrpelzBathroomProperties.mirrorLed,
     mrpelzBathroomProperties.mirrorLight,
     mrpelzBathroomProperties.nightLight,
     officeProperties.ceilingLight,
@@ -49,6 +51,8 @@ export const all = outputGrouping(
     officeProperties.workbenchLedWWhite,
     storageRoomProperties.ceilingLight,
     tsiaBathroomProperties.ceilingLight,
+    tsiaBathroomProperties.mirrorLed,
+    tsiaBathroomProperties.mirrorLight,
     tsiaBathroomProperties.nightLight,
   ],
   'group'
@@ -83,6 +87,7 @@ export const allLights = outputGrouping([
   livingRoomProperties.ceilingLight,
   livingRoomProperties.standingLamp,
   mrpelzBathroomProperties.ceilingLight,
+  mrpelzBathroomProperties.mirrorLed,
   mrpelzBathroomProperties.mirrorLight,
   mrpelzBathroomProperties.nightLight,
   officeProperties.ceilingLight,
@@ -91,6 +96,8 @@ export const allLights = outputGrouping([
   officeProperties.workbenchLedWWhite,
   storageRoomProperties.ceilingLight,
   tsiaBathroomProperties.ceilingLight,
+  tsiaBathroomProperties.mirrorLed,
+  tsiaBathroomProperties.mirrorLight,
   tsiaBathroomProperties.nightLight,
 ]);
 

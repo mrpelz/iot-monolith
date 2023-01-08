@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Timings, rfReadout } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './utils.js';
+import { defaultsIpDevice, deviceMeta } from './util.js';
 import { ESPNow } from '../../events/esp-now.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';

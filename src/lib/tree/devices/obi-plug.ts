@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Timings, button } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './utils.js';
+import { defaultsIpDevice, deviceMeta } from './util.js';
 import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';

@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
+import {
+  isAstronomicalTwilight,
+  isCivilTwilight,
+  isDay,
+  isNauticalTwilight,
+  sunElevation,
+} from '../util.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
-import { isDay } from '../util.js';
 import { logger } from '../logging.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
@@ -31,18 +37,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'tsiabathroom-leds.lan.wurstsalat.cloud',
-    undefined,
-    false
+    'tsiabathroom-leds.lan.wurstsalat.cloud'
   ),
   mirrorLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting',
-    'tsiabathroom-mirrorlight.lan.wurstsalat.cloud',
-    undefined,
-    false
+    'tsiabathroom-mirrorlight.lan.wurstsalat.cloud'
   ),
   nightLight: sonoffBasic(
     logger,
@@ -86,6 +88,11 @@ export const groups = {
     properties.mirrorLight,
     properties.nightLight,
   ]),
+  ceilingLights: outputGrouping([
+    properties.ceilingLight,
+    properties.mirrorLight,
+  ]),
+  nightLights: outputGrouping([properties.mirrorLed, properties.nightLight]),
 };
 
 (() => {
@@ -167,15 +174,52 @@ export const groups = {
   properties.door.open._get.observe((value) => {
     if (!value) return;
 
-    if (isDay()) {
-      properties.ceilingLight._set.value = true;
-      properties.nightLight._set.value = false;
+    const elevation = sunElevation();
+
+    if (
+      isDay(elevation) &&
+      (devices.ceilingLight.online._get.value ||
+        devices.mirrorLight.online._get.value)
+    ) {
+      groups.ceilingLights._set.value = true;
+      groups.nightLights._set.value = false;
 
       return;
     }
 
-    properties.ceilingLight._set.value = false;
-    properties.nightLight._set.value = true;
+    if (isCivilTwilight(elevation) && devices.mirrorLight.online._get.value) {
+      properties.ceilingLight._set.value = false;
+      properties.mirrorLight._set.value = true;
+      groups.nightLights._set.value = false;
+
+      return;
+    }
+
+    if (isNauticalTwilight(elevation) && devices.nightLight.online._get.value) {
+      groups.ceilingLights._set.value = false;
+      properties.nightLight._set.value = true;
+      properties.mirrorLed._set.value = false;
+
+      return;
+    }
+
+    if (devices.leds.online._get.value) {
+      if (isAstronomicalTwilight(elevation)) {
+        groups.ceilingLights._set.value = false;
+        properties.nightLight._set.value = false;
+        properties.mirrorLed.brightness._set.value = 1;
+
+        return;
+      }
+
+      groups.ceilingLights._set.value = false;
+      properties.nightLight._set.value = false;
+      properties.mirrorLed.brightness._set.value = 0.1;
+
+      return;
+    }
+
+    groups.allLights._set.value = true;
   });
 
   groups.allLights._set.observe((value) => {

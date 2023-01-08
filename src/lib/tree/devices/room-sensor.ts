@@ -17,7 +17,7 @@ import {
   mhz19,
   tsl2561,
 } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './utils.js';
+import { defaultsIpDevice, deviceMeta } from './util.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';

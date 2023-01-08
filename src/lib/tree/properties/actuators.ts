@@ -360,7 +360,7 @@ export const scene = (handler: () => void, actuated: string) =>
 
 export const setOnline = (
   device: IpDevice,
-  persistence: Persistence,
+  _: Persistence,
   initiallyOnline = true
 ) => {
   const state = new BooleanState(initiallyOnline);
@@ -379,10 +379,10 @@ export const setOnline = (
     device.transport.disconnect();
   });
 
-  persistence.observe(
-    `setOnline/${device.transport.host}:${device.transport.port}`,
-    state
-  );
+  // persistence.observe(
+  //   `setOnline/${device.transport.host}:${device.transport.port}`,
+  //   state
+  // );
 
   return {
     setOnline: addMeta(

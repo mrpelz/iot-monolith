@@ -88,7 +88,7 @@ export const lastSeen = <T>(
   };
 };
 
-const metricStaleness = <T>(
+export const metricStaleness = <T>(
   state: ReadOnlyObservable<T | null>,
   timeout: number
 ) => {

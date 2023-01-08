@@ -3,7 +3,7 @@
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
 import { Levels, addMeta } from '../main.js';
 import { Timings, button } from '../properties/sensors.js';
-import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './utils.js';
+import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './util.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';

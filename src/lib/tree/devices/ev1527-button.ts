@@ -6,7 +6,7 @@ import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Logger } from '../../log.js';
 import { StatelessMultiValueEvent } from '../../items/event.js';
 import { addMeta } from '../main.js';
-import { deviceMeta } from './utils.js';
+import { deviceMeta } from './util.js';
 import { lastSeen } from '../properties/sensors.js';
 
 export const ev1527ButtonX4 = (

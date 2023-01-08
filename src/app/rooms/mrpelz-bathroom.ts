@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
+import {
+  isAstronomicalTwilight,
+  isCivilTwilight,
+  isDay,
+  isNauticalTwilight,
+  sunElevation,
+} from '../util.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
-import { isDay } from '../util.js';
 import { logger } from '../logging.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
@@ -30,18 +36,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'mrpelzbathroom-leds.lan.wurstsalat.cloud',
-    undefined,
-    false
+    'mrpelzbathroom-leds.lan.wurstsalat.cloud'
   ),
   mirrorHeating: sonoffBasic(
     logger,
     persistence,
     timings,
     'heating',
-    'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud',
-    undefined,
-    false
+    'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud'
   ),
   mirrorLight: sonoffBasic(
     logger,
@@ -90,13 +92,16 @@ export const properties = {
 };
 
 export const groups = {
-  all: outputGrouping([
-    properties.ceilingLight,
-    properties.mirrorHeating,
-    properties.mirrorLed,
-    properties.mirrorLight,
-    properties.nightLight,
-  ]),
+  all: outputGrouping(
+    [
+      properties.ceilingLight,
+      properties.mirrorHeating,
+      properties.mirrorLed,
+      properties.mirrorLight,
+      properties.nightLight,
+    ],
+    'group'
+  ),
   allLights: outputGrouping([
     properties.ceilingLight,
     properties.mirrorLed,
@@ -107,6 +112,7 @@ export const groups = {
     properties.ceilingLight,
     properties.mirrorLight,
   ]),
+  mirrorLights: outputGrouping([properties.mirrorLed, properties.mirrorLight]),
   nightLights: outputGrouping([properties.mirrorLed, properties.nightLight]),
 };
 
@@ -200,15 +206,58 @@ export const groups = {
   properties.door.open._get.observe((value) => {
     if (!value) return;
 
-    if (isDay()) {
+    const elevation = sunElevation();
+
+    if (
+      isDay(elevation) &&
+      (devices.ceilingLight.online._get.value ||
+        devices.mirrorLight.online._get.value)
+    ) {
       groups.ceilingLights._set.value = true;
       groups.nightLights._set.value = false;
+      properties.mirrorLed.brightness._set.value = 1;
 
       return;
     }
 
-    groups.ceilingLights._set.value = false;
-    groups.nightLights._set.value = true;
+    if (
+      isCivilTwilight(elevation) &&
+      (devices.leds.online._get.value || devices.mirrorLight.online._get.value)
+    ) {
+      properties.ceilingLight._set.value = false;
+      groups.mirrorLights._set.value = true;
+      properties.nightLight._set.value = false;
+
+      return;
+    }
+
+    if (
+      isNauticalTwilight(elevation) &&
+      (devices.leds.online._get.value || devices.nightLight.online._get.value)
+    ) {
+      groups.ceilingLights._set.value = false;
+      groups.nightLights._set.value = true;
+
+      return;
+    }
+
+    if (devices.leds.online._get.value) {
+      if (isAstronomicalTwilight(elevation)) {
+        groups.ceilingLights._set.value = false;
+        properties.nightLight._set.value = true;
+        properties.mirrorLed._set.value = false;
+
+        return;
+      }
+
+      groups.ceilingLights._set.value = false;
+      properties.nightLight._set.value = false;
+      properties.mirrorLed.brightness._set.value = 0.5;
+
+      return;
+    }
+
+    groups.allLights._set.value = true;
   });
 
   groups.all._set.observe((value) => {

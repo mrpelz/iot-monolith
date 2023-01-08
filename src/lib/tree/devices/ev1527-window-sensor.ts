@@ -15,7 +15,7 @@ import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { Logger } from '../../log.js';
 import { MultiValueEvent } from '../../items/event.js';
 import { Persistence } from '../../persistence.js';
-import { deviceMeta } from './utils.js';
+import { deviceMeta } from './util.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,
