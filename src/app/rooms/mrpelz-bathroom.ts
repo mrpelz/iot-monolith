@@ -303,7 +303,7 @@ export const scenes = {
     groups.all._set.value = false;
   });
 
-  groups.all._set.observe((value) => {
+  groups.allLights._set.observe((value) => {
     properties.mirrorHeating._set.value = value;
   });
 })();
