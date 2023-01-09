@@ -302,6 +302,10 @@ export const scenes = {
   properties.allTimer.$.observe(() => {
     groups.all._set.value = false;
   });
+
+  groups.all._set.observe((value) => {
+    properties.mirrorHeating._set.value = value;
+  });
 })();
 
 export const mrpelzBathroom = addMeta(
