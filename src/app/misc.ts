@@ -41,6 +41,12 @@ export const sunElevation = (schedule: Schedule) => {
     const state = getter();
 
     elevation.value = state.elevation;
+
+    isAstronomicalTwilight.value = state.isAstronomicalTwilight;
+    isCivilTwilight.value = state.isCivilTwilight;
+    isDay.value = state.isDay;
+    isNauticalTwilight.value = state.isNauticalTwilight;
+    isNight.value = state.isNight;
   });
 
   return {

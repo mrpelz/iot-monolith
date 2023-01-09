@@ -245,41 +245,56 @@ export const scenes = {
   properties.door.open._get.observe((value) => {
     if (!value) return;
 
+    let failover = false;
+
     const elevation = sunElevation();
 
-    if (isNight(elevation) && devices.nightLight.online._get.value) {
-      scenes.nightLighting._set.trigger();
+    if (isNight(elevation)) {
+      if (devices.nightLight.online._get.value) {
+        scenes.nightLighting._set.trigger();
 
-      return;
+        return;
+      }
+
+      failover = true;
     }
 
-    if (
-      isAstronomicalTwilight(elevation) &&
-      (devices.leds.online._get.value || devices.nightLight.online._get.value)
-    ) {
-      scenes.astronomicalTwilightLighting._set.trigger();
+    if (isAstronomicalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.nightLight.online._get.value
+      ) {
+        scenes.astronomicalTwilightLighting._set.trigger();
 
-      return;
+        return;
+      }
+
+      failover = true;
     }
 
-    if (
-      isNauticalTwilight(elevation) &&
-      (devices.leds.online._get.value || devices.mirrorLight.online._get.value)
-    ) {
-      scenes.nauticalTwilightLighting._set.trigger();
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.mirrorLight.online._get.value
+      ) {
+        scenes.nauticalTwilightLighting._set.trigger();
 
-      return;
+        return;
+      }
+
+      failover = true;
     }
 
-    if (
-      isCivilTwilight(elevation) &&
-      (devices.leds.online._get.value ||
+    if (isCivilTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
         devices.mirrorLight.online._get.value ||
-        devices.nightLight.online._get.value)
-    ) {
-      scenes.civilTwilightLighting._set.trigger();
+        devices.nightLight.online._get.value
+      ) {
+        scenes.civilTwilightLighting._set.trigger();
 
-      return;
+        return;
+      }
     }
 
     if (
