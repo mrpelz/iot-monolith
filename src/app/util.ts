@@ -32,4 +32,4 @@ export const isAstronomicalTwilight = (elevation?: number): boolean =>
   isTwilightPhase(-18, -12, elevation);
 
 export const isNight = (elevation?: number): boolean =>
-  isTwilightPhase(undefined, 0, elevation);
+  isTwilightPhase(undefined, -18, elevation);
