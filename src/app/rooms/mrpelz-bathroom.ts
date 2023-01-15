@@ -110,7 +110,7 @@ export const groups = {
   ]),
 };
 
-export const scenes = {
+const scenesPartial = {
   astronomicalTwilightLighting: scene(() => {
     properties.mirrorLed.brightness._set.value = 1;
     properties.nightLight._set.value = true;
@@ -145,6 +145,75 @@ export const scenes = {
     properties.ceilingLight._set.value = false;
     properties.mirrorLed._set.value = false;
     properties.mirrorLight._set.value = false;
+  }, 'light'),
+};
+
+export const scenes = {
+  ...scenesPartial,
+  autoLight: scene(() => {
+    let failover = false;
+
+    const elevation = sunElevation();
+
+    if (isNight(elevation)) {
+      if (devices.nightLight.online._get.value) {
+        scenes.nightLighting._set.trigger();
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isAstronomicalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.nightLight.online._get.value
+      ) {
+        scenes.astronomicalTwilightLighting._set.trigger();
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.mirrorLight.online._get.value
+      ) {
+        scenes.nauticalTwilightLighting._set.trigger();
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isCivilTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.mirrorLight.online._get.value ||
+        devices.nightLight.online._get.value
+      ) {
+        scenes.civilTwilightLighting._set.trigger();
+
+        return;
+      }
+    }
+
+    if (
+      devices.ceilingLight.online._get.value ||
+      devices.leds.online._get.value ||
+      devices.mirrorLight.online._get.value
+    ) {
+      scenes.dayLighting._set.trigger();
+
+      return;
+    }
+
+    groups.allLights._set.value = true;
   }, 'light'),
 };
 
@@ -219,7 +288,11 @@ export const scenes = {
       properties.nightLight._set.value
     ) {
       scenes.dayLighting._set.trigger();
+
+      return;
     }
+
+    scenes.nightLighting._set.trigger();
   });
 
   instances.wallswitchDoor.up(() => {
@@ -228,7 +301,7 @@ export const scenes = {
       return;
     }
 
-    properties.ceilingLight._set.flip();
+    scenes.dayLighting._set.trigger();
   });
   instances.wallswitchDoor.longPress(() => (groups.all._set.value = false));
 
@@ -237,7 +310,14 @@ export const scenes = {
     () => (groups.all._set.value = false)
   );
 
-  instances.wallswitchMirrorBottom.up(() => properties.nightLight._set.flip());
+  instances.wallswitchMirrorBottom.up(() => {
+    if (groups.all._set.value) {
+      groups.all._set.value = false;
+      return;
+    }
+
+    scenes.nightLighting._set.trigger();
+  });
   instances.wallswitchMirrorBottom.longPress(
     () => (groups.all._set.value = false)
   );
@@ -245,69 +325,7 @@ export const scenes = {
   properties.door.open._get.observe((value) => {
     if (!value) return;
 
-    let failover = false;
-
-    const elevation = sunElevation();
-
-    if (isNight(elevation)) {
-      if (devices.nightLight.online._get.value) {
-        scenes.nightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isAstronomicalTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.nightLight.online._get.value
-      ) {
-        scenes.astronomicalTwilightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isNauticalTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value
-      ) {
-        scenes.nauticalTwilightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isCivilTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value ||
-        devices.nightLight.online._get.value
-      ) {
-        scenes.civilTwilightLighting._set.trigger();
-
-        return;
-      }
-    }
-
-    if (
-      devices.ceilingLight.online._get.value ||
-      devices.leds.online._get.value ||
-      devices.mirrorLight.online._get.value
-    ) {
-      scenes.dayLighting._set.trigger();
-
-      return;
-    }
-
-    groups.allLights._set.value = true;
+    scenes.autoLight._set.trigger();
   });
 
   groups.all._set.observe((value) => {
