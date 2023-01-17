@@ -112,7 +112,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentBright._set.trigger();
+    kitchenAdjacentBright._set.value = true;
   });
 
   instances.wallswitchFrontBottomLeft.up(() =>
@@ -124,7 +124,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   instances.wallswitchFrontBottomRight.up(() => groups.floodlight._set.flip());
@@ -134,7 +134,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   instances.wallswitchBack.up(() => groups.allLights._set.flip());
@@ -144,7 +144,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 })();
 

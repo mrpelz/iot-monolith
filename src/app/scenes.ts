@@ -1,55 +1,68 @@
+import {
+  SceneMember,
+  scene,
+  trigger,
+} from '../lib/tree/properties/actuators.js';
 import { all, allLights } from './groups.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
-import { scene } from '../lib/tree/properties/actuators.js';
 
-export const kitchenAdjacentChillax = scene(() => {
-  diningRoomProperties.ceilingLight._set.value = false;
-  diningRoomProperties.kallaxLedRGB.b._set.value = false;
-  diningRoomProperties.kallaxLedRGB.g._set.value = false;
-  diningRoomProperties.kallaxLedW._set.value = false;
-  diningRoomProperties.tableLight._set.value = false;
-  hallwayProperties.ceilingLightBack._set.value = false;
-  hallwayProperties.ceilingLightFront._set.value = false;
-  kitchenProperties.ledLeftCWhite._set.value = false;
-  kitchenProperties.ledLeftFloodlight._set.value = false;
-  kitchenProperties.ledRightCWhite._set.value = false;
-  kitchenProperties.ledRightFloodlight._set.value = false;
-  livingRoomProperties.ceilingLight._set.value = false;
+export const kitchenAdjacentChillax = scene(
+  [
+    new SceneMember(diningRoomProperties.ceilingLight._set, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.b._set, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.g._set, false),
+    new SceneMember(
+      diningRoomProperties.kallaxLedRGB.r.brightness._set,
+      0.5,
+      0
+    ),
+    new SceneMember(diningRoomProperties.kallaxLedSide.brightness._set, 0.5, 0),
+    new SceneMember(diningRoomProperties.kallaxLedW._set, false),
+    new SceneMember(diningRoomProperties.standingLamp._set, true, false),
+    new SceneMember(diningRoomProperties.tableLight._set, false),
+    new SceneMember(hallwayProperties.ceilingLightBack._set, false),
+    new SceneMember(hallwayProperties.ceilingLightFront._set, false),
+    new SceneMember(kitchenProperties.ledLeftCWhite._set, false),
+    new SceneMember(kitchenProperties.ledLeftFloodlight._set, false),
+    new SceneMember(kitchenProperties.ledLeftWWhite.brightness._set, 0.5, 0),
+    new SceneMember(kitchenProperties.ledRightCWhite._set, false),
+    new SceneMember(kitchenProperties.ledRightFloodlight._set, false),
+    new SceneMember(kitchenProperties.ledRightWWhite.brightness._set, 0.5, 0),
+    new SceneMember(livingRoomProperties.ceilingLight._set, false),
+    new SceneMember(livingRoomProperties.standingLamp._set, true, false),
+  ],
+  'lighting'
+);
 
-  diningRoomProperties.standingLamp._set.value = true;
-  livingRoomProperties.standingLamp._set.value = true;
-  diningRoomProperties.kallaxLedRGB.r.brightness._set.value = 0.5;
-  diningRoomProperties.kallaxLedSide.brightness._set.value = 0.5;
-  kitchenProperties.ledLeftWWhite.brightness._set.value = 0.5;
-  kitchenProperties.ledRightWWhite.brightness._set.value = 0.5;
-}, 'lighting');
+export const kitchenAdjacentBright = scene(
+  [
+    new SceneMember(diningRoomProperties.ceilingLight._set, true, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.b._set, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.g._set, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.r._set, false),
+    new SceneMember(diningRoomProperties.kallaxLedSide.brightness._set, 1, 0),
+    new SceneMember(diningRoomProperties.kallaxLedW.brightness._set, 1, 0),
+    new SceneMember(diningRoomProperties.standingLamp._set, true, false),
+    new SceneMember(diningRoomProperties.tableLight._set, true, false),
+    new SceneMember(kitchenProperties.ledLeftCWhite.brightness._set, 1, 0),
+    new SceneMember(kitchenProperties.ledLeftFloodlight.brightness._set, 1, 0),
+    new SceneMember(kitchenProperties.ledLeftWWhite.brightness._set, 1, 0),
+    new SceneMember(kitchenProperties.ledRightCWhite.brightness._set, 1, 0),
+    new SceneMember(kitchenProperties.ledRightFloodlight.brightness._set, 1, 0),
+    new SceneMember(kitchenProperties.ledRightWWhite.brightness._set, 1, 0),
+    new SceneMember(livingRoomProperties.ceilingLight._set, true, false),
+    new SceneMember(livingRoomProperties.standingLamp._set, true, false),
+  ],
+  'lighting'
+);
 
-export const kitchenAdjacentBright = scene(() => {
-  diningRoomProperties.ceilingLight._set.value = true;
-  diningRoomProperties.kallaxLedRGB.b._set.value = false;
-  diningRoomProperties.kallaxLedRGB.g._set.value = false;
-  diningRoomProperties.kallaxLedRGB.r._set.value = false;
-  diningRoomProperties.kallaxLedSide.brightness._set.value = 1;
-  diningRoomProperties.kallaxLedW.brightness._set.value = 1;
-  diningRoomProperties.standingLamp._set.value = true;
-  diningRoomProperties.tableLight._set.value = true;
-  kitchenProperties.ledLeftCWhite.brightness._set.value = 1;
-  kitchenProperties.ledLeftFloodlight.brightness._set.value = 1;
-  kitchenProperties.ledLeftWWhite.brightness._set.value = 1;
-  kitchenProperties.ledRightCWhite.brightness._set.value = 1;
-  kitchenProperties.ledRightFloodlight.brightness._set.value = 1;
-  kitchenProperties.ledRightWWhite.brightness._set.value = 1;
-  livingRoomProperties.ceilingLight._set.value = true;
-  livingRoomProperties.standingLamp._set.value = true;
-}, 'lighting');
-
-export const allLightsOff = scene(() => {
+export const allLightsOff = trigger(() => {
   allLights._set.value = false;
 }, 'lighting');
 
-export const allOff = scene(() => {
+export const allOff = trigger(() => {
   all._set.value = false;
 }, 'scene');

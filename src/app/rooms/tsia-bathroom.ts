@@ -2,13 +2,18 @@
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
 import {
+  SceneMember,
+  outputGrouping,
+  scene,
+  trigger,
+} from '../../lib/tree/properties/actuators.js';
+import {
   isAstronomicalTwilight,
   isCivilTwilight,
   isNauticalTwilight,
   isNight,
   sunElevation,
 } from '../util.js';
-import { outputGrouping, scene } from '../../lib/tree/properties/actuators.js';
 import { Timer } from '../../lib/timer.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
@@ -90,41 +95,120 @@ export const groups = {
   ]),
 };
 
+export const scenesPartial = {
+  astronomicalTwilightLighting: scene(
+    [
+      new SceneMember(properties.ceilingLight._set, false),
+      new SceneMember(properties.mirrorLed.brightness._set, 0),
+      new SceneMember(properties.mirrorLight._set, false),
+      new SceneMember(properties.nightLight._set, true, false),
+    ],
+    'light'
+  ),
+  civilTwilightLighting: scene(
+    [
+      new SceneMember(properties.ceilingLight._set, false),
+      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
+      new SceneMember(properties.mirrorLight._set, true, false),
+      new SceneMember(properties.nightLight._set, false),
+    ],
+    'light'
+  ),
+  dayLighting: scene(
+    [
+      new SceneMember(properties.ceilingLight._set, true, false),
+      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
+      new SceneMember(properties.mirrorLight._set, true, false),
+      new SceneMember(properties.nightLight._set, false),
+    ],
+    'light'
+  ),
+  nauticalTwilightLighting: scene(
+    [
+      new SceneMember(properties.ceilingLight._set, false),
+      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
+      new SceneMember(properties.mirrorLight._set, false),
+      new SceneMember(properties.nightLight._set, true, false),
+    ],
+    'light'
+  ),
+  nightLighting: scene(
+    [
+      new SceneMember(properties.ceilingLight._set, false),
+      new SceneMember(properties.mirrorLed.brightness._set, 0.5, 0),
+      new SceneMember(properties.mirrorLight._set, false),
+      new SceneMember(properties.nightLight._set, false),
+    ],
+    'light'
+  ),
+};
+
 export const scenes = {
-  astronomicalTwilightLighting: scene(() => {
-    properties.mirrorLed.brightness._set.value = 1;
-    properties.nightLight._set.value = true;
+  ...scenesPartial,
+  autoLight: trigger(() => {
+    let failover = false;
 
-    properties.ceilingLight._set.value = false;
-    properties.mirrorLight._set.value = false;
-  }, 'light'),
-  civilTwilightLighting: scene(() => {
-    properties.mirrorLed.brightness._set.value = 1;
-    properties.mirrorLight._set.value = true;
-    properties.nightLight._set.value = true;
+    const elevation = sunElevation();
 
-    properties.ceilingLight._set.value = false;
-  }, 'light'),
-  dayLighting: scene(() => {
-    properties.ceilingLight._set.value = true;
-    properties.mirrorLed.brightness._set.value = 1;
-    properties.mirrorLight._set.value = true;
+    if (isNight(elevation)) {
+      if (devices.nightLight.online._get.value) {
+        scenes.nightLighting._set.value = true;
 
-    properties.nightLight._set.value = false;
-  }, 'light'),
-  nauticalTwilightLighting: scene(() => {
-    properties.mirrorLed.brightness._set.value = 1;
-    properties.mirrorLight._set.value = true;
+        return;
+      }
 
-    properties.ceilingLight._set.value = false;
-    properties.nightLight._set.value = false;
-  }, 'light'),
-  nightLighting: scene(() => {
-    properties.nightLight._set.value = true;
+      failover = true;
+    }
 
-    properties.ceilingLight._set.value = false;
-    properties.mirrorLed._set.value = false;
-    properties.mirrorLight._set.value = false;
+    if (isAstronomicalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.nightLight.online._get.value
+      ) {
+        scenes.astronomicalTwilightLighting._set.value = true;
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.mirrorLight.online._get.value
+      ) {
+        scenes.nauticalTwilightLighting._set.value = true;
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isCivilTwilight(elevation) || failover) {
+      if (
+        devices.leds.online._get.value ||
+        devices.mirrorLight.online._get.value ||
+        devices.nightLight.online._get.value
+      ) {
+        scenes.civilTwilightLighting._set.value = true;
+
+        return;
+      }
+    }
+
+    if (
+      devices.ceilingLight.online._get.value ||
+      devices.leds.online._get.value ||
+      devices.mirrorLight.online._get.value
+    ) {
+      scenes.dayLighting._set.value = true;
+
+      return;
+    }
+
+    groups.allLights._set.value = true;
   }, 'light'),
 };
 
@@ -137,7 +221,7 @@ export const scenes = {
     timer.start();
 
     if (!groups.allLights._set.value) {
-      scenes.nightLighting._set.trigger();
+      scenes.nightLighting._set.value = true;
 
       return;
     }
@@ -154,7 +238,7 @@ export const scenes = {
       !properties.mirrorLight._set.value &&
       properties.nightLight._set.value
     ) {
-      scenes.astronomicalTwilightLighting._set.trigger();
+      scenes.astronomicalTwilightLighting._set.value = true;
 
       return;
     }
@@ -165,7 +249,7 @@ export const scenes = {
       properties.mirrorLed._set.value &&
       properties.nightLight._set.value
     ) {
-      scenes.nauticalTwilightLighting._set.trigger();
+      scenes.nauticalTwilightLighting._set.value = true;
 
       return;
     }
@@ -176,7 +260,7 @@ export const scenes = {
       properties.mirrorLed._set.value &&
       properties.mirrorLight._set.value
     ) {
-      scenes.civilTwilightLighting._set.trigger();
+      scenes.civilTwilightLighting._set.value = true;
 
       return;
     }
@@ -187,7 +271,7 @@ export const scenes = {
       properties.mirrorLight._set.value &&
       properties.nightLight._set.value
     ) {
-      scenes.dayLighting._set.trigger();
+      scenes.dayLighting._set.value = true;
     }
   });
 
@@ -207,7 +291,7 @@ export const scenes = {
       return;
     }
 
-    properties.ceilingLight._set.flip();
+    scenes.dayLighting._set.value = true;
   });
   instances.wallswitchDoor.longPress(
     () => (groups.allLights._set.value = false)
@@ -220,70 +304,9 @@ export const scenes = {
 
   properties.door.open._get.observe((value) => {
     if (!value) return;
+    if (groups.allLights._set.value) return;
 
-    let failover = false;
-
-    const elevation = sunElevation();
-
-    if (isNight(elevation)) {
-      if (devices.nightLight.online._get.value) {
-        scenes.nightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isAstronomicalTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.nightLight.online._get.value
-      ) {
-        scenes.astronomicalTwilightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isNauticalTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value
-      ) {
-        scenes.nauticalTwilightLighting._set.trigger();
-
-        return;
-      }
-
-      failover = true;
-    }
-
-    if (isCivilTwilight(elevation) || failover) {
-      if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value ||
-        devices.nightLight.online._get.value
-      ) {
-        scenes.civilTwilightLighting._set.trigger();
-
-        return;
-      }
-    }
-
-    if (
-      devices.ceilingLight.online._get.value ||
-      devices.leds.online._get.value ||
-      devices.mirrorLight.online._get.value
-    ) {
-      scenes.dayLighting._set.trigger();
-
-      return;
-    }
-
-    groups.allLights._set.value = true;
+    scenes.autoLight._set.trigger();
   });
 
   groups.allLights._set.observe((value) => {

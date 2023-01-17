@@ -155,7 +155,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
@@ -165,7 +165,7 @@ export const groups = {
       return;
     }
 
-    kitchenAdjacentBright._set.trigger();
+    kitchenAdjacentBright._set.value = true;
   });
 })();
 

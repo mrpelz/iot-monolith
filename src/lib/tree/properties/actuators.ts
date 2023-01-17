@@ -2,7 +2,9 @@
 
 import {
   AnyReadOnlyObservable,
+  AnyWritableObservable,
   ObservableGroup,
+  ProxyObservable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '../../observable.js';
@@ -347,7 +349,7 @@ export const identifyDevice = (indicator: Indicator) => ({
     ))(),
 });
 
-export const scene = (handler: () => void, actuated: string) =>
+export const trigger = (handler: () => void, actuated: string) =>
   addMeta(
     { _set: new NullState(() => handler()) },
     {
@@ -357,6 +359,59 @@ export const scene = (handler: () => void, actuated: string) =>
       valueType: ValueType.NULL,
     }
   );
+
+export class SceneMember<T> {
+  /* eslint-disable no-useless-constructor,@typescript-eslint/no-parameter-properties */
+  constructor(
+    public readonly observable: AnyWritableObservable<T>,
+    public readonly onValue: T,
+    public readonly offValue?: T
+  ) {}
+  /* eslint-enable no-useless-constructor,@typescript-eslint/no-parameter-properties */
+}
+
+export const scene = (
+  members: readonly SceneMember<unknown>[],
+  actuated: string
+) => {
+  const proxyObservables = members.map(
+    <T>({ observable, onValue, offValue = onValue }: SceneMember<T>) =>
+      new ProxyObservable<T, boolean>(
+        observable,
+        (value) => value === onValue,
+        (on) => (observable.value = on ? onValue : offValue)
+      )
+  );
+
+  const set = new BooleanStateGroup(
+    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+    proxyObservables
+  );
+
+  return addMeta(
+    {
+      _get: new ReadOnlyObservable(set),
+      _set: set,
+      flip: (() =>
+        addMeta(
+          { _set: new NullState(() => set.flip()) },
+          {
+            actuated: inherit,
+            level: Levels.PROPERTY,
+            parentRelation: ParentRelation.CONTROL_TRIGGER,
+            type: 'actuator',
+            valueType: ValueType.NULL,
+          }
+        ))(),
+    },
+    {
+      actuated,
+      level: Levels.PROPERTY,
+      type: 'actuator',
+      valueType: ValueType.BOOLEAN,
+    }
+  );
+};
 
 export const setOnline = (
   device: IpDevice,

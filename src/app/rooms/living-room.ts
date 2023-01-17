@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
-import { outputGrouping, scene } from '../../lib/tree/properties/actuators.js';
+import {
+  outputGrouping,
+  trigger,
+} from '../../lib/tree/properties/actuators.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -74,7 +77,7 @@ export const groups = {
 };
 
 export const scenes = {
-  mediaOff: scene(() => {
+  mediaOff: trigger(() => {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
@@ -82,7 +85,7 @@ export const scenes = {
       })
     );
   }, 'media'),
-  mediaOnOrSwitch: scene(() => {
+  mediaOnOrSwitch: trigger(() => {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
@@ -105,7 +108,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
   instances.couchButton.topRight.observe(() => properties.fan._set.flip());
   instances.couchButton.bottomLeft.observe(() =>
@@ -121,7 +124,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   testRoomInstances.espNowButton1.up(() =>
@@ -145,7 +148,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
@@ -155,7 +158,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentChillax._set.trigger();
+    kitchenAdjacentChillax._set.value = true;
   });
 
   instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
@@ -165,7 +168,7 @@ export const scenes = {
       return;
     }
 
-    kitchenAdjacentBright._set.trigger();
+    kitchenAdjacentBright._set.value = true;
   });
 })();
 
