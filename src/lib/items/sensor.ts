@@ -2,13 +2,34 @@ import { Observable, ReadOnlyObservable } from '../observable.js';
 import { Schedule } from '../schedule.js';
 import { Service } from '../device/main.js';
 
-export class SingleValueSensor<T = unknown> {
-  private readonly _service: Service<T, void>;
+export type MeasurementInputGetter<T> = () => T | null | Promise<T | null>;
+
+export class SingleValueSensor<T = unknown, S = void> {
+  private readonly _measurementInputGetter: S extends void
+    ? undefined
+    : MeasurementInputGetter<S>;
+
+  private readonly _service: Service<T, S>;
   private readonly _state = new Observable<T | null>(null);
 
   readonly state: ReadOnlyObservable<T | null>;
 
-  constructor(service: Service<T, void>, schedule: Schedule) {
+  constructor(service: Service<T, void>, schedule: Schedule);
+
+  constructor(
+    service: Service<T, S>,
+    schedule: Schedule,
+    measurementInputGetter: MeasurementInputGetter<S>
+  );
+
+  constructor(
+    service: Service<T, S>,
+    schedule: Schedule,
+    measurementInputGetter?: MeasurementInputGetter<S>
+  ) {
+    this._measurementInputGetter =
+      measurementInputGetter as typeof this._measurementInputGetter;
+
     this._service = service;
 
     this.state = new ReadOnlyObservable(this._state);
@@ -23,9 +44,23 @@ export class SingleValueSensor<T = unknown> {
   }
 
   private async _get() {
+    const measurementInputGetter = this._measurementInputGetter;
+
+    const input = measurementInputGetter
+      ? await (async () => {
+          try {
+            return measurementInputGetter();
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
+    if (measurementInputGetter && input === null) return;
+
     const result = await (async () => {
       try {
-        return await this._service.request(undefined, true);
+        return this._service.request(input as S, true);
       } catch {
         return null;
       }
@@ -50,10 +85,15 @@ export class SingleValueSensor<T = unknown> {
 
 export class MultiValueSensor<
   T extends Record<string, unknown>,
-  K extends keyof T
+  K extends keyof T,
+  S = void
 > {
+  private readonly _measurementInputGetter: S extends void
+    ? undefined
+    : MeasurementInputGetter<S>;
+
   private readonly _properties: readonly K[];
-  private readonly _service: Service<T, void>;
+  private readonly _service: Service<T, S>;
   private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
 
   readonly state = {} as {
@@ -64,9 +104,25 @@ export class MultiValueSensor<
     service: Service<T, void>,
     properties: readonly K[],
     schedule: Schedule
-  ) {
-    this._properties = properties;
+  );
 
+  constructor(
+    service: Service<T, S>,
+    properties: readonly K[],
+    schedule: Schedule,
+    measurementInputGetter: MeasurementInputGetter<S>
+  );
+
+  constructor(
+    service: Service<T, S>,
+    properties: readonly K[],
+    schedule: Schedule,
+    measurementInputGetter?: MeasurementInputGetter<S>
+  ) {
+    this._measurementInputGetter =
+      measurementInputGetter as typeof this._measurementInputGetter;
+
+    this._properties = properties;
     this._service = service;
 
     for (const property of this._properties) {
@@ -84,9 +140,23 @@ export class MultiValueSensor<
   }
 
   private async _get() {
+    const measurementInputGetter = this._measurementInputGetter;
+
+    const input = measurementInputGetter
+      ? await (async () => {
+          try {
+            return measurementInputGetter();
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
+    if (measurementInputGetter && input === null) return;
+
     const result = await (async () => {
       try {
-        return await this._service.request(undefined, true);
+        return await this._service.request(input as S, true);
       } catch {
         return null;
       }

@@ -13,8 +13,14 @@ import {
   BooleanStateGroup,
   ReadOnlyNullState,
 } from '../../state.js';
+import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
 import { Levels, ParentRelation, ValueType, addMeta } from '../main.js';
-import { MultiValueSensor, SingleValueSensor } from '../../items/sensor.js';
+import {
+  MeasurementInputGetter,
+  MultiValueSensor,
+  SingleValueSensor,
+} from '../../items/sensor.js';
+import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
 import { Button } from '../../items/button.js';
@@ -195,6 +201,67 @@ export const bme280 = (
           valueType: ValueType.NUMBER,
         }
       ))(),
+  };
+};
+
+export const ccs811 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair,
+  measurementInputGetter: MeasurementInputGetter<Ccs811Request>
+) => {
+  const metrics = ['eco2', 'temperature', 'tvoc'] as const;
+
+  const { state } = new MultiValueSensor(
+    device.addService(new Ccs811()),
+    metrics,
+    schedule,
+    measurementInputGetter
+  );
+
+  return {
+    tvoc: addMeta(
+      {
+        _get: state.tvoc,
+        ...metricStaleness(state.tvoc, epoch),
+        eco2: (() =>
+          addMeta(
+            {
+              _get: state.eco2,
+              ...metricStaleness(state.eco2, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'eco2',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'ppm',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+        temperature: (() =>
+          addMeta(
+            {
+              _get: state.temperature,
+              ...metricStaleness(state.temperature, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'temperature',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'deg-c',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'tvoc',
+        type: 'sensor',
+        unit: 'ppb',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
 };
 
@@ -491,6 +558,82 @@ export const sds011 = (
           valueType: ValueType.NUMBER,
         }
       ))(),
+  };
+};
+
+export const sgp30 = (
+  device: Device,
+  [schedule, epoch]: ScheduleEpochPair,
+  measurementInputGetter: MeasurementInputGetter<Sgp30Request>
+) => {
+  const metrics = ['eco2', 'ethanol', 'h2', 'tvoc'] as const;
+
+  const { state } = new MultiValueSensor(
+    device.addService(new Sgp30()),
+    metrics,
+    schedule,
+    measurementInputGetter
+  );
+
+  return {
+    tvoc: addMeta(
+      {
+        _get: state.tvoc,
+        ...metricStaleness(state.tvoc, epoch),
+        eco2: (() =>
+          addMeta(
+            {
+              _get: state.eco2,
+              ...metricStaleness(state.eco2, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'eco2',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'ppm',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+        ethanol: (() =>
+          addMeta(
+            {
+              _get: state.ethanol,
+              ...metricStaleness(state.ethanol, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'ethanol',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'ppm',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+        h2: (() =>
+          addMeta(
+            {
+              _get: state.h2,
+              ...metricStaleness(state.h2, epoch),
+            },
+            {
+              level: Levels.PROPERTY,
+              measured: 'h2',
+              parentRelation: ParentRelation.DATA_QUALIFIER,
+              type: 'sensor',
+              unit: 'ppm',
+              valueType: ValueType.NUMBER,
+            }
+          ))(),
+      },
+      {
+        level: Levels.PROPERTY,
+        measured: 'tvoc',
+        type: 'sensor',
+        unit: 'ppb',
+        valueType: ValueType.NUMBER,
+      }
+    ),
   };
 };
 

@@ -31,7 +31,7 @@ type RequestResolver = <T extends boolean = boolean>(
 type DeviceIdentifier = Buffer | null;
 
 const VERSION = 2;
-const DEFAULT_TIMEOUT = 500;
+const DEFAULT_TIMEOUT = 1000;
 
 const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_INTERVAL = 1000;
