@@ -1,8 +1,11 @@
+import { Bitmap } from '../struct.js';
 import { Event } from '../device/main.js';
 import { Timer } from '../timer.js';
 import { emptyBuffer } from '../data.js';
 
 const REPEAT_HOLDOFF_TIME = 250;
+
+const payload = new Bitmap();
 
 export type Ev1527ButtonPayload = {
   bottomLeft: boolean;
@@ -19,19 +22,17 @@ export class Ev1527Button extends Event<Ev1527ButtonPayload> {
   }
 
   protected decode(input: Buffer): Ev1527ButtonPayload | null {
-    if (input.length < 1 || this._timer.isRunning) return null;
+    if (this._timer.isRunning) return null;
 
-    this._timer.start();
+    try {
+      const [bottomLeft, bottomRight, topLeft, topRight] =
+        payload.decode(input);
 
-    const [byte] = input;
+      this._timer.start();
 
-    /* eslint-disable no-bitwise */
-    return {
-      bottomLeft: Boolean(byte & 0b0001),
-      bottomRight: Boolean(byte & 0b0010),
-      topLeft: Boolean(byte & 0b0100),
-      topRight: Boolean(byte & 0b1000),
-    };
-    /* eslint-enable no-bitwise */
+      return { bottomLeft, bottomRight, topLeft, topRight };
+    } catch {
+      return null;
+    }
   }
 }

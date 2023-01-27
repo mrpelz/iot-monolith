@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/member-ordering */
+/* eslint-disable sort-keys */
+
+import { MappedStruct, TStruct, UInt8 } from '../struct.js';
 import { Service } from '../device/main.js';
 
 export enum IndicatorMode {
@@ -6,10 +10,12 @@ export enum IndicatorMode {
   BLINK,
 }
 
-export type IndicatorRequest = {
-  blink?: number;
-  mode: IndicatorMode;
-};
+const request = new MappedStruct({
+  mode: new UInt8<IndicatorMode>(),
+  blink: new UInt8(),
+});
+
+export type IndicatorRequest = TStruct<typeof request>;
 
 export class Indicator extends Service<null, IndicatorRequest> {
   constructor(index: number) {
@@ -17,10 +23,6 @@ export class Indicator extends Service<null, IndicatorRequest> {
   }
 
   protected encode(input: IndicatorRequest): Buffer {
-    const { blink, mode } = input;
-    const request = Buffer.from([mode]);
-
-    if (mode !== IndicatorMode.BLINK || !blink) return request;
-    return Buffer.concat([request, Buffer.from([blink])]);
+    return request.encode(input);
   }
 }

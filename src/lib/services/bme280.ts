@@ -1,10 +1,15 @@
+/* eslint-disable sort-keys */
+
+import { FloatLE, MappedStruct, TStruct } from '../struct.js';
 import { Service } from '../device/main.js';
 
-export type Bme280Response = {
-  humidity: number;
-  pressure: number;
-  temperature: number;
-};
+const response = new MappedStruct({
+  temperature: new FloatLE(),
+  humidity: new FloatLE(),
+  pressure: new FloatLE(),
+});
+
+export type Bme280Response = TStruct<typeof response>;
 
 export class Bme280 extends Service<Bme280Response, void> {
   constructor(index = 0) {
@@ -12,12 +17,10 @@ export class Bme280 extends Service<Bme280Response, void> {
   }
 
   protected decode(input: Buffer): Bme280Response | null {
-    if (input.length < 12) return null;
-
-    return {
-      humidity: input.subarray(4, 8).readFloatLE(), // 2.
-      pressure: input.subarray(8, 12).readFloatLE(), // 3.
-      temperature: input.subarray(0, 4).readFloatLE(), // 1.
-    };
+    try {
+      return response.decode(input);
+    } catch {
+      return null;
+    }
   }
 }

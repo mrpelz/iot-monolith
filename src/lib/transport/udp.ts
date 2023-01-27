@@ -1,9 +1,10 @@
 import { Input, Logger } from '../log.js';
-import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { humanPayload, readNumber } from '../data.js';
 import { BooleanState } from '../state.js';
+import { NUMBER_RANGES } from '../number.js';
 import { ReadOnlyObservable } from '../observable.js';
+import { RollingNumber } from '../rolling-number.js';
 import { Transport } from './main.js';
 import { promises } from 'dns';
 import { rebind } from '../oop.js';
@@ -58,8 +59,7 @@ export class UDPTransport extends Transport {
   private _messageIncomingSequence = 0;
 
   private readonly _messageOutgoingSequence = new RollingNumber(
-    0,
-    NUMBER_RANGES.uint8
+    ...NUMBER_RANGES.uint[1]
   );
 
   private readonly _repeat: number;

@@ -1,4 +1,7 @@
+import { Bool } from '../struct.js';
 import { Event } from '../device/main.js';
+
+const payload = new Bool();
 
 export class Input extends Event<boolean> {
   constructor(index: number) {
@@ -6,8 +9,10 @@ export class Input extends Event<boolean> {
   }
 
   protected decode(input: Buffer): boolean | null {
-    if (!input.length) return null;
-
-    return input[0] !== 0;
+    try {
+      return payload.decode(input);
+    } catch {
+      return null;
+    }
   }
 }

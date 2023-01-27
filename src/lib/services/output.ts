@@ -1,4 +1,7 @@
+import { Bool } from '../struct.js';
 import { Service } from '../device/main.js';
+
+const request = new Bool();
 
 export class Output extends Service<null, boolean> {
   constructor(index: number) {
@@ -6,6 +9,6 @@ export class Output extends Service<null, boolean> {
   }
 
   protected encode(input: boolean): Buffer {
-    return Buffer.from([input ? 1 : 0]);
+    return request.encode(input);
   }
 }

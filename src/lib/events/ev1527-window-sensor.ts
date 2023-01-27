@@ -1,3 +1,4 @@
+import { Bitmap } from '../struct.js';
 import { Event } from '../device/main.js';
 import { emptyBuffer } from '../data.js';
 
@@ -6,24 +7,20 @@ export type Ev1527WindowSensorPayload = {
   tamperSwitch: boolean;
 };
 
+const payload = new Bitmap();
+
 export class Ev1527WindowSensor extends Event<Ev1527WindowSensorPayload> {
   constructor() {
     super(emptyBuffer);
   }
 
   protected decode(input: Buffer): Ev1527WindowSensorPayload | null {
-    if (input.length < 1) return null;
+    try {
+      const [tamperSwitch, , closed] = payload.decode(input);
 
-    const [byte] = input;
-
-    /* eslint-disable no-bitwise */
-    const tamperSwitch = Boolean(byte & 0b0001);
-    const open = tamperSwitch || !(byte & 0b0100);
-    /* eslint-enable no-bitwise */
-
-    return {
-      open,
-      tamperSwitch,
-    };
+      return { open: tamperSwitch || !closed, tamperSwitch };
+    } catch {
+      return null;
+    }
   }
 }

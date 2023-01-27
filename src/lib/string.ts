@@ -1,3 +1,13 @@
+export const BYTES_PER_CHARACTER = {
+  ascii: 1,
+  binary: 1,
+  latin1: 1,
+  utf16le: 2,
+  utf8: 1,
+} as const;
+
+export type StringEncodings = keyof typeof BYTES_PER_CHARACTER;
+
 export const parse = (input: string): string | number | boolean => {
   if (input === 'true') return true;
   if (input === 'false') return false;

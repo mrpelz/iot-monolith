@@ -1,15 +1,22 @@
+/* eslint-disable sort-keys */
+
+import { FloatLE, MappedStruct, TStruct, UIntLE } from '../struct.js';
 import { Service } from '../device/main.js';
 
-export type Ccs811Request = {
-  humidity: number;
-  temperature: number;
-};
+const request = new MappedStruct({
+  temperature: new FloatLE(),
+  humidity: new FloatLE(),
+});
 
-export type Ccs811Response = {
-  eco2: number;
-  temperature: number;
-  tvoc: number;
-};
+export type Ccs811Request = TStruct<typeof request>;
+
+const response = new MappedStruct({
+  temperature: new UIntLE(),
+  tvoc: new UIntLE(),
+  eco2: new UIntLE(),
+});
+
+export type Ccs811Response = TStruct<typeof response>;
 
 export class Ccs811 extends Service<Ccs811Response, Ccs811Request> {
   constructor(index = 0) {
@@ -17,22 +24,14 @@ export class Ccs811 extends Service<Ccs811Response, Ccs811Request> {
   }
 
   protected decode(input: Buffer): Ccs811Response | null {
-    if (input.length < 8) return null;
-
-    return {
-      eco2: input.readUInt16LE(4),
-      temperature: input.readUInt16LE(0),
-      tvoc: input.readUInt16LE(2),
-    };
+    try {
+      return response.decode(input);
+    } catch {
+      return null;
+    }
   }
 
   protected encode(input: Ccs811Request): Buffer {
-    const { humidity, temperature } = input;
-
-    const request = Buffer.alloc(8);
-    request.writeFloatLE(temperature, 0);
-    request.writeFloatLE(humidity, 4);
-
-    return request;
+    return request.encode(input);
   }
 }

@@ -1,4 +1,7 @@
 import { Event } from '../device/main.js';
+import { UIntLE } from '../struct.js';
+
+const payload = new UIntLE();
 
 export class VCC extends Event<number> {
   constructor(index = 0) {
@@ -6,8 +9,10 @@ export class VCC extends Event<number> {
   }
 
   protected decode(input: Buffer): number | null {
-    if (input.length < 2) return null;
-
-    return input.readUInt16LE();
+    try {
+      return payload.decode(input);
+    } catch {
+      return null;
+    }
   }
 }
