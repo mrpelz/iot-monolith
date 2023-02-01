@@ -1,6 +1,7 @@
 import { Observable, ReadOnlyObservable } from '../observable.js';
 import { Schedule } from '../schedule.js';
 import { Service } from '../device/main.js';
+import { promiseGuard } from '../promise.js';
 
 export type MeasurementInputGetter<T> = () => T | null | Promise<T | null>;
 
@@ -60,7 +61,7 @@ export class SingleValueSensor<T = unknown, S = void> {
 
     const result = await (async () => {
       try {
-        return this._service.request(input as S, true);
+        return promiseGuard(this._service.request(input as S, true));
       } catch {
         return null;
       }
@@ -156,7 +157,7 @@ export class MultiValueSensor<
 
     const result = await (async () => {
       try {
-        return await this._service.request(input as S, true);
+        return promiseGuard(this._service.request(input as S, true));
       } catch {
         return null;
       }

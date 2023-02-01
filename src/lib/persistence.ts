@@ -79,7 +79,7 @@ export class Persistence {
   async restore(): Promise<void> {
     const restorePayload = await (async () => {
       try {
-        return await readFile(this._path, { encoding: 'utf8' });
+        return readFile(this._path, { encoding: 'utf8' });
       } catch {
         return null;
       }
