@@ -1,4 +1,7 @@
 import { Service } from '../device/main.js';
+import { UIntLE } from '../struct.js';
+
+const response = new UIntLE();
 
 export class Veml6070 extends Service<number, void> {
   constructor(index = 0) {
@@ -6,8 +9,10 @@ export class Veml6070 extends Service<number, void> {
   }
 
   protected decode(input: Buffer): number | null {
-    if (input.length < 2) return null;
-
-    return input.readUInt16LE();
+    try {
+      return response.decode(input);
+    } catch {
+      return null;
+    }
   }
 }

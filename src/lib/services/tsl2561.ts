@@ -1,4 +1,7 @@
+import { FloatLE } from '../struct.js';
 import { Service } from '../device/main.js';
+
+const response = new FloatLE();
 
 export class Tsl2561 extends Service<number, void> {
   constructor(index = 0) {
@@ -6,8 +9,10 @@ export class Tsl2561 extends Service<number, void> {
   }
 
   protected decode(input: Buffer): number | null {
-    if (input.length < 4) return null;
-
-    return input.readFloatLE();
+    try {
+      return response.decode(input);
+    } catch {
+      return null;
+    }
   }
 }

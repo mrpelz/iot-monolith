@@ -1,16 +1,3 @@
-export const bitRange = (count: number): number => 2 ** count - 1;
-
-export const byteRange = (count: number): number => bitRange(count * 8);
-
-export const bytesRequiredForBitLength = (count: number): number =>
-  Math.ceil(count / 8);
-
-export const NUMBER_RANGES = {
-  uint16: bitRange(16),
-  uint32: bitRange(32),
-  uint8: bitRange(8),
-};
-
 export class RollingNumber {
   private readonly _max: number;
   private readonly _min: number;

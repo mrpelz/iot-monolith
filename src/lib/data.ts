@@ -16,6 +16,18 @@ export const arrayPadLeft = <T>(
   return input;
 };
 
+export const bufferChunks = (input: Buffer, chunkSize = 1): Buffer[] => {
+  if (input.length < chunkSize) throw new Error('input buffer too small');
+
+  const result: Buffer[] = [];
+
+  for (let offset = 0; offset < input.length; offset += chunkSize) {
+    result.push(input.subarray(offset, offset + chunkSize));
+  }
+
+  return result;
+};
+
 export const arrayPadRight = <T>(
   input: T[],
   length: number,
@@ -120,13 +132,13 @@ export const writeNumber = (input: number, bytes = 1): Buffer => {
 
   switch (bytes) {
     case 1:
-      cache.writeUInt8(input, 0);
+      cache.writeUInt8(input);
       break;
     case 2:
-      cache.writeUInt16LE(input, 0);
+      cache.writeUInt16LE(input);
       break;
     case 4:
-      cache.writeUInt32LE(input, 0);
+      cache.writeUInt32LE(input);
       break;
     default:
       throw new Error('illegal number of bytes specified');

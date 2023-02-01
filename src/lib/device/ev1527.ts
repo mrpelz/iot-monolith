@@ -1,4 +1,4 @@
-import { bitRange, bytesRequiredForBitLength } from '../rolling-number.js';
+import { bitRange, bytesRequiredForBitLength } from '../number.js';
 import { Device } from './main.js';
 import { Ev1527Transport } from '../transport/ev1527.js';
 import { Logger } from '../log.js';

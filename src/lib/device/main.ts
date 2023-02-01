@@ -6,10 +6,11 @@ import {
   ReadOnlyNullState,
 } from '../state.js';
 import { Input, Logger } from '../log.js';
-import { NUMBER_RANGES, RollingNumber } from '../rolling-number.js';
 import { Observer, ReadOnlyObservable } from '../observable.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { emptyBuffer, falseBuffer, readNumber, writeNumber } from '../data.js';
+import { NUMBER_RANGES } from '../number.js';
+import { RollingNumber } from '../rolling-number.js';
 import { TCPDevice } from './tcp.js';
 import { TCPTransport } from '../transport/tcp.js';
 import { Timer } from '../timer.js';
@@ -38,14 +39,14 @@ const KEEPALIVE_INTERVAL = 1000;
 const KEEPALIVE_TOLERATE_MISSED_PACKETS = 2;
 
 const RESET_OPTIONS = [
-  Buffer.from([0xff]),
-  Buffer.from([KEEPALIVE_COMMAND]),
-  Buffer.from([1]),
+  Buffer.of(0xff),
+  Buffer.of(KEEPALIVE_COMMAND),
+  Buffer.of(1),
 ] as const;
 
 export const EVENT_IDENTIFIER = 0x00;
 
-const versionBuffer = Buffer.from([VERSION]);
+const versionBuffer = Buffer.of(VERSION);
 
 export class Property {
   static isValidPropertyIdentifier(
@@ -170,8 +171,7 @@ export class Device<T extends Transport = Transport> {
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
-    0,
-    NUMBER_RANGES.uint8,
+    ...NUMBER_RANGES.uint[1],
     [EVENT_IDENTIFIER]
   );
 

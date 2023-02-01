@@ -1,16 +1,23 @@
+/* eslint-disable sort-keys */
+
+import { FloatLE, MappedStruct, TStruct, UIntLE } from '../struct.js';
 import { Service } from '../device/main.js';
 
-export type Sgp30Request = {
-  humidity: number;
-  temperature: number;
-};
+const request = new MappedStruct({
+  temperature: new FloatLE(),
+  humidity: new FloatLE(),
+});
 
-export type Sgp30Response = {
-  eco2: number;
-  ethanol: number;
-  h2: number;
-  tvoc: number;
-};
+export type Sgp30Request = TStruct<typeof request>;
+
+const response = new MappedStruct({
+  h2: new UIntLE(),
+  ethanol: new UIntLE(),
+  tvoc: new UIntLE(),
+  eco2: new UIntLE(),
+});
+
+export type Sgp30Response = TStruct<typeof response>;
 
 export class Sgp30 extends Service<Sgp30Response, Sgp30Request> {
   constructor(index = 0) {
@@ -18,23 +25,14 @@ export class Sgp30 extends Service<Sgp30Response, Sgp30Request> {
   }
 
   protected decode(input: Buffer): Sgp30Response | null {
-    if (input.length < 8) return null;
-
-    return {
-      eco2: input.readUInt16LE(6),
-      ethanol: input.readUInt16LE(2),
-      h2: input.readUInt16LE(0),
-      tvoc: input.readUInt16LE(4),
-    };
+    try {
+      return response.decode(input);
+    } catch {
+      return null;
+    }
   }
 
   protected encode(input: Sgp30Request): Buffer {
-    const { humidity, temperature } = input;
-
-    const request = Buffer.alloc(8);
-    request.writeFloatLE(temperature, 0);
-    request.writeFloatLE(humidity, 4);
-
-    return request;
+    return request.encode(input);
   }
 }

@@ -1,4 +1,7 @@
 import { Service } from '../device/main.js';
+import { UInt8 } from '../struct.js';
+
+const request = new UInt8();
 
 export class Led extends Service<null, number> {
   constructor(index: number) {
@@ -6,6 +9,6 @@ export class Led extends Service<null, number> {
   }
 
   protected encode(input: number): Buffer {
-    return Buffer.from([input]);
+    return request.encode(input);
   }
 }
