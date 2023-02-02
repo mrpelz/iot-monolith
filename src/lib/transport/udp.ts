@@ -194,7 +194,22 @@ export class UDPTransport extends Transport {
   /**
    * create new socket and set up listeners
    */
-  private _setUpSocket() {
+  private async _setUpSocket() {
+    const address = await (async () => {
+      try {
+        const { address: result } = await lookup(this.host);
+        return result;
+      } catch (error) {
+        this._log.error(
+          () => `error resolving hostname "${this.host}": ${error}`
+        );
+
+        return null;
+      }
+    })();
+
+    if (!address) return;
+
     const socket = createSocket('udp4');
 
     socket.on('message', this._handleMessage);
@@ -205,10 +220,12 @@ export class UDPTransport extends Transport {
     this._socket = socket;
 
     (async () => {
-      const { address } = await lookup(this.host, 4);
       socket.connect(this.port, address);
     })().catch((error) => {
-      this._log.error(() => `error connecting socket: ${error}`);
+      this._log.error(
+        () =>
+          `error connecting socket (hostname "${this.host}", address: ${address}): ${error}`
+      );
       this._nukeSocket();
     });
   }

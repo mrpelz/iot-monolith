@@ -9,25 +9,25 @@ import {
   kitchenAdjacentChillax,
 } from './scenes.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
-import { bedroom } from './rooms/bedroom.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { epochs } from '../lib/epochs.js';
 import { every5Seconds } from './timings.js';
 import { kitchen } from './rooms/kitchen.js';
 import { livingRoom } from './rooms/living-room.js';
 import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
+import { mrpelzBedroom } from './rooms/mrpelz-bedroom.js';
 import { offTimer } from '../lib/tree/properties/logic.js';
-import { office } from './rooms/office.js';
 import { persistence } from './persistence.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { sunElevation } from './misc.js';
 import { testRoom } from './rooms/test-room.js';
 import { tsiaBathroom } from './rooms/tsia-bathroom.js';
+import { tsiaBedroom } from './rooms/office.js';
 
 const firstFloor = (() =>
   addMeta(
     {
-      bedroom,
+      bedroom: mrpelzBedroom,
       diningRoom: Object.assign(diningRoom, {
         kitchenAdjacentBright,
         kitchenAdjacentChillax,
@@ -51,7 +51,7 @@ const firstFloor = (() =>
         kitchenAdjacentLights,
       }),
       mrpelzBathroom,
-      office,
+      office: tsiaBedroom,
       storageRoom,
       testRoom,
       tsiaBathroom,

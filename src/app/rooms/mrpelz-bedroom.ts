@@ -7,71 +7,77 @@ import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
+import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
-  ceilingLight: sonoffBasic(
+  ceilingLight: shelly1(
     logger,
     persistence,
     timings,
     'lighting',
-    'office-ceilinglight.lan.wurstsalat.cloud'
+    'bedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
-  wallswitch: shellyi3(
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
+  wallswitchDoor: shellyi3(
     logger,
     persistence,
     timings,
-    'office-wallswitch.lan.wurstsalat.cloud'
+    'bedroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),
-  windowSensorRight: ev1527WindowSensor(
+  windowSensorLeft: ev1527WindowSensor(
     logger,
     persistence,
     ev1527Transport,
-    839280
+    762272
   ),
 };
 
 export const instances = {
-  wallswitchLeft: devices.wallswitch.button0.$,
-  wallswitchMiddle: devices.wallswitch.button1.$,
-  wallswitchRight: devices.wallswitch.button2.$,
+  wallswitchBed: devices.ceilingLight.button.$,
+  wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
+  wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
+  wallswitchDoorRight: devices.wallswitchDoor.button2.$,
 };
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
-  windowRight: addMeta(
-    { open: devices.windowSensorRight.open },
+  windowLeft: addMeta(
+    { open: devices.windowSensorLeft.open },
     { level: Levels.AREA, name: 'window' }
   ),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight]),
-  allWindows: inputGrouping(properties.windowRight.open._get),
+  allWindows: inputGrouping(properties.windowLeft.open._get),
 };
 
 (() => {
-  instances.wallswitchLeft.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchLeft.longPress(
+  instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchBed.longPress(
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchMiddle.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchMiddle.longPress(
+  instances.wallswitchDoorLeft.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorLeft.longPress(
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchRight.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchRight.longPress(
+  instances.wallswitchDoorMiddle.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorMiddle.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.wallswitchDoorRight.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
 })();
 
-export const tsiaBedroom = addMeta(
+export const mrpelzBedroom = addMeta(
   {
     devices,
     ...groups,
@@ -80,6 +86,6 @@ export const tsiaBedroom = addMeta(
   {
     isDaylit: true,
     level: Levels.ROOM,
-    name: 'tsiaBedroom',
+    name: 'mrpelzBedroom',
   }
 );

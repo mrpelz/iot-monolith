@@ -1,25 +1,16 @@
-import { properties as bedroomProperties } from './rooms/bedroom.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
 import { properties as mrpelzBathroomProperties } from './rooms/mrpelz-bathroom.js';
-import { properties as officeProperties } from './rooms/office.js';
+import { properties as mrpelzBedroomProperties } from './rooms/mrpelz-bedroom.js';
 import { outputGrouping } from '../lib/tree/properties/actuators.js';
 import { properties as storageRoomProperties } from './rooms/storage-room.js';
 import { properties as tsiaBathroomProperties } from './rooms/tsia-bathroom.js';
+import { properties as tsiaBedroomProperties } from './rooms/office.js';
 
 export const all = outputGrouping(
   [
-    bedroomProperties.bedLedDownlightRed,
-    bedroomProperties.bedLedRGB.b,
-    bedroomProperties.bedLedRGB.g,
-    bedroomProperties.bedLedRGB.r,
-    bedroomProperties.bedLedW,
-    bedroomProperties.ceilingLight,
-    bedroomProperties.nightstandLedLeft,
-    bedroomProperties.nightstandLedRight,
-    bedroomProperties.stoneLamp,
     diningRoomProperties.ceilingLight,
     diningRoomProperties.fan,
     diningRoomProperties.kallaxLedRGB.b,
@@ -45,29 +36,18 @@ export const all = outputGrouping(
     mrpelzBathroomProperties.mirrorLed,
     mrpelzBathroomProperties.mirrorLight,
     mrpelzBathroomProperties.nightLight,
-    officeProperties.ceilingLight,
-    officeProperties.floodLight,
-    officeProperties.workbenchLedCWhite,
-    officeProperties.workbenchLedWWhite,
+    mrpelzBedroomProperties.ceilingLight,
     storageRoomProperties.ceilingLight,
     tsiaBathroomProperties.ceilingLight,
     tsiaBathroomProperties.mirrorLed,
     tsiaBathroomProperties.mirrorLight,
     tsiaBathroomProperties.nightLight,
+    tsiaBedroomProperties.ceilingLight,
   ],
   'group'
 );
 
 export const allLights = outputGrouping([
-  bedroomProperties.bedLedDownlightRed,
-  bedroomProperties.bedLedRGB.b,
-  bedroomProperties.bedLedRGB.g,
-  bedroomProperties.bedLedRGB.r,
-  bedroomProperties.bedLedW,
-  bedroomProperties.ceilingLight,
-  bedroomProperties.nightstandLedLeft,
-  bedroomProperties.nightstandLedRight,
-  bedroomProperties.stoneLamp,
   diningRoomProperties.ceilingLight,
   diningRoomProperties.kallaxLedRGB.b,
   diningRoomProperties.kallaxLedRGB.g,
@@ -90,15 +70,13 @@ export const allLights = outputGrouping([
   mrpelzBathroomProperties.mirrorLed,
   mrpelzBathroomProperties.mirrorLight,
   mrpelzBathroomProperties.nightLight,
-  officeProperties.ceilingLight,
-  officeProperties.floodLight,
-  officeProperties.workbenchLedCWhite,
-  officeProperties.workbenchLedWWhite,
+  mrpelzBedroomProperties.ceilingLight,
   storageRoomProperties.ceilingLight,
   tsiaBathroomProperties.ceilingLight,
   tsiaBathroomProperties.mirrorLed,
   tsiaBathroomProperties.mirrorLight,
   tsiaBathroomProperties.nightLight,
+  tsiaBedroomProperties.ceilingLight,
 ]);
 
 export const kitchenAdjacentLights = outputGrouping([

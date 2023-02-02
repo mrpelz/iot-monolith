@@ -193,7 +193,22 @@ export class TCPTransport extends Transport {
   /**
    * create new socket and set up listeners
    */
-  private _setUpSocket(): void {
+  private async _setUpSocket() {
+    const address = await (async () => {
+      try {
+        const { address: result } = await lookup(this.host);
+        return result;
+      } catch (error) {
+        this._log.error(
+          () => `error resolving hostname "${this.host}": ${error}`
+        );
+
+        return null;
+      }
+    })();
+
+    if (!address) return;
+
     const socket = new Socket();
 
     socket.on('readable', this._handleReadable);
@@ -205,13 +220,7 @@ export class TCPTransport extends Transport {
     this._socket = socket;
 
     (async () => {
-      const { address } = await lookup(this.host, 4);
-
-      socket.connect({
-        host: address,
-        port: this.port,
-      });
-
+      socket.connect(this.port, address);
       socket.setNoDelay(true);
 
       if (this._keepAlive) {
@@ -219,7 +228,10 @@ export class TCPTransport extends Transport {
         socket.setTimeout(this._keepAlive * 2);
       }
     })().catch((error) => {
-      this._log.error(() => `error connecting socket: ${error}`);
+      this._log.error(
+        () =>
+          `error connecting socket (hostname "${this.host}", address: ${address}): ${error}`
+      );
       this._nukeSocket();
     });
   }
