@@ -7,7 +7,7 @@ import { properties as mrpelzBedroomProperties } from './rooms/mrpelz-bedroom.js
 import { outputGrouping } from '../lib/tree/properties/actuators.js';
 import { properties as storageRoomProperties } from './rooms/storage-room.js';
 import { properties as tsiaBathroomProperties } from './rooms/tsia-bathroom.js';
-import { properties as tsiaBedroomProperties } from './rooms/office.js';
+import { properties as tsiaBedroomProperties } from './rooms/tsia-bedroom.js';
 
 export const all = outputGrouping(
   [
@@ -37,6 +37,7 @@ export const all = outputGrouping(
     mrpelzBathroomProperties.mirrorLight,
     mrpelzBathroomProperties.nightLight,
     mrpelzBedroomProperties.ceilingLight,
+    mrpelzBedroomProperties.nightLight,
     storageRoomProperties.ceilingLight,
     tsiaBathroomProperties.ceilingLight,
     tsiaBathroomProperties.mirrorLed,
@@ -71,6 +72,7 @@ export const allLights = outputGrouping([
   mrpelzBathroomProperties.mirrorLight,
   mrpelzBathroomProperties.nightLight,
   mrpelzBedroomProperties.ceilingLight,
+  mrpelzBedroomProperties.nightLight,
   storageRoomProperties.ceilingLight,
   tsiaBathroomProperties.ceilingLight,
   tsiaBathroomProperties.mirrorLed,

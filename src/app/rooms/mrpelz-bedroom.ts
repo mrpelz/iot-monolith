@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
+import {
+  ev1527ButtonX1,
+  ev1527ButtonX4,
+} from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
@@ -9,22 +13,32 @@ import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
+  button: ev1527ButtonX1(ev1527Transport, 74160, logger),
   ceilingLight: shelly1(
     logger,
     persistence,
     timings,
     'lighting',
-    'bedroom-ceilinglight.lan.wurstsalat.cloud'
+    'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
+  multiButton: ev1527ButtonX4(ev1527Transport, 831834, logger),
+  nightLight: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'lighting',
+    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
+  ),
   wallswitchDoor: shellyi3(
     logger,
     persistence,
     timings,
-    'bedroom-wallswitchdoor.lan.wurstsalat.cloud'
+    'mrpelzbedroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),
   windowSensorLeft: ev1527WindowSensor(
     logger,
@@ -35,6 +49,9 @@ export const devices = {
 };
 
 export const instances = {
+  button: devices.button.$,
+  multiButton: devices.multiButton.$,
+  nightLightButton: devices.nightLight.button.$,
   wallswitchBed: devices.ceilingLight.button.$,
   wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
   wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
@@ -44,6 +61,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  nightLight: devices.nightLight.relay,
   windowLeft: addMeta(
     { open: devices.windowSensorLeft.open },
     { level: Levels.AREA, name: 'window' }
@@ -51,17 +69,64 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight]),
+  allLights: outputGrouping([properties.ceilingLight, properties.nightLight]),
   allWindows: inputGrouping(properties.windowLeft.open._get),
 };
 
 (() => {
+  instances.button.observe(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.nightLight._set.value = true;
+  });
+
+  instances.multiButton.topLeft.observe(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.ceilingLight._set.value = true;
+  });
+  instances.multiButton.topRight.observe(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.ceilingLight._set.value = true;
+  });
+  instances.multiButton.bottomLeft.observe(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.nightLight._set.value = true;
+  });
+  instances.multiButton.bottomRight.observe(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    properties.nightLight._set.value = true;
+  });
+
+  instances.nightLightButton.up(() => properties.nightLight._set.flip());
+  instances.nightLightButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
   instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchBed.longPress(
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchDoorLeft.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorLeft.up(() => properties.nightLight._set.flip());
   instances.wallswitchDoorLeft.longPress(
     () => (groups.allLights._set.value = false)
   );

@@ -17,14 +17,14 @@ export const devices = {
     persistence,
     timings,
     'lighting',
-    'office-ceilinglight.lan.wurstsalat.cloud'
+    'tsiabedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
   wallswitch: shellyi3(
     logger,
     persistence,
     timings,
-    'office-wallswitch.lan.wurstsalat.cloud'
+    'tsiabedroom-wallswitch.lan.wurstsalat.cloud'
   ),
   windowSensorRight: ev1527WindowSensor(
     logger,

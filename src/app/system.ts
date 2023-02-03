@@ -22,12 +22,11 @@ import { storageRoom } from './rooms/storage-room.js';
 import { sunElevation } from './misc.js';
 import { testRoom } from './rooms/test-room.js';
 import { tsiaBathroom } from './rooms/tsia-bathroom.js';
-import { tsiaBedroom } from './rooms/office.js';
+import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 
 const firstFloor = (() =>
   addMeta(
     {
-      bedroom: mrpelzBedroom,
       diningRoom: Object.assign(diningRoom, {
         kitchenAdjacentBright,
         kitchenAdjacentChillax,
@@ -51,10 +50,11 @@ const firstFloor = (() =>
         kitchenAdjacentLights,
       }),
       mrpelzBathroom,
-      office: tsiaBedroom,
+      mrpelzBedroom,
       storageRoom,
       testRoom,
       tsiaBathroom,
+      tsiaBedroom,
     },
     {
       isPartiallyOutside: true,
