@@ -40,13 +40,6 @@ export const devices = {
     'diningroom-kallaxleds.lan.wurstsalat.cloud'
   ),
   kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
-  standingLamp: obiPlug(
-    logger,
-    persistence,
-    timings,
-    'lighting',
-    'diningroom-standinglamp.lan.wurstsalat.cloud'
-  ),
   tableButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
   tableLight: sonoffBasic(
     logger,
@@ -67,7 +60,6 @@ export const devices = {
 export const instances = {
   fanButton: devices.fan.button.$,
   kallaxSideButton: devices.kallaxSideButton.$,
-  standingLampButton: devices.standingLamp.button.$,
   tableButton: devices.tableButton.$,
   tableMultiButton: devices.tableMultiButton.$,
   wallswitchBottom: devices.wallswitch.button1.$,
@@ -87,7 +79,6 @@ export const properties = {
   ),
   kallaxLedSide: devices.kallaxLeds.ledW2,
   kallaxLedW: devices.kallaxLeds.ledW1,
-  standingLamp: devices.standingLamp.relay,
   tableLight: devices.tableLight.relay,
 };
 
@@ -103,7 +94,6 @@ export const groups = {
     properties.kallaxLedRGB.b,
     properties.kallaxLedSide,
     properties.kallaxLedW,
-    properties.standingLamp,
     properties.tableLight,
   ]),
   leds: ledGrouping([
@@ -126,11 +116,6 @@ export const groups = {
 
   instances.kallaxSideButton.observe(() =>
     properties.kallaxLedSide._set.flip()
-  );
-
-  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
-  instances.standingLampButton.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
   );
 
   instances.tableButton.observe(() => properties.tableLight._set.flip());

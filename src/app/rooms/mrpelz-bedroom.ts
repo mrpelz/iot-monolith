@@ -139,7 +139,7 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchDoorRight.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorRight.up(() => properties.floodLight._set.flip());
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );

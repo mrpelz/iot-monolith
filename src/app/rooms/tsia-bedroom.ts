@@ -5,6 +5,7 @@ import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
+import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -20,6 +21,13 @@ export const devices = {
     'tsiabedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
+  standingLamp: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'lighting',
+    'tsiabedroom-standinglamp.lan.wurstsalat.cloud'
+  ),
   wallswitch: shellyi3(
     logger,
     persistence,
@@ -35,6 +43,7 @@ export const devices = {
 };
 
 export const instances = {
+  standingLampButton: devices.standingLamp.button.$,
   wallswitchLeft: devices.wallswitch.button0.$,
   wallswitchMiddle: devices.wallswitch.button1.$,
   wallswitchRight: devices.wallswitch.button2.$,
@@ -43,6 +52,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  standingLamp: devices.standingLamp.relay,
   windowRight: addMeta(
     { open: devices.windowSensorRight.open },
     { level: Levels.AREA, name: 'window' }
@@ -50,17 +60,22 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight]),
+  allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
   allWindows: inputGrouping(properties.windowRight.open._get),
 };
 
 (() => {
+  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
+  instances.standingLampButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
   instances.wallswitchLeft.up(() => properties.ceilingLight._set.flip());
   instances.wallswitchLeft.longPress(
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchMiddle.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
   instances.wallswitchMiddle.longPress(
     () => (groups.allLights._set.value = false)
   );

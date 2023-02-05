@@ -18,7 +18,6 @@ export const all = outputGrouping(
     diningRoomProperties.kallaxLedRGB.r,
     diningRoomProperties.kallaxLedSide,
     diningRoomProperties.kallaxLedW,
-    diningRoomProperties.standingLamp,
     diningRoomProperties.tableLight,
     hallwayProperties.ceilingLightBack,
     hallwayProperties.ceilingLightFront,
@@ -37,6 +36,7 @@ export const all = outputGrouping(
     mrpelzBathroomProperties.mirrorLight,
     mrpelzBathroomProperties.nightLight,
     mrpelzBedroomProperties.ceilingLight,
+    mrpelzBedroomProperties.floodLight,
     mrpelzBedroomProperties.nightLight,
     storageRoomProperties.ceilingLight,
     tsiaBathroomProperties.ceilingLight,
@@ -44,6 +44,7 @@ export const all = outputGrouping(
     tsiaBathroomProperties.mirrorLight,
     tsiaBathroomProperties.nightLight,
     tsiaBedroomProperties.ceilingLight,
+    tsiaBedroomProperties.standingLamp,
   ],
   'group'
 );
@@ -55,7 +56,6 @@ export const allLights = outputGrouping([
   diningRoomProperties.kallaxLedRGB.r,
   diningRoomProperties.kallaxLedSide,
   diningRoomProperties.kallaxLedW,
-  diningRoomProperties.standingLamp,
   diningRoomProperties.tableLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
@@ -72,6 +72,7 @@ export const allLights = outputGrouping([
   mrpelzBathroomProperties.mirrorLight,
   mrpelzBathroomProperties.nightLight,
   mrpelzBedroomProperties.ceilingLight,
+  mrpelzBedroomProperties.floodLight,
   mrpelzBedroomProperties.nightLight,
   storageRoomProperties.ceilingLight,
   tsiaBathroomProperties.ceilingLight,
@@ -79,6 +80,7 @@ export const allLights = outputGrouping([
   tsiaBathroomProperties.mirrorLight,
   tsiaBathroomProperties.nightLight,
   tsiaBedroomProperties.ceilingLight,
+  tsiaBedroomProperties.standingLamp,
 ]);
 
 export const kitchenAdjacentLights = outputGrouping([
@@ -88,7 +90,6 @@ export const kitchenAdjacentLights = outputGrouping([
   diningRoomProperties.kallaxLedRGB.r,
   diningRoomProperties.kallaxLedSide,
   diningRoomProperties.kallaxLedW,
-  diningRoomProperties.standingLamp,
   diningRoomProperties.tableLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
