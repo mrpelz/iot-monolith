@@ -25,9 +25,10 @@ export class Button extends Event<ButtonPayload> {
 
   protected decode(input: Buffer): ButtonPayload | null {
     try {
+      const [partialResult, pressedMap] = payload.decodeOpenended(input);
       return {
-        ...payload.decode(input.subarray(0, payload.size)),
-        pressedMap: bufferChunks(input.subarray(payload.size)).map((chunk) =>
+        ...partialResult,
+        pressedMap: bufferChunks(pressedMap, pressedMapItem.size).map((chunk) =>
           pressedMapItem.decode(chunk)
         ),
       };

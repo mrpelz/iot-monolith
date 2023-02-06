@@ -1,8 +1,12 @@
+import { MappedStruct, StaticBuffer, TStruct } from '../struct/main.js';
 import { Event } from '../device/main.js';
 
-export type ESPNowPayload = {
+const payload = new MappedStruct({
+  deviceIdentifier: new StaticBuffer(6),
+});
+
+export type ESPNowPayload = TStruct<typeof payload> & {
   data: Buffer;
-  deviceIdentifier: Buffer;
 };
 
 export class ESPNow extends Event<ESPNowPayload> {
@@ -11,14 +15,14 @@ export class ESPNow extends Event<ESPNowPayload> {
   }
 
   protected decode(input: Buffer): ESPNowPayload | null {
-    if (input.length < 6) return null;
-
-    const deviceIdentifier = input.subarray(0, 6);
-    const data = input.subarray(6);
-
-    return {
-      data,
-      deviceIdentifier,
-    };
+    try {
+      const [partialResult, data] = payload.decodeOpenended(input);
+      return {
+        ...partialResult,
+        data,
+      };
+    } catch {
+      return null;
+    }
   }
 }

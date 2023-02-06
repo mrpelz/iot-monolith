@@ -8,6 +8,8 @@ const request = new MappedStruct({
   humidity: new FloatLE(),
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type Ccs811Request = TStruct<typeof request>;
 
 const response = new MappedStruct({

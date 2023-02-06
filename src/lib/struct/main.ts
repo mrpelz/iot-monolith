@@ -64,6 +64,41 @@ export class StructMember<T = unknown, S extends number = number> {
   }
 }
 
+export class FixedBuffer extends StructMember<Buffer> {
+  private readonly _fixedValue: Buffer;
+
+  constructor(fixedValue: Buffer) {
+    super(fixedValue.length);
+
+    this._fixedValue = fixedValue;
+  }
+
+  get value(): Buffer {
+    return this.buffer;
+  }
+
+  set value(_input: Buffer) {
+    // noop
+  }
+
+  allocate(): Buffer {
+    const result = super.allocate();
+    this._fixedValue.copy(this.buffer);
+
+    return result;
+  }
+
+  assign(buffer: Buffer): void {
+    super.assign(buffer);
+    this._fixedValue.copy(this.buffer);
+  }
+}
+
+export const staticValue = <T>(
+  value: T,
+  member: StructMember<T>
+): FixedBuffer => new FixedBuffer(member.encode(value));
+
 export class StaticBuffer extends StructMember<Buffer> {
   get value(): Buffer {
     const result = Buffer.alloc(this.size);
@@ -235,7 +270,7 @@ class IntegerStructMember<
   }
 }
 
-export class UInt8<T extends number> extends IntegerStructMember<1> {
+export class UInt8<T extends number = number> extends IntegerStructMember<1> {
   static readonly size = 1;
 
   protected static contraint(input: number): void {
@@ -444,12 +479,12 @@ export type TStructMember<T = unknown> =
 
 export type StructMembers = TStructMember[];
 export type StructMemberValues<T extends StructMembers> = {
-  [P in keyof T]: T[P]['value'];
+  [P in keyof T]: T[P] extends FixedBuffer ? undefined : T[P]['value'];
 };
 
 export type MappedStructMembers = Record<string, TStructMember>;
 export type MappedStructMemberValues<T extends MappedStructMembers> = {
-  [P in keyof T]: T[P]['value'];
+  [P in keyof T as T[P] extends FixedBuffer ? never : P]: T[P]['value'];
 };
 
 export enum DecodeOpenendedAlignment {
@@ -501,8 +536,8 @@ export class Struct<T extends StructMembers> {
   }
 
   set value(input: StructMemberValues<T>) {
-    this._members.forEach((member, index) => {
-      member.value = input[index];
+    input.forEach((memberInput, index) => {
+      this._members[index].value = memberInput;
     });
   }
 
@@ -620,8 +655,8 @@ export class MappedStruct<T extends MappedStructMembers> {
   }
 
   set value(input: MappedStructMemberValues<T>) {
-    Object.entries(this._members).forEach(([property, member]) => {
-      member.value = input[property];
+    Object.entries(input).forEach(([property, memberInput]) => {
+      this._members[property].value = memberInput;
     });
   }
 

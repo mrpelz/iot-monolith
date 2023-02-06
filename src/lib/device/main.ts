@@ -1,3 +1,5 @@
+/* eslint-disable sort-keys */
+
 import {
   BooleanGroupStrategy,
   BooleanState,
@@ -5,10 +7,17 @@ import {
   NullState,
   ReadOnlyNullState,
 } from '../state.js';
+import { DynamicBuffer, MappedDynamicStruct } from '../struct/dynamic.js';
+import {
+  FixedBuffer,
+  MappedStruct,
+  StaticBuffer,
+  UInt8,
+  staticValue,
+} from '../struct/main.js';
 import { Input, Logger } from '../log.js';
 import { Observer, ReadOnlyObservable } from '../observable.js';
 import { Transport, TransportDevice } from '../transport/main.js';
-import { emptyBuffer, falseBuffer, readNumber, writeNumber } from '../data.js';
 import { NUMBER_RANGES } from '../number.js';
 import { RollingNumber } from '../rolling-number.js';
 import { TCPDevice } from './tcp.js';
@@ -16,6 +25,7 @@ import { TCPTransport } from '../transport/tcp.js';
 import { Timer } from '../timer.js';
 import { UDPDevice } from './udp.js';
 import { UDPTransport } from '../transport/udp.js';
+import { emptyBuffer } from '../data.js';
 
 export type IpDevice = TCPDevice | UDPDevice;
 
@@ -38,15 +48,23 @@ const KEEPALIVE_COMMAND = 0xff;
 const KEEPALIVE_INTERVAL = 1000;
 const KEEPALIVE_TOLERATE_MISSED_PACKETS = 2;
 
-const RESET_OPTIONS = [
-  Buffer.of(0xff),
-  Buffer.of(KEEPALIVE_COMMAND),
-  Buffer.of(1),
-] as const;
+const RESET_PAYLOAD = Buffer.of(0xff, VERSION, KEEPALIVE_COMMAND, 0, 1);
+
+const headerIncoming = new MappedStruct({
+  identifier: new UInt8(),
+});
+
+const payloadOutgoing = new MappedDynamicStruct({
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  header: new MappedStruct({
+    requestIdentifier: new UInt8(),
+    version: staticValue(VERSION, new UInt8()),
+  }),
+  message: new DynamicBuffer(),
+});
 
 export const EVENT_IDENTIFIER = 0x00;
-
-const versionBuffer = Buffer.of(VERSION);
 
 export class Property {
   static isValidPropertyIdentifier(
@@ -91,12 +109,17 @@ export class Property {
 }
 
 export class Event<T = void> extends Property {
+  private readonly _header: MappedStruct<{ identifier: StaticBuffer }>;
   private readonly _observable = new NullState<T>();
 
   readonly observable: ReadOnlyNullState<T>;
 
   constructor(identifier: Buffer) {
     super(identifier);
+
+    this._header = new MappedStruct({
+      identifier: new StaticBuffer(identifier.length),
+    });
 
     this.observable = new ReadOnlyNullState<T>(this._observable);
   }
@@ -109,40 +132,56 @@ export class Event<T = void> extends Property {
   /**
    * ingest event from Device instance
    */
-  ingest(payload: Buffer): void {
-    const eventIdentifier = payload.subarray(0, this.identifier.length);
-    if (!eventIdentifier.equals(this.identifier)) return;
+  ingest(input: Buffer): void {
+    const [{ identifier }, eventPayload] = this._header.decodeOpenended(input);
+    if (!identifier.equals(this.identifier)) return;
 
-    const eventData = this.decode(payload.subarray(this.identifier.length));
-
+    const eventData = this.decode(eventPayload);
     if (eventData === null) return;
+
     this._observable.trigger(eventData);
   }
 }
 
 export class Service<T = void, S = void> extends Property {
+  private readonly _headerOutgoing: MappedDynamicStruct<{
+    identifier: FixedBuffer;
+    message: DynamicBuffer;
+  }>;
+
   private readonly _timeout: number;
 
-  constructor(identifier: Buffer, timeout = DEFAULT_TIMEOUT) {
+  constructor(_identifier: Buffer, timeout = DEFAULT_TIMEOUT) {
+    const identifier =
+      _identifier.length <= 1
+        ? Buffer.of(_identifier.at(0) || 0, 0)
+        : _identifier;
+
     super(identifier);
+
+    this._headerOutgoing = new MappedDynamicStruct({
+      identifier: staticValue(identifier, new StaticBuffer(identifier.length)),
+      message: new DynamicBuffer(),
+    });
 
     this._timeout = timeout;
   }
 
-  protected decode(input: Buffer): T | null {
-    if (!input.length) return null;
-    return input as unknown as T;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected decode(_input: Buffer): T | null {
+    return null;
   }
 
-  protected encode(input: S): Buffer {
-    return input as unknown as Buffer;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected encode(_input: S): Buffer {
+    return emptyBuffer;
   }
 
   /**
    * issue request on Device instance
    */
   request(
-    payload: S,
+    data: S,
     suppressErrors = false,
     ignoreOffline = false
   ): Request<T | null> {
@@ -152,8 +191,9 @@ export class Service<T = void, S = void> extends Property {
 
     return this._device
       .request(
-        this.identifier,
-        this.encode(payload),
+        this._headerOutgoing.encode({
+          message: this.encode(data),
+        }),
         this._timeout,
         suppressErrors,
         ignoreOffline
@@ -232,7 +272,7 @@ export class Device<T extends Transport = Transport> {
     if (!keepalive) return;
 
     this._keepalive = this.addService(
-      new Service(Buffer.from([KEEPALIVE_COMMAND]))
+      new Service(Buffer.of(KEEPALIVE_COMMAND))
     );
 
     this._keepaliveTolerateMissedPackets = keepaliveTolerateMissedPackets;
@@ -285,26 +325,6 @@ export class Device<T extends Transport = Transport> {
   }
 
   /**
-   * write from Device instance to Transport instance
-   */
-  _writeToTransport(
-    requestIdentifier: Buffer,
-    serviceIdentifier: Buffer,
-    message: Buffer | null = null
-  ): void {
-    this._transport._writeToTransport(
-      Buffer.concat([
-        requestIdentifier,
-        versionBuffer,
-        serviceIdentifier,
-        // insert 0 service index when service identifier doesn't include index already
-        serviceIdentifier.length <= 1 ? falseBuffer : emptyBuffer,
-        message ? message : emptyBuffer,
-      ])
-    );
-  }
-
-  /**
    * add an instance of Event to this device
    */
   addEvent<E extends Event<unknown>>(event: E): E {
@@ -331,20 +351,20 @@ export class Device<T extends Transport = Transport> {
   /**
    * match incoming data to running requests on this device instance
    */
-  matchDataToRequest(message: Buffer): void {
-    if (!message.length) return;
+  matchDataToRequest(input: Buffer): void {
+    if (!input.length) return;
 
     this._seen.trigger();
 
-    const requestIdentifier = readNumber(message.subarray(0, 1));
-    const payload = message.subarray(1);
+    const [{ identifier }, messagePayload] =
+      headerIncoming.decodeOpenended(input);
 
-    if (requestIdentifier === EVENT_IDENTIFIER) {
-      this._handleEvent(payload);
+    if (identifier === EVENT_IDENTIFIER) {
+      this._handleEvent(messagePayload);
       return;
     }
 
-    this._handleRequest(requestIdentifier, payload);
+    this._handleRequest(identifier, messagePayload);
   }
 
   /**
@@ -362,8 +382,7 @@ export class Device<T extends Transport = Transport> {
    * issue request
    */
   request(
-    serviceIdentifier: Buffer,
-    payload: Buffer | null = null,
+    message: Buffer = emptyBuffer,
     timeout: number,
     suppressErrors: boolean,
     ignoreOffline: boolean
@@ -405,7 +424,14 @@ export class Device<T extends Transport = Transport> {
     }
 
     return new Promise((resolve, reject) => {
-      this._writeToTransport(writeNumber(id), serviceIdentifier, payload);
+      this._transport._writeToTransport(
+        payloadOutgoing.encode({
+          header: {
+            requestIdentifier: id,
+          },
+          message,
+        })
+      );
 
       const timer = timeout ? new Timer(timeout) : null;
       let observer: Observer | undefined;
@@ -445,7 +471,7 @@ export class Device<T extends Transport = Transport> {
     if (!this._transport.isConnected.value) return;
 
     try {
-      this._writeToTransport(...RESET_OPTIONS);
+      this._transport._writeToTransport(RESET_PAYLOAD);
     } catch {
       this._log.error(() => 'error triggering reset');
     }

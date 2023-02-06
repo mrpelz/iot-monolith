@@ -1,11 +1,12 @@
 import { Input, Logger } from '../log.js';
+import { MappedStruct, UInt8 } from '../struct/main.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
-import { humanPayload, readNumber } from '../data.js';
 import { BooleanState } from '../state.js';
 import { NUMBER_RANGES } from '../number.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { RollingNumber } from '../rolling-number.js';
 import { Transport } from './main.js';
+import { humanPayload } from '../data.js';
 import { promises } from 'dns';
 import { rebind } from '../oop.js';
 
@@ -53,6 +54,10 @@ const { lookup } = promises;
 const REPEAT = 2;
 const REPEAT_PADDING_MS = 10;
 
+const sequenceHeaderIncoming = new MappedStruct({
+  sequence: new UInt8(),
+});
+
 export class UDPTransport extends Transport {
   private readonly _keepAlive: number;
   private readonly _log: Input;
@@ -76,13 +81,15 @@ export class UDPTransport extends Transport {
     port: number,
     logger: Logger,
     keepAlive = 2000,
-    sequenceHandling = false
+    sequenceHandling = false,
+    repeat = REPEAT
   ) {
     super(logger);
 
     this.host = host;
     this._keepAlive = keepAlive;
     this.port = port;
+    this._repeat = repeat;
     this._sequenceHandling = sequenceHandling;
 
     this._log = logger.getInput({
@@ -132,23 +139,24 @@ export class UDPTransport extends Transport {
   /**
    * handle incoming messages
    */
-  private _handleMessage(message: Buffer, remoteInfo: RemoteInfo) {
+  private _handleMessage(input: Buffer, remoteInfo: RemoteInfo) {
     if (!remoteInfo.size) return;
 
-    let payload: Buffer;
+    let messagePayload: Buffer;
 
     if (this._sequenceHandling) {
-      const sequence = message.subarray(0, 1);
-      payload = message.subarray(1);
+      const [{ sequence }, _messagePayload] =
+        sequenceHeaderIncoming.decodeOpenended(input);
+      messagePayload = _messagePayload;
 
-      if (!this._checkIncomingSequence(readNumber(sequence))) return;
+      if (!this._checkIncomingSequence(sequence)) return;
     } else {
-      payload = message;
+      messagePayload = input;
     }
 
-    this._log.debug(() => `msg incoming\n\n${humanPayload(payload)}`);
+    this._log.debug(() => `msg incoming\n\n${humanPayload(messagePayload)}`);
 
-    this._ingestIntoDeviceInstances(null, payload);
+    this._ingestIntoDeviceInstances(null, messagePayload);
   }
 
   /**
@@ -270,7 +278,7 @@ export class UDPTransport extends Transport {
     this._log.debug(() => `send ${payload.length} byte payload`);
     this._log.debug(() => `msg outgoing\n\n${humanPayload(payload)}`);
 
-    for (let index = 0; index < REPEAT; index += 1) {
+    for (let index = 0; index < this._repeat; index += 1) {
       const data = this._sequenceHandling
         ? Buffer.concat([
             Buffer.from([this._messageOutgoingSequence.get()]),
