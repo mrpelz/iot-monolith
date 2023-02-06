@@ -1,4 +1,4 @@
-import { Bool } from '../struct.js';
+import { Bool } from '../struct/main.js';
 import { Event } from '../device/main.js';
 
 const payload = new Bool();

@@ -1,5 +1,5 @@
-import { BYTES_PER_CHARACTER, StringEncodings } from './string.js';
-import { NUMBER_RANGES } from './number.js';
+import { NUMBER_RANGES } from '../number.js';
+import { StringEncodings } from '../string.js';
 
 export class StructMember<T = unknown, S extends number = number> {
   private _buffer?: Buffer;
@@ -64,7 +64,7 @@ export class StructMember<T = unknown, S extends number = number> {
   }
 }
 
-export class Buf extends StructMember<Buffer> {
+export class StaticBuffer extends StructMember<Buffer> {
   get value(): Buffer {
     const result = Buffer.alloc(this.size);
     this.buffer.copy(result);
@@ -139,35 +139,35 @@ export class Bitmap extends StructMember<TBitmap> {
   }
 }
 
-export enum StrPadding {
+export enum StringPadding {
   NONE,
   START,
   END,
 }
 
-export type StrOptions = {
+export type StringOptions = {
   encoding?: StringEncodings;
   fill?: string;
-  padding?: StrPadding;
+  padding?: StringPadding;
   unpad?: boolean;
 };
 
-export class Str extends StructMember<string> {
+export class StaticString extends StructMember<string> {
   private readonly _encoding: StringEncodings;
   private readonly _fill: string;
-  private readonly _padding: StrPadding;
+  private readonly _padding: StringPadding;
   private readonly _unpad: boolean;
 
   constructor(
     length: number,
     {
       encoding = 'ascii',
-      padding = StrPadding.START,
+      padding = StringPadding.START,
       fill = '\0',
       unpad = true,
-    }: StrOptions = {}
+    }: StringOptions = {}
   ) {
-    super(length * BYTES_PER_CHARACTER[encoding]);
+    super(length);
 
     this._encoding = encoding;
     this._padding = padding;
@@ -176,7 +176,7 @@ export class Str extends StructMember<string> {
   }
 
   get value(): string {
-    if (this._padding !== StrPadding.NONE && this._unpad) {
+    if (this._padding !== StringPadding.NONE && this._unpad) {
       return this.buffer.toString(this._encoding).replaceAll(this._fill, '');
     }
 
@@ -184,32 +184,25 @@ export class Str extends StructMember<string> {
   }
 
   set value(input: string) {
-    const targetLength = Math.trunc(
-      this.size / BYTES_PER_CHARACTER[this._encoding]
-    );
-
-    if (input.length > targetLength) {
+    if (input.length > this.size) {
       throw new Error('string too long');
     }
 
-    if (this._padding === StrPadding.NONE && input.length < targetLength) {
+    if (this._padding === StringPadding.NONE && input.length < this.size) {
       throw new Error('padding=none and string too short');
     }
 
     switch (this._padding) {
-      case StrPadding.START:
+      case StringPadding.START:
         this.buffer.write(
-          input.padStart(targetLength, this._fill),
+          input.padStart(this.size, this._fill),
           this._encoding
         );
         break;
-      case StrPadding.END:
-        this.buffer.write(
-          input.padEnd(targetLength, this._fill),
-          this._encoding
-        );
+      case StringPadding.END:
+        this.buffer.write(input.padEnd(this.size, this._fill), this._encoding);
         break;
-      case StrPadding.NONE:
+      case StringPadding.NONE:
       default:
         this.buffer.write(input, this._encoding);
     }
@@ -459,6 +452,11 @@ export type MappedStructMemberValues<T extends MappedStructMembers> = {
   [P in keyof T]: T[P]['value'];
 };
 
+export enum DecodeOpenendedAlignment {
+  START,
+  END,
+}
+
 export class Struct<T extends StructMembers> {
   private static _assignSubarrays<M extends StructMembers>(
     buffer: Buffer,
@@ -533,6 +531,22 @@ export class Struct<T extends StructMembers> {
     this.unassign();
 
     return result;
+  }
+
+  decodeOpenended(
+    input: Buffer,
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+  ): [StructMemberValues<T>, Buffer] {
+    if (input.length < this.size) {
+      throw new Error('input buffer too short');
+    }
+
+    const cutoff =
+      alignment === DecodeOpenendedAlignment.START
+        ? this.size
+        : input.length - this.size;
+
+    return [this.decode(input.subarray(0, cutoff)), input.subarray(cutoff)];
   }
 
   encode(input: StructMemberValues<T>): Buffer {
@@ -636,6 +650,22 @@ export class MappedStruct<T extends MappedStructMembers> {
     this.unassign();
 
     return result;
+  }
+
+  decodeOpenended(
+    input: Buffer,
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+  ): [MappedStructMemberValues<T>, Buffer] {
+    if (input.length < this.size) {
+      throw new Error('input buffer too short');
+    }
+
+    const cutoff =
+      alignment === DecodeOpenendedAlignment.START
+        ? this.size
+        : input.length - this.size;
+
+    return [this.decode(input.subarray(0, cutoff)), input.subarray(cutoff)];
   }
 
   encode(input: MappedStructMemberValues<T>): Buffer {

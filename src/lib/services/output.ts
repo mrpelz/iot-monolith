@@ -1,4 +1,4 @@
-import { Bool } from '../struct.js';
+import { Bool } from '../struct/main.js';
 import { Service } from '../device/main.js';
 
 const request = new Bool();

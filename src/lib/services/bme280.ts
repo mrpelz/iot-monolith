@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 
-import { FloatLE, MappedStruct, TStruct } from '../struct.js';
+import { FloatLE, MappedStruct, TStruct } from '../struct/main.js';
 import { Service } from '../device/main.js';
 
 const response = new MappedStruct({

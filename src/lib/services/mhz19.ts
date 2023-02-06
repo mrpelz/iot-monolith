@@ -7,7 +7,7 @@ import {
   MappedStruct,
   TStruct,
   UInt8,
-} from '../struct.js';
+} from '../struct/main.js';
 import { Service } from '../device/main.js';
 
 const response = new MappedStruct({

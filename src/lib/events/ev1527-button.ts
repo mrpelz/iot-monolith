@@ -1,4 +1,4 @@
-import { Bitmap } from '../struct.js';
+import { Bitmap } from '../struct/main.js';
 import { Event } from '../device/main.js';
 import { Timer } from '../timer.js';
 import { emptyBuffer } from '../data.js';

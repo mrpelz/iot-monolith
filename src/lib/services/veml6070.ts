@@ -1,5 +1,5 @@
 import { Service } from '../device/main.js';
-import { UIntLE } from '../struct.js';
+import { UIntLE } from '../struct/main.js';
 
 const response = new UIntLE();
 

@@ -1,4 +1,4 @@
-import { FloatLE } from '../struct.js';
+import { FloatLE } from '../struct/main.js';
 import { Service } from '../device/main.js';
 
 const response = new FloatLE();

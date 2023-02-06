@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 
-import { Bool, MappedStruct, TStruct, UInt8, UIntLE } from '../struct.js';
+import { Bool, MappedStruct, TStruct, UInt8, UIntLE } from '../struct/main.js';
 import { Event } from '../device/main.js';
 import { bufferChunks } from '../data.js';
 
