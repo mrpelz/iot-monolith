@@ -1,7 +1,6 @@
 import { Bitmap } from '../struct/main.js';
 import { Event } from '../device/main.js';
 import { Timer } from '../timer.js';
-import { emptyBuffer } from '../data.js';
 
 const REPEAT_HOLDOFF_TIME = 250;
 
@@ -18,7 +17,7 @@ export class Ev1527Button extends Event<Ev1527ButtonPayload> {
   private readonly _timer = new Timer(REPEAT_HOLDOFF_TIME);
 
   constructor() {
-    super(emptyBuffer);
+    super(Buffer.of(0));
   }
 
   protected decode(input: Buffer): Ev1527ButtonPayload | null {

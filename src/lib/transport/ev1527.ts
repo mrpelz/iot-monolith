@@ -42,7 +42,7 @@ export class Ev1527Transport extends Transport {
 
     this._ingestIntoDeviceInstances(
       deviceIdentifier,
-      Buffer.concat([Buffer.from([EVENT_IDENTIFIER]), data])
+      Buffer.concat([Buffer.of(EVENT_IDENTIFIER, 0), data])
     );
   }
 }

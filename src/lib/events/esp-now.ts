@@ -5,6 +5,8 @@ const payload = new MappedStruct({
   deviceIdentifier: new StaticBuffer(6),
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type ESPNowPayload = TStruct<typeof payload> & {
   data: Buffer;
 };

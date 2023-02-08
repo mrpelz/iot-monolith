@@ -1,6 +1,5 @@
 import { Bitmap } from '../struct/main.js';
 import { Event } from '../device/main.js';
-import { emptyBuffer } from '../data.js';
 
 export type Ev1527WindowSensorPayload = {
   open: boolean;
@@ -11,7 +10,7 @@ const payload = new Bitmap();
 
 export class Ev1527WindowSensor extends Event<Ev1527WindowSensorPayload> {
   constructor() {
-    super(emptyBuffer);
+    super(Buffer.of(0));
   }
 
   protected decode(input: Buffer): Ev1527WindowSensorPayload | null {
