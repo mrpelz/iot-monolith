@@ -14,6 +14,7 @@ import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
+import { roomSensor } from '../../lib/tree/devices/room-sensor.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
@@ -44,6 +45,12 @@ export const devices = {
     'lighting',
     'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
   ),
+  roomSensor: roomSensor(
+    logger,
+    persistence,
+    timings,
+    'test-room-sensor.lan.wurstsalat.cloud'
+  ),
   wallswitchDoor: shellyi3(
     logger,
     persistence,
@@ -70,6 +77,7 @@ export const instances = {
 };
 
 export const properties = {
+  brightness: devices.roomSensor.brightness,
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   floodLight: devices.floodLight.relay,
@@ -77,7 +85,11 @@ export const properties = {
     'mrpelz-bedroom/floodLightTimer',
     persistence,
   ]),
+  humidity: devices.roomSensor.humidity,
   nightLight: devices.nightLight.relay,
+  pressure: devices.roomSensor.pressure,
+  temperature: devices.roomSensor.temperature,
+  tvoc: devices.roomSensor.tvoc,
   windowLeft: addMeta(
     { open: devices.windowSensorLeft.open },
     { level: Levels.AREA, name: 'window' }
