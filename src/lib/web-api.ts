@@ -1,5 +1,5 @@
 import { HttpServer, RouteHandle } from './http-server.js';
-import { Input, Logger } from './log.js';
+import { Input, Logger, callstack } from './log.js';
 import { Duplex } from 'stream';
 import { IncomingMessage } from 'http';
 import { Observable } from './observable.js';
@@ -141,9 +141,9 @@ export class WebApi {
       ws.on('close', handleStreamClose);
       pingPongTimer.observe(handleStreamClose);
     } catch (_error) {
-      const error = new Error('error handling WebSocket', { cause: _error });
+      const error = new Error('cannot handle WebSocket', { cause: _error });
 
-      this._log.error(() => error.stack as string);
+      this._log.error(() => error.message, callstack(error));
 
       ws.close();
     }

@@ -15,7 +15,7 @@ import {
   UInt8,
   staticValue,
 } from '../struct/main.js';
-import { Input, Logger } from '../log.js';
+import { Input, Logger, callstack } from '../log.js';
 import { Observer, ReadOnlyObservable } from '../observable.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { NUMBER_RANGES } from '../number.js';
@@ -316,7 +316,8 @@ export class Device<T extends Transport = Transport> {
 
       this._log.warning(
         () =>
-          `missed more keepalive responses (${this._keepaliveMissedPackets}) than tolerated (${this._keepaliveTolerateMissedPackets})`
+          `missed more keepalive responses (${this._keepaliveMissedPackets}) than tolerated (${this._keepaliveTolerateMissedPackets})`,
+        callstack()
       );
 
       this._keepaliveMissedPackets = 0;
@@ -391,7 +392,7 @@ export class Device<T extends Transport = Transport> {
       const error = new Error('device is not online');
 
       if (!suppressErrors) {
-        this._log.error(() => error.message);
+        this._log.error(() => error.message, callstack(error));
       }
 
       return Promise.reject(error);
@@ -417,7 +418,7 @@ export class Device<T extends Transport = Transport> {
       );
 
       if (!suppressErrors) {
-        this._log.error(() => error.message);
+        this._log.error(() => error.message, callstack(error));
       }
 
       return Promise.reject(error);
@@ -452,7 +453,7 @@ export class Device<T extends Transport = Transport> {
         );
 
         if (!suppressErrors) {
-          this._log.error(() => error.message);
+          this._log.error(() => error.message, callstack(error));
         }
 
         reject(error);
@@ -472,8 +473,10 @@ export class Device<T extends Transport = Transport> {
 
     try {
       this._transport._writeToTransport(RESET_PAYLOAD);
-    } catch {
-      this._log.error(() => 'error triggering reset');
+    } catch (_error) {
+      const error = new Error('cannot trigger reset', { cause: _error });
+
+      this._log.error(() => error.message, callstack(error));
     }
   }
 }

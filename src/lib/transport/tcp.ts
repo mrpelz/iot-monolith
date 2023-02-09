@@ -1,4 +1,4 @@
-import { Input, Logger } from '../log.js';
+import { Input, Logger, callstack } from '../log.js';
 import { humanPayload, readNumber, writeNumber } from '../data.js';
 import { BooleanState } from '../state.js';
 import { ReadOnlyObservable } from '../observable.js';
@@ -181,7 +181,8 @@ export class TCPTransport extends Transport {
 
     if (this._currentLength > 5) {
       this._log.error(
-        () => `unusual large message: ${this._currentLength} bytes`
+        () => `unusual large message: ${this._currentLength} bytes`,
+        callstack()
       );
     }
 
@@ -196,12 +197,12 @@ export class TCPTransport extends Transport {
   private async _setUpSocket() {
     const address = await (async () => {
       try {
-        const { address: result } = await lookup(this.host);
+        const { address: result } = await lookup(this.host, 4);
         return result;
-      } catch (error) {
-        this._log.error(
-          () => `error resolving hostname "${this.host}": ${error}`
-        );
+      } catch (_error) {
+        const error = new Error('cannot resolve hostname', { cause: _error });
+
+        this._log.error(() => error.message, callstack(error));
 
         return null;
       }
@@ -230,7 +231,8 @@ export class TCPTransport extends Transport {
     })().catch((error) => {
       this._log.error(
         () =>
-          `error connecting socket (hostname "${this.host}", address: ${address}): ${error}`
+          `error connecting socket (hostname "${this.host}", address: ${address}): ${error.message}`,
+        callstack(error)
       );
       this._nukeSocket();
     });
@@ -270,7 +272,7 @@ export class TCPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      this._log.error(() => 'socket is not connected!');
+      this._log.error(() => 'socket is not connected!', callstack());
     }
 
     this._log.debug(() => `send ${payload.length} byte payload`);

@@ -1,4 +1,5 @@
 import { app } from './app/app.js';
+import { callstack } from './lib/log.js';
 import { logger as globalLogger } from './app/logging.js';
 
 const logger = globalLogger.getInput({
@@ -28,21 +29,32 @@ const exit = async (code = 0) => {
   quit(code);
 };
 
-process.on('uncaughtException', async (error) => {
-  await logger.emergency(() => ({
-    body: error.toString(),
-    head: `uncaughtException: ${error.message}`,
-  }));
+process.on('uncaughtException', async (cause) => {
+  const error = new Error('uncaughtException', { cause });
+
+  await logger.emergency(
+    () => ({
+      body: error.message,
+      head: error.name,
+    }),
+    callstack(error)
+  );
 
   exit();
 });
 
-process.on('unhandledRejection', async (error) => {
-  if (!error) return;
+process.on('unhandledRejection', async (cause) => {
+  if (!cause) return;
 
-  await logger.emergency(() => ({
-    body: `uncaughtRejection: ${error.toString()}`,
-  }));
+  const error = new Error('uncaughtRejection', { cause });
+
+  await logger.emergency(
+    () => ({
+      body: error.message,
+      head: error.name,
+    }),
+    callstack(error)
+  );
 
   exit();
 });

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { DevOutput, Logger } from '../log.js';
+import { DevOutput, Logger, callstack } from '../log.js';
 
 const globalLogger = new Logger();
 const devOutput = new DevOutput();
@@ -16,17 +16,17 @@ logger.info(() => 'testing info');
 
 logger.notice(() => 'testing notice');
 
-logger.warning(() => 'testing warning');
+logger.warning(() => 'testing warning', callstack());
 
-logger.error(() => 'testing error');
+logger.error(() => 'testing error', callstack());
 
-logger.error(() => ({ body: 'testing error' }));
+logger.error(() => ({ body: 'testing error' }), callstack());
 
-logger.critical(() => 'testing critical');
+logger.critical(() => 'testing critical', callstack());
 
-logger.alert(() => 'testing alert');
+logger.alert(() => 'testing alert', callstack());
 
-logger.emergency(() => 'testing emerg');
+logger.emergency(() => 'testing emerg', callstack());
 
 logger.debug(() => ({
   body: 'testing debug with overridden head',

@@ -150,11 +150,11 @@ export class Input {
     this._options = options;
   }
 
-  private _log(level: Level, initiator: Initiator) {
+  private _log(level: Level, initiator: Initiator, stack: string | undefined) {
     const stackLog =
-      level <= Level.NOTICE
+      level <= Level.NOTICE && stack
         ? {
-            stack: new Error().stack,
+            stack,
           }
         : {};
 
@@ -172,36 +172,36 @@ export class Input {
   }
 
   /* eslint-disable @typescript-eslint/member-ordering */
-  emergency(initiator: Initiator): Promise<void> {
-    return this._log(Level.EMERGENCY, initiator);
+  emergency(initiator: Initiator, stack: string | undefined): Promise<void> {
+    return this._log(Level.EMERGENCY, initiator, stack);
   }
 
-  alert(initiator: Initiator): Promise<void> {
-    return this._log(Level.ALERT, initiator);
+  alert(initiator: Initiator, stack: string | undefined): Promise<void> {
+    return this._log(Level.ALERT, initiator, stack);
   }
 
-  critical(initiator: Initiator): Promise<void> {
-    return this._log(Level.CRITICAL, initiator);
+  critical(initiator: Initiator, stack: string | undefined): Promise<void> {
+    return this._log(Level.CRITICAL, initiator, stack);
   }
 
-  error(initiator: Initiator): Promise<void> {
-    return this._log(Level.ERROR, initiator);
+  error(initiator: Initiator, stack: string | undefined): Promise<void> {
+    return this._log(Level.ERROR, initiator, stack);
   }
 
-  warning(initiator: Initiator): Promise<void> {
-    return this._log(Level.WARNING, initiator);
+  warning(initiator: Initiator, stack: string | undefined): Promise<void> {
+    return this._log(Level.WARNING, initiator, stack);
   }
 
-  notice(initiator: Initiator): Promise<void> {
-    return this._log(Level.NOTICE, initiator);
+  notice(initiator: Initiator, stack?: string): Promise<void> {
+    return this._log(Level.NOTICE, initiator, stack);
   }
 
-  info(initiator: Initiator): Promise<void> {
-    return this._log(Level.INFO, initiator);
+  info(initiator: Initiator, stack?: string): Promise<void> {
+    return this._log(Level.INFO, initiator, stack);
   }
 
-  debug(initiator: Initiator): Promise<void> {
-    return this._log(Level.DEBUG, initiator);
+  debug(initiator: Initiator, stack?: string): Promise<void> {
+    return this._log(Level.DEBUG, initiator, stack);
   }
   /* eslint-enable @typescript-eslint/member-ordering */
 
@@ -259,3 +259,10 @@ export class Logger {
     this._inputs.delete(input);
   }
 }
+
+export const callstack = (error?: Error): string | undefined =>
+  (error || new Error()).stack
+    ?.split('\n')
+    .splice(2)
+    .map((line) => line.trim())
+    .join('\n');

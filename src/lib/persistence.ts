@@ -1,5 +1,5 @@
 import { AnyWritableObservable, Observer } from './observable.js';
-import { Input, Logger } from './log.js';
+import { Input, Logger, callstack } from './log.js';
 import { mkdirSync, writeFileSync } from 'fs';
 import { dirname } from 'path';
 import { readFile } from 'fs/promises';
@@ -46,8 +46,10 @@ export class Persistence {
         }
 
         return result;
-      } catch {
-        this._log.error(() => 'cannot gather values');
+      } catch (_error) {
+        const error = new Error('cannot gather values', { cause: _error });
+
+        this._log.error(() => error.message, callstack(error));
 
         return null;
       }
@@ -57,8 +59,12 @@ export class Persistence {
     const persistPayload = (() => {
       try {
         return JSON.stringify(persistValues);
-      } catch {
-        this._log.error(() => 'cannot strigify values');
+      } catch (_error) {
+        const error = new Error('cannot JSON-strigify values', {
+          cause: _error,
+        });
+
+        this._log.error(() => error.message, callstack(error));
 
         return null;
       }
@@ -68,11 +74,12 @@ export class Persistence {
     try {
       mkdirSync(dirname(this._path), { recursive: true });
       writeFileSync(this._path, persistPayload);
-    } catch (error) {
-      this._log.error(() => ({
-        body: (error as Error).message,
-        stack: (error as Error).stack,
-      }));
+    } catch (_error) {
+      const error = new Error('cannot persist on file system', {
+        cause: _error,
+      });
+
+      this._log.error(() => error.message, callstack(error));
     }
   }
 
@@ -80,7 +87,13 @@ export class Persistence {
     const restorePayload = await (async () => {
       try {
         return readFile(this._path, { encoding: 'utf8' });
-      } catch {
+      } catch (_error) {
+        const error = new Error('cannot restore from file system', {
+          cause: _error,
+        });
+
+        this._log.error(() => error.message, callstack(error));
+
         return null;
       }
     })();
@@ -89,7 +102,11 @@ export class Persistence {
     const restoreValues = (() => {
       try {
         return JSON.parse(restorePayload) as Record<string, unknown>;
-      } catch {
+      } catch (_error) {
+        const error = new Error('cannot JSON-parse values', { cause: _error });
+
+        this._log.error(() => error.message, callstack(error));
+
         return null;
       }
     })();

@@ -1,4 +1,4 @@
-import { Input, Logger } from '../log.js';
+import { Input, Logger, callstack } from '../log.js';
 import { BooleanState } from '../state.js';
 import { Device } from '../device/main.js';
 import { ReadOnlyObservable } from '../observable.js';
@@ -47,7 +47,8 @@ export class TransportDevice {
         this._transport.identifierLength !== identifier.length
       ) {
         this._log.error(
-          () => 'incoming message identifier has wrong length for device'
+          () => 'incoming message identifier has wrong length for device',
+          callstack()
         );
 
         return;

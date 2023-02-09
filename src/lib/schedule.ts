@@ -1,4 +1,4 @@
-import { Input, Logger } from './log.js';
+import { Input, Logger, callstack } from './log.js';
 import { Observable, ReadOnlyObservable } from './observable.js';
 
 export type ScheduleEpochPair = [Schedule, number];
@@ -47,8 +47,10 @@ export class Schedule {
       for (const task of this._tasks) {
         task(this._previousExecution);
       }
-    } catch (error) {
-      this._log.error(() => `task error: ${error}`);
+    } catch (_error) {
+      const error = new Error('task error', { cause: _error });
+
+      this._log.error(() => error.message, callstack(error));
     }
   }
 
@@ -61,10 +63,12 @@ export class Schedule {
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
-      this._log.error(() => ({
-        body: 'next execution missing or not in the future, stopping execution',
-        stack: new Error().stack,
-      }));
+      this._log.error(
+        () => ({
+          body: 'next execution missing or not in the future, stopping execution',
+        }),
+        callstack()
+      );
 
       this._previousExecution = null;
       this.stop();

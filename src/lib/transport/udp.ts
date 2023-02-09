@@ -1,4 +1,4 @@
-import { Input, Logger } from '../log.js';
+import { Input, Logger, callstack } from '../log.js';
 import { MappedStruct, UInt8 } from '../struct/main.js';
 import { RemoteInfo, Socket, createSocket } from 'dgram';
 import { BooleanState } from '../state.js';
@@ -205,12 +205,12 @@ export class UDPTransport extends Transport {
   private async _setUpSocket() {
     const address = await (async () => {
       try {
-        const { address: result } = await lookup(this.host);
+        const { address: result } = await lookup(this.host, 4);
         return result;
-      } catch (error) {
-        this._log.error(
-          () => `error resolving hostname "${this.host}": ${error}`
-        );
+      } catch (_error) {
+        const error = new Error('cannot resolve hostname', { cause: _error });
+
+        this._log.error(() => error.message, callstack(error));
 
         return null;
       }
@@ -232,7 +232,8 @@ export class UDPTransport extends Transport {
     })().catch((error) => {
       this._log.error(
         () =>
-          `error connecting socket (hostname "${this.host}", address: ${address}): ${error}`
+          `error connecting socket (hostname "${this.host}", address: ${address}): ${error.message}`,
+        callstack(error)
       );
       this._nukeSocket();
     });
@@ -272,7 +273,7 @@ export class UDPTransport extends Transport {
     }
 
     if (!this._isConnected.value) {
-      this._log.error(() => 'socket is not connected!');
+      this._log.error(() => 'socket is not connected!', callstack());
     }
 
     this._log.debug(() => `send ${payload.length} byte payload`);

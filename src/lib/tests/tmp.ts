@@ -1,6 +1,6 @@
 import { DevOutput, Logger } from '../log.js';
 import { Bme280 } from '../services/bme280.js';
-// import { Ccs811 } from '../services/ccs811.js';
+import { Ccs811 } from '../services/ccs811.js';
 import { Mcp9808 } from '../services/mcp9808.js';
 import { Sgp30 } from '../services/sgp30.js';
 import { Tsl2561 } from '../services/tsl2561.js';
@@ -85,20 +85,20 @@ device.isOnline.observe(async (online, observer) => {
   log.info(() => `tvoc: ${response.tvoc.toString()}`);
 });
 
-// const ccs811 = device.addService(new Ccs811());
+const ccs811 = device.addService(new Ccs811());
 
-// device.isOnline.observe(async (online, observer) => {
-//   if (!online) return;
-//   observer.remove();
+device.isOnline.observe(async (online, observer) => {
+  if (!online) return;
+  observer.remove();
 
-//   const response = await ccs811.request({ humidity: 30, temperature: 25 });
-//   if (response === null) return;
+  const response = await ccs811.request({ humidity: 30, temperature: 25 });
+  if (response === null) return;
 
-//   const log = logger.getInput({
-//     head: 'ccs811',
-//   });
+  const log = logger.getInput({
+    head: 'ccs811',
+  });
 
-//   log.info(() => `temperature: ${response.temperature.toString()}`);
-//   log.info(() => `tvoc: ${response.tvoc.toString()}`);
-//   log.info(() => `eco2: ${response.eco2.toString()}`);
-// });
+  log.info(() => `temperature: ${response.temperature.toString()}`);
+  log.info(() => `tvoc: ${response.tvoc.toString()}`);
+  log.info(() => `eco2: ${response.eco2.toString()}`);
+});

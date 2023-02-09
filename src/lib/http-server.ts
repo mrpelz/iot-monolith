@@ -1,5 +1,5 @@
 import { IncomingMessage, Server, ServerResponse } from 'http';
-import { Input, Logger } from './log.js';
+import { Input, Logger, callstack } from './log.js';
 import { multiline } from './string.js';
 
 export type RouteUtils = {
@@ -156,7 +156,7 @@ export class HttpServer {
     } catch (_error) {
       const error = new Error('error handling request', { cause: _error });
 
-      this._log.error(() => error.message);
+      this._log.error(() => error.message, callstack(error));
 
       utils.internalServerError(error.message);
     }
@@ -191,7 +191,7 @@ export class HttpServer {
     if (this._routes.has(pathname)) {
       const error = new Error(`route with path "${pathname}" already set`);
 
-      this._log.error(() => error.message);
+      this._log.error(() => error.message, callstack(error));
 
       throw error;
     }
