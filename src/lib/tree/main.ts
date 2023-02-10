@@ -10,7 +10,7 @@ import {
   isWritableObservable,
 } from '../observable.js';
 import { RollingNumber } from '../rolling-number.js';
-import { randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 
 const ROOT_IDENTIFIER = '$';
 
@@ -212,7 +212,7 @@ export class Tree {
   readonly structure: any;
 
   constructor(input: any) {
-    this.structure = this._serialize(input, ROOT_IDENTIFIER);
+    this.structure = this._serialize(input, [], ROOT_IDENTIFIER);
     this.stream = this._stream();
   }
 
@@ -243,6 +243,7 @@ export class Tree {
 
   private _serialize<T extends Meta>(
     object: any,
+    previousPath: string[],
     property: string,
     parentMeta?: T,
     metaExtension?: Partial<Meta>
@@ -277,12 +278,14 @@ export class Tree {
       } as Meta;
     })();
 
+    const thisPath = [...previousPath, property];
+
     const children = ((): any => {
       const result = Object.entries(object)
         .filter(([key]) => !['$', '_get', '_set'].includes(key))
         .map(([key, node]) => [
           key,
-          this._serialize(node, key, meta as T, extension?.[key]),
+          this._serialize(node, thisPath, key, meta as T, extension?.[key]),
         ]);
 
       return result.length ? Object.fromEntries(result) : undefined;
@@ -306,7 +309,10 @@ export class Tree {
       return this._getSetterIndex(object._set, meta.valueType);
     })();
 
-    const id = property === ROOT_IDENTIFIER ? ROOT_IDENTIFIER : randomUUID();
+    const id =
+      property === ROOT_IDENTIFIER
+        ? ROOT_IDENTIFIER
+        : createHash('sha256').update(thisPath.join('\0')).digest('hex');
 
     return {
       children,
