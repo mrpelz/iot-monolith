@@ -51,6 +51,7 @@
     "node-fetch": "^2.6.1",
     "prom-client": "^14.0.1",
     "suncalc": "^1.8.0",
+    "tree-model": "^1.0.7",
     "ws": "^7.4.7"
   }
 }
