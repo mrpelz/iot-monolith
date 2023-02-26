@@ -1,49 +1,52 @@
-import TreeModel, { Model, Node } from 'tree-model';
+type InitFunction = (self: Base) => void;
 
-type UnknownObject = Record<string, unknown>;
-type EmptyObject = Record<string, never>;
+export type Props = {
+  children?: JSX.Element | JSX.Element[];
+  init?: InitFunction;
+};
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace JSX {
-  export type Props<P extends UnknownObject = EmptyObject> = P & {
-    children?: Array<Props>;
-  };
+export class Base {
+  readonly children?: Set<Base>;
+  readonly init?: InitFunction;
+  readonly props: Omit<Props, 'children' | 'init'>;
 
-  export type Element<P extends UnknownObject = EmptyObject> =
-    | Props<P>
-    | EmptyObject;
+  constructor(propsWithChildren: Props) {
+    const { children, init, ...props } = propsWithChildren;
 
-  export type ComponentInstance<P extends UnknownObject = EmptyObject> =
-    Element<P & { init: (node: Node<P>) => void }>;
+    this.children = children
+      ? new Set(Array.isArray(children) ? children.flat() : [children])
+      : undefined;
 
-  export type Component<P extends UnknownObject = EmptyObject> = (
-    props: Props<P>
-  ) => ComponentInstance<P>;
+    this.init = init;
+    this.props = props;
+  }
 }
 
-export const h = <
-  P extends JSX.Props<UnknownObject> = JSX.Props<UnknownObject>
->(
-  component: JSX.Component<P>,
-  props: P,
+class Fragment extends Base {}
+
+const intrinsicElements = {
+  base: Base,
+} as const;
+
+export type IntrinsicElements = typeof intrinsicElements;
+
+export type Component<P = Record<string, unknown>> = (
+  props: P & { children?: JSX.Element | JSX.Element[] }
+) => Base;
+
+export const h = <T extends keyof JSX.IntrinsicElements>(
+  component: T | Component<JSX.IntrinsicElements[T]>,
+  props: Omit<JSX.IntrinsicElements[T], 'children'>,
   ...children: JSX.Element[]
-): JSX.Element<P> => {
-  const result = component({ ...props, children });
-  if (result === null) return {};
+): JSX.Element => {
+  const propsWithChildren = { ...props, children };
 
-  return result;
+  if (typeof component === 'string') {
+    return new intrinsicElements[component](propsWithChildren);
+  }
+
+  return component(propsWithChildren);
 };
 
-export const fragment: JSX.Component = (props) => props;
-
-const tree = new TreeModel();
-
-export const init = (
-  input: Model<JSX.ComponentInstance>
-): Node<JSX.ComponentInstance> => {
-  const result = tree.parse(input);
-
-  result.all((node) => {node.});
-
-  return result;
-};
+export const fragment: Component<Record<string, never>> = (props): Fragment =>
+  new Fragment(props);
