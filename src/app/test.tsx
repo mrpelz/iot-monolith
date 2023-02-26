@@ -1,18 +1,21 @@
-import { Component, fragment, h } from '../lib/tree/jsx.js';
+import { Children, Component, fragment, h } from '../lib/tree/jsx.js';
 import { Root } from '../lib/tree/jsx/root.js';
 import { inspect } from 'util';
 
-const TestA: Component = ({ children }) => <base>{children}</base>;
-const TestB: Component = ({ children }) => <base>{children}</base>;
+const TestA: Component<{ children?: Children }> = ({ children }) => (
+  <Root id="testA">{children}</Root>
+);
+const TestB: Component<{ children: Children }> = ({ children }) => (
+  <Root id="testB">{children}</Root>
+);
 
 const foo = (
   <TestA>
     <TestB>
       <TestB>
         <TestB>
-          <base />
           <TestA />
-          <Root />
+          <Root id="tree" />
         </TestB>
       </TestB>
     </TestB>

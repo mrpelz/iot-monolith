@@ -1,24 +1,33 @@
+import { Meta } from './main.js';
+
 type InitFunction = (self: Base) => void;
 
+export type Children = JSX.Element | JSX.Element[];
+
 export type Props = {
-  children?: JSX.Element | JSX.Element[];
-  init?: InitFunction;
+  children?: Children;
+  init: InitFunction;
+  meta: Meta;
 };
 
+type BuiltinProps = 'children' | 'init';
+
+type OverrideProps<T> = Omit<T & Props, BuiltinProps>;
+
 export class Base {
-  readonly children?: Set<Base>;
-  readonly init?: InitFunction;
-  readonly props: Omit<Props, 'children' | 'init'>;
+  private readonly _children?: Set<Base>;
+  private readonly _init?: InitFunction;
+  private readonly _props: OverrideProps<Props>;
 
   constructor(propsWithChildren: Props) {
     const { children, init, ...props } = propsWithChildren;
 
-    this.children = children
+    this._children = children
       ? new Set(Array.isArray(children) ? children.flat() : [children])
       : undefined;
 
-    this.init = init;
-    this.props = props;
+    this._init = init;
+    this._props = props;
   }
 }
 
@@ -30,23 +39,30 @@ const intrinsicElements = {
 
 export type IntrinsicElements = typeof intrinsicElements;
 
-export type Component<P = Record<string, unknown>> = (
-  props: P & { children?: JSX.Element | JSX.Element[] }
-) => Base;
+export type Component<T = Record<never, never>> = (props: T) => Base;
 
-export const h = <T extends keyof JSX.IntrinsicElements>(
-  component: T | Component<JSX.IntrinsicElements[T]>,
-  props: Omit<JSX.IntrinsicElements[T], 'children'>,
+export const h = <P extends Props, T extends typeof Base | Component<P>>(
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Component: T,
+  props: Omit<P, 'children'>,
   ...children: JSX.Element[]
 ): JSX.Element => {
   const propsWithChildren = { ...props, children };
 
-  if (typeof component === 'string') {
-    return new intrinsicElements[component](propsWithChildren);
+  if (
+    Component.prototype instanceof Base &&
+    'constructor' in Component.prototype
+  ) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return new Component(propsWithChildren);
   }
 
-  return component(propsWithChildren);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  // eslint-disable-next-line new-cap
+  return Component(propsWithChildren);
 };
 
-export const fragment: Component<Record<string, never>> = (props): Fragment =>
+export const fragment: Component<Props> = (props): Fragment =>
   new Fragment(props);
