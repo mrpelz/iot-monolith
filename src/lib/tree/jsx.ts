@@ -21,17 +21,19 @@ export type MatcherFunctionMap<T> = {
 
 export class Element<T extends AdditionalProps = AdditionalProps> {
   static matchClass<M extends AbstractClass>(
-    a: M,
+    a: M | undefined,
     b: unknown
   ): b is InstanceType<M> {
+    if (!a) return false;
     return b instanceof a;
   }
 
-  static matchValue<M>(a: M, b: unknown): b is M {
+  static matchValue<M>(a: M | undefined, b: unknown): b is M {
     return a === b;
   }
 
   private readonly _children?: Set<Element>;
+  private _hasBeenInitialized = false;
   private _parent?: Element;
 
   readonly initCallback?: InitFunction;
@@ -65,6 +67,9 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
   }
 
   init(parent?: Element): void {
+    if (this._hasBeenInitialized) return;
+    this._hasBeenInitialized = true;
+
     this._parent = parent;
 
     this._handleChildren((child) => child.init(this));
@@ -86,7 +91,7 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
   }
 
   matchAllChildren<M extends AdditionalProps>(
-    props: MatcherFunctionMap<M>,
+    props: MatcherFunctionMap<Partial<M>>,
     depth = -1
   ): Element<InstanceMap<M>>[] {
     if (!this._children) return [];
@@ -108,7 +113,7 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
   }
 
   matchFirstChild<M extends AdditionalProps>(
-    props: MatcherFunctionMap<M>,
+    props: MatcherFunctionMap<Partial<M>>,
     depth = -1
   ): Element<InstanceMap<M>> | undefined {
     if (!this._children) return undefined;
