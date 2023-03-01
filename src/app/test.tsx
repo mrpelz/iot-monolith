@@ -9,7 +9,9 @@ const TestB: Component<{ children: Children; id: string }> = ({
   id,
 }) => <element id={id}>{children}</element>;
 
-class TestMatcherClass {}
+class TestMatcherClass<T extends string> {
+  bar: T;
+}
 
 const testC = (
   <element
@@ -43,7 +45,8 @@ const matchFirst = foo.matchFirstChild({
 });
 
 const matchAll = foo.matchAllChildren({
-  instance: [Element.matchClass, TestMatcherClass],
+  id: [Element.matchValue, 'tree' as const],
+  instance: [Element.matchClass, TestMatcherClass<'foo'>],
 });
 
 // eslint-disable-next-line no-console
