@@ -1,21 +1,32 @@
-import { Children, Component, fragment, h } from '../lib/tree/jsx.js';
-import { Root } from '../lib/tree/jsx/root.js';
+import { Children, Component, Element, fragment, h } from '../lib/tree/jsx.js';
 import { inspect } from 'util';
 
 const TestA: Component<{ children?: Children }> = ({ children }) => (
-  <Root id="testA">{children}</Root>
+  <element id="testA">{children}</element>
 );
-const TestB: Component<{ children: Children }> = ({ children }) => (
-  <Root id="testB">{children}</Root>
+const TestB: Component<{ children: Children; id: string }> = ({
+  children,
+  id,
+}) => <element id={id}>{children}</element>;
+
+class TestMatcherClass {}
+
+const testC = (
+  <element
+    id="tree"
+    instance={new TestMatcherClass()}
+    // eslint-disable-next-line no-console
+    init={(self) => console.log(self)}
+  />
 );
 
 const foo = (
   <TestA>
-    <TestB>
-      <TestB>
-        <TestB>
+    <TestB id="2nd">
+      <TestB id="3rd">
+        <TestB id="4th">
           <TestA />
-          <Root id="tree" />
+          {testC}
         </TestB>
       </TestB>
     </TestB>
@@ -25,8 +36,18 @@ const foo = (
   </TestA>
 );
 
-// eslint-disable-next-line no-console
-console.log(inspect(foo, undefined, null));
+foo.init();
+
+const matchFirst = foo.matchFirstChild({
+  id: [Element.matchValue, 'tree' as const],
+});
+
+const matchAll = foo.matchAllChildren({
+  instance: [Element.matchClass, TestMatcherClass],
+});
 
 // eslint-disable-next-line no-console
-// console.log(inspect(, undefined, null));
+console.log(foo.props, inspect(foo, undefined, null));
+
+// eslint-disable-next-line no-console
+console.log('match', inspect({ matchAll, matchFirst }, undefined, null));

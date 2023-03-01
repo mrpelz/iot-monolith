@@ -1,68 +1,155 @@
-import { Meta } from './main.js';
+export type Children = Element | Element[];
+export type InitFunction = (self: Element) => void;
 
-type InitFunction = (self: Base) => void;
-
-export type Children = JSX.Element | JSX.Element[];
-
-export type Props = {
+export type BuiltinProps = {
   children?: Children;
-  init: InitFunction;
-  meta: Meta;
+  init?: InitFunction;
+};
+export type AdditionalProps = Omit<Record<string, unknown>, keyof BuiltinProps>;
+export type Props<T extends AdditionalProps = AdditionalProps> = T &
+  BuiltinProps;
+
+type AbstractClass = abstract new (...args: unknown[]) => unknown;
+type InstanceMap<T extends AdditionalProps> = {
+  [K in keyof T]: T[K] extends AbstractClass ? InstanceType<T[K]> : T[K];
 };
 
-type BuiltinProps = 'children' | 'init';
+export type MatcherFunction<T> = (a: T, b: unknown) => boolean;
+export type MatcherFunctionMap<T> = {
+  [K in keyof T]: readonly [MatcherFunction<T[K]>, T[K]];
+};
 
-type OverrideProps<T> = Omit<T & Props, BuiltinProps>;
+export class Element<T extends AdditionalProps = AdditionalProps> {
+  static matchClass<M extends AbstractClass>(
+    a: M,
+    b: unknown
+  ): b is InstanceType<M> {
+    return b instanceof a;
+  }
 
-export class Base {
-  private readonly _children?: Set<Base>;
-  private readonly _init?: InitFunction;
-  private readonly _props: OverrideProps<Props>;
+  static matchValue<M>(a: M, b: unknown): b is M {
+    return a === b;
+  }
 
-  constructor(propsWithChildren: Props) {
-    const { children, init, ...props } = propsWithChildren;
+  private readonly _children?: Set<Element>;
+  private _parent?: Element;
+
+  readonly initCallback?: InitFunction;
+  readonly props: T;
+
+  constructor(props: Props<T>) {
+    const { children, init } = props;
 
     this._children = children
       ? new Set(Array.isArray(children) ? children.flat() : [children])
       : undefined;
 
-    this._init = init;
-    this._props = props;
+    this.initCallback = init;
+    this.props = props;
+  }
+
+  private _handleChildren(childCallback: (child: Element) => void) {
+    if (this._children) {
+      for (const child of this._children) {
+        childCallback(child);
+      }
+    }
+  }
+
+  get children(): Element[] | undefined {
+    return this._children ? Array.from(this._children) : undefined;
+  }
+
+  get parent(): Element | undefined {
+    return this._parent;
+  }
+
+  init(parent?: Element): void {
+    this._parent = parent;
+
+    this._handleChildren((child) => child.init(this));
+
+    this.initCallback?.(this);
+  }
+
+  match<M extends AdditionalProps>(
+    props: MatcherFunctionMap<Partial<M>>
+  ): this is Element<InstanceMap<M>> {
+    for (const property of Object.keys(props)) {
+      const [matcher, a] = props[property];
+      const b = this.props[property];
+
+      if (!matcher(a, b)) return false;
+    }
+
+    return true;
+  }
+
+  matchAllChildren<M extends AdditionalProps>(
+    props: MatcherFunctionMap<M>,
+    depth = -1
+  ): Element<InstanceMap<M>>[] {
+    if (!this._children) return [];
+
+    const directMatch =
+      this.children?.filter((child): child is Element<InstanceMap<M>> =>
+        child.match(props)
+      ) || [];
+    if (!depth || !directMatch) return directMatch;
+
+    const indirectMatch = [
+      directMatch,
+      this.children
+        ?.map((child) => child.matchAllChildren(props, depth - 1))
+        .flat(1) || [],
+    ].flat(1);
+
+    return indirectMatch;
+  }
+
+  matchFirstChild<M extends AdditionalProps>(
+    props: MatcherFunctionMap<M>,
+    depth = -1
+  ): Element<InstanceMap<M>> | undefined {
+    if (!this._children) return undefined;
+
+    const directMatch = this.children?.find(
+      (child): child is Element<InstanceMap<M>> => child.match(props)
+    );
+
+    if (directMatch) return directMatch;
+    if (!this.children || !depth) return undefined;
+
+    for (const child of this.children) {
+      const match = child.matchFirstChild(props, depth - 1);
+      if (match) return match;
+    }
+
+    return undefined;
   }
 }
 
-class Fragment extends Base {}
+export type Component<T = Record<never, never>> = (props: T) => Element;
 
-const intrinsicElements = {
-  base: Base,
-} as const;
+export const h = <
+  PC extends AdditionalProps,
+  PF extends Record<string, unknown>,
+  C extends keyof JSX.IntrinsicElements,
+  F extends Component<PF>,
+  T extends C | F,
+  P extends T extends C ? PC : PF
+>(
+  component: T,
+  props: Omit<P, 'children'> | null,
+  ...children: Element[]
+): Element => {
+  const propsWithChildren = { ...props, children } || {};
 
-export type IntrinsicElements = typeof intrinsicElements;
-
-export type Component<T = Record<never, never>> = (props: T) => Base;
-
-export const h = <P extends Props, T extends typeof Base | Component<P>>(
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Component: T,
-  props: Omit<P, 'children'>,
-  ...children: JSX.Element[]
-): JSX.Element => {
-  const propsWithChildren = { ...props, children };
-
-  if (
-    Component.prototype instanceof Base &&
-    'constructor' in Component.prototype
-  ) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return new Component(propsWithChildren);
+  if (typeof component === 'string') {
+    return new Element(propsWithChildren);
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line new-cap
-  return Component(propsWithChildren);
+  return component(propsWithChildren as unknown as PF);
 };
 
-export const fragment: Component<Props> = (props): Fragment =>
-  new Fragment(props);
+export const fragment: Component = (props): Element => new Element(props);
