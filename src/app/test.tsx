@@ -5,7 +5,7 @@ import {
   h,
   matchClass,
   matchValue,
-} from '../lib/tree/jsx.js';
+} from '../lib/tree/jsx/main.js';
 import { inspect } from 'util';
 
 const TestA: Component<{ children?: Children }> = ({ children }) => (
