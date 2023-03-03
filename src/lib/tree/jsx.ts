@@ -20,18 +20,6 @@ export type MatcherFunctionMap<T> = {
 };
 
 export class Element<T extends AdditionalProps = AdditionalProps> {
-  static matchClass<M extends AbstractClass>(
-    a: M | undefined,
-    b: unknown
-  ): b is InstanceType<M> {
-    if (!a) return false;
-    return b instanceof a;
-  }
-
-  static matchValue<M>(a: M | undefined, b: unknown): b is M {
-    return a === b;
-  }
-
   private readonly _children?: Set<Element>;
   private _hasBeenInitialized = false;
   private _parent?: Element;
@@ -133,6 +121,16 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
     return undefined;
   }
 }
+
+export const matchClass = <M extends AbstractClass>(
+  a: M | undefined,
+  b: unknown
+): b is InstanceType<M> => {
+  if (!a) return false;
+  return b instanceof a;
+};
+
+export const matchValue = <M>(a: M | undefined, b: unknown): b is M => a === b;
 
 export type Component<T = Record<never, never>> = (props: T) => Element;
 

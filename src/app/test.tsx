@@ -1,4 +1,11 @@
-import { Children, Component, Element, fragment, h } from '../lib/tree/jsx.js';
+import {
+  Children,
+  Component,
+  fragment,
+  h,
+  matchClass,
+  matchValue,
+} from '../lib/tree/jsx.js';
 import { inspect } from 'util';
 
 const TestA: Component<{ children?: Children }> = ({ children }) => (
@@ -41,12 +48,15 @@ const foo = (
 foo.init();
 
 const matchFirst = foo.matchFirstChild({
-  id: [Element.matchValue, 'tree' as const],
+  id: [matchValue, 'tree' as const],
 });
 
-const matchAll = foo.matchAllChildren({
-  id: [Element.matchValue, 'tree' as const],
-  instance: [Element.matchClass, TestMatcherClass<'foo'>],
+const matchAll = foo.matchAllChildren<{
+  id: 'tree';
+  instance: typeof TestMatcherClass<'foo'>;
+}>({
+  id: [matchValue, 'tree'],
+  instance: [matchClass, TestMatcherClass],
 });
 
 // eslint-disable-next-line no-console
