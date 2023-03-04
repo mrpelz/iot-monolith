@@ -44,7 +44,7 @@ type InstanceMap<T extends Props> = {
 };
 
 export type MatcherFunction<T> = (a: T, b: unknown) => boolean;
-export type MatcherFunctionTuple<T> = readonly [MatcherFunction<T>, T];
+export type MatcherFunctionTuple<T> = readonly [MatcherFunction<T>, ...T[]];
 export type MatcherFunctionMap<T> = {
   [K in keyof T]: MatcherFunctionTuple<T[K]>;
 };
@@ -121,10 +121,11 @@ export class Element<T extends Props = Props> {
     props: MatcherProps<M>
   ): this is Element<InstanceMap<M>> {
     for (const property of Object.keys(props)) {
-      const [matcher, a] = props[property];
+      const [matcher, ...values] = props[property];
       const b = this.props[property];
 
-      if (!matcher(a, b)) return false;
+      if (values.some((a) => matcher(a, b))) continue;
+      return false;
     }
 
     return true;
@@ -191,7 +192,7 @@ export const matchClass = <M extends AbstractClass>(
   a: M | undefined,
   b: unknown
 ): b is InstanceType<M> => {
-  if (!a) return false;
+  if (a === undefined) return true;
   return b instanceof a;
 };
 
