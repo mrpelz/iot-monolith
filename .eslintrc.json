@@ -67,7 +67,7 @@
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
-        "varsIgnorePattern": "(?:^_.*|^h|^fragment$)"
+        "varsIgnorePattern": "(?:^_.*|^h|^fragment$|^T)"
       }
     ],
     "@typescript-eslint/no-use-before-define": "error",
@@ -236,13 +236,7 @@
     "capitalized-comments": "off",
     "class-methods-use-this": "off",
     "comma-dangle": "off",
-    "comma-spacing": [
-      "error",
-      {
-        "after": true,
-        "before": false
-      }
-    ],
+    "comma-spacing": "off",
     "comma-style": [
       "error",
       "last"

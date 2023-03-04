@@ -1,38 +1,90 @@
+export enum Level {
+  NONE,
+  SYSTEM,
+  HOME,
+  BUILDING,
+  FLOOR,
+  ROOM,
+  AREA,
+  DEVICE,
+  PROPERTY,
+}
+
+export enum ValueType {
+  NULL,
+  BOOLEAN,
+  NUMBER,
+  STRING,
+  RAW,
+}
+
+export type TValueType = {
+  [ValueType.BOOLEAN]: boolean;
+  [ValueType.NULL]: null;
+  [ValueType.NUMBER]: number;
+  [ValueType.RAW]: unknown;
+  [ValueType.STRING]: string;
+};
+
 export type Children = Element | Element[];
 export type InitFunction = (self: Element) => void;
 
 export type BuiltinProps = {
   children?: Children;
   init?: InitFunction;
+  level: Level;
+  name: string;
 };
-export type AdditionalProps = Omit<Record<string, unknown>, keyof BuiltinProps>;
-export type Props<T extends AdditionalProps = AdditionalProps> = T &
-  BuiltinProps;
+export type Props = Omit<Record<string, unknown>, keyof BuiltinProps>;
+export type CombinedProps<T extends Props = Props> = T & BuiltinProps;
 
 type AbstractClass = abstract new (...args: unknown[]) => unknown;
-type InstanceMap<T extends AdditionalProps> = {
+type InstanceMap<T extends Props> = {
   [K in keyof T]: T[K] extends AbstractClass ? InstanceType<T[K]> : T[K];
 };
 
 export type MatcherFunction<T> = (a: T, b: unknown) => boolean;
+export type MatcherFunctionTuple<T> = readonly [MatcherFunction<T>, T];
 export type MatcherFunctionMap<T> = {
-  [K in keyof T]: readonly [MatcherFunction<T[K]>, T[K]];
+  [K in keyof T]: MatcherFunctionTuple<T[K]>;
 };
 
-export class Element<T extends AdditionalProps = AdditionalProps> {
+export type MatcherProps<T> = MatcherFunctionMap<Partial<T>>;
+
+export class Element<T extends Props = Props> {
   private readonly _children?: Set<Element>;
   private _hasBeenInitialized = false;
   private _parent?: Element;
 
   readonly initCallback?: InitFunction;
-  readonly props: T;
+  readonly props: Omit<CombinedProps<T>, 'children' | 'init'>;
 
-  constructor(props: Props<T>) {
-    const { children, init } = props;
+  constructor(combinedProps: CombinedProps<T>) {
+    const { children, init, ...props } = combinedProps;
 
-    this._children = children
-      ? new Set(Array.isArray(children) ? children.flat() : [children])
-      : undefined;
+    if (children) {
+      const flattenedChildren = Array.isArray(children)
+        ? children.flat()
+        : [children];
+
+      const names: string[] = [];
+
+      for (const child of flattenedChildren) {
+        const {
+          props: { name },
+        } = child;
+
+        if (names.includes(name as string)) {
+          throw new Error(
+            `parent element (${this}) contains child (${child}) with duplicated name "${name}"`
+          );
+        }
+
+        names.push(name as string);
+      }
+
+      this._children = new Set(flattenedChildren);
+    }
 
     this.initCallback = init;
     this.props = props;
@@ -65,8 +117,8 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
     this.initCallback?.(this);
   }
 
-  match<M extends AdditionalProps>(
-    props: MatcherFunctionMap<Partial<M>>
+  match<M extends Props>(
+    props: MatcherProps<M>
   ): this is Element<InstanceMap<M>> {
     for (const property of Object.keys(props)) {
       const [matcher, a] = props[property];
@@ -78,10 +130,10 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
     return true;
   }
 
-  matchAllChildren<M extends AdditionalProps>(
-    props: MatcherFunctionMap<Partial<M>>,
+  matchAllChildren<M extends Props>(
+    props: MatcherProps<M>,
     depth = -1
-  ): Element<InstanceMap<M>>[] {
+  ): (Element<InstanceMap<M>> | undefined)[] {
     if (!this._children) return [];
 
     const directMatch =
@@ -100,8 +152,8 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
     return indirectMatch;
   }
 
-  matchFirstChild<M extends AdditionalProps>(
-    props: MatcherFunctionMap<Partial<M>>,
+  matchFirstChild<M extends Props>(
+    props: MatcherProps<M>,
     depth = -1
   ): Element<InstanceMap<M>> | undefined {
     if (!this._children) return undefined;
@@ -120,6 +172,19 @@ export class Element<T extends AdditionalProps = AdditionalProps> {
 
     return undefined;
   }
+
+  matchParent<M extends Props>(
+    props: MatcherProps<M>,
+    depth = -1
+  ): Element<InstanceMap<M>> | undefined {
+    if (!this._parent) return undefined;
+
+    const directMatch = this._parent.match(props);
+    if (directMatch) return this._parent as Element<InstanceMap<M>>;
+    if (!depth) return undefined;
+
+    return this._parent.matchParent(props, depth - 1);
+  }
 }
 
 export const matchClass = <M extends AbstractClass>(
@@ -130,29 +195,26 @@ export const matchClass = <M extends AbstractClass>(
   return b instanceof a;
 };
 
-export const matchValue = <M>(a: M | undefined, b: unknown): b is M => a === b;
+export const matchValue = <M>(a: M | undefined, b: unknown): b is M => {
+  if (a === undefined) return true;
+  return a === b;
+};
 
 export type Component<T = Record<never, never>> = (props: T) => Element;
 
-export const h = <
-  PC extends AdditionalProps,
-  PF extends Record<string, unknown>,
-  C extends keyof JSX.IntrinsicElements,
-  F extends Component<PF>,
-  T extends C | F,
-  P extends T extends C ? PC : PF
->(
-  component: T,
-  props: Omit<P, 'children'> | null,
+export const h = (
+  component: Component | 'element',
+  props: Record<string, unknown> & BuiltinProps,
   ...children: Element[]
 ): Element => {
-  const propsWithChildren = { ...props, children } || {};
+  const propsWithChildren = { ...props, children };
 
   if (typeof component === 'string') {
     return new Element(propsWithChildren);
   }
 
-  return component(propsWithChildren as unknown as PF);
+  return component(propsWithChildren);
 };
 
-export const fragment: Component = (props): Element => new Element(props);
+export const fragment: Component = (props): Element =>
+  new Element({ ...props, level: Level.NONE, name: 'fragment' });
