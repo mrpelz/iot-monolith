@@ -1,4 +1,3 @@
-import { Actuator, selectActuator } from '../lib/tree/jsx/elements/actuator.js';
 import {
   Children,
   Component,
@@ -9,8 +8,9 @@ import {
   matchClass,
   matchValue,
 } from '../lib/tree/jsx/main.js';
+import { Getter, selectGetter } from '../lib/tree/jsx/elements/getter.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
-import { Sensor, selectSensor } from '../lib/tree/jsx/elements/sensor.js';
+import { Setter, selectSetter } from '../lib/tree/jsx/elements/setter.js';
 import { inspect } from 'util';
 
 const TestA: Component<{ children?: Children }> = ({ children }) => (
@@ -49,15 +49,15 @@ const foo = (
           <TestA />
           {testC}
           <>
-            <Sensor
+            <Getter
               name="testSensor"
-              observable={new ReadOnlyObservable(new Observable(4))}
+              state={new ReadOnlyObservable(new Observable(4))}
               valueType={ValueType.NUMBER}
             />
-            <Actuator
+            <Setter
               name="testActuator"
               actuated="foo"
-              observable={new Observable('test')}
+              setState={new Observable('test')}
               valueType={ValueType.STRING}
             />
           </>
@@ -78,8 +78,8 @@ const matchAll = foo.matchAllChildren({
   instance: [matchClass, TestMatcherClass],
 });
 
-const selectionGetter = foo.matchAllChildren(selectSensor(ValueType.NUMBER));
-const selectionSetter = foo.matchAllChildren(selectActuator(ValueType.STRING));
+const selectionGetter = foo.matchAllChildren(selectGetter(ValueType.NUMBER));
+const selectionSetter = foo.matchAllChildren(selectSetter(ValueType.STRING));
 
 // eslint-disable-next-line no-console
 console.log(
