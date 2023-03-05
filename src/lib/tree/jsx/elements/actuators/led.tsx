@@ -1,10 +1,15 @@
-import { Element, ValueType, h } from '../../main.js';
-import { Setter, selectSetter } from '../setter.js';
-import { ActuatorStaleness } from './actuator-staleness.js';
+import {
+  ActuatorStaleness,
+  selectActuatorStaleness,
+} from './actuator-staleness.js';
+import { Element, ValueType, h, matchValue } from '../../main.js';
+import { Setter, selectGetterSetter } from '../setter.js';
+import { Trigger, selectTrigger } from '../trigger.js';
 import { Indicator } from '../../../../services/indicator.js';
 import { IpDevice } from '../../../../device/main.js';
 import { Led as LedItem } from '../../../../items/led.js';
 import { Led as LedService } from '../../../../services/led.js';
+import { NullState } from '../../../../state.js';
 import { Persistence } from '../../../../persistence.js';
 import { ReadOnlyObservable } from '../../../../observable.js';
 
@@ -16,13 +21,17 @@ export type LedProps = {
   persistence?: Persistence;
 };
 
+const $led = Symbol('led');
+const $brightness = Symbol('brightness');
+const $flip = Symbol('flip');
+
 export const Led = ({
   device,
   index,
   indicator,
   name,
   persistence,
-}: LedProps): Element => {
+}: LedProps) => {
   const { actualBrightness, actualOn, setBrightness, setOn } = new LedItem(
     device.addService(new LedService(index)),
     indicator
@@ -39,19 +48,26 @@ export const Led = ({
 
   return (
     <Setter
-      actuated="light"
+      $led={$led}
       init={init}
       name={name}
       setState={setOn}
       state={actualOn}
+      topic="light"
       valueType={ValueType.BOOLEAN}
     >
       <Setter
-        actuated="light"
+        $brightness={$brightness}
         name="brightness"
         setState={setBrightness}
         state={actualBrightness}
         valueType={ValueType.NUMBER}
+      />
+      <Trigger
+        $flip={$flip}
+        name="flip"
+        valueType={ValueType.NULL}
+        nullState={new NullState(() => setOn.flip())}
       />
       <ActuatorStaleness
         device={device}
@@ -62,9 +78,31 @@ export const Led = ({
   );
 };
 
-export const selectorLed = selectSetter(ValueType.BOOLEAN, 'light');
-export const selectorLedBrightness = selectSetter(
-  ValueType.NUMBER,
-  'light',
-  'brightness'
-);
+export const selectLed$ = <N extends string>(name?: N) => ({
+  ...selectGetterSetter(ValueType.BOOLEAN, name, 'light'),
+  $led: [matchValue, $led] as const,
+});
+
+export const matchLed = <N extends string>(input: Element, name?: N) => {
+  if (!input.match(selectLed$(name))) return undefined;
+
+  const brightness = input.matchFirstChild({
+    ...selectGetterSetter(ValueType.NUMBER),
+    $brightness: [matchValue, $brightness],
+  });
+  if (!brightness) return undefined;
+
+  return {
+    $: input,
+    get actuatorStaleness() {
+      return selectActuatorStaleness(input);
+    },
+    brightness,
+    get flip() {
+      return input.matchFirstChild({
+        ...selectTrigger(ValueType.NULL),
+        $flip: [matchValue, $flip],
+      });
+    },
+  };
+};

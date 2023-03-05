@@ -1,52 +1,94 @@
-import { Setter, selectSetter } from '../setter.js';
-import { ValueType, h } from '../../main.js';
-import { Indicator } from '../../../../services/indicator.js';
-import { IpDevice } from '../../../../device/main.js';
-import { Output as OutputItem } from '../../../../items/output.js';
-import { Output as OutputService } from '../../../../services/output.js';
-import { Persistence } from '../../../../persistence.js';
+import {
+  BooleanGroupStrategy,
+  BooleanNullableStateGroup,
+  BooleanStateGroup,
+  NullState,
+} from '../../../../state.js';
+import { Children, Element, ValueType, h, matchValue } from '../../main.js';
+import { Setter, selectGetterSetter } from '../setter.js';
+import { Trigger, selectTrigger } from '../trigger.js';
+import { ReadOnlyObservable } from '../../../../observable.js';
+import { matchLed } from './led.js';
+import { matchOutput } from './output.js';
 
-export type OutputProps = {
-  actuated?: string;
-  device: IpDevice;
-  index: number;
-  indicator?: Indicator;
+export type OutputGroupingProps = {
+  children: Children;
   name: string;
-  persistence?: Persistence;
+  topic?: string;
 };
 
-export const Output = ({
-  actuated = 'light',
-  device,
-  index,
-  indicator,
+const $outputGrouping = Symbol('outputGrouping');
+const $flip = Symbol('flip');
+
+export const OutputGrouping = ({
+  children,
   name,
-  persistence,
-}: OutputProps) => {
-  const { actualState, setState } = new OutputItem(
-    device.addService(new OutputService(index)),
-    indicator
+  topic = 'light',
+}: OutputGroupingProps) => {
+  const items = [
+    (Array.isArray(children) ? children : [children]).map((item) =>
+      matchOutput(item)
+    ),
+    (Array.isArray(children) ? children : [children]).map((item) =>
+      matchLed(item)
+    ),
+  ]
+    .flat()
+    .filter((item): item is Exclude<typeof item, undefined> => Boolean(item));
+
+  const actualState = new ReadOnlyObservable(
+    new BooleanNullableStateGroup(
+      BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+      items.map((item) => item.$.props.state)
+    )
   );
 
-  const init = () => {
-    if (persistence) {
-      persistence.observe(
-        `output/${device.transport.host}:${device.transport.port}/${index}`,
-        setState
-      );
-    }
-  };
+  const setState = new BooleanStateGroup(
+    BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
+    items.map((item) => item.$.props.setState)
+  );
 
   return (
     <Setter
-      actuated={actuated}
-      init={init}
+      $outputGrouping={$outputGrouping}
       name={name}
       setState={setState}
       state={actualState}
+      topic={topic}
       valueType={ValueType.BOOLEAN}
-    />
+    >
+      <Trigger
+        $flip={$flip}
+        name="flip"
+        valueType={ValueType.NULL}
+        nullState={new NullState(() => setState.flip())}
+      />
+    </Setter>
   );
 };
 
-export const selectorOutput = selectSetter(ValueType.BOOLEAN);
+export const selectOutputGrouping$ = <N extends string, T extends string>(
+  name?: N,
+  topic?: T
+) => ({
+  ...selectGetterSetter(ValueType.BOOLEAN, name, topic || 'light'),
+  $outputGrouping: [matchValue, $outputGrouping] as const,
+});
+
+export const matchOutputGrouping = <N extends string, T extends string>(
+  input: Element,
+  name?: N,
+  topic?: T
+) => {
+  if (!input.match(selectOutputGrouping$(name, topic))) return undefined;
+
+  return {
+    $: input,
+    get flip() {
+      return input.matchFirstChild({
+        ...selectTrigger(ValueType.NULL),
+        $flip: [matchValue, $flip],
+      });
+    },
+  };
+};

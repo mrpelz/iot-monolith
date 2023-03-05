@@ -8,7 +8,7 @@ import {
   BooleanState,
   BooleanStateGroup,
 } from '../../../../state.js';
-import { Element, ValueType, fragment, h } from '../../main.js';
+import { Element, ValueType, fragment, h, matchValue } from '../../main.js';
 import { Getter, selectGetter } from '../getter.js';
 import { Device } from '../../../../device/main.js';
 
@@ -18,11 +18,14 @@ export type ActuatorStalenessProps<T> = {
   state: AnyReadOnlyObservable<T>;
 };
 
+const $loading = Symbol('loading');
+const $stale = Symbol('stale');
+
 export const ActuatorStaleness = <T,>({
   device,
   setState,
   state,
-}: ActuatorStalenessProps<T>): Element => {
+}: ActuatorStalenessProps<T>) => {
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
@@ -41,13 +44,13 @@ export const ActuatorStaleness = <T,>({
   return (
     <>
       <Getter
-        measured="loading"
+        $loading={$loading}
         name="loading"
         state={new ReadOnlyObservable(loading)}
         valueType={ValueType.BOOLEAN}
       />
       <Getter
-        measured="stale"
+        $stale={$stale}
         name="stale"
         state={
           new ReadOnlyObservable(
@@ -64,12 +67,17 @@ export const ActuatorStaleness = <T,>({
   );
 };
 
-export const selectorActuatorStalenessLoading = selectGetter(
-  ValueType.BOOLEAN,
-  'loading'
-);
-
-export const selectorActuatorStalenessStale = selectGetter(
-  ValueType.BOOLEAN,
-  'stale'
-);
+export const selectActuatorStaleness = (input: Element) => ({
+  get loading() {
+    return input.matchFirstChild({
+      ...selectGetter(ValueType.BOOLEAN),
+      $loading: [matchValue, $loading],
+    });
+  },
+  get stale() {
+    return input.matchFirstChild({
+      ...selectGetter(ValueType.BOOLEAN),
+      $stale: [matchValue, $stale],
+    });
+  },
+});

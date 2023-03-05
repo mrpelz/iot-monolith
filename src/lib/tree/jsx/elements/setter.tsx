@@ -8,6 +8,7 @@ import {
 } from '../../../observable.js';
 import {
   Children,
+  Element,
   InitFunction,
   Level,
   MatcherFunctionMap,
@@ -18,49 +19,90 @@ import {
   matchValue,
 } from '../main.js';
 
-export const Setter = <T extends ValueType>({
-  children,
-  ...props
-}: {
-  actuated?: string;
+const $setter = Symbol('setter');
+
+export type SetterProps<V extends ValueType> = {
   children?: Children;
   init?: InitFunction;
   name: string;
-  setState: AnyWritableObservable<TValueType[T]>;
-  state?: AnyObservable<TValueType[T] | null>;
-  valueType: T;
-}) => (
-  <element {...props} level={Level.PROPERTY} type="setter">
-    {children}
-  </element>
-);
+  setState: AnyWritableObservable<TValueType[V]>;
+  state?: AnyObservable<TValueType[V] | null>;
+  topic?: string;
+  valueType: V;
+} & Record<`$${string}`, symbol>;
+
+export type TSetter<V extends ValueType, S extends boolean> = Element<
+  SetterProps<V> & {
+    $setter: typeof $setter;
+    level: Level.PROPERTY;
+    state: S extends true
+      ? Exclude<SetterProps<V>['state'], undefined>
+      : undefined;
+  }
+>;
+
+export const Setter = <V extends ValueType>({
+  children,
+  ...props
+}: SetterProps<V>) =>
+  (
+    <element {...props} $setter={$setter} level={Level.PROPERTY}>
+      {children}
+    </element>
+  ) as TSetter<V, (typeof props)['state'] extends undefined ? false : true>;
 
 export const selectSetter = <
-  T extends ValueType,
-  A extends string,
-  N extends string
+  V extends ValueType,
+  N extends string,
+  T extends string
 >(
-  valueType: T,
-  actuated?: A,
-  name?: N
+  valueType: V,
+  name?: N,
+  topic?: T
 ): MatcherFunctionMap<{
-  actuated?: A;
+  $setter: typeof $setter;
   level: Level.PROPERTY;
   name?: N;
   setState:
-    | typeof Observable<TValueType[T]>
-    | typeof ProxyObservable<unknown, TValueType[T]>;
-  state?:
-    | typeof ReadOnlyObservable<TValueType[T] | null>
-    | typeof ReadOnlyProxyObservable<unknown, TValueType[T] | null>;
-  type: 'setter';
-  valueType: T;
+    | typeof Observable<TValueType[V]>
+    | typeof ProxyObservable<unknown, TValueType[V]>;
+  topic?: T;
+  valueType: V;
 }> => ({
-  actuated: [matchValue, actuated],
+  $setter: [matchValue, $setter],
   level: [matchValue, Level.PROPERTY],
   name: [matchValue, name],
   setState: [matchClass, Observable, ProxyObservable],
-  state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable, undefined],
-  type: [matchValue, 'setter'],
+  topic: [matchValue, topic],
+  valueType: [matchValue, valueType],
+});
+
+export const selectGetterSetter = <
+  V extends ValueType,
+  N extends string,
+  T extends string
+>(
+  valueType: V,
+  name?: N,
+  topic?: T
+): MatcherFunctionMap<{
+  $setter: typeof $setter;
+  level: Level.PROPERTY;
+  name?: N;
+  setState:
+    | typeof Observable<TValueType[V]>
+    | typeof ProxyObservable<unknown, TValueType[V]>;
+  state:
+    | typeof ReadOnlyObservable<TValueType[V] | null>
+    | typeof ReadOnlyProxyObservable<unknown, TValueType[V] | null>;
+  topic?: T;
+  valueType: V;
+}> => ({
+  $setter: [matchValue, $setter],
+  level: [matchValue, Level.PROPERTY],
+  name: [matchValue, name],
+  setState: [matchClass, Observable, ProxyObservable],
+  state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable],
+  topic: [matchValue, topic],
   valueType: [matchValue, valueType],
 });

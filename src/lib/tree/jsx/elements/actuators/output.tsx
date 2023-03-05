@@ -1,29 +1,37 @@
-import { Setter, selectSetter } from '../setter.js';
-import { ValueType, h } from '../../main.js';
-import { ActuatorStaleness } from './actuator-staleness.js';
+import {
+  ActuatorStaleness,
+  selectActuatorStaleness,
+} from './actuator-staleness.js';
+import { Element, ValueType, h, matchValue } from '../../main.js';
+import { Setter, selectGetterSetter } from '../setter.js';
+import { Trigger, selectTrigger } from '../trigger.js';
 import { Indicator } from '../../../../services/indicator.js';
 import { IpDevice } from '../../../../device/main.js';
+import { NullState } from '../../../../state.js';
 import { Output as OutputItem } from '../../../../items/output.js';
 import { Output as OutputService } from '../../../../services/output.js';
 import { Persistence } from '../../../../persistence.js';
 import { ReadOnlyObservable } from '../../../../observable.js';
 
+const $output = Symbol('output');
+const $flip = Symbol('flip');
+
 export type OutputProps = {
-  actuated?: string;
   device: IpDevice;
   index: number;
   indicator?: Indicator;
   name: string;
   persistence?: Persistence;
+  topic?: string;
 };
 
 export const Output = ({
-  actuated = 'light',
   device,
   index,
   indicator,
   name,
   persistence,
+  topic = 'light',
 }: OutputProps) => {
   const { actualState, setState } = new OutputItem(
     device.addService(new OutputService(index)),
@@ -41,13 +49,20 @@ export const Output = ({
 
   return (
     <Setter
-      actuated={actuated}
+      $output={$output}
       init={init}
       name={name}
       setState={setState}
       state={actualState}
+      topic={topic}
       valueType={ValueType.BOOLEAN}
     >
+      <Trigger
+        $flip={$flip}
+        name="flip"
+        valueType={ValueType.NULL}
+        nullState={new NullState(() => setState.flip())}
+      />
       <ActuatorStaleness
         device={device}
         setState={new ReadOnlyObservable(setState)}
@@ -57,4 +72,31 @@ export const Output = ({
   );
 };
 
-export const selectorOutput = selectSetter(ValueType.BOOLEAN);
+export const selectOutput$ = <N extends string, T extends string>(
+  name?: N,
+  topic?: T
+) => ({
+  ...selectGetterSetter(ValueType.BOOLEAN, name, topic || 'light'),
+  $output: [matchValue, $output] as const,
+});
+
+export const matchOutput = <N extends string, T extends string>(
+  input: Element,
+  name?: N,
+  topic?: T
+) => {
+  if (!input.match(selectOutput$(name, topic))) return undefined;
+
+  return {
+    $: input,
+    get actuatorStaleness() {
+      return selectActuatorStaleness(input);
+    },
+    get flip() {
+      return input.matchFirstChild({
+        ...selectTrigger(ValueType.NULL),
+        $flip: [matchValue, $flip],
+      });
+    },
+  };
+};

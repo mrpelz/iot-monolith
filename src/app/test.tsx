@@ -56,8 +56,8 @@ const foo = (
             />
             <Setter
               name="testActuator"
-              actuated="foo"
               setState={new Observable('test')}
+              topic="foo"
               valueType={ValueType.STRING}
             />
           </>
