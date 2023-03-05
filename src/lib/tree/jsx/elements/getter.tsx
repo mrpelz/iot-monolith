@@ -5,6 +5,7 @@ import {
 } from '../../../observable.js';
 import {
   Children,
+  Element,
   InitFunction,
   Level,
   MatcherFunctionMap,
@@ -15,49 +16,61 @@ import {
   matchValue,
 } from '../main.js';
 
-export const Getter = <T extends ValueType>({
-  children,
-  ...props
-}: {
+const $getter = Symbol('getter');
+
+export type GetterProps<V extends ValueType> = {
   children?: Children;
   init?: InitFunction;
-  measured?: string;
   name: string;
-  state: AnyReadOnlyObservable<TValueType[T] | null>;
+  state: AnyReadOnlyObservable<TValueType[V] | null>;
+  topic?: string;
   unit?: string;
-  valueType: T;
-}) => (
-  <element {...props} level={Level.PROPERTY} type="getter">
-    {children}
-  </element>
-);
+  valueType: V;
+} & Record<`$${string}`, symbol>;
+
+export type TGetter<V extends ValueType> = Element<
+  GetterProps<V> & {
+    $getter: typeof $getter;
+    level: Level.PROPERTY;
+  }
+>;
+
+export const Getter = <V extends ValueType>({
+  children,
+  ...props
+}: GetterProps<V>) =>
+  (
+    <element {...props} $getter={$getter} level={Level.PROPERTY}>
+      {children}
+    </element>
+  ) as TGetter<V>;
 
 export const selectGetter = <
-  T extends ValueType,
-  M extends string,
-  U extends string,
-  N extends string
+  V extends ValueType,
+  N extends string,
+  T extends string,
+  U extends string
 >(
-  valueType: T,
-  measured?: M,
-  unit?: U,
-  name?: N
+  valueType: V,
+  name?: N,
+  topic?: T,
+  unit?: U
 ): MatcherFunctionMap<{
+  $getter: typeof $getter;
   level: Level.PROPERTY;
-  measured?: M;
   name?: N;
   state:
-    | typeof ReadOnlyObservable<TValueType[T] | null>
-    | typeof ReadOnlyProxyObservable<unknown, TValueType[T] | null>;
-  type: 'getter';
+    | typeof ReadOnlyObservable<TValueType[V] | null>
+    | typeof ReadOnlyProxyObservable<unknown, TValueType[V] | null>;
+  topic?: T;
   unit?: U;
-  valueType: T;
+  valueType: V;
 }> => ({
+  $getter: [matchValue, $getter],
   level: [matchValue, Level.PROPERTY],
-  measured: [matchValue, measured],
   name: [matchValue, name],
   state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable],
-  type: [matchValue, 'getter'],
+  topic: [matchValue, topic],
   unit: [matchValue, unit],
   valueType: [matchValue, valueType],
 });

@@ -1,5 +1,6 @@
 import {
   Children,
+  Element,
   InitFunction,
   Level,
   MatcherFunctionMap,
@@ -9,56 +10,56 @@ import {
   matchClass,
   matchValue,
 } from '../main.js';
-import {
-  Observable,
-  ProxyObservable,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../../observable.js';
-import { NullState } from '../../../state.js';
+import { NullState, ReadOnlyNullState } from '../../../state.js';
 
-export const Trigger = <T extends ValueType>({
-  children,
-  ...props
-}: {
-  actuated?: string;
+const $trigger = Symbol('trigger');
+
+export type TriggerProps<V extends ValueType> = {
   children?: Children;
   init?: InitFunction;
   name: string;
-  trigger: NullState<TValueType[T]>;
-  valueType: T;
-}) => (
-  <element {...props} level={Level.PROPERTY} type="trigger">
-    {children}
-  </element>
-);
+  nullState: NullState<TValueType[V]>;
+  topic?: string;
+  valueType: V;
+} & Record<`$${string}`, symbol>;
 
-export const selectSetter = <
-  T extends ValueType,
-  A extends string,
-  N extends string
+export type TTrigger<V extends ValueType> = Element<
+  TriggerProps<V> & {
+    $trigger: typeof $trigger;
+    level: Level.PROPERTY;
+  }
+>;
+
+export const Trigger = <V extends ValueType>({
+  children,
+  ...props
+}: TriggerProps<V>) =>
+  (
+    <element {...props} $trigger={$trigger} level={Level.PROPERTY}>
+      {children}
+    </element>
+  ) as TTrigger<V>;
+
+export const selectTrigger = <
+  V extends ValueType,
+  N extends string,
+  T extends string
 >(
-  valueType: T,
-  actuated?: A,
-  name?: N
+  valueType: V,
+  name?: N,
+  topic?: T
 ): MatcherFunctionMap<{
-  actuated?: A;
+  $trigger: typeof $trigger;
   level: Level.PROPERTY;
   name?: N;
-  setState:
-    | typeof Observable<TValueType[T]>
-    | typeof ProxyObservable<unknown, TValueType[T]>;
-  state?:
-    | typeof ReadOnlyObservable<TValueType[T] | null>
-    | typeof ReadOnlyProxyObservable<unknown, TValueType[T] | null>;
-  type: 'setter';
-  valueType: T;
+  nullState: typeof ReadOnlyNullState<TValueType[V]>;
+  topic?: T;
+  valueType: V;
 }> => ({
-  actuated: [matchValue, actuated],
+  $trigger: [matchValue, $trigger],
   level: [matchValue, Level.PROPERTY],
   name: [matchValue, name],
-  setState: [matchClass, Observable, ProxyObservable],
-  state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable, undefined],
-  type: [matchValue, 'setter'],
+  nullState: [matchClass, ReadOnlyNullState],
+  topic: [matchValue, topic],
   valueType: [matchValue, valueType],
 });

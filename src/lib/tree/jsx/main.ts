@@ -38,8 +38,8 @@ export type BuiltinProps = {
 export type Props = Omit<Record<string, unknown>, keyof BuiltinProps>;
 export type CombinedProps<T extends Props = Props> = T & BuiltinProps;
 
-type AbstractClass = abstract new (...args: unknown[]) => unknown;
-type InstanceMap<T extends Props> = {
+export type AbstractClass = abstract new (...args: unknown[]) => unknown;
+export type InstanceMap<T extends Props> = {
   [K in keyof T]: T[K] extends AbstractClass ? InstanceType<T[K]> : T[K];
 };
 
