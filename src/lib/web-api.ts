@@ -99,7 +99,7 @@ export class WebApi {
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
 
       ws.on('message', (data) => {
-        if (data === WEBSOCKET_MARCOPOLO_PAYLOAD) {
+        if (data.toString() === WEBSOCKET_MARCOPOLO_PAYLOAD) {
           ws.send(WEBSOCKET_MARCOPOLO_PAYLOAD);
 
           return;

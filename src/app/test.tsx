@@ -41,6 +41,14 @@ const testC = (
   />
 );
 
+const testD = (
+  <Getter
+    name="testSensor"
+    state={new ReadOnlyObservable(new Observable(4))}
+    valueType={ValueType.NUMBER}
+  />
+);
+
 const foo = (
   <TestA>
     <TestB id="2nd">
@@ -49,11 +57,7 @@ const foo = (
           <TestA />
           {testC}
           <>
-            <Getter
-              name="testSensor"
-              state={new ReadOnlyObservable(new Observable(4))}
-              valueType={ValueType.NUMBER}
-            />
+            {testD}
             <Setter
               name="testActuator"
               setState={new Observable('test')}
