@@ -107,9 +107,8 @@ export class DynamicString extends DynamicStructMember<string> {
 
 export class BufferWrappedStructMember<T extends TStructMember> {
   private _buffer: Buffer;
-  readonly member: T;
 
-  constructor(member: T) {
+  constructor(public readonly member: T) {
     this.member = member;
     this.reset();
   }

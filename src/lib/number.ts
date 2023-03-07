@@ -5,6 +5,7 @@ export const byteRange = (count: number): number => bitRange(count * 8);
 export const bytesRequiredForBitLength = (count: number): number =>
   Math.ceil(count / 8);
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export const NUMBER_RANGES = {
   int: {
     1: [-bitRange(7), bitRange(7)],
@@ -23,6 +24,7 @@ export const NUMBER_RANGES = {
     6: [0, bitRange(48)],
   },
 } as const;
+/* eslint-enable @typescript-eslint/naming-convention */
 
 export const maxmin = (input: number, max = 1, min = 0): number =>
   Math.max(Math.min(input, max), min);

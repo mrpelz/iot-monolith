@@ -63,7 +63,7 @@
     "@typescript-eslint/no-namespace": "error",
     "@typescript-eslint/no-non-null-asserted-optional-chain": "error",
     "@typescript-eslint/no-non-null-assertion": "warn",
-    "@typescript-eslint/no-parameter-properties": "error",
+    "@typescript-eslint/no-parameter-properties": "off",
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-unused-vars": [
@@ -73,7 +73,14 @@
       }
     ],
     "@typescript-eslint/no-use-before-define": "error",
+    "@typescript-eslint/no-useless-constructor": "warn",
     "@typescript-eslint/no-var-requires": "error",
+    "@typescript-eslint/parameter-properties": [
+      "warn",
+      {
+        "prefer": "parameter-property"
+      }
+    ],
     "@typescript-eslint/prefer-as-const": "error",
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-namespace-keyword": "error",
@@ -92,7 +99,6 @@
             "protected-static-method",
             "public-static-method",
             "static-method",
-            "private-abstract-field",
             "private-decorated-field",
             "private-instance-field",
             "private-field",
@@ -112,7 +118,6 @@
             "protected-constructor",
             "public-constructor",
             "constructor",
-            "private-abstract-method",
             "private-decorated-method",
             "private-instance-method",
             "private-method",
@@ -479,7 +484,7 @@
     "no-useless-catch": "error",
     "no-useless-computed-key": "error",
     "no-useless-concat": "error",
-    "no-useless-constructor": "error",
+    "no-useless-constructor": "off",
     "no-useless-escape": "error",
     "no-useless-rename": "error",
     "no-useless-return": "error",

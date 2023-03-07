@@ -82,9 +82,7 @@ export class Property {
 
   protected _device: Device | null;
 
-  readonly identifier: Buffer;
-
-  constructor(identifier: Buffer) {
+  constructor(public readonly identifier: Buffer) {
     this.identifier = identifier;
   }
 
@@ -223,11 +221,10 @@ export class Device<T extends Transport = Transport> {
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
   readonly seen: ReadOnlyNullState;
-  readonly transport: T;
 
   constructor(
     logger: Logger,
-    transport: T,
+    public readonly transport: T,
     identifier: DeviceIdentifier = null,
     keepalive = true,
     keepaliveTolerateMissedPackets = KEEPALIVE_TOLERATE_MISSED_PACKETS

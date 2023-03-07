@@ -361,13 +361,11 @@ export const trigger = (handler: () => void, actuated: string) =>
   );
 
 export class SceneMember<T> {
-  /* eslint-disable no-useless-constructor,@typescript-eslint/no-parameter-properties */
   constructor(
     public readonly observable: AnyWritableObservable<T>,
     public readonly onValue: T,
     public readonly offValue?: T
   ) {}
-  /* eslint-enable no-useless-constructor,@typescript-eslint/no-parameter-properties */
 }
 
 export const scene = (

@@ -81,7 +81,7 @@ export const scenes = {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
-        timeout: 1000,
+        signal: AbortSignal.timeout(1000),
       })
     );
   }, 'media'),
@@ -89,7 +89,7 @@ export const scenes = {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
-        timeout: 1000,
+        signal: AbortSignal.timeout(1000),
       })
     );
   }, 'media'),
