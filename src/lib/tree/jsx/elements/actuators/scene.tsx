@@ -1,15 +1,15 @@
-import { Element, ValueType, h, matchValue } from '../../main.js';
-import { Trigger, selectTrigger } from '../trigger.js';
-import {
-  BooleanGroupStrategy,
-  BooleanStateGroup,
-  NullState,
-} from '../../../../state.js';
 import {
   AnyWritableObservable,
   ProxyObservable,
   ReadOnlyObservable,
 } from '../../../../observable.js';
+import {
+  BooleanGroupStrategy,
+  BooleanStateGroup,
+  NullState,
+} from '../../../../state.js';
+import { Element, ValueType, h, matchValue } from '../../main.js';
+import { Trigger, selectTrigger } from '../trigger.js';
 import { Setter } from '../setter.js';
 
 const $scene = Symbol('scene');
