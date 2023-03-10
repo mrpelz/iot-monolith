@@ -74,16 +74,28 @@ const foo = (
   </TestA>
 );
 
-const matchFirst = foo.matchFirstChild({
-  name: [matchValue, 'tree' as const],
-});
+const matchFirst = foo.matchFirstChild(
+  {
+    name: [matchValue, 'tree' as const],
+  },
+  -1
+);
 
-const matchAll = foo.matchAllChildren({
-  instance: [matchClass, TestMatcherClass],
-});
+const matchAll = foo.matchAllChildren(
+  {
+    instance: [matchClass, TestMatcherClass],
+  },
+  -1
+);
 
-const selectionGetter = foo.matchAllChildren(selectGetter(ValueType.NUMBER));
-const selectionSetter = foo.matchAllChildren(selectSetter(ValueType.STRING));
+const selectionGetter = foo.matchAllChildren(
+  selectGetter(ValueType.NUMBER),
+  -1
+);
+const selectionSetter = foo.matchAllChildren(
+  selectSetter(ValueType.STRING),
+  -1
+);
 
 // eslint-disable-next-line no-console
 console.log(

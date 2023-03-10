@@ -133,7 +133,7 @@ export class Element<T extends Props = Props> {
 
   matchAllChildren<M extends Props>(
     props: MatcherProps<M>,
-    depth = -1
+    depth = 1
   ): (Element<InstanceMap<M>> | undefined)[] {
     if (!this._children) return [];
 
@@ -155,7 +155,7 @@ export class Element<T extends Props = Props> {
 
   matchFirstChild<M extends Props>(
     props: MatcherProps<M>,
-    depth = -1
+    depth = 1
   ): Element<InstanceMap<M>> | undefined {
     if (!this._children) return undefined;
 
