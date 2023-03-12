@@ -1,6 +1,6 @@
 import {
   ActuatorStaleness,
-  selectActuatorStaleness,
+  matchActuatorStaleness,
 } from './actuator-staleness.js';
 import { Element, ValueType, h, matchValue } from '../../main.js';
 import { Setter, selectGetterSetter } from '../setter.js';
@@ -95,7 +95,7 @@ export const matchLed = <N extends string>(input: Element, name?: N) => {
   return {
     $: input,
     get actuatorStaleness() {
-      return selectActuatorStaleness(input);
+      return matchActuatorStaleness(input);
     },
     brightness,
     get flip() {

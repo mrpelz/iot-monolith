@@ -67,7 +67,7 @@ export const ActuatorStaleness = <T,>({
   );
 };
 
-export const selectActuatorStaleness = (input: Element) => ({
+export const matchActuatorStaleness = (input: Element) => ({
   get loading() {
     return input.matchFirstChild({
       ...selectGetter(ValueType.BOOLEAN),

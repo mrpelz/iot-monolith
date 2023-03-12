@@ -1,6 +1,6 @@
 import {
   ActuatorStaleness,
-  selectActuatorStaleness,
+  matchActuatorStaleness,
 } from './actuator-staleness.js';
 import { Element, ValueType, h, matchValue } from '../../main.js';
 import { Setter, selectGetterSetter } from '../setter.js';
@@ -90,7 +90,7 @@ export const matchOutput = <N extends string, T extends string>(
   return {
     $: input,
     get actuatorStaleness() {
-      return selectActuatorStaleness(input);
+      return matchActuatorStaleness(input);
     },
     get flip() {
       return input.matchFirstChild({
