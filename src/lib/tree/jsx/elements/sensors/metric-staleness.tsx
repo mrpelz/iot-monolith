@@ -56,7 +56,7 @@ export const selectorMetricStaleness$ = {
 };
 
 export const matchMetricStaleness = (input: Element) => {
-  if (!input.match(selectorMetricStaleness$)) return undefined;
+  if (!input.matchProps(selectorMetricStaleness$)) return undefined;
 
   return {
     get lastSeen() {

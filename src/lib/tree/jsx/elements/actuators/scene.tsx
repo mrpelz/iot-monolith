@@ -76,7 +76,7 @@ export const matchScene = <N extends string, T extends string>(
   name: N,
   topic: T
 ) => {
-  if (!input.match(selectScene$(name, topic))) return undefined;
+  if (!input.matchProps(selectScene$(name, topic))) return undefined;
 
   return {
     $: input,

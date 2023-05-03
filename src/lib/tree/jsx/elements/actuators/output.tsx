@@ -85,7 +85,7 @@ export const matchOutput = <N extends string, T extends string>(
   name?: N,
   topic?: T
 ) => {
-  if (!input.match(selectOutput$(name, topic))) return undefined;
+  if (!input.matchProps(selectOutput$(name, topic))) return undefined;
 
   return {
     $: input,

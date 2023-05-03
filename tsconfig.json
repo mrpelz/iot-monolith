@@ -5,9 +5,6 @@
     "checkJs": false,
     "esModuleInterop": true,
     "incremental": true,
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "fragment",
     "lib": [
       "esnext",
       "dom"

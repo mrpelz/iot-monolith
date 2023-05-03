@@ -24,7 +24,7 @@ export const selectorResetDevice$ = {
 };
 
 export const matchResetDevice = (input: Element) => {
-  if (!input.match(selectorResetDevice$)) return undefined;
+  if (!input.matchProps(selectorResetDevice$)) return undefined;
 
   return {
     $: input,

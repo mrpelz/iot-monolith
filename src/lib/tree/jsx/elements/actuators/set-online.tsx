@@ -57,7 +57,7 @@ export const selectorSetOnline$ = {
 };
 
 export const matchSetOnline = (input: Element) => {
-  if (!input.match(selectorSetOnline$)) return undefined;
+  if (!input.matchProps(selectorSetOnline$)) return undefined;
 
   return {
     $: input,

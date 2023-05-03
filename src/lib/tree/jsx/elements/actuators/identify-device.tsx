@@ -35,7 +35,7 @@ export const selectorIdentifyDevice$ = {
 };
 
 export const matchIdentifyDevice = (input: Element) => {
-  if (!input.match(selectorIdentifyDevice$)) return undefined;
+  if (!input.matchProps(selectorIdentifyDevice$)) return undefined;
 
   return {
     $: input,

@@ -104,7 +104,7 @@ export const matchOutputGrouping = <N extends string, T extends string>(
   name?: N,
   topic?: T
 ) => {
-  if (!input.match(selectLedGrouping$(name, topic))) return undefined;
+  if (!input.matchProps(selectLedGrouping$(name, topic))) return undefined;
 
   const brightness = input.matchFirstChild({
     ...selectGetterSetter(ValueType.NUMBER),
