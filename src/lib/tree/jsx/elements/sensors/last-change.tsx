@@ -38,7 +38,7 @@ export const selectorLastChange$ = {
 };
 
 export const matchLastChange = (input: Element) => {
-  if (!input.match(selectorLastChange$)) return undefined;
+  if (!input.matchProps(selectorLastChange$)) return undefined;
 
   return {
     $: input,

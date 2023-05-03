@@ -84,7 +84,7 @@ export const selectLed$ = <N extends string>(name?: N) => ({
 });
 
 export const matchLed = <N extends string>(input: Element, name?: N) => {
-  if (!input.match(selectLed$(name))) return undefined;
+  if (!input.matchProps(selectLed$(name))) return undefined;
 
   const brightness = input.matchFirstChild({
     ...selectGetterSetter(ValueType.NUMBER),

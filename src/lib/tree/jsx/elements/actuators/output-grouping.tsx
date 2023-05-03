@@ -80,7 +80,7 @@ export const matchOutputGrouping = <N extends string, T extends string>(
   name?: N,
   topic?: T
 ) => {
-  if (!input.match(selectOutputGrouping$(name, topic))) return undefined;
+  if (!input.matchProps(selectOutputGrouping$(name, topic))) return undefined;
 
   return {
     $: input,

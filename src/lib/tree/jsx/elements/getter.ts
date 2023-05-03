@@ -11,39 +11,38 @@ import {
   MatcherFunctionMap,
   TValueType,
   ValueType,
-  h,
   matchClass,
   matchValue,
 } from '../main.js';
 
-const $getter = Symbol('getter');
-
-export type GetterProps<V extends ValueType> = {
-  children?: Children;
-  init?: InitFunction;
-  name: string;
+export type GetterProps<
+  N extends string,
+  T extends string,
+  U extends string,
+  V extends ValueType
+> = {
+  name: N;
   state: AnyReadOnlyObservable<TValueType[V] | null>;
-  topic?: string;
-  unit?: string;
+  topic?: T;
+  unit?: U;
   valueType: V;
-} & Record<`$${string}`, symbol>;
+};
 
-export type TGetter<V extends ValueType> = Element<
-  GetterProps<V> & {
-    $getter: typeof $getter;
-    level: Level.PROPERTY;
+export class Getter<
+  N extends string,
+  T extends string,
+  U extends string,
+  V extends ValueType,
+  C extends Children
+> extends Element<GetterProps<N, T, U, V>> {
+  constructor(
+    props: GetterProps<N, T, U, V>,
+    init?: InitFunction,
+    children?: C
+  ) {
+    super({ ...props, level: Level.PROPERTY }, init, children);
   }
->;
-
-export const Getter = <V extends ValueType>({
-  children,
-  ...props
-}: GetterProps<V>) =>
-  (
-    <element {...props} $getter={$getter} level={Level.PROPERTY}>
-      {children}
-    </element>
-  ) as TGetter<V>;
+}
 
 export const selectGetter = <
   V extends ValueType,
@@ -56,7 +55,6 @@ export const selectGetter = <
   topic?: T,
   unit?: U
 ): MatcherFunctionMap<{
-  $getter: typeof $getter;
   level: Level.PROPERTY;
   name?: N;
   state:
@@ -66,7 +64,6 @@ export const selectGetter = <
   unit?: U;
   valueType: V;
 }> => ({
-  $getter: [matchValue, $getter],
   level: [matchValue, Level.PROPERTY],
   name: [matchValue, name],
   state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable],

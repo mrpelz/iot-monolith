@@ -14,42 +14,32 @@ import {
   MatcherFunctionMap,
   TValueType,
   ValueType,
-  h,
   matchClass,
   matchValue,
 } from '../main.js';
 
-const $setter = Symbol('setter');
-
-export type SetterProps<V extends ValueType> = {
-  children?: Children;
-  init?: InitFunction;
-  name: string;
+export type SetterProps<
+  N extends string,
+  T extends string,
+  V extends ValueType
+> = {
+  name: N;
   setState: AnyWritableObservable<TValueType[V]>;
   state?: AnyObservable<TValueType[V] | null>;
-  topic?: string;
+  topic?: T;
   valueType: V;
-} & Record<`$${string}`, symbol>;
+};
 
-export type TSetter<V extends ValueType, S extends boolean> = Element<
-  SetterProps<V> & {
-    $setter: typeof $setter;
-    level: Level.PROPERTY;
-    state: S extends true
-      ? Exclude<SetterProps<V>['state'], undefined>
-      : undefined;
+export class Setter<
+  N extends string,
+  T extends string,
+  V extends ValueType,
+  C extends Children
+> extends Element<SetterProps<N, T, V>> {
+  constructor(props: SetterProps<N, T, V>, init?: InitFunction, children?: C) {
+    super({ ...props, level: Level.PROPERTY }, init, children);
   }
->;
-
-export const Setter = <V extends ValueType>({
-  children,
-  ...props
-}: SetterProps<V>) =>
-  (
-    <element {...props} $setter={$setter} level={Level.PROPERTY}>
-      {children}
-    </element>
-  ) as TSetter<V, (typeof props)['state'] extends undefined ? false : true>;
+}
 
 export const selectSetter = <
   V extends ValueType,
@@ -60,7 +50,6 @@ export const selectSetter = <
   name?: N,
   topic?: T
 ): MatcherFunctionMap<{
-  $setter: typeof $setter;
   level: Level.PROPERTY;
   name?: N;
   setState:
@@ -69,7 +58,6 @@ export const selectSetter = <
   topic?: T;
   valueType: V;
 }> => ({
-  $setter: [matchValue, $setter],
   level: [matchValue, Level.PROPERTY],
   name: [matchValue, name],
   setState: [matchClass, Observable, ProxyObservable],
@@ -86,7 +74,6 @@ export const selectGetterSetter = <
   name?: N,
   topic?: T
 ): MatcherFunctionMap<{
-  $setter: typeof $setter;
   level: Level.PROPERTY;
   name?: N;
   setState:
@@ -98,11 +85,6 @@ export const selectGetterSetter = <
   topic?: T;
   valueType: V;
 }> => ({
-  $setter: [matchValue, $setter],
-  level: [matchValue, Level.PROPERTY],
-  name: [matchValue, name],
-  setState: [matchClass, Observable, ProxyObservable],
+  ...selectSetter(valueType, name, topic),
   state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable],
-  topic: [matchValue, topic],
-  valueType: [matchValue, valueType],
 });

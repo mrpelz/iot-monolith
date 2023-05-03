@@ -33,7 +33,7 @@ export const matchTrigger = <N extends string, T extends string>(
   name: N,
   topic: T
 ) => {
-  if (!input.match(selectTrigger$(name, topic))) return undefined;
+  if (!input.matchProps(selectTrigger$(name, topic))) return undefined;
 
   return {
     $: input,

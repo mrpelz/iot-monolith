@@ -26,14 +26,12 @@ export type TValueType = {
   [ValueType.STRING]: string;
 };
 
-export type Children = Element | Element[];
+export type Children = Element[];
 export type InitFunction = (self: Element) => void;
 
-export type BuiltinProps = {
-  children?: Children;
-  init?: InitFunction;
-  level: Level;
-  name: string;
+export type BuiltinProps<L extends Level = Level, N extends string = string> = {
+  level: L;
+  name: N;
 };
 export type Props = Omit<Record<string, unknown>, keyof BuiltinProps>;
 export type CombinedProps<T extends Props = Props> = T & BuiltinProps;
@@ -51,16 +49,17 @@ export type MatcherFunctionMap<T> = {
 
 export type MatcherProps<T> = MatcherFunctionMap<Partial<T>>;
 
-export class Element<T extends Props = Props> {
-  private readonly _children?: Set<Element>;
+export class Element<T extends Props = Props, C extends Children = Children> {
+  private readonly _children: Set<C[number]>;
   private _hasBeenInitialized = false;
   private _parent?: Element;
 
-  readonly initCallback?: InitFunction;
-  readonly props: Omit<CombinedProps<T>, 'children' | 'init'>;
-
-  constructor(combinedProps: CombinedProps<T>) {
-    const { children, init, ...props } = combinedProps;
+  constructor(
+    public readonly props: CombinedProps<T>,
+    public readonly initCallback?: InitFunction,
+    children?: readonly C
+  ) {
+    Object.freeze(this.props);
 
     if (children) {
       const flattenedChildren = Array.isArray(children)
@@ -85,21 +84,16 @@ export class Element<T extends Props = Props> {
 
       this._children = new Set(flattenedChildren);
     }
-
-    this.initCallback = init;
-    this.props = props;
   }
 
   private _handleChildren(childCallback: (child: Element) => void) {
-    if (this._children) {
-      for (const child of this._children) {
-        childCallback(child);
-      }
+    for (const child of this.children) {
+      childCallback(child);
     }
   }
 
-  get children(): Element[] | undefined {
-    return this._children ? Array.from(this._children) : undefined;
+  get children(): Element[] {
+    return Array.from(this._children);
   }
 
   get parent(): Element | undefined {
@@ -117,9 +111,75 @@ export class Element<T extends Props = Props> {
     this.initCallback?.(this);
   }
 
-  match<M extends Props>(
-    props: MatcherProps<M>
+  matchAllChildren<AC extends AbstractClass, M extends Props>(
+    aClass?: AC,
+    props?: MatcherProps<M>,
+    depth = 1
+  ): (Element<InstanceMap<M>> | undefined)[] {
+    const directMatch =
+      this.children.filter(
+        (child): child is Element<InstanceMap<M>> =>
+          child.matchClass(aClass) && child.matchProps(props)
+      ) || [];
+    if (!depth || !directMatch) return directMatch;
+
+    const indirectMatch = [
+      directMatch,
+      this.children
+        .map((child) => child.matchAllChildren(aClass, props, depth - 1))
+        .flat(1) || [],
+    ].flat(1);
+
+    return indirectMatch;
+  }
+
+  matchClass<AC extends AbstractClass>(aClass?: AC): this is InstanceType<AC> {
+    if (aClass === undefined) return true;
+    return this instanceof aClass;
+  }
+
+  matchFirstChild<AC extends AbstractClass, M extends Props>(
+    aClass?: AC,
+    props?: MatcherProps<M>,
+    depth = 1
+  ): Element<InstanceMap<M>> | undefined {
+    const directMatch = this.children.find(
+      (child): child is Element<InstanceMap<M>> =>
+        child.matchClass(aClass) && child.matchProps(props)
+    );
+
+    if (directMatch) return directMatch;
+    if (!this.children || !depth) return undefined;
+
+    for (const child of this.children) {
+      const match = child.matchFirstChild(aClass, props, depth - 1);
+      if (match) return match;
+    }
+
+    return undefined;
+  }
+
+  matchParent<AC extends AbstractClass, M extends Props>(
+    aClass?: AC,
+    props?: MatcherProps<M>,
+    depth = -1
+  ): Element<InstanceMap<M>> | undefined {
+    if (!this._parent) return undefined;
+
+    const directMatch =
+      this._parent.matchClass(aClass) && this._parent.matchProps(props);
+
+    if (directMatch) return this._parent as Element<InstanceMap<M>>;
+    if (!depth) return undefined;
+
+    return this._parent.matchParent(aClass, props, depth - 1);
+  }
+
+  matchProps<M extends Props>(
+    props?: MatcherProps<M>
   ): this is Element<InstanceMap<M>> {
+    if (!props) return true;
+
     for (const property of Object.keys(props)) {
       const [matcher, ...values] = props[property];
       const b = this.props[property];
@@ -129,62 +189,6 @@ export class Element<T extends Props = Props> {
     }
 
     return true;
-  }
-
-  matchAllChildren<M extends Props>(
-    props: MatcherProps<M>,
-    depth = 1
-  ): (Element<InstanceMap<M>> | undefined)[] {
-    if (!this._children) return [];
-
-    const directMatch =
-      this.children?.filter((child): child is Element<InstanceMap<M>> =>
-        child.match(props)
-      ) || [];
-    if (!depth || !directMatch) return directMatch;
-
-    const indirectMatch = [
-      directMatch,
-      this.children
-        ?.map((child) => child.matchAllChildren(props, depth - 1))
-        .flat(1) || [],
-    ].flat(1);
-
-    return indirectMatch;
-  }
-
-  matchFirstChild<M extends Props>(
-    props: MatcherProps<M>,
-    depth = 1
-  ): Element<InstanceMap<M>> | undefined {
-    if (!this._children) return undefined;
-
-    const directMatch = this.children?.find(
-      (child): child is Element<InstanceMap<M>> => child.match(props)
-    );
-
-    if (directMatch) return directMatch;
-    if (!this.children || !depth) return undefined;
-
-    for (const child of this.children) {
-      const match = child.matchFirstChild(props, depth - 1);
-      if (match) return match;
-    }
-
-    return undefined;
-  }
-
-  matchParent<M extends Props>(
-    props: MatcherProps<M>,
-    depth = -1
-  ): Element<InstanceMap<M>> | undefined {
-    if (!this._parent) return undefined;
-
-    const directMatch = this._parent.match(props);
-    if (directMatch) return this._parent as Element<InstanceMap<M>>;
-    if (!depth) return undefined;
-
-    return this._parent.matchParent(props, depth - 1);
   }
 }
 
@@ -200,22 +204,3 @@ export const matchValue = <M>(a: M | undefined, b: unknown): b is M => {
   if (a === undefined) return true;
   return a === b;
 };
-
-export type Component<T = Record<never, never>> = (props: T) => Element;
-
-export const h = (
-  component: Component | 'element',
-  props: Record<string, unknown> & BuiltinProps,
-  ...children: Element[]
-): Element => {
-  const propsWithChildren = { ...props, children };
-
-  if (typeof component === 'string') {
-    return new Element(propsWithChildren);
-  }
-
-  return component(propsWithChildren);
-};
-
-export const fragment: Component = (props): Element =>
-  new Element({ ...props, level: Level.NONE, name: 'fragment' });
