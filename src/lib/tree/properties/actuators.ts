@@ -16,6 +16,7 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
+import { Element, ValueType as ValueTypeNg } from '../main-ng.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import {
   Levels,
@@ -29,6 +30,7 @@ import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
 import { Persistence } from '../../persistence.js';
+import { getter } from '../elements/getter.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -38,49 +40,34 @@ const actuatorStaleness = <T>(
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
-  state.observe((value) => {
-    if (setState.value === value) return;
-    loading.value = true;
-  }, true);
+  return new Element(
+    {
+      loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
+      stale: getter(
+        ValueTypeNg.BOOLEAN,
+        new ReadOnlyObservable(
+          new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
+            stale,
+            // invert online state to be true if device is offline
+            new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
+          ])
+        )
+      ),
+    },
+    () => {
+      state.observe((value) => {
+        if (setState.value === value) return;
+        loading.value = true;
+      }, true);
 
-  state.observe((value) => {
-    stale.value = value === null;
+      state.observe((value) => {
+        stale.value = value === null;
 
-    if (value !== null && setState.value !== value) return;
-    loading.value = false;
-  }, true);
-
-  return {
-    loading: (() =>
-      addMeta(
-        { _get: new ReadOnlyObservable(loading) },
-        {
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.DATA_QUALIFIER,
-          type: 'sensor',
-          valueType: ValueType.BOOLEAN,
-        }
-      ))(),
-    stale: (() =>
-      addMeta(
-        {
-          _get: new BooleanStateGroup(
-            BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-            [
-              stale,
-              // invert online state to be true if device is offline
-              new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
-            ]
-          ),
-        },
-        {
-          level: Levels.PROPERTY,
-          parentRelation: ParentRelation.DATA_QUALIFIER,
-          type: 'sensor',
-          valueType: ValueType.BOOLEAN,
-        }
-      ))(),
-  };
+        if (value !== null && setState.value !== value) return;
+        loading.value = false;
+      }, true);
+    }
+  );
 };
 
 export const led = (

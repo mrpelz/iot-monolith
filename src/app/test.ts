@@ -31,11 +31,11 @@ const testC = new Element(
   (self) => console.log(self)
 );
 
-const testD = getter({
-  name: 'testSensor',
-  state: new ReadOnlyObservable(new Observable(4)),
-  valueType: ValueType.NUMBER,
-});
+const testD = getter(
+  ValueType.NUMBER,
+  new ReadOnlyObservable(new Observable(4)),
+  'testSensor'
+);
 
 const foo = testA({
   a: testB('2nd', {
@@ -44,12 +44,13 @@ const foo = testA({
         a: testA(),
         b: testC,
         c: testD,
-        d: setter({
-          name: 'testActuator',
-          setState: new Observable('test'),
-          topic: 'foo',
-          valueType: ValueType.STRING,
-        }),
+        d: setter(
+          ValueType.STRING,
+          new Observable('test'),
+          undefined,
+          'testActuator',
+          'foo'
+        ),
       }),
     }),
   }),

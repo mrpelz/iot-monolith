@@ -11,24 +11,24 @@ import { NullState, ReadOnlyNullState } from '../../state.js';
 
 const $ = Symbol('trigger');
 
-export type TriggerProps<
-  N extends string,
-  T extends string,
-  V extends ValueType
-> = {
-  name?: N;
-  nullState: NullState<TValueType[V]>;
-  topic?: T;
-  valueType: V;
-};
-
 export const trigger = <
   N extends string,
   T extends string,
   V extends ValueType
 >(
-  props: TriggerProps<N, T, V>
-) => new Element({ ...props, $, level: Level.PROPERTY });
+  valueType: V,
+  nullState: NullState<TValueType[V]>,
+  name?: N,
+  topic?: T
+) =>
+  new Element({
+    $,
+    level: Level.PROPERTY,
+    name,
+    nullState,
+    topic,
+    valueType,
+  });
 
 export const selectTrigger = <
   N extends string,
