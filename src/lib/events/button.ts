@@ -14,6 +14,8 @@ const payload = new MappedStruct({
 
 const pressedMapItem = new Bool();
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type ButtonPayload = TStruct<typeof payload> & {
   pressedMap: (typeof pressedMapItem.value)[];
 };

@@ -2,10 +2,10 @@ import { Input, Logger, callstack } from '../log.js';
 import { humanPayload, readNumber, writeNumber } from '../data.js';
 import { BooleanState } from '../state.js';
 import { ReadOnlyObservable } from '../observable.js';
-import { Socket } from 'net';
+import { Socket } from 'node:net';
 import { Timer } from '../timer.js';
 import { Transport } from './main.js';
-import { promises } from 'dns';
+import { promises } from 'node:dns';
 import { rebind } from '../oop.js';
 
 const { lookup } = promises;

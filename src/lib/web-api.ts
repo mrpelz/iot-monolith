@@ -1,9 +1,9 @@
 import { HttpServer, RouteHandle } from './http-server.js';
 import { Input, Logger, callstack } from './log.js';
-import { Duplex } from 'stream';
-import { IncomingMessage } from 'http';
+import { Duplex } from 'node:stream';
+import { IncomingMessage } from 'node:http';
 import { Observable } from './observable.js';
-import { Socket } from 'net';
+import { Socket } from 'node:net';
 import { Timer } from './timer.js';
 import { Tree } from './tree/main.js';
 import WebSocket from 'ws';

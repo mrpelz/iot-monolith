@@ -1,4 +1,4 @@
-import { IncomingMessage, Server, ServerResponse } from 'http';
+import { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { Input, Logger, callstack } from './log.js';
 import { multiline } from './string.js';
 
