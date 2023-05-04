@@ -18,21 +18,22 @@ import {
 
 const $ = Symbol('setter');
 
-export type SetterProps<
-  N extends string,
-  T extends string,
-  V extends ValueType
-> = {
-  name: N;
-  setState: AnyWritableObservable<TValueType[V]>;
-  state?: AnyObservable<TValueType[V] | null>;
-  topic?: T;
-  valueType: V;
-};
-
 export const setter = <N extends string, T extends string, V extends ValueType>(
-  props: SetterProps<N, T, V>
-) => new Element({ ...props, $, level: Level.PROPERTY });
+  valueType: V,
+  setState: AnyWritableObservable<TValueType[V]>,
+  state?: AnyObservable<TValueType[V] | null>,
+  name?: N,
+  topic?: T
+) =>
+  new Element({
+    $,
+    level: Level.PROPERTY,
+    name,
+    setState,
+    state,
+    topic,
+    valueType,
+  });
 
 export const selectSetter = <
   V extends ValueType,

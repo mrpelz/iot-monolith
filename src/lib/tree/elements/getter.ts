@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+
 import {
   AnyReadOnlyObservable,
   ReadOnlyObservable,
@@ -15,27 +16,27 @@ import {
 
 const $ = Symbol('getter');
 
-export type GetterProps<
-  N extends string,
-  T extends string,
-  U extends string,
-  V extends ValueType
-> = {
-  name: N;
-  state: AnyReadOnlyObservable<TValueType[V] | null>;
-  topic?: T;
-  unit?: U;
-  valueType: V;
-};
-
 export const getter = <
   N extends string,
   T extends string,
   U extends string,
   V extends ValueType
 >(
-  props: GetterProps<N, T, U, V>
-) => new Element({ ...props, $, level: Level.PROPERTY });
+  valueType: V,
+  state: AnyReadOnlyObservable<TValueType[V] | null>,
+  name?: N,
+  unit?: U,
+  topic?: T
+) =>
+  new Element({
+    $,
+    level: Level.PROPERTY,
+    name,
+    state,
+    topic,
+    unit,
+    valueType,
+  });
 
 export const selectGetter = <
   V extends ValueType,
