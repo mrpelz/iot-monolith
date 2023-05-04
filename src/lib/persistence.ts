@@ -1,8 +1,8 @@
 import { AnyWritableObservable, Observer } from './observable.js';
 import { Input, Logger, callstack } from './log.js';
-import { mkdirSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
-import { readFile } from 'fs/promises';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 export class Persistence {
   private readonly _log: Input;

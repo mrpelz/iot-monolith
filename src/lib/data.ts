@@ -1,4 +1,4 @@
-import { randomFillSync } from 'crypto';
+import { randomFillSync } from 'node:crypto';
 
 export const emptyBuffer = Buffer.from([]);
 export const falseBuffer = Buffer.of(0);

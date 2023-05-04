@@ -5,17 +5,17 @@ import {
   ValueType,
   matchClass,
   matchValue,
-} from '../lib/tree/jsx/main.js';
-import { Getter, selectGetter } from '../lib/tree/jsx/elements/getter.js';
+} from '../lib/tree/main-ng.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
-import { Setter, selectSetter } from '../lib/tree/jsx/elements/setter.js';
-import { inspect } from 'util';
+import { getter, selectGetter } from '../lib/tree/elements/getter.js';
+import { selectSetter, setter } from '../lib/tree/elements/setter.js';
+import { inspect } from 'node:util';
 
-const testA = <C extends Children>(children: C) =>
-  new Element({ level: Level.NONE, name: 'testA' }, undefined, children);
+const testA = <C extends Children>(children = {} as C) =>
+  new Element({ level: Level.NONE, name: 'testA', ...children });
 
-const testB = <C extends Children>(id: string, children: C) =>
-  new Element({ level: Level.NONE, name: id }, undefined, children);
+const testB = <C extends Children>(id: string, children = {} as C) =>
+  new Element({ level: Level.NONE, name: id, ...children });
 
 class TestMatcherClass<T extends string> {
   bar: T;
@@ -31,36 +31,32 @@ const testC = new Element(
   (self) => console.log(self)
 );
 
-const testD = new Getter({
+const testD = getter({
   name: 'testSensor',
   state: new ReadOnlyObservable(new Observable(4)),
   valueType: ValueType.NUMBER,
 });
 
-const foo = testA([
-  testB(
-    '2nd',
-    testB(
-      '3rd',
-      testB(
-        '4th',
-        testA(),
-        testC,
-        testD,
-        new Setter({
+const foo = testA({
+  a: testB('2nd', {
+    a: testB('3rd', {
+      a: testB('4th', {
+        a: testA(),
+        b: testC,
+        c: testD,
+        d: setter({
           name: 'testActuator',
           setState: new Observable('test'),
           topic: 'foo',
           valueType: ValueType.STRING,
-        })
-      )
-    )
-  ),
-  testA(),
-] as const);
+        }),
+      }),
+    }),
+  }),
+  b: testA(),
+} as const);
 
 const matchFirst = foo.matchFirstChild(
-  undefined,
   {
     name: [matchValue, 'tree' as const],
   },
@@ -68,7 +64,6 @@ const matchFirst = foo.matchFirstChild(
 );
 
 const matchAll = foo.matchAllChildren(
-  undefined,
   {
     instance: [matchClass, TestMatcherClass],
   },
@@ -76,12 +71,10 @@ const matchAll = foo.matchAllChildren(
 );
 
 const selectionGetter = foo.matchAllChildren(
-  undefined,
   selectGetter(ValueType.NUMBER),
   -1
 );
 const selectionSetter = foo.matchAllChildren(
-  undefined,
   selectSetter(ValueType.STRING),
   -1
 );

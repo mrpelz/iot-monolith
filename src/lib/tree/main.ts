@@ -10,7 +10,7 @@ import {
   isWritableObservable,
 } from '../observable.js';
 import { RollingNumber } from '../rolling-number.js';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 const ROOT_IDENTIFIER = '$';
 

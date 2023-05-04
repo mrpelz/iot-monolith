@@ -1,13 +1,13 @@
 import { Input, Logger, callstack } from '../log.js';
 import { MappedStruct, UInt8 } from '../struct/main.js';
-import { RemoteInfo, Socket, createSocket } from 'dgram';
+import { RemoteInfo, Socket, createSocket } from 'node:dgram';
 import { BooleanState } from '../state.js';
 import { NUMBER_RANGES } from '../number.js';
 import { ReadOnlyObservable } from '../observable.js';
 import { RollingNumber } from '../rolling-number.js';
 import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
-import { promises } from 'dns';
+import { promises } from 'node:dns';
 import { rebind } from '../oop.js';
 
 const { lookup } = promises;
