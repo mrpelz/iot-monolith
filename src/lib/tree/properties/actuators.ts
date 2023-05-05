@@ -24,13 +24,6 @@ import {
   symbolMain,
 } from '../main-ng.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
-import {
-  Levels,
-  ParentRelation,
-  ValueType,
-  addMeta,
-  inherit,
-} from '../main.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
@@ -42,7 +35,7 @@ import { trigger as triggerNg } from '../elements/trigger.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
-  setState: AnyReadOnlyObservable<T | null>,
+  setState: AnyWritableObservable<T>,
   device: Device
 ) => {
   const stale = new BooleanState(true);
@@ -92,6 +85,11 @@ export const led = (
 
   return new Element(
     {
+      actuatorStaleness: actuatorStaleness(
+        actualBrightness,
+        setBrightness,
+        device
+      ),
       brightness: setter(
         ValueTypeNg.NUMBER,
         setBrightness,
@@ -125,10 +123,10 @@ export const led = (
   );
 };
 
-export const output = (
+export const output = <T extends string>(
   device: IpDevice,
   index = 0,
-  actuated: string,
+  topic: T,
   indicator?: Indicator,
   persistence?: Persistence
 ) => {
@@ -137,39 +135,31 @@ export const output = (
     indicator
   );
 
-  if (persistence) {
-    persistence.observe(
-      `output/${device.transport.host}:${device.transport.port}/${index}`,
-      setState
-    );
-  }
-
-  return addMeta(
+  return new Element(
     {
-      _get: actualState,
-      _set: setState,
-      ...actuatorStaleness(
-        actualState,
-        new ReadOnlyObservable(setState),
-        device
+      actuatorStaleness: actuatorStaleness(actualState, setState, device),
+      flip: triggerNg(
+        ValueTypeNg.NULL,
+        new NullState(() => setState.flip()),
+        'flip',
+        topic
       ),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => setState.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: setter(
+        ValueTypeNg.BOOLEAN,
+        setState,
+        actualState,
+        'on',
+        topic
+      ),
     },
-    {
-      actuated,
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
+    () => {
+      if (persistence) {
+        persistence.observe(
+          `output/${device.transport.host}:${device.transport.port}/${index}`,
+          setState
+        );
+      }
     }
   );
 };
@@ -178,7 +168,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light._get)
+      lights.map((light) => light.children[symbolMain].props.state)
     )
   );
 
@@ -191,8 +181,9 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       0,
       lights.map(
         (light) =>
-          new ReadOnlyProxyObservable(light.brightness._get, (value) =>
-            value === null ? 0 : value
+          new ReadOnlyProxyObservable(
+            light.children.brightness.props.state,
+            (value) => (value === null ? 0 : value)
           )
       )
     )
@@ -200,7 +191,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light._set)
+    lights.map((light) => light.children[symbolMain].props.setState)
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -209,136 +200,111 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     }
   })(
     0,
-    lights.map((light) => light.brightness._set)
+    lights.map((light) => light.children.brightness.props.setState)
   );
 
-  return addMeta(
-    {
-      _get: actualOn,
-      _set: setOn,
-      brightness: (() =>
-        addMeta(
-          {
-            _get: actualBrightness,
-            _set: setBrightness,
-          },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_EXTENSION,
-            type: 'actuator',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      flip: (() =>
-        addMeta(
-          {
-            _set: new NullState(() => setOn.flip()),
-          },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-    },
-    {
-      actuated: 'lighting',
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    brightness: setter(
+      ValueTypeNg.NUMBER,
+      setBrightness,
+      actualBrightness,
+      'brightness',
+      'lighting'
+    ),
+    flip: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() => setOn.flip()),
+      'flip',
+      'lighting'
+    ),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(
+      ValueTypeNg.BOOLEAN,
+      setOn,
+      actualOn,
+      'on',
+      'lighting'
+    ),
+  });
 };
 
-export const outputGrouping = (
-  lights: (ReturnType<typeof output> | ReturnType<typeof led>)[],
-  actuated = 'lighting'
+export const outputGrouping = <T extends string>(
+  outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
+  topic = 'lighting' as T
 ) => {
-  const actual = new ReadOnlyObservable(
+  const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light._get)
+      outputs.map(
+        (outputElement) => outputElement.children[symbolMain].props.state
+      )
     )
   );
 
-  const set = new BooleanStateGroup(
+  const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light._set)
+    outputs.map(
+      (outputElement) => outputElement.children[symbolMain].props.setState
+    )
   );
 
-  return addMeta(
-    {
-      _get: actual,
-      _set: set,
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => set.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-    },
-    {
-      actuated,
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    flip: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() => setState.flip()),
+      'flip',
+      topic
+    ),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(
+      ValueTypeNg.BOOLEAN,
+      setState,
+      actualState,
+      'on',
+      topic
+    ),
+  });
 };
 
-export const resetDevice = (device: Device) => ({
-  resetDevice: (() =>
-    addMeta(
-      { _set: new NullState(() => device.triggerReset()) },
-      {
-        level: Levels.PROPERTY,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      }
-    ))(),
-});
+export const resetDevice = (device: Device) =>
+  new Element({
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() => device.triggerReset()),
+      'resetDevice'
+    ),
+  });
 
-export const identifyDevice = (indicator: Indicator) => ({
-  identifyDevice: (() =>
-    addMeta(
-      {
-        _set: new NullState(() =>
-          indicator
-            .request({
-              blink: 10,
-              mode: IndicatorMode.BLINK,
-            })
-            .catch(() => {
-              // noop
-            })
-        ),
-      },
-      {
-        level: Levels.PROPERTY,
-        type: 'actuator',
-        valueType: ValueType.NULL,
-      }
-    ))(),
-});
+export const identifyDevice = (indicator: Indicator) =>
+  new Element({
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() =>
+        indicator
+          .request({
+            blink: 10,
+            mode: IndicatorMode.BLINK,
+          })
+          .catch(() => {
+            // noop
+          })
+      ),
+      'identifyDevice'
+    ),
+  });
 
-export const trigger = (handler: () => void, actuated: string) =>
-  addMeta(
-    { _set: new NullState(() => handler()) },
-    {
-      actuated,
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.NULL,
-    }
-  );
+export const trigger = <T extends string>(handler: () => void, topic: T) =>
+  new Element({
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(handler),
+      'trigger',
+      topic
+    ),
+  });
 
 export class SceneMember<T> {
   constructor(
@@ -348,13 +314,13 @@ export class SceneMember<T> {
   ) {}
 }
 
-export const scene = (
+export const scene = <T extends string>(
   members: readonly SceneMember<unknown>[],
-  actuated: string
+  topic: T
 ) => {
   const proxyObservables = members.map(
-    <T>({ observable, onValue, offValue = onValue }: SceneMember<T>) =>
-      new ProxyObservable<T, boolean>(
+    <U>({ observable, onValue, offValue = onValue }: SceneMember<U>) =>
+      new ProxyObservable<U, boolean>(
         observable,
         (value) => value === onValue,
         (on) => (observable.value = on ? onValue : offValue)
@@ -366,29 +332,16 @@ export const scene = (
     proxyObservables
   );
 
-  return addMeta(
-    {
-      _get: new ReadOnlyObservable(set),
-      _set: set,
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => set.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-    },
-    {
-      actuated,
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    flip: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() => set.flip()),
+      'flip',
+      topic
+    ),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene', topic),
+  });
 };
 
 export const setOnline = (
@@ -417,29 +370,13 @@ export const setOnline = (
   //   state
   // );
 
-  return {
-    setOnline: addMeta(
-      {
-        _get: new ReadOnlyObservable(state),
-        _set: state,
-        flip: (() =>
-          addMeta(
-            { _set: new NullState(() => state.flip()) },
-            {
-              actuated: inherit,
-              level: Levels.PROPERTY,
-              parentRelation: ParentRelation.CONTROL_TRIGGER,
-              type: 'actuator',
-              valueType: ValueType.NULL,
-            }
-          ))(),
-      },
-      {
-        actuated: 'isOnline',
-        level: Levels.PROPERTY,
-        type: 'actuator',
-        valueType: ValueType.BOOLEAN,
-      }
+  return new Element({
+    flip: triggerNg(
+      ValueTypeNg.NULL,
+      new NullState(() => state.flip()),
+      'flip'
     ),
-  };
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined, 'setOnline'),
+  });
 };
