@@ -31,7 +31,7 @@ export const setter = <N extends string, T extends string, V extends ValueType>(
   new Element({
     name,
     setState,
-    state,
+    state: state || new ReadOnlyObservable(setState),
     [symbolLevel]: Level.ELEMENT as const,
     [symbolSpecies]: $,
     [symbolValueType]: valueType,
