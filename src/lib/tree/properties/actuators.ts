@@ -16,7 +16,13 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
-import { Element, ValueType as ValueTypeNg } from '../main-ng.js';
+import {
+  Element,
+  Level,
+  ValueType as ValueTypeNg,
+  symbolLevel,
+  symbolMain,
+} from '../main-ng.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import {
   Levels,
@@ -31,6 +37,8 @@ import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
 import { Persistence } from '../../persistence.js';
 import { getter } from '../elements/getter.js';
+import { setter } from '../elements/setter.js';
+import { trigger as triggerNg } from '../elements/trigger.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -53,6 +61,7 @@ const actuatorStaleness = <T>(
           ])
         )
       ),
+      [symbolLevel]: Level.PROPERTY,
     },
     () => {
       state.observe((value) => {
@@ -81,53 +90,37 @@ export const led = (
     indicator
   );
 
-  if (persistence) {
-    persistence.observe(
-      `led/${device.transport.host}:${device.transport.port}/${index}`,
-      setBrightness
-    );
-  }
-
-  return addMeta(
+  return new Element(
     {
-      _get: actualOn,
-      _set: setOn,
-      ...actuatorStaleness(
+      brightness: setter(
+        ValueTypeNg.NUMBER,
+        setBrightness,
         actualBrightness,
-        new ReadOnlyObservable(setBrightness),
-        device
+        'brightness',
+        'lighting'
       ),
-      brightness: (() =>
-        addMeta(
-          {
-            _get: actualBrightness,
-            _set: setBrightness,
-          },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_EXTENSION,
-            type: 'actuator',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => setOn.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
+      flip: triggerNg(
+        ValueTypeNg.NULL,
+        new NullState(() => setOn.flip()),
+        'flip',
+        'lighting'
+      ),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: setter(
+        ValueTypeNg.BOOLEAN,
+        setOn,
+        actualOn,
+        'on',
+        'lighting'
+      ),
     },
-    {
-      actuated: 'lighting',
-      level: Levels.PROPERTY,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
+    () => {
+      if (persistence) {
+        persistence.observe(
+          `led/${device.transport.host}:${device.transport.port}/${index}`,
+          setBrightness
+        );
+      }
     }
   );
 };

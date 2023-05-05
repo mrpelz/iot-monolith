@@ -1,7 +1,14 @@
+import { objectProperties } from '../oop.js';
 import { v5 as uuidv5 } from 'uuid';
 
 const TREE_UUID_NAMESPACE = '3908a9a5-cae8-4c7a-901f-6a02bb40a915';
 
+export const symbolId = Symbol('id');
+export const symbolKey = Symbol('key');
+export const symbolMain = Symbol('main');
+export const symbolSpecies = Symbol('species');
+
+export const symbolLevel = Symbol('level');
 export enum Level {
   NONE,
   SYSTEM,
@@ -12,8 +19,10 @@ export enum Level {
   AREA,
   DEVICE,
   PROPERTY,
+  ELEMENT,
 }
 
+export const symbolValueType = Symbol('valueType');
 export enum ValueType {
   NULL,
   BOOLEAN,
@@ -38,7 +47,11 @@ export type ExtractProperties<T, F> = {
 export type Children = Record<string, Element>;
 export type InitFunction<T extends Element> = (self: T) => void;
 
-export type Props = Record<string, unknown>;
+export type Props = Record<string | symbol, unknown> & {
+  [symbolLevel]?: Level;
+  [symbolSpecies]?: symbol;
+  [symbolValueType]?: ValueType;
+};
 
 export type InstanceMap<T extends Props> = {
   [P in keyof T]: T[P] extends AbstractClass ? InstanceType<T[P]> : T[P];
@@ -51,7 +64,7 @@ export type MatcherPropsMap<T extends MatcherProps> = {
   [P in keyof T]: Exclude<T[P][number], T[P][0]>;
 };
 
-export class Element<T extends Props = Record<string, unknown>> {
+export class Element<T extends Props = Record<string | symbol, unknown>> {
   private _hasBeenInitialized = false;
   private _id?: string;
   private _key?: string;
@@ -68,18 +81,31 @@ export class Element<T extends Props = Record<string, unknown>> {
   private _handleChildren(
     childCallback: (child: Element, property: string) => void
   ) {
-    for (const [property, child] of Object.entries(this.children)) {
+    for (const property of objectProperties(this.children)) {
+      const child = this.children[property];
+
       if (child instanceof Element) {
-        childCallback(child, property);
+        childCallback(
+          child,
+          (() => {
+            if ((property as symbol) === symbolMain) return '$';
+            if (typeof property === 'string') return property;
+            if (typeof property === 'symbol') {
+              return `$${(property as symbol).description || '_'}`;
+            }
+
+            return '_';
+          })()
+        );
       }
     }
   }
 
   get children(): ExtractProperties<T, Element> {
     return Object.fromEntries(
-      Object.entries(this._props)
-        .filter(([, value]) => value instanceof Element)
-        .map(([property, value]) => [property, value] as const)
+      objectProperties(this._props)
+        .filter((property) => this._props[property] instanceof Element)
+        .map((property) => [property, this._props[property]] as const)
     ) as ExtractProperties<T, Element>;
   }
 
@@ -87,11 +113,11 @@ export class Element<T extends Props = Record<string, unknown>> {
     return this._parent;
   }
 
-  get props(): T & { id?: string; key?: string } {
-    return { id: this._id, key: this._key, ...this._props };
+  get props(): T & { [symbolId]?: string; [symbolKey]?: string } {
+    return { [symbolId]: this._id, [symbolKey]: this._key, ...this._props };
   }
 
-  init(parent?: Element, key = '$', path = [] as readonly string[]): void {
+  init(parent?: Element, key = '^', path = [] as readonly string[]): void {
     if (this._hasBeenInitialized) return;
     this._hasBeenInitialized = true;
 
@@ -113,9 +139,9 @@ export class Element<T extends Props = Record<string, unknown>> {
   ): this is Element<InstanceMap<MatcherPropsMap<M>>> {
     if (!props) return true;
 
-    for (const property of Object.keys(props)) {
+    for (const property of objectProperties(props)) {
       const [matcher, ...values] = props[property];
-      const b = this.props[property];
+      const b = this.props[property as string];
 
       if (values.some((a) => matcher(a, b))) continue;
       return false;

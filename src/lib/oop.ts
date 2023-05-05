@@ -22,3 +22,10 @@ export const rebind = (context: any, ...names: string[]): void => {
     context[name] = fn.bind(context);
   }
 };
+
+export const objectProperties = <T extends Record<string | symbol, unknown>>(
+  input: T
+): (keyof T)[] => [
+  ...Object.getOwnPropertySymbols(input),
+  ...Object.getOwnPropertyNames(input),
+];

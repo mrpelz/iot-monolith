@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
-  AnyObservable,
+  AnyReadOnlyObservable,
   AnyWritableObservable,
   Observable,
   ProxyObservable,
@@ -14,6 +14,9 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolLevel,
+  symbolSpecies,
+  symbolValueType,
 } from '../main-ng.js';
 
 const $ = Symbol('setter');
@@ -21,18 +24,18 @@ const $ = Symbol('setter');
 export const setter = <N extends string, T extends string, V extends ValueType>(
   valueType: V,
   setState: AnyWritableObservable<TValueType[V]>,
-  state?: AnyObservable<TValueType[V] | null>,
+  state?: AnyReadOnlyObservable<TValueType[V] | null>,
   name?: N,
   topic?: T
 ) =>
   new Element({
-    $,
-    level: Level.PROPERTY,
     name,
     setState,
     state,
+    [symbolLevel]: Level.ELEMENT as const,
+    [symbolSpecies]: $,
+    [symbolValueType]: valueType,
     topic,
-    valueType,
   });
 
 export const selectSetter = <
@@ -44,12 +47,12 @@ export const selectSetter = <
   name?: N,
   topic?: T
 ) => ({
-  $: [matchValue, $] as const,
-  level: [matchValue, Level.PROPERTY] as const,
   name: [matchValue, name] as const,
   setState: [matchClass, Observable, ProxyObservable] as const,
+  [symbolLevel]: [matchValue, Level.ELEMENT] as const,
+  [symbolSpecies]: [matchValue, $] as const,
+  [symbolValueType]: [matchValue, valueType] as const,
   topic: [matchValue, topic] as const,
-  valueType: [matchValue, valueType] as const,
 });
 
 export const selectGetterSetter = <
