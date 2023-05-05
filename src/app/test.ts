@@ -5,6 +5,7 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolSpecies,
 } from '../lib/tree/main-ng.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import { getter, selectGetter } from '../lib/tree/elements/getter.js';
@@ -37,12 +38,13 @@ const testD = getter(
   'testSensor'
 );
 
+const x = Symbol('foo');
+
 const foo = testA({
   a: testB('2nd', {
     a: testB('3rd', {
       a: testB('4th', {
         a: testA(),
-        b: testC,
         c: testD,
         d: setter(
           ValueType.STRING,
@@ -51,6 +53,7 @@ const foo = testA({
           'testActuator',
           'foo'
         ),
+        [x]: testC,
       }),
     }),
   }),

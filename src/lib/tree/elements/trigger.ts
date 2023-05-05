@@ -6,6 +6,9 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolLevel,
+  symbolSpecies,
+  symbolValueType,
 } from '../main-ng.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 
@@ -22,12 +25,12 @@ export const trigger = <
   topic?: T
 ) =>
   new Element({
-    $,
-    level: Level.PROPERTY,
     name,
     nullState,
+    [symbolLevel]: Level.ELEMENT as const,
+    [symbolSpecies]: $,
+    [symbolValueType]: valueType,
     topic,
-    valueType,
   });
 
 export const selectTrigger = <
@@ -39,10 +42,10 @@ export const selectTrigger = <
   name?: N,
   topic?: T
 ) => ({
-  $: [matchValue, $],
-  level: [matchValue, Level.PROPERTY] as const,
   name: [matchValue, name] as const,
   nullState: [matchClass, ReadOnlyNullState] as const,
+  [symbolLevel]: [matchValue, Level.ELEMENT] as const,
+  [symbolSpecies]: [matchValue, $],
+  [symbolValueType]: [matchValue, valueType] as const,
   topic: [matchValue, topic] as const,
-  valueType: [matchValue, valueType] as const,
 });
