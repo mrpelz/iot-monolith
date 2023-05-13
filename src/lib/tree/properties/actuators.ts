@@ -41,35 +41,37 @@ const actuatorStaleness = <T>(
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
-  return new Element(
-    {
-      loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
-      stale: getter(
-        ValueTypeNg.BOOLEAN,
-        new ReadOnlyObservable(
-          new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
-            stale,
-            // invert online state to be true if device is offline
-            new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
-          ])
-        )
-      ),
-      [symbolLevel]: Level.PROPERTY,
-    },
-    () => {
-      state.observe((value) => {
-        if (setState.value === value) return;
-        loading.value = true;
-      }, true);
+  return {
+    actuatorStaleness: new Element(
+      {
+        loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
+        stale: getter(
+          ValueTypeNg.BOOLEAN,
+          new ReadOnlyObservable(
+            new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
+              stale,
+              // invert online state to be true if device is offline
+              new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
+            ])
+          )
+        ),
+        [symbolLevel]: Level.PROPERTY,
+      },
+      () => {
+        state.observe((value) => {
+          if (setState.value === value) return;
+          loading.value = true;
+        }, true);
 
-      state.observe((value) => {
-        stale.value = value === null;
+        state.observe((value) => {
+          stale.value = value === null;
 
-        if (value !== null && setState.value !== value) return;
-        loading.value = false;
-      }, true);
-    }
-  );
+          if (value !== null && setState.value !== value) return;
+          loading.value = false;
+        }, true);
+      }
+    ),
+  };
 };
 
 export const led = (
@@ -85,32 +87,12 @@ export const led = (
 
   return new Element(
     {
-      actuatorStaleness: actuatorStaleness(
-        actualBrightness,
-        setBrightness,
-        device
-      ),
-      brightness: setter(
-        ValueTypeNg.NUMBER,
-        setBrightness,
-        actualBrightness,
-        'brightness',
-        'lighting'
-      ),
-      flip: triggerNg(
-        ValueTypeNg.NULL,
-        new NullState(() => setOn.flip()),
-        'flip',
-        'lighting'
-      ),
+      ...actuatorStaleness(actualBrightness, setBrightness, device),
+      brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
+      flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: setter(
-        ValueTypeNg.BOOLEAN,
-        setOn,
-        actualOn,
-        'on',
-        'lighting'
-      ),
+      [symbolMain]: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
+      topic: 'lighting',
     },
     () => {
       if (persistence) {
@@ -137,21 +119,11 @@ export const output = <T extends string>(
 
   return new Element(
     {
-      actuatorStaleness: actuatorStaleness(actualState, setState, device),
-      flip: triggerNg(
-        ValueTypeNg.NULL,
-        new NullState(() => setState.flip()),
-        'flip',
-        topic
-      ),
+      ...actuatorStaleness(actualState, setState, device),
+      flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setState.flip())),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: setter(
-        ValueTypeNg.BOOLEAN,
-        setState,
-        actualState,
-        'on',
-        topic
-      ),
+      [symbolMain]: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
+      topic,
     },
     () => {
       if (persistence) {
@@ -204,27 +176,11 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   );
 
   return new Element({
-    brightness: setter(
-      ValueTypeNg.NUMBER,
-      setBrightness,
-      actualBrightness,
-      'brightness',
-      'lighting'
-    ),
-    flip: triggerNg(
-      ValueTypeNg.NULL,
-      new NullState(() => setOn.flip()),
-      'flip',
-      'lighting'
-    ),
+    brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
+    flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(
-      ValueTypeNg.BOOLEAN,
-      setOn,
-      actualOn,
-      'on',
-      'lighting'
-    ),
+    [symbolMain]: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
+    topic: 'lighting',
   });
 };
 
@@ -249,20 +205,10 @@ export const outputGrouping = <T extends string>(
   );
 
   return new Element({
-    flip: triggerNg(
-      ValueTypeNg.NULL,
-      new NullState(() => setState.flip()),
-      'flip',
-      topic
-    ),
+    flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(
-      ValueTypeNg.BOOLEAN,
-      setState,
-      actualState,
-      'on',
-      topic
-    ),
+    [symbolMain]: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
+    topic,
   });
 };
 
@@ -301,9 +247,9 @@ export const trigger = <T extends string>(handler: () => void, topic: T) =>
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
       new NullState(handler),
-      'trigger',
-      topic
+      'trigger'
     ),
+    topic,
   });
 
 export class SceneMember<T> {
@@ -333,14 +279,10 @@ export const scene = <T extends string>(
   );
 
   return new Element({
-    flip: triggerNg(
-      ValueTypeNg.NULL,
-      new NullState(() => set.flip()),
-      'flip',
-      topic
-    ),
+    flip: triggerNg(ValueTypeNg.NULL, new NullState(() => set.flip())),
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene', topic),
+    [symbolMain]: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene'),
+    topic,
   });
 };
 
@@ -351,32 +293,31 @@ export const setOnline = (
 ) => {
   const state = new BooleanState(initiallyOnline);
 
-  if (initiallyOnline) {
-    device.transport.connect();
-  }
+  return new Element(
+    {
+      flip: triggerNg(ValueTypeNg.NULL, new NullState(() => state.flip())),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined, 'setOnline'),
+    },
+    () => {
+      if (initiallyOnline) {
+        device.transport.connect();
+      }
 
-  state.observe((value) => {
-    if (value) {
-      device.transport.connect();
+      state.observe((value) => {
+        if (value) {
+          device.transport.connect();
 
-      return;
+          return;
+        }
+
+        device.transport.disconnect();
+      });
+
+      // persistence.observe(
+      //   `setOnline/${device.transport.host}:${device.transport.port}`,
+      //   state
+      // );
     }
-
-    device.transport.disconnect();
-  });
-
-  // persistence.observe(
-  //   `setOnline/${device.transport.host}:${device.transport.port}`,
-  //   state
-  // );
-
-  return new Element({
-    flip: triggerNg(
-      ValueTypeNg.NULL,
-      new NullState(() => state.flip()),
-      'flip'
-    ),
-    [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined, 'setOnline'),
-  });
+  );
 };

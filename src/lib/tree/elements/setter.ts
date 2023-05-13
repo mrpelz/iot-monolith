@@ -21,12 +21,11 @@ import {
 
 const $ = Symbol('setter');
 
-export const setter = <N extends string, T extends string, V extends ValueType>(
+export const setter = <N extends string, V extends ValueType>(
   valueType: V,
   setState: AnyWritableObservable<TValueType[V]>,
   state?: AnyReadOnlyObservable<TValueType[V] | null>,
-  name?: N,
-  topic?: T
+  name?: N
 ) =>
   new Element({
     name,
@@ -35,35 +34,23 @@ export const setter = <N extends string, T extends string, V extends ValueType>(
     [symbolLevel]: Level.ELEMENT as const,
     [symbolSpecies]: $,
     [symbolValueType]: valueType,
-    topic,
   });
 
-export const selectSetter = <
-  V extends ValueType,
-  N extends string,
-  T extends string
->(
+export const selectSetter = <V extends ValueType, N extends string>(
   valueType: V,
-  name?: N,
-  topic?: T
+  name?: N
 ) => ({
   name: [matchValue, name] as const,
   setState: [matchClass, Observable, ProxyObservable] as const,
   [symbolLevel]: [matchValue, Level.ELEMENT] as const,
   [symbolSpecies]: [matchValue, $] as const,
   [symbolValueType]: [matchValue, valueType] as const,
-  topic: [matchValue, topic] as const,
 });
 
-export const selectGetterSetter = <
-  V extends ValueType,
-  N extends string,
-  T extends string
->(
+export const selectGetterSetter = <V extends ValueType, N extends string>(
   valueType: V,
-  name?: N,
-  topic?: T
+  name?: N
 ) => ({
-  ...selectSetter(valueType, name, topic),
+  ...selectSetter(valueType, name),
   state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable] as const,
 });

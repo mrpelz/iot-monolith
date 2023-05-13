@@ -4,6 +4,7 @@ import { v5 as uuidv5 } from 'uuid';
 const TREE_UUID_NAMESPACE = '3908a9a5-cae8-4c7a-901f-6a02bb40a915';
 
 export const symbolId = Symbol('id');
+export const symbolInstance = Symbol('instance');
 export const symbolKey = Symbol('key');
 export const symbolMain = Symbol('main');
 export const symbolSpecies = Symbol('species');
@@ -49,6 +50,7 @@ export type InitFunction<T extends Element> = (self: T) => void;
 
 export type Props = Record<string | symbol, unknown> & {
   [symbolLevel]?: Level;
+  [symbolMain]?: Element;
   [symbolSpecies]?: symbol;
   [symbolValueType]?: ValueType;
 };
