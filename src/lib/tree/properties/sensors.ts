@@ -14,6 +14,14 @@ import {
   ReadOnlyNullState,
 } from '../../state.js';
 import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
+import {
+  Element,
+  Level,
+  ValueType as ValueTypeNg,
+  symbolInstance,
+  symbolLevel,
+  symbolMain,
+} from '../main-ng.js';
 import { Levels, ParentRelation, ValueType, addMeta } from '../main.js';
 import {
   MeasurementInputGetter,
@@ -41,6 +49,7 @@ import { VCC } from '../../events/vcc.js';
 import { Veml6070 } from '../../services/veml6070.js';
 import { byteLengthAddress } from '../../device/ev1527.js';
 import { epochs } from '../../epochs.js';
+import { getter } from '../elements/getter.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -49,21 +58,23 @@ export type Timings = Record<string, ScheduleEpochPair | undefined> & {
 export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
   const seen = new Observable<number | null>(null);
 
-  state.observe((value) => {
-    if (value === null) return;
-
-    seen.value = Date.now();
-  });
-
   return {
-    lastChange: addMeta(
-      { _get: new ReadOnlyObservable(seen) },
+    lastChange: new Element(
       {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        unit: 'date',
-        valueType: ValueType.NUMBER,
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(
+          ValueTypeNg.NUMBER,
+          new ReadOnlyObservable(seen),
+          undefined,
+          'date'
+        ),
+      },
+      () => {
+        state.observe((value) => {
+          if (value === null) return;
+
+          seen.value = Date.now();
+        });
       }
     ),
   };
@@ -74,21 +85,23 @@ export const lastSeen = <T>(
 ) => {
   const seen = new Observable<number | null>(null);
 
-  state.observe((value) => {
-    if (state instanceof ReadOnlyObservable && value === null) return;
-
-    seen.value = Date.now();
-  }, true);
-
   return {
-    lastSeen: addMeta(
-      { _get: new ReadOnlyObservable(seen) },
+    lastSeen: new Element(
       {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        unit: 'date',
-        valueType: ValueType.NUMBER,
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(
+          ValueTypeNg.NUMBER,
+          new ReadOnlyObservable(seen),
+          undefined,
+          'date'
+        ),
+      },
+      () => {
+        state.observe((value) => {
+          if (state instanceof ReadOnlyObservable && value === null) return;
+
+          seen.value = Date.now();
+        }, true);
       }
     ),
   };
@@ -100,27 +113,28 @@ export const metricStaleness = <T>(
 ) => {
   const stale = new BooleanState(true);
 
-  const timer = new Timer(timeout + epochs.second * 10);
-  timer.observe(() => {
-    stale.value = true;
-  });
-
-  state.observe((value) => {
-    stale.value = value === null;
-    timer.start();
-  }, true);
-
   return {
-    stale: addMeta(
-      { _get: new ReadOnlyObservable(stale) },
+    ...lastSeen(state),
+    stale: new Element(
       {
-        level: Levels.PROPERTY,
-        parentRelation: ParentRelation.DATA_QUALIFIER,
-        type: 'sensor',
-        valueType: ValueType.BOOLEAN,
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(
+          ValueTypeNg.BOOLEAN,
+          new ReadOnlyObservable(stale)
+        ),
+      },
+      () => {
+        const timer = new Timer(timeout + epochs.second * 10);
+        timer.observe(() => {
+          stale.value = true;
+        });
+
+        state.observe((value) => {
+          stale.value = value === null;
+          timer.start();
+        }, true);
       }
     ),
-    ...lastSeen(state),
   };
 };
 
@@ -130,78 +144,50 @@ export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
     schedule
   );
 
-  return {
-    async: addMeta(
-      {
-        _get: state,
-        ...metricStaleness(state, epoch),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'async',
-        type: 'sensor',
-        valueType: ValueType.RAW,
-      }
-    ),
-  };
+  return new Element({
+    ...metricStaleness(state, epoch),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: getter(ValueTypeNg.RAW, state),
+  });
 };
 
 export const bme280 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair
 ) => {
-  const metrics = ['humidity', 'pressure', 'temperature'] as const;
-
   const { state } = new MultiValueSensor(
     device.addService(new Bme280()),
-    metrics,
+    ['humidity', 'pressure', 'temperature'] as const,
     schedule
   );
 
-  return {
-    humidity: (() =>
-      addMeta(
-        {
-          _get: state.humidity,
-          ...metricStaleness(state.humidity, epoch),
-        },
-        {
-          level: Levels.PROPERTY,
-          measured: 'relativeHumidity',
-          type: 'sensor',
-          unit: 'percent-rh',
-          valueType: ValueType.NUMBER,
-        }
-      ))(),
-    pressure: (() =>
-      addMeta(
-        {
-          _get: state.pressure,
-          ...metricStaleness(state.pressure, epoch),
-        },
-        {
-          level: Levels.PROPERTY,
-          measured: 'pressure',
-          type: 'sensor',
-          unit: 'pa',
-          valueType: ValueType.NUMBER,
-        }
-      ))(),
-    temperature: (() =>
-      addMeta(
-        {
-          _get: state.temperature,
-          ...metricStaleness(state.temperature, epoch),
-        },
-        {
-          level: Levels.PROPERTY,
-          measured: 'temperature',
-          type: 'sensor',
-          unit: 'deg-c',
-          valueType: ValueType.NUMBER,
-        }
-      ))(),
-  };
+  return new Element({
+    humidity: new Element({
+      ...metricStaleness(state.humidity, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(
+        ValueTypeNg.NUMBER,
+        state.humidity,
+        undefined,
+        'percent-rh'
+      ),
+    }),
+    pressure: new Element({
+      ...metricStaleness(state.pressure, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueTypeNg.NUMBER, state.pressure, undefined, 'pa'),
+    }),
+    temperature: new Element({
+      ...metricStaleness(state.temperature, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(
+        ValueTypeNg.NUMBER,
+        state.temperature,
+        undefined,
+        'deg-c'
+      ),
+    }),
+  });
 };
 
 export const ccs811 = (
@@ -219,60 +205,38 @@ export const ccs811 = (
   );
 
   return {
-    tvoc: addMeta(
-      {
-        _get: state.tvoc,
-        ...metricStaleness(state.tvoc, epoch),
-        eco2: (() =>
-          addMeta(
-            {
-              _get: state.eco2,
-              ...metricStaleness(state.eco2, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'eco2',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'ppm',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-        temperature: (() =>
-          addMeta(
-            {
-              _get: state.temperature,
-              ...metricStaleness(state.temperature, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'temperature',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'deg-c',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'tvoc',
-        type: 'sensor',
-        unit: 'ppb',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    tvoc: new Element({
+      ...metricStaleness(state.tvoc, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueTypeNg.NUMBER, state.tvoc, undefined, 'ppb'),
+      // eslint-disable-next-line sort-keys
+      eco2: new Element({
+        ...metricStaleness(state.eco2, epoch),
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(ValueTypeNg.NUMBER, state.eco2, undefined, 'ppm'),
+      }),
+      temperature: new Element({
+        ...metricStaleness(state.temperature, epoch),
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(
+          ValueTypeNg.NUMBER,
+          state.temperature,
+          undefined,
+          'deg-c'
+        ),
+      }),
+    }),
   };
 };
 
 export const button = (device: Device, index = 0) => {
-  const buttonEvent = new ButtonEvent(index);
-  device.addEvent(buttonEvent);
+  const buttonEvent = device.addEvent(new ButtonEvent(index));
 
-  return {
-    $: new Button(buttonEvent),
+  return new Element({
+    [symbolInstance]: new Button(buttonEvent),
+    [symbolLevel]: Level.PROPERTY,
     ...lastSeen(buttonEvent.observable),
-  };
+  });
 };
 
 export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
