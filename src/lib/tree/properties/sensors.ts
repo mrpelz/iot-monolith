@@ -233,9 +233,9 @@ export const button = (device: Device, index = 0) => {
   const buttonEvent = device.addEvent(new ButtonEvent(index));
 
   return new Element({
+    ...lastSeen(buttonEvent.observable),
     [symbolInstance]: new Button(buttonEvent),
     [symbolLevel]: Level.PROPERTY,
-    ...lastSeen(buttonEvent.observable),
   });
 };
 
@@ -246,33 +246,26 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   );
 
   return {
-    hello: addMeta(
-      {
-        _get: state,
-        ...metricStaleness(state, epoch),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'hello',
-        type: 'sensor',
-        valueType: ValueType.STRING,
-      }
-    ),
+    hello: new Element({
+      ...metricStaleness(state, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueTypeNg.STRING, state),
+    }),
   };
 };
 
-export const input = (device: Device, index = 0, measured: string) => {
+export const input = <T extends string>(
+  device: Device,
+  index = 0,
+  topic: T
+) => {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
-  return addMeta(
-    { _get: state },
-    {
-      level: Levels.PROPERTY,
-      measured,
-      type: 'sensor',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: getter(ValueTypeNg.BOOLEAN, state),
+    topic,
+  });
 };
 
 export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
@@ -284,14 +277,10 @@ export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
     )
   );
 
-  return addMeta(
-    { _get: new ReadOnlyObservable(state) },
-    {
-      level: Levels.PROPERTY,
-      type: 'sensor',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(state)),
+  });
 };
 
 export const mcp9808 = (
@@ -304,19 +293,11 @@ export const mcp9808 = (
   );
 
   return {
-    temperature: addMeta(
-      {
-        _get: state,
-        ...metricStaleness(state, epoch),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'temperature',
-        type: 'sensor',
-        unit: 'deg-c',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    temperature: new Element({
+      ...metricStaleness(state, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueTypeNg.NUMBER, state, undefined, 'deg-c'),
+    }),
   };
 };
 
