@@ -14,6 +14,7 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolInstance,
   symbolLevel,
   symbolSpecies,
   symbolValueType,
@@ -30,7 +31,7 @@ export const setter = <N extends string, V extends ValueType>(
   new Element({
     name,
     setState,
-    state: state || new ReadOnlyObservable(setState),
+    [symbolInstance]: state || new ReadOnlyObservable(setState),
     [symbolLevel]: Level.ELEMENT as const,
     [symbolSpecies]: $,
     [symbolValueType]: valueType,

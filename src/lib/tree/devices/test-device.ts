@@ -21,6 +21,7 @@ import {
   uvIndex,
 } from '../properties/sensors.js';
 import { defaultsIpDevice, deviceMeta } from './util.js';
+import { symbolInstance, symbolMain } from '../main-ng.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
@@ -67,7 +68,10 @@ export const testDevice = (
 
                   return validValues.length ? Math.min(...validValues) : null;
                 }
-              })(null, [mcp9808Temperature._get, bme280Temperature._get])
+              })(null, [
+                mcp9808Temperature.props[symbolMain].props[symbolInstance],
+                bme280Temperature.props[symbolMain].props[symbolInstance],
+              ])
             ),
             bme280: bme280Temperature,
             mcp9808: mcp9808Temperature,

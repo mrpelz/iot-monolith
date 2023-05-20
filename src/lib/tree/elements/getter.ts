@@ -12,6 +12,7 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolInstance,
   symbolLevel,
   symbolSpecies,
   symbolValueType,
@@ -22,12 +23,12 @@ const $ = Symbol('getter');
 export const getter = <N extends string, U extends string, V extends ValueType>(
   valueType: V,
   state: AnyReadOnlyObservable<TValueType[V] | null>,
-  name?: N,
-  unit?: U
+  unit?: U,
+  name?: N
 ) =>
   new Element({
     name,
-    state,
+    [symbolInstance]: state,
     [symbolLevel]: Level.ELEMENT as const,
     [symbolSpecies]: $,
     [symbolValueType]: valueType,
@@ -40,8 +41,8 @@ export const selectGetter = <
   U extends string
 >(
   valueType: V,
-  name?: N,
-  unit?: U
+  unit?: U,
+  name?: N
 ) => ({
   name: [matchValue, name] as const,
   state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable] as const,

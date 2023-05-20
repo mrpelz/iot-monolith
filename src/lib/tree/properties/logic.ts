@@ -2,12 +2,13 @@
 
 import { BooleanState, NullState } from '../../state.js';
 import {
-  Levels,
-  ParentRelation,
+  Element,
+  Level,
   ValueType,
-  addMeta,
-  inherit,
-} from '../main.js';
+  symbolInstance,
+  symbolLevel,
+  symbolMain,
+} from '../main-ng.js';
 import {
   Observable,
   ReadOnlyObservable,
@@ -16,7 +17,10 @@ import {
 import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Timer } from '../../timer.js';
+import { getter } from '../elements/getter.js';
 import { maxmin } from '../../number.js';
+import { setter } from '../elements/setter.js';
+import { trigger } from '../elements/trigger.js';
 
 export const offTimer = (
   time: number,
@@ -69,94 +73,46 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  return addMeta(
-    {
-      $: timer,
-      _get: new ReadOnlyObservable(enabled),
-      _set: enabled,
-      active: (() =>
-        addMeta(
-          {
-            $: active,
-            _get: new ReadOnlyObservable(active),
-            cancel: (() =>
-              addMeta(
-                { _set: new NullState(() => (active.value = false)) },
-                {
-                  actuated: inherit,
-                  level: Levels.PROPERTY,
-                  parentRelation: ParentRelation.CONTROL_TRIGGER,
-                  type: 'actuator',
-                  valueType: ValueType.NULL,
-                }
-              ))(),
-            reset: (() =>
-              addMeta(
-                {
-                  _set: new NullState(() => {
-                    if (!active.value) return;
-                    active.value = true;
-                  }),
-                },
-                {
-                  actuated: inherit,
-                  level: Levels.PROPERTY,
-                  parentRelation: ParentRelation.CONTROL_TRIGGER,
-                  type: 'actuator',
-                  valueType: ValueType.NULL,
-                }
-              ))(),
-          },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'actuator',
-            valueType: ValueType.BOOLEAN,
-          }
-        ))(),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => enabled.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-      runoutTime: (() =>
-        addMeta(
-          { _get: runoutTime },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      triggerTime: (() =>
-        addMeta(
-          { _get: new ReadOnlyObservable(triggerTime) },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-    },
-    {
-      actuated: 'offTimer',
-      level: Levels.PROPERTY,
-      parentRelation: ParentRelation.META_RELATION,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+  return new Element({
+    active: new Element({
+      cancel: new Element({
+        [symbolMain]: trigger(
+          ValueType.NULL,
+          new NullState(() => (active.value = false))
+        ),
+      }),
+      reset: new Element({
+        [symbolMain]: trigger(
+          ValueType.NULL,
+          new NullState(() => {
+            if (!active.value) return;
+            active.value = true;
+          })
+        ),
+      }),
+      [symbolInstance]: active,
+      [symbolMain]: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
+    }),
+    flip: new Element({
+      [symbolMain]: trigger(
+        ValueType.NULL,
+        new NullState(() => enabled.flip())
+      ),
+    }),
+    runoutTime: new Element({
+      [symbolMain]: getter(ValueType.NUMBER, runoutTime, 'date'),
+    }),
+    [symbolInstance]: timer,
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    triggerTime: new Element({
+      [symbolMain]: getter(
+        ValueType.NUMBER,
+        new ReadOnlyObservable(triggerTime),
+        'date'
+      ),
+    }),
+  });
 };
 
 export const scheduledRamp = (
@@ -225,86 +181,43 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  return addMeta(
-    {
-      _get: new ReadOnlyObservable(enabled),
-      _set: enabled,
-      cancel: (() =>
-        addMeta(
-          { _set: new NullState(() => cancel()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
+  return new Element({
+    cancel: new Element({
+      [symbolMain]: trigger(ValueType.NULL, new NullState(() => cancel())),
+    }),
+    flip: new Element({
+      [symbolMain]: trigger(
+        ValueType.NULL,
+        new NullState(() => enabled.flip())
+      ),
+    }),
+    nextCompletion: new Element({
+      [symbolMain]: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable<Date | null, number>(
+          schedule.nextExecution,
+          (date) => {
+            if (!date) return 0;
+            return date.getTime() + epoch;
           }
-        ))(),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => enabled.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-      nextCompletion: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyProxyObservable<Date | null, number>(
-              schedule.nextExecution,
-              (date) => {
-                if (!date) return 0;
-                return date.getTime() + epoch;
-              }
-            ),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      nextExecution: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyProxyObservable<Date | null, number>(
-              schedule.nextExecution,
-              (date) => date?.getTime() || 0
-            ),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      progress: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyObservable(progress),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-    },
-    {
-      actuated: 'scheduledRamp',
-      level: Levels.PROPERTY,
-      parentRelation: ParentRelation.META_RELATION,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+        ),
+        'date'
+      ),
+    }),
+    nextExecution: new Element({
+      [symbolMain]: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable<Date | null, number>(
+          schedule.nextExecution,
+          (date) => date?.getTime() || 0
+        ),
+        'date'
+      ),
+    }),
+    progress: new Element({
+      [symbolMain]: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
+    }),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+  });
 };
