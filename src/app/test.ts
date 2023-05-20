@@ -5,7 +5,6 @@ import {
   ValueType,
   matchClass,
   matchValue,
-  symbolSpecies,
 } from '../lib/tree/main-ng.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import { getter, selectGetter } from '../lib/tree/elements/getter.js';
@@ -35,6 +34,7 @@ const testC = new Element(
 const testD = getter(
   ValueType.NUMBER,
   new ReadOnlyObservable(new Observable(4)),
+  undefined,
   'testSensor'
 );
 
@@ -50,8 +50,7 @@ const foo = testA({
           ValueType.STRING,
           new Observable('test'),
           undefined,
-          'testActuator',
-          'foo'
+          'testActuator'
         ),
         [x]: testC,
       }),

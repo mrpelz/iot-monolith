@@ -20,6 +20,7 @@ import {
   Element,
   Level,
   ValueType as ValueTypeNg,
+  symbolInstance,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -140,7 +141,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.children[symbolMain].props.state)
+      lights.map((light) => light.children[symbolMain].props[symbolInstance])
     )
   );
 
@@ -154,7 +155,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       lights.map(
         (light) =>
           new ReadOnlyProxyObservable(
-            light.children.brightness.props.state,
+            light.children.brightness.props[symbolInstance],
             (value) => (value === null ? 0 : value)
           )
       )
@@ -192,7 +193,8 @@ export const outputGrouping = <T extends string>(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
       outputs.map(
-        (outputElement) => outputElement.children[symbolMain].props.state
+        (outputElement) =>
+          outputElement.children[symbolMain].props[symbolInstance]
       )
     )
   );
@@ -212,18 +214,18 @@ export const outputGrouping = <T extends string>(
   });
 };
 
-export const resetDevice = (device: Device) =>
-  new Element({
+export const resetDevice = (device: Device) => ({
+  resetDevice: new Element({
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
-      new NullState(() => device.triggerReset()),
-      'resetDevice'
+      new NullState(() => device.triggerReset())
     ),
-  });
+  }),
+});
 
-export const identifyDevice = (indicator: Indicator) =>
-  new Element({
+export const identifyDevice = (indicator: Indicator) => ({
+  identifyDevice: new Element({
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
@@ -236,10 +238,10 @@ export const identifyDevice = (indicator: Indicator) =>
           .catch(() => {
             // noop
           })
-      ),
-      'identifyDevice'
+      )
     ),
-  });
+  }),
+});
 
 export const trigger = <T extends string>(handler: () => void, topic: T) =>
   new Element({
@@ -293,31 +295,33 @@ export const setOnline = (
 ) => {
   const state = new BooleanState(initiallyOnline);
 
-  return new Element(
-    {
-      flip: triggerNg(ValueTypeNg.NULL, new NullState(() => state.flip())),
-      [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined, 'setOnline'),
-    },
-    () => {
-      if (initiallyOnline) {
-        device.transport.connect();
-      }
-
-      state.observe((value) => {
-        if (value) {
+  return {
+    setOnline: new Element(
+      {
+        flip: triggerNg(ValueTypeNg.NULL, new NullState(() => state.flip())),
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined),
+      },
+      () => {
+        if (initiallyOnline) {
           device.transport.connect();
-
-          return;
         }
 
-        device.transport.disconnect();
-      });
+        state.observe((value) => {
+          if (value) {
+            device.transport.connect();
 
-      // persistence.observe(
-      //   `setOnline/${device.transport.host}:${device.transport.port}`,
-      //   state
-      // );
-    }
-  );
+            return;
+          }
+
+          device.transport.disconnect();
+        });
+
+        // persistence.observe(
+        //   `setOnline/${device.transport.host}:${device.transport.port}`,
+        //   state
+        // );
+      }
+    ),
+  };
 };

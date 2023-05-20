@@ -17,12 +17,11 @@ import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
 import {
   Element,
   Level,
-  ValueType as ValueTypeNg,
+  ValueType,
   symbolInstance,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
-import { Levels, ParentRelation, ValueType, addMeta } from '../main.js';
 import {
   MeasurementInputGetter,
   MultiValueSensor,
@@ -63,9 +62,8 @@ export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
       {
         [symbolLevel]: Level.PROPERTY,
         [symbolMain]: getter(
-          ValueTypeNg.NUMBER,
+          ValueType.NUMBER,
           new ReadOnlyObservable(seen),
-          undefined,
           'date'
         ),
       },
@@ -90,9 +88,8 @@ export const lastSeen = <T>(
       {
         [symbolLevel]: Level.PROPERTY,
         [symbolMain]: getter(
-          ValueTypeNg.NUMBER,
+          ValueType.NUMBER,
           new ReadOnlyObservable(seen),
-          undefined,
           'date'
         ),
       },
@@ -118,10 +115,7 @@ export const metricStaleness = <T>(
     stale: new Element(
       {
         [symbolLevel]: Level.PROPERTY,
-        [symbolMain]: getter(
-          ValueTypeNg.BOOLEAN,
-          new ReadOnlyObservable(stale)
-        ),
+        [symbolMain]: getter(ValueType.BOOLEAN, new ReadOnlyObservable(stale)),
       },
       () => {
         const timer = new Timer(timeout + epochs.second * 10);
@@ -147,7 +141,7 @@ export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   return new Element({
     ...metricStaleness(state, epoch),
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: getter(ValueTypeNg.RAW, state),
+    [symbolMain]: getter(ValueType.RAW, state),
   });
 };
 
@@ -161,33 +155,23 @@ export const bme280 = (
     schedule
   );
 
-  return new Element({
+  return {
     humidity: new Element({
       ...metricStaleness(state.humidity, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(
-        ValueTypeNg.NUMBER,
-        state.humidity,
-        undefined,
-        'percent-rh'
-      ),
+      [symbolMain]: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
     }),
     pressure: new Element({
       ...metricStaleness(state.pressure, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueTypeNg.NUMBER, state.pressure, undefined, 'pa'),
+      [symbolMain]: getter(ValueType.NUMBER, state.pressure, 'pa'),
     }),
     temperature: new Element({
       ...metricStaleness(state.temperature, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(
-        ValueTypeNg.NUMBER,
-        state.temperature,
-        undefined,
-        'deg-c'
-      ),
+      [symbolMain]: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
     }),
-  });
+  };
 };
 
 export const ccs811 = (
@@ -208,22 +192,17 @@ export const ccs811 = (
     tvoc: new Element({
       ...metricStaleness(state.tvoc, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueTypeNg.NUMBER, state.tvoc, undefined, 'ppb'),
+      [symbolMain]: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
       eco2: new Element({
         ...metricStaleness(state.eco2, epoch),
         [symbolLevel]: Level.PROPERTY,
-        [symbolMain]: getter(ValueTypeNg.NUMBER, state.eco2, undefined, 'ppm'),
+        [symbolMain]: getter(ValueType.NUMBER, state.eco2, 'ppm'),
       }),
       temperature: new Element({
         ...metricStaleness(state.temperature, epoch),
         [symbolLevel]: Level.PROPERTY,
-        [symbolMain]: getter(
-          ValueTypeNg.NUMBER,
-          state.temperature,
-          undefined,
-          'deg-c'
-        ),
+        [symbolMain]: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
       }),
     }),
   };
@@ -249,7 +228,7 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
     hello: new Element({
       ...metricStaleness(state, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueTypeNg.STRING, state),
+      [symbolMain]: getter(ValueType.STRING, state),
     }),
   };
 };
@@ -263,7 +242,7 @@ export const input = <T extends string>(
 
   return new Element({
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: getter(ValueTypeNg.BOOLEAN, state),
+    [symbolMain]: getter(ValueType.BOOLEAN, state),
     topic,
   });
 };
@@ -279,7 +258,7 @@ export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
 
   return new Element({
     [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(state)),
+    [symbolMain]: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
   });
 };
 
@@ -296,7 +275,7 @@ export const mcp9808 = (
     temperature: new Element({
       ...metricStaleness(state, epoch),
       [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueTypeNg.NUMBER, state, undefined, 'deg-c'),
+      [symbolMain]: getter(ValueType.NUMBER, state, 'deg-c'),
     }),
   };
 };
@@ -317,95 +296,37 @@ export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   );
 
   return {
-    co2: addMeta(
-      {
-        _get: state.co2,
-        ...metricStaleness(state.co2, epoch),
-        abc: (() =>
-          addMeta(
-            {
-              _get: state.abc,
-              ...metricStaleness(state.abc, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'abc',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              valueType: ValueType.BOOLEAN,
-            }
-          ))(),
-        accuracy: (() =>
-          addMeta(
-            {
-              _get: state.accuracy,
-              ...metricStaleness(state.accuracy, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'accuracy',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'percent',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-        temperature: (() =>
-          addMeta(
-            {
-              _get: state.temperature,
-              ...metricStaleness(state.temperature, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'temperature',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'deg-c',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-        transmittance: (() =>
-          addMeta(
-            {
-              _get: state.transmittance,
-              ...metricStaleness(state.transmittance, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'transmittance',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'percent',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'co2',
-        type: 'sensor',
-        unit: 'ppm',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    co2: new Element({
+      ...metricStaleness(state.co2, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, state.co2, 'ppm'),
+      // eslint-disable-next-line sort-keys
+      abc: new Element({
+        ...metricStaleness(state.abc, epoch),
+        [symbolMain]: getter(ValueType.BOOLEAN, state.abc),
+      }),
+      accuracy: new Element({
+        ...metricStaleness(state.accuracy, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.accuracy, 'percent'),
+      }),
+      temperature: new Element({
+        ...metricStaleness(state.temperature, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
+      }),
+      transmittance: new Element({
+        ...metricStaleness(state.transmittance, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.transmittance, 'percent'),
+      }),
+    }),
   };
 };
 
 export const online = (device: Device) => ({
-  online: addMeta(
-    {
-      _get: device.isOnline,
-      ...lastChange(device.isOnline),
-    },
-    {
-      level: Levels.PROPERTY,
-      measured: 'isOnline',
-      parentRelation: ParentRelation.META_RELATION,
-      type: 'sensor',
-      valueType: ValueType.BOOLEAN,
-    }
-  ),
+  online: new Element({
+    ...lastChange(device.isOnline),
+    [symbolLevel]: Level.PROPERTY,
+    [symbolMain]: getter(ValueType.BOOLEAN, device.isOnline),
+  }),
 });
 
 export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
@@ -447,18 +368,11 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
   const readOnlyState = new ReadOnlyObservable(state);
 
   return {
-    rfReadout: addMeta(
-      {
-        _get: readOnlyState,
-        ...lastSeen(readOnlyState),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'rfReadout',
-        type: 'sensor',
-        valueType: ValueType.RAW,
-      }
-    ),
+    rfReadout: new Element({
+      ...lastSeen(readOnlyState),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.RAW, readOnlyState),
+    }),
   };
 };
 
@@ -476,33 +390,17 @@ export const sds011 = (
 
   return {
     pm025: (() =>
-      addMeta(
-        {
-          _get: state.pm025,
-          ...metricStaleness(state.pm025, epoch),
-        },
-        {
-          level: Levels.PROPERTY,
-          measured: 'pm025',
-          type: 'sensor',
-          unit: 'micrograms/m3',
-          valueType: ValueType.NUMBER,
-        }
-      ))(),
+      new Element({
+        ...metricStaleness(state.pm025, epoch),
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
+      }))(),
     pm10: (() =>
-      addMeta(
-        {
-          _get: state.pm10,
-          ...metricStaleness(state.pm10, epoch),
-        },
-        {
-          level: Levels.PROPERTY,
-          measured: 'pm10',
-          type: 'sensor',
-          unit: 'micrograms/m3',
-          valueType: ValueType.NUMBER,
-        }
-      ))(),
+      new Element({
+        ...metricStaleness(state.pm10, epoch),
+        [symbolLevel]: Level.PROPERTY,
+        [symbolMain]: getter(ValueType.NUMBER, state.pm10, 'micrograms/m3'),
+      }))(),
   };
 };
 
@@ -521,64 +419,24 @@ export const sgp30 = (
   );
 
   return {
-    tvoc: addMeta(
-      {
-        _get: state.tvoc,
-        ...metricStaleness(state.tvoc, epoch),
-        eco2: (() =>
-          addMeta(
-            {
-              _get: state.eco2,
-              ...metricStaleness(state.eco2, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'eco2',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'ppm',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-        ethanol: (() =>
-          addMeta(
-            {
-              _get: state.ethanol,
-              ...metricStaleness(state.ethanol, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'ethanol',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'ppm',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-        h2: (() =>
-          addMeta(
-            {
-              _get: state.h2,
-              ...metricStaleness(state.h2, epoch),
-            },
-            {
-              level: Levels.PROPERTY,
-              measured: 'h2',
-              parentRelation: ParentRelation.DATA_QUALIFIER,
-              type: 'sensor',
-              unit: 'ppm',
-              valueType: ValueType.NUMBER,
-            }
-          ))(),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'tvoc',
-        type: 'sensor',
-        unit: 'ppb',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    tvoc: new Element({
+      ...metricStaleness(state.tvoc, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
+      // eslint-disable-next-line sort-keys
+      eco2: new Element({
+        ...metricStaleness(state.eco2, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.eco2, 'ppm'),
+      }),
+      ethanol: new Element({
+        ...metricStaleness(state.ethanol, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.ethanol, 'ppm'),
+      }),
+      h2: new Element({
+        ...metricStaleness(state.h2, epoch),
+        [symbolMain]: getter(ValueType.NUMBER, state.h2, 'ppm'),
+      }),
+    }),
   };
 };
 
@@ -592,19 +450,11 @@ export const tsl2561 = (
   );
 
   return {
-    brightness: addMeta(
-      {
-        _get: state,
-        ...metricStaleness(state, epoch),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'brightness',
-        type: 'sensor',
-        unit: 'lux',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    brightness: new Element({
+      ...metricStaleness(state, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, state, 'lux'),
+    }),
   };
 };
 
@@ -618,18 +468,11 @@ export const uvIndex = (
   );
 
   return {
-    uvIndex: addMeta(
-      {
-        _get: state,
-        ...metricStaleness(state, epoch),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'uvIndex',
-        type: 'sensor',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    uvIndex: new Element({
+      ...metricStaleness(state, epoch),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, state),
+    }),
   };
 };
 
@@ -637,15 +480,9 @@ export const vcc = (device: Device) => {
   const { state } = new SingleValueEvent(device.addEvent(new VCC()));
 
   return {
-    vcc: addMeta(
-      { _get: state },
-      {
-        level: Levels.PROPERTY,
-        measured: 'voltage',
-        parentRelation: ParentRelation.META_RELATION,
-        type: 'sensor',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    vcc: new Element({
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, state),
+    }),
   };
 };
