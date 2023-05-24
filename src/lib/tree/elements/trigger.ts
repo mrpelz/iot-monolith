@@ -6,6 +6,7 @@ import {
   ValueType,
   matchClass,
   matchValue,
+  symbolInstance,
   symbolLevel,
   symbolSpecies,
   symbolValueType,
@@ -21,7 +22,7 @@ export const trigger = <N extends string, V extends ValueType>(
 ) =>
   new Element({
     name,
-    nullState,
+    [symbolInstance]: nullState,
     [symbolLevel]: Level.ELEMENT as const,
     [symbolSpecies]: $,
     [symbolValueType]: valueType,
@@ -32,7 +33,7 @@ export const selectTrigger = <N extends string, V extends ValueType>(
   name?: N
 ) => ({
   name: [matchValue, name] as const,
-  nullState: [matchClass, ReadOnlyNullState] as const,
+  [symbolInstance]: [matchClass, ReadOnlyNullState] as const,
   [symbolLevel]: [matchValue, Level.ELEMENT] as const,
   [symbolSpecies]: [matchValue, $],
   [symbolValueType]: [matchValue, valueType] as const,

@@ -53,5 +53,9 @@ export const selectGetterSetter = <V extends ValueType, N extends string>(
   name?: N
 ) => ({
   ...selectSetter(valueType, name),
-  state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable] as const,
+  [symbolInstance]: [
+    matchClass,
+    ReadOnlyObservable,
+    ReadOnlyProxyObservable,
+  ] as const,
 });
