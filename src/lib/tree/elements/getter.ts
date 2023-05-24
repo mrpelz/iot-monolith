@@ -45,7 +45,11 @@ export const selectGetter = <
   name?: N
 ) => ({
   name: [matchValue, name] as const,
-  state: [matchClass, ReadOnlyObservable, ReadOnlyProxyObservable] as const,
+  [symbolInstance]: [
+    matchClass,
+    ReadOnlyObservable,
+    ReadOnlyProxyObservable,
+  ] as const,
   [symbolLevel]: [matchValue, Level.ELEMENT] as const,
   [symbolSpecies]: [matchValue, $] as const,
   [symbolValueType]: [matchValue, valueType] as const,
