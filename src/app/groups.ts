@@ -11,6 +11,14 @@ import { properties as tsiaBedroomProperties } from './rooms/tsia-bedroom.js';
 
 export const all = outputGrouping(
   [
+    diningRoomProperties.ceilingLight,
+    diningRoomProperties.fan,
+    diningRoomProperties.kallaxLedRGB.$.b,
+    diningRoomProperties.kallaxLedRGB.$.g,
+    diningRoomProperties.kallaxLedRGB.$.r,
+    diningRoomProperties.kallaxLedSide,
+    diningRoomProperties.kallaxLedW,
+    diningRoomProperties.tableLight,
     hallwayProperties.ceilingLightBack,
     hallwayProperties.ceilingLightFront,
     kitchenProperties.ledLeftCWhite,
@@ -52,6 +60,13 @@ export const all = outputGrouping(
 );
 
 export const allLights = outputGrouping([
+  diningRoomProperties.ceilingLight,
+  diningRoomProperties.kallaxLedRGB.$.b,
+  diningRoomProperties.kallaxLedRGB.$.g,
+  diningRoomProperties.kallaxLedRGB.$.r,
+  diningRoomProperties.kallaxLedSide,
+  diningRoomProperties.kallaxLedW,
+  diningRoomProperties.tableLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,
@@ -87,8 +102,13 @@ export const allLights = outputGrouping([
 ]);
 
 export const kitchenAdjacentLights = outputGrouping([
-  officeProperties.floodlight,
-  officeProperties.ceilingLight,
+  diningRoomProperties.ceilingLight,
+  diningRoomProperties.kallaxLedRGB.$.b,
+  diningRoomProperties.kallaxLedRGB.$.g,
+  diningRoomProperties.kallaxLedRGB.$.r,
+  diningRoomProperties.kallaxLedSide,
+  diningRoomProperties.kallaxLedW,
+  diningRoomProperties.tableLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,

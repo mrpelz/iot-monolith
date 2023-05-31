@@ -74,7 +74,7 @@ export const groups = {
     properties.lightTimer.active.$.value = value;
   }, true);
 
-  properties.lightTimer.$.observe(() => {
+  properties.lightTimer.$instance.observe(() => {
     properties.ceilingLight._set.value = false;
   });
 })();

@@ -11,8 +11,7 @@ export const rfBridge = _rfBridge(
 );
 
 const {
-  espNowTransport: { $: _espNowTransport },
-  ev1527Transport: { $: _ev1527Transport },
+  $: { espNowTransport: _espNowTransport, ev1527Transport: _ev1527Transport },
 } = rfBridge;
 
 export const espNowTransport = _espNowTransport;

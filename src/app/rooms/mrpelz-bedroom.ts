@@ -97,10 +97,9 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.$,
-  heatLampButton: devices.heatLamp.button.$,
-  ionGeneratorButton: devices.ionGenerator.button.$,
-  multiButton: devices.multiButton.$,
+  button: devices.button.$instance,
+  floodlightButton: devices.floodLight.button.$,
+  multiButton: devices.multiButton.$instance,
   nightLightButton: devices.nightLight.button.$,
   standingLampButton: devices.standingLamp.button.$,
   wallswitchBed: devices.ceilingLight.button.$,
@@ -346,7 +345,22 @@ const sceneCycle = new EnumState(
       return;
     }
 
-    sceneCycle.previous();
+  instances.wallswitchDoorMiddle.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorMiddle.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.wallswitchDoorRight.up(() => properties.floodLight._set.flip());
+  instances.wallswitchDoorRight.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  properties.floodLight._set.observe((value) => {
+    properties.floodLightTimer.active.$.value = value;
+  }, true);
+
+  properties.floodLightTimer.$instance.observe(() => {
+    properties.floodLight._set.value = false;
   });
   instances.wallswitchDoorLeft.longPress(() => (groups.all._set.value = false));
 

@@ -51,7 +51,8 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton.$,
+  couchButton: devices.couchButton.$instance,
+  fanButton: devices.fan.button.$,
   standingLampButton: devices.standingLamp.button.$,
   wallswitchBottom: devices.wallswitch.button1.$,
   wallswitchTop: devices.wallswitch.button0.$,

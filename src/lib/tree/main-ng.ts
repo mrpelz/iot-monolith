@@ -103,6 +103,18 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
     }
   }
 
+  get $(): T & { [symbolId]?: string; [symbolKey]?: string } {
+    return { [symbolId]: this._id, [symbolKey]: this._key, ...this._props };
+  }
+
+  get $instance(): T[typeof symbolInstance] {
+    return this.$[symbolInstance] as T[typeof symbolInstance];
+  }
+
+  get $main(): T[typeof symbolMain] {
+    return this.$[symbolMain] as T[typeof symbolMain];
+  }
+
   get children(): ExtractProperties<T, Element> {
     return Object.fromEntries(
       objectProperties(this._props)
@@ -113,10 +125,6 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
 
   get parent(): Element | undefined {
     return this._parent;
-  }
-
-  get props(): T & { [symbolId]?: string; [symbolKey]?: string } {
-    return { [symbolId]: this._id, [symbolKey]: this._key, ...this._props };
   }
 
   init(parent?: Element, key = '^', path = [] as readonly string[]): void {
@@ -143,7 +151,7 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
 
     for (const property of objectProperties(props)) {
       const [matcher, ...values] = props[property];
-      const b = this.props[property as string];
+      const b = this.$[property as string];
 
       if (values.some((a) => matcher(a, b))) continue;
       return false;

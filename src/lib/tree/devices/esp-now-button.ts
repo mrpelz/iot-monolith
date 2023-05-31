@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
-import { Levels, addMeta } from '../main.js';
+import { Element, Level, symbolLevel } from '../main-ng.js';
 import { Timings, button } from '../properties/sensors.js';
-import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './util.js';
+import { espNowDevice, ipDevice } from '../elements/device.js';
 import { Device } from '../../device/main.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Logger } from '../../log.js';
@@ -38,16 +38,11 @@ export const espNowButton = (
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
-      espNow: addMeta(
-        {
-          ...children(device),
-          ...defaultsEspNow(device),
-        },
-        {
-          isSubDevice: true,
-          ...deviceMeta(device),
-        }
-      ),
+      espNow: new Element({
+        ...children(device),
+        ...espNowDevice(device),
+        isSubDevice: true,
+      }),
     };
   })();
 
@@ -56,33 +51,17 @@ export const espNowButton = (
     const device = new UDPDevice(logger, host, port);
 
     return {
-      wifi: addMeta(
-        {
-          ...children(device),
-          ...defaultsIpDevice(
-            device,
-            persistence,
-            timings,
-            undefined,
-            initiallyOnline
-          ),
-        },
-        {
-          isSubDevice: true,
-          ...deviceMeta(device),
-        }
-      ),
+      wifi: new Element({
+        ...children(device),
+        ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
+        isSubDevice: true,
+      }),
     };
   })();
 
-  return (() =>
-    addMeta(
-      {
-        ...espNow,
-        ...wifi,
-      },
-      {
-        level: Levels.DEVICE,
-      }
-    ))();
+  return new Element({
+    ...espNow,
+    ...wifi,
+    [symbolLevel]: Level.DEVICE,
+  });
 };

@@ -4,7 +4,6 @@ import {
   Element,
   Level,
   ValueType,
-  symbolInstance,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -58,8 +57,8 @@ export const testDevice = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.props[symbolMain].props[symbolInstance],
-      bme280Temperature.props[symbolMain].props[symbolInstance],
+      mcp9808Temperature.$main.$instance,
+      bme280Temperature.$main.$instance,
     ])
   );
 
@@ -71,8 +70,9 @@ export const testDevice = (
     [symbolMain]: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
   });
 
-  return {
+  return new Element({
     ...async(device, timings.slow || timings.default),
+    ...ipDevice(device, persistence, timings),
     ...mhz19(device, timings.slow || timings.default),
     ...sds011(device, timings.slow || timings.default),
     ...tsl2561(device, timings.default),
@@ -80,7 +80,6 @@ export const testDevice = (
     humidity,
     motion: input(device, undefined, 'motion'),
     pressure,
-    [symbolMain]: ipDevice(device, persistence, timings),
     temperature,
-  };
+  });
 };
