@@ -47,7 +47,7 @@ export const devices = {
 };
 
 export const instances = {
-  leftButton: devices.leftButton.$,
+  leftButton: devices.leftButton.$instance,
   wallswitchBack: devices.wallswitchBack.button0.$,
   wallswitchFrontBottomLeft: devices.wallswitchFront.button1.$,
   wallswitchFrontBottomRight: devices.wallswitchFront.button2.$,

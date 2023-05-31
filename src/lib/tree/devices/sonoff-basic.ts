@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Timings, button } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './util.js';
+import { Element } from '../main-ng.js';
 import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { addMeta } from '../main.js';
+import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
 
 export const sonoffBasic = (
   logger: Logger,
   persistence: Persistence,
   timings: Timings,
-  actuated: string,
+  topic: string,
   host: string,
   port = 1337,
   initiallyOnline?: boolean
@@ -22,25 +22,10 @@ export const sonoffBasic = (
 
   const indicator = device.addService(new Indicator(0));
 
-  const relay = output(device, 0, actuated, indicator, persistence);
-
-  return addMeta(
-    {
-      ...defaultsIpDevice(
-        device,
-        persistence,
-        timings,
-        indicator,
-        initiallyOnline
-      ),
-      button: button(device, 0),
-      indicator: {
-        $: indicator,
-      },
-      relay,
-    },
-    {
-      ...deviceMeta(device),
-    }
-  );
+  return new Element({
+    ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
+    button: button(device, 0),
+    indicator,
+    relay: output(device, 0, topic, indicator, persistence),
+  });
 };

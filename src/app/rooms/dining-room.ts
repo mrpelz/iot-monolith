@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Element, Level, symbolLevel } from '../../lib/tree/main-ng.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
@@ -58,28 +58,26 @@ export const devices = {
 };
 
 export const instances = {
-  fanButton: devices.fan.button.$,
-  kallaxSideButton: devices.kallaxSideButton.$,
-  tableButton: devices.tableButton.$,
-  tableMultiButton: devices.tableMultiButton.$,
-  wallswitchBottom: devices.wallswitch.button1.$,
-  wallswitchTop: devices.wallswitch.button0.$,
+  fanButton: devices.fan.$.button.$instance,
+  kallaxSideButton: devices.kallaxSideButton.$instance,
+  tableButton: devices.tableButton.$instance,
+  tableMultiButton: devices.tableMultiButton.$instance,
+  wallswitchBottom: devices.wallswitch.$.button1.$instance,
+  wallswitchTop: devices.wallswitch.$.button0.$instance,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.relay,
-  fan: devices.fan.relay,
-  kallaxLedRGB: addMeta(
-    {
-      b: devices.kallaxLeds.ledB,
-      g: devices.kallaxLeds.ledG,
-      r: devices.kallaxLeds.ledR,
-    },
-    { level: Levels.AREA }
-  ),
-  kallaxLedSide: devices.kallaxLeds.ledW2,
-  kallaxLedW: devices.kallaxLeds.ledW1,
-  tableLight: devices.tableLight.relay,
+  ceilingLight: devices.ceilingLight.$.relay,
+  fan: devices.fan.$.relay,
+  kallaxLedRGB: new Element({
+    b: devices.kallaxLeds.$.ledB,
+    g: devices.kallaxLeds.$.ledG,
+    r: devices.kallaxLeds.$.ledR,
+    [symbolLevel]: Level.NONE,
+  }),
+  kallaxLedSide: devices.kallaxLeds.$.ledW2,
+  kallaxLedW: devices.kallaxLeds.$.ledW1,
+  tableLight: devices.tableLight.$.relay,
 };
 
 export const groups = {
@@ -89,17 +87,17 @@ export const groups = {
   ]),
   allLights: outputGrouping([
     properties.ceilingLight,
-    properties.kallaxLedRGB.r,
-    properties.kallaxLedRGB.g,
-    properties.kallaxLedRGB.b,
+    properties.kallaxLedRGB.$.r,
+    properties.kallaxLedRGB.$.g,
+    properties.kallaxLedRGB.$.b,
     properties.kallaxLedSide,
     properties.kallaxLedW,
     properties.tableLight,
   ]),
   leds: ledGrouping([
-    properties.kallaxLedRGB.r,
-    properties.kallaxLedRGB.g,
-    properties.kallaxLedRGB.b,
+    properties.kallaxLedRGB.$.r,
+    properties.kallaxLedRGB.$.g,
+    properties.kallaxLedRGB.$.b,
     properties.kallaxLedSide,
     properties.kallaxLedW,
   ]),
@@ -112,57 +110,57 @@ export const groups = {
     '../scenes.js'
   );
 
-  instances.fanButton.up(() => properties.fan._set.flip());
+  instances.fanButton.up(() => properties.fan.$.flip.$instance.trigger());
 
   instances.kallaxSideButton.observe(() =>
-    properties.kallaxLedSide._set.flip()
+    properties.kallaxLedSide.$.flip.$instance.trigger()
   );
 
-  instances.tableButton.observe(() => properties.tableLight._set.flip());
+  instances.tableButton.observe(() =>
+    properties.tableLight.$.flip.$instance.trigger()
+  );
 
   instances.tableMultiButton.topLeft.observe(() =>
-    properties.kallaxLedRGB.r._set.flip()
+    properties.kallaxLedRGB.$.r.$.flip.$instance.trigger()
   );
   instances.tableMultiButton.topRight.observe(() =>
-    properties.kallaxLedRGB.g._set.flip()
+    properties.kallaxLedRGB.$.g.$.flip.$instance.trigger()
   );
   instances.tableMultiButton.bottomLeft.observe(() =>
-    properties.kallaxLedRGB.b._set.flip()
+    properties.kallaxLedRGB.$.b.$.flip.$instance.trigger()
   );
   instances.tableMultiButton.bottomRight.observe(() =>
-    properties.kallaxLedW._set.flip()
+    properties.kallaxLedW.$.flip.$instance.trigger()
   );
 
-  instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
+  instances.wallswitchBottom.up(() =>
+    properties.tableLight.$.flip.$instance.trigger()
+  );
   instances.wallswitchBottom.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$main.$instance.value) {
+      kitchenAdjacentLights.$main.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.$main.$.setState.value = true;
   });
 
-  instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchTop.up(() =>
+    properties.ceilingLight.$.flip.$instance.trigger()
+  );
   instances.wallswitchTop.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$main.$instance.value) {
+      kitchenAdjacentLights.$main.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright._set.value = true;
+    kitchenAdjacentBright.$main.$.setState.value = true;
   });
 })();
 
-export const diningRoom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-  },
-  {
-    isConnectingRoom: true,
-    level: Levels.ROOM,
-    name: 'diningRoom',
-  }
-);
+export const diningRoom = new Element({
+  devices: new Element({ ...devices, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

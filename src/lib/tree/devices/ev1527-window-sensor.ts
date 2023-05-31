@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
-  Levels,
-  ParentRelation,
+  Element,
+  Level,
   ValueType,
-  addMeta,
-  inherit,
-} from '../main.js';
+  symbolLevel,
+  symbolMain,
+} from '../main-ng.js';
 import { Observable, ReadOnlyProxyObservable } from '../../observable.js';
-import { lastChange, lastSeen } from '../properties/sensors.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { Logger } from '../../log.js';
 import { MultiValueEvent } from '../../items/event.js';
 import { Persistence } from '../../persistence.js';
-import { deviceMeta } from './util.js';
+import { ev1527Device } from '../elements/device.js';
+import { getter } from '../elements/getter.js';
+import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
   logger: Logger,
@@ -66,48 +67,17 @@ export const ev1527WindowSensor = (
     (input) => input !== null
   );
 
-  return addMeta(
-    {
-      open: addMeta(
-        {
-          _get: isOpen,
-          isReceivedValue: (() =>
-            addMeta(
-              { _get: isReceivedValue },
-              {
-                level: Levels.PROPERTY,
-                measured: inherit,
-                parentRelation: ParentRelation.DATA_QUALIFIER,
-                type: 'sensor',
-                valueType: ValueType.BOOLEAN,
-              }
-            ))(),
-          tamperSwitch: (() =>
-            addMeta(
-              {
-                _get: tamperSwitch,
-                ...lastChange(receivedTamperSwitch),
-              },
-              {
-                level: Levels.PROPERTY,
-                measured: 'tamperSwitch',
-                parentRelation: ParentRelation.DATA_QUALIFIER,
-                type: 'sensor',
-                valueType: ValueType.BOOLEAN,
-              }
-            ))(),
-          ...lastChange(receivedOpen),
-        },
-        {
-          level: Levels.PROPERTY,
-          type: 'sensor',
-          valueType: ValueType.BOOLEAN,
-        }
-      ),
-      ...lastSeen(device.seen),
-    },
-    {
-      ...deviceMeta(device),
-    }
-  );
+  return new Element({
+    ...ev1527Device(device),
+    open: new Element({
+      ...lastChange(receivedOpen),
+      isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.BOOLEAN, isOpen),
+      tamperSwitch: new Element({
+        ...lastChange(receivedTamperSwitch),
+        [symbolMain]: getter(ValueType.BOOLEAN, tamperSwitch),
+      }),
+    }),
+  });
 };

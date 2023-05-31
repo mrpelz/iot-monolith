@@ -13,7 +13,9 @@ import {
   resetDevice,
   setOnline,
 } from '../properties/actuators.js';
+import { Device } from '../../device/main.js';
 import { ESPNowDevice } from '../../device/esp-now.js';
+import { Ev1527Device } from '../../device/ev1527.js';
 import { Indicator } from '../../services/indicator.js';
 import { Persistence } from '../../persistence.js';
 import { TCPDevice } from '../../device/tcp.js';
@@ -21,14 +23,23 @@ import { UDPDevice } from '../../device/udp.js';
 
 const $ = Symbol('device');
 
-export const espNowDevice = (device: ESPNowDevice) => ({
-  ...lastSeen(device.seen),
-  ...vcc(device),
+const deviceMeta = (device: Device) => ({
   identifier: device.identifier ? [...device.identifier] : undefined,
   [symbolLevel]: Level.DEVICE,
   [symbolSpecies]: $,
   transportType: device.transport.constructor.name,
   type: device.constructor.name,
+});
+
+export const espNowDevice = (device: ESPNowDevice) => ({
+  ...deviceMeta(device),
+  ...lastSeen(device.seen),
+  ...vcc(device),
+});
+
+export const ev1527Device = (device: Ev1527Device) => ({
+  ...deviceMeta(device),
+  ...lastSeen(device.seen),
 });
 
 export const ipDevice = (
@@ -38,18 +49,14 @@ export const ipDevice = (
   indicator?: Indicator,
   initiallyOnline?: boolean
 ) => ({
+  ...deviceMeta(device),
   ...hello(device, timings.moderate || timings.default),
   ...online(device),
   ...setOnline(device, persistence, initiallyOnline),
   ...resetDevice(device),
   ...(indicator ? identifyDevice(indicator) : {}),
   host: device.transport.host,
-  identifier: device.identifier ? [...device.identifier] : undefined,
   port: device.transport.port,
-  [symbolLevel]: Level.DEVICE,
-  [symbolSpecies]: $,
-  transportType: device.transport.constructor.name,
-  type: device.constructor.name,
 });
 
 export const selectDevice = {

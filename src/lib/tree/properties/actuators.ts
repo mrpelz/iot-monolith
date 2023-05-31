@@ -20,7 +20,6 @@ import {
   Element,
   Level,
   ValueType as ValueTypeNg,
-  symbolInstance,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -141,7 +140,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.children[symbolMain].props[symbolInstance])
+      lights.map((light) => light.$main.$instance)
     )
   );
 
@@ -155,7 +154,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       lights.map(
         (light) =>
           new ReadOnlyProxyObservable(
-            light.children.brightness.props[symbolInstance],
+            light.children.brightness.$instance,
             (value) => (value === null ? 0 : value)
           )
       )
@@ -164,7 +163,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light.children[symbolMain].props.setState)
+    lights.map((light) => light.$main.$.setState)
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -173,7 +172,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     }
   })(
     0,
-    lights.map((light) => light.children.brightness.props.setState)
+    lights.map((light) => light.children.brightness.$.setState)
   );
 
   return new Element({
@@ -192,18 +191,13 @@ export const outputGrouping = <T extends string>(
   const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      outputs.map(
-        (outputElement) =>
-          outputElement.children[symbolMain].props[symbolInstance]
-      )
+      outputs.map((outputElement) => outputElement.$main.$instance)
     )
   );
 
   const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    outputs.map(
-      (outputElement) => outputElement.children[symbolMain].props.setState
-    )
+    outputs.map((outputElement) => outputElement.$main.$.setState)
   );
 
   return new Element({
@@ -300,7 +294,7 @@ export const setOnline = (
       {
         flip: triggerNg(ValueTypeNg.NULL, new NullState(() => state.flip())),
         [symbolLevel]: Level.PROPERTY,
-        [symbolMain]: setter(ValueTypeNg.BOOLEAN, state, undefined),
+        [symbolMain]: setter(ValueTypeNg.BOOLEAN, state),
       },
       () => {
         if (initiallyOnline) {

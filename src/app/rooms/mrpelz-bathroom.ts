@@ -77,7 +77,7 @@ export const instances = {
   mirrorHeatingButton: devices.mirrorHeating.button.$,
   mirrorLightButton: devices.mirrorLight.button.$,
   nightLightButton: devices.nightLight.button.$,
-  showerButton: devices.showerButton.$,
+  showerButton: devices.showerButton.$instance,
   wallswitchDoor: devices.wallswitchDoor.button0.$,
   wallswitchMirrorBottom: devices.wallswitchDoor.button2.$,
   wallswitchMirrorTop: devices.wallswitchDoor.button1.$,
@@ -348,7 +348,7 @@ export const scenes = {
     properties.allTimer.active.$.value = value;
   }, true);
 
-  properties.allTimer.$.observe(() => {
+  properties.allTimer.$instance.observe(() => {
     groups.all._set.value = false;
   });
 
