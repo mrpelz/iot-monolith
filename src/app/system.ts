@@ -98,7 +98,7 @@ export const system = (() => {
     allTimer.active.$.value = value;
   }, true);
 
-  allTimer.$instance.observe(() => {
+  allTimer.$.i.observe(() => {
     all._set.value = false;
   });
 

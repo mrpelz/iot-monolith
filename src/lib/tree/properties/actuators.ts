@@ -140,7 +140,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.$main.$instance)
+      lights.map((light) => light.$.m.$.i)
     )
   );
 
@@ -153,9 +153,8 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       0,
       lights.map(
         (light) =>
-          new ReadOnlyProxyObservable(
-            light.children.brightness.$instance,
-            (value) => (value === null ? 0 : value)
+          new ReadOnlyProxyObservable(light.children.brightness.$.i, (value) =>
+            value === null ? 0 : value
           )
       )
     )
@@ -163,7 +162,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light.$main.$.setState)
+    lights.map((light) => light.$.m.$.setState)
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -191,13 +190,13 @@ export const outputGrouping = <T extends string>(
   const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      outputs.map((outputElement) => outputElement.$main.$instance)
+      outputs.map((outputElement) => outputElement.$.m.$.i)
     )
   );
 
   const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    outputs.map((outputElement) => outputElement.$main.$.setState)
+    outputs.map((outputElement) => outputElement.$.m.$.setState)
   );
 
   return new Element({

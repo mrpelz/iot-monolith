@@ -58,12 +58,12 @@ export const devices = {
 };
 
 export const instances = {
-  fanButton: devices.fan.$.button.$instance,
-  kallaxSideButton: devices.kallaxSideButton.$instance,
-  tableButton: devices.tableButton.$instance,
-  tableMultiButton: devices.tableMultiButton.$instance,
-  wallswitchBottom: devices.wallswitch.$.button1.$instance,
-  wallswitchTop: devices.wallswitch.$.button0.$instance,
+  fanButton: devices.fan.$.button.$.i,
+  kallaxSideButton: devices.kallaxSideButton.$.i,
+  tableButton: devices.tableButton.$.i,
+  tableMultiButton: devices.tableMultiButton.$.i,
+  wallswitchBottom: devices.wallswitch.$.button1.$.i,
+  wallswitchTop: devices.wallswitch.$.button0.$.i,
 };
 
 export const properties = {
@@ -110,51 +110,51 @@ export const groups = {
     '../scenes.js'
   );
 
-  instances.fanButton.up(() => properties.fan.$.flip.$instance.trigger());
+  instances.fanButton.up(() => properties.fan.$.flip.$.i.trigger());
 
   instances.kallaxSideButton.observe(() =>
-    properties.kallaxLedSide.$.flip.$instance.trigger()
+    properties.kallaxLedSide.$.flip.$.i.trigger()
   );
 
   instances.tableButton.observe(() =>
-    properties.tableLight.$.flip.$instance.trigger()
+    properties.tableLight.$.flip.$.i.trigger()
   );
 
   instances.tableMultiButton.topLeft.observe(() =>
-    properties.kallaxLedRGB.$.r.$.flip.$instance.trigger()
+    properties.kallaxLedRGB.$.r.$.flip.$.i.trigger()
   );
   instances.tableMultiButton.topRight.observe(() =>
-    properties.kallaxLedRGB.$.g.$.flip.$instance.trigger()
+    properties.kallaxLedRGB.$.g.$.flip.$.i.trigger()
   );
   instances.tableMultiButton.bottomLeft.observe(() =>
-    properties.kallaxLedRGB.$.b.$.flip.$instance.trigger()
+    properties.kallaxLedRGB.$.b.$.flip.$.i.trigger()
   );
   instances.tableMultiButton.bottomRight.observe(() =>
-    properties.kallaxLedW.$.flip.$instance.trigger()
+    properties.kallaxLedW.$.flip.$.i.trigger()
   );
 
   instances.wallswitchBottom.up(() =>
-    properties.tableLight.$.flip.$instance.trigger()
+    properties.tableLight.$.flip.$.i.trigger()
   );
   instances.wallswitchBottom.longPress(() => {
-    if (kitchenAdjacentLights.$main.$instance.value) {
-      kitchenAdjacentLights.$main.$.setState.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.$main.$.setState.value = true;
+    kitchenAdjacentChillax.$.m.$.setState.value = true;
   });
 
   instances.wallswitchTop.up(() =>
-    properties.ceilingLight.$.flip.$instance.trigger()
+    properties.ceilingLight.$.flip.$.i.trigger()
   );
   instances.wallswitchTop.longPress(() => {
-    if (kitchenAdjacentLights.$main.$instance.value) {
-      kitchenAdjacentLights.$main.$.setState.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright.$main.$.setState.value = true;
+    kitchenAdjacentBright.$.m.$.setState.value = true;
   });
 })();
 

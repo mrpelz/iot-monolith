@@ -66,9 +66,9 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.$instance,
+  button: devices.button.$.i,
   floodlightButton: devices.floodLight.button.$,
-  multiButton: devices.multiButton.$instance,
+  multiButton: devices.multiButton.$.i,
   nightLightButton: devices.nightLight.button.$,
   wallswitchBed: devices.ceilingLight.button.$,
   wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
@@ -160,7 +160,7 @@ export const groups = {
     properties.floodLightTimer.active.$.value = value;
   }, true);
 
-  properties.floodLightTimer.$instance.observe(() => {
+  properties.floodLightTimer.$.i.observe(() => {
     properties.floodLight._set.value = false;
   });
 })();
