@@ -44,11 +44,11 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.$.button0.$instance,
-  wallswitchFrontLeft: devices.wallswitchFront.$.button0.$instance,
-  wallswitchFrontMiddle: devices.wallswitchFront.$.button1.$instance,
-  wallswitchFrontRight: devices.wallswitchFront.$.button2.$instance,
-  wallswitchMiddle: devices.wallswitchBack.$.button1.$instance,
+  wallswitchBack: devices.wallswitchBack.$.button0.$.i,
+  wallswitchFrontLeft: devices.wallswitchFront.$.button0.$.i,
+  wallswitchFrontMiddle: devices.wallswitchFront.$.button1.$.i,
+  wallswitchFrontRight: devices.wallswitchFront.$.button2.$.i,
+  wallswitchMiddle: devices.wallswitchBack.$.button1.$.i,
 };
 
 const partialProperties = {
@@ -86,16 +86,12 @@ export const properties = {
   );
   const { kitchenAdjacentChillax } = await import('../scenes.js');
 
-  instances.wallswitchBack.up(() =>
-    groups.ceilingLight.$.flip.$instance.trigger()
-  );
+  instances.wallswitchBack.up(() => groups.ceilingLight.$.flip.$.i.trigger());
 
-  instances.wallswitchMiddle.up(() =>
-    groups.ceilingLight.$.flip.$instance.trigger()
-  );
+  instances.wallswitchMiddle.up(() => groups.ceilingLight.$.flip.$.i.trigger());
 
   instances.wallswitchFrontLeft.up(() =>
-    properties.ceilingLightFront.$.flip.$instance.trigger()
+    properties.ceilingLightFront.$.flip.$.i.trigger()
   );
   instances.wallswitchFrontLeft.longPress(() => {
     if (kitchenAdjacentLights._set.value) {
@@ -107,32 +103,32 @@ export const properties = {
   });
 
   instances.wallswitchFrontMiddle.up(() =>
-    properties.ceilingLightBack.$.flip.$instance.trigger()
+    properties.ceilingLightBack.$.flip.$.i.trigger()
   );
-  instances.wallswitchFrontRight.up(() => (all.$main.$.setState.value = false));
+  instances.wallswitchFrontRight.up(() => (all.$.m.$.setState.value = false));
   instances.wallswitchFrontRight.longPress(() =>
-    allLights.$.flip.$instance.trigger()
+    allLights.$.flip.$.i.trigger()
   );
 
-  properties.door.$.open.$main.$instance.observe((value) => {
+  properties.door.$.open.$.m.$.i.observe((value) => {
     if (!value) {
-      if (!groups.ceilingLight.$main.$instance.value) return;
+      if (!groups.ceilingLight.$.m.$.i.value) return;
 
-      properties.entryDoorTimer.$.active.$instance.value = true;
+      properties.entryDoorTimer.$.active.$.i.value = true;
 
       return;
     }
 
-    properties.ceilingLightFront.$main.$.setState.value = true;
+    properties.ceilingLightFront.$.m.$.setState.value = true;
   });
 
-  groups.ceilingLight.$main.$.setState.observe(
-    () => (properties.entryDoorTimer.$.active.$instance.value = false),
+  groups.ceilingLight.$.m.$.setState.observe(
+    () => (properties.entryDoorTimer.$.active.$.i.value = false),
     true
   );
 
-  properties.entryDoorTimer.$instance.observe(() => {
-    groups.ceilingLight.$main.$.setState.value = false;
+  properties.entryDoorTimer.$.i.observe(() => {
+    groups.ceilingLight.$.m.$.setState.value = false;
   });
 })();
 

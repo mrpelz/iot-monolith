@@ -57,8 +57,8 @@ export const testDevice = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.$main.$instance,
-      bme280Temperature.$main.$instance,
+      mcp9808Temperature.$.m.$.i,
+      bme280Temperature.$.m.$.i,
     ])
   );
 

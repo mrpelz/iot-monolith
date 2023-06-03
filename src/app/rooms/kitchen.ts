@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Element, Level, symbolLevel } from '../../lib/tree/main-ng.js';
 import { Levels, addMeta } from '../../lib/tree/main.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -45,21 +46,24 @@ export const devices = {
 };
 
 export const instances = {
-  leftButton: devices.leftButton.$instance,
-  wallswitchBack: devices.wallswitchBack.button0.$,
-  wallswitchFrontBottomLeft: devices.wallswitchFront.button1.$,
-  wallswitchFrontBottomRight: devices.wallswitchFront.button2.$,
-  wallswitchFrontTop: devices.wallswitchFront.button0.$,
+  leftButton: devices.leftButton.$.i,
+  wallswitchBack: devices.wallswitchBack.$.button0.$.i,
+  wallswitchFrontBottomLeft: devices.wallswitchFront.$.button1.$.i,
+  wallswitchFrontBottomRight: devices.wallswitchFront.$.button2.$.i,
+  wallswitchFrontTop: devices.wallswitchFront.$.button0.$.i,
 };
 
 export const properties = {
-  ledLeftCWhite: devices.ledsLeft.ledG,
-  ledLeftFloodlight: devices.ledsLeft.ledB,
-  ledLeftWWhite: devices.ledsLeft.ledR,
-  ledRightCWhite: devices.ledsRight.ledB,
-  ledRightFloodlight: devices.ledsRight.ledW1,
-  ledRightWWhite: devices.ledsRight.ledG,
-  window: addMeta({ open: devices.windowSensor.open }, { level: Levels.AREA }),
+  ledLeftCWhite: devices.ledsLeft.$.ledG,
+  ledLeftFloodlight: devices.ledsLeft.$.ledB,
+  ledLeftWWhite: devices.ledsLeft.$.ledR,
+  ledRightCWhite: devices.ledsRight.$.ledB,
+  ledRightFloodlight: devices.ledsRight.$.ledW1,
+  ledRightWWhite: devices.ledsRight.$.ledG,
+  window: new Element({
+    open: devices.windowSensor.$.open,
+    [symbolLevel]: Level.AREA,
+  }),
 };
 
 export const groups = {
@@ -71,7 +75,7 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping(properties.window.open._get),
+  allWindows: inputGrouping(properties.window.$.open.$.m.$.i),
   cWhite: ledGrouping([properties.ledLeftCWhite, properties.ledRightCWhite]),
   floodlight: ledGrouping([
     properties.ledLeftFloodlight,
@@ -101,46 +105,50 @@ export const groups = {
     '../scenes.js'
   );
 
-  instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());
+  instances.leftButton.observe(() => groups.allLights.$.flip.$.i.trigger());
+
+  instances.wallswitchFrontTop.up(() => groups.allLights.$.flip.$.i.trigger());
   instances.wallswitchFrontTop.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright._set.value = true;
+    kitchenAdjacentBright.$.m.$.setState.value = true;
   });
 
   instances.wallswitchFrontBottomLeft.up(() =>
-    groups.worklightWWhite._set.flip()
+    groups.worklightWWhite.$.flip.$.i.trigger()
   );
   instances.wallswitchFrontBottomLeft.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.$.m.$.setState.value = true;
   });
 
-  instances.wallswitchFrontBottomRight.up(() => groups.floodlight._set.flip());
+  instances.wallswitchFrontBottomRight.up(() =>
+    groups.floodlight.$.flip.$.i.trigger()
+  );
   instances.wallswitchFrontBottomRight.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.$.m.$.setState.value = true;
   });
 
-  instances.wallswitchBack.up(() => groups.allLights._set.flip());
+  instances.wallswitchBack.up(() => groups.allLights.$.flip.$.i.trigger());
   instances.wallswitchBack.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.$.m.$.i.value) {
+      kitchenAdjacentLights.$.m.$.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.$.m.$.setState.value = true;
   });
 })();
 

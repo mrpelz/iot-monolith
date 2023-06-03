@@ -55,8 +55,8 @@ export const roomSensor = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.$main.$instance,
-      bme280Temperature.$main.$instance,
+      mcp9808Temperature.$.m.$.i,
+      bme280Temperature.$.m.$.i,
     ])
   );
 
@@ -69,7 +69,7 @@ export const roomSensor = (
   });
 
   const sgp30MeasurementInputGetter = () => {
-    const _humidity = humidity.$main.$instance.value;
+    const _humidity = humidity.$.m.$.i.value;
     const _temperature = temperatureState.value;
 
     if (_humidity === null || _temperature === null) return null;

@@ -67,7 +67,7 @@ export const devices = {
 };
 
 export const instances = {
-  bathtubButton: devices.bathtubButton.$instance,
+  bathtubButton: devices.bathtubButton.$.i,
   mirrorLightButton: devices.mirrorLight.button.$,
   nightLightButton: devices.nightLight.button.$,
   wallswitchDoor: devices.ceilingLight.button.$,
@@ -313,7 +313,7 @@ export const scenes = {
     properties.allLightsTimer.active.$.value = value;
   }, true);
 
-  properties.allLightsTimer.$instance.observe(() => {
+  properties.allLightsTimer.$.i.observe(() => {
     groups.allLights._set.value = false;
   });
 })();

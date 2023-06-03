@@ -55,6 +55,13 @@ export type Props = Record<string | symbol, unknown> & {
   [symbolValueType]?: ValueType;
 };
 
+type ExtendedProps<T extends Props> = T & {
+  i: T[typeof symbolInstance];
+  m: T[typeof symbolMain];
+  [symbolId]?: string;
+  [symbolKey]?: string;
+};
+
 export type InstanceMap<T extends Props> = {
   [P in keyof T]: T[P] extends AbstractClass ? InstanceType<T[P]> : T[P];
 };
@@ -103,16 +110,14 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
     }
   }
 
-  get $(): T & { [symbolId]?: string; [symbolKey]?: string } {
-    return { [symbolId]: this._id, [symbolKey]: this._key, ...this._props };
-  }
-
-  get $instance(): T[typeof symbolInstance] {
-    return this.$[symbolInstance] as T[typeof symbolInstance];
-  }
-
-  get $main(): T[typeof symbolMain] {
-    return this.$[symbolMain] as T[typeof symbolMain];
+  get $(): ExtendedProps<T> {
+    return {
+      ...this._props,
+      i: this._props[symbolInstance],
+      m: this._props[symbolMain],
+      [symbolId]: this._id,
+      [symbolKey]: this._key,
+    } as ExtendedProps<T>;
   }
 
   get children(): ExtractProperties<T, Element> {
