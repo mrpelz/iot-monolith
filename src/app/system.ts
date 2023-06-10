@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../lib/tree/main-ng.js';
 import { all, allLights, kitchenAdjacentLights } from './groups.js';
 import {
   allLightsOff,
@@ -24,99 +24,71 @@ import { testRoom } from './rooms/test-room.js';
 import { tsiaBathroom } from './rooms/tsia-bathroom.js';
 import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 
-const firstFloor = (() =>
-  addMeta(
-    {
-      hallway: Object.assign(hallway, {
-        kitchenAdjacentChillax,
-        kitchenAdjacentLights,
-      }),
-      kitchen: Object.assign(kitchen, {
-        kitchenAdjacentBright,
-        kitchenAdjacentChillax,
-        kitchenAdjacentLights,
-      }),
-      kitchenAdjacentBright,
-      kitchenAdjacentChillax,
-      kitchenAdjacentLights,
-      livingRoom: Object.assign(livingRoom, {
-        kitchenAdjacentBright,
-        kitchenAdjacentChillax,
-        kitchenAdjacentLights,
-      }),
-      mrpelzBathroom,
-      mrpelzBedroom,
-      office: Object.assign(office, {
-        kitchenAdjacentBright,
-        kitchenAdjacentChillax,
-        kitchenAdjacentLights,
-      }),
-      storageRoom,
-      testRoom,
-      tsiaBathroom,
-      tsiaBedroom,
-    },
-    {
-      isPartiallyOutside: true,
-      isPrimary: true,
-      level: Levels.FLOOR,
-      name: 'firstFloor',
-    }
-  ))();
+const firstFloor = element({
+  diningRoom: Object.assign(diningRoom, {
+    kitchenAdjacentBright,
+    kitchenAdjacentChillax,
+    kitchenAdjacentLights,
+  }),
+  hallway: Object.assign(hallway, {
+    kitchenAdjacentChillax,
+    kitchenAdjacentLights,
+  }),
+  kitchen: Object.assign(kitchen, {
+    kitchenAdjacentBright,
+    kitchenAdjacentChillax,
+    kitchenAdjacentLights,
+  }),
+  kitchenAdjacentBright,
+  kitchenAdjacentChillax,
+  kitchenAdjacentLights,
+  livingRoom: Object.assign(livingRoom, {
+    kitchenAdjacentBright,
+    kitchenAdjacentChillax,
+    kitchenAdjacentLights,
+  }),
+  mrpelzBathroom,
+  mrpelzBedroom,
+  storageRoom,
+  [symbolLevel]: Level.FLOOR,
+  testRoom,
+  tsiaBathroom,
+  tsiaBedroom,
+});
 
-const sonninstraße16 = (() =>
-  addMeta(
-    {
-      ...sunElevation(every5Seconds),
-      firstFloor,
-      // eslint-disable-next-line sort-keys
-      entryDoor: hallwayProperties.door,
-    },
-    {
-      isPrimary: true,
-      level: Levels.BUILDING,
-      name: 'sonninstraße16',
-    }
-  ))();
+const sonninstraße16 = element({
+  ...sunElevation(every5Seconds),
+  firstFloor,
+  // eslint-disable-next-line sort-keys
+  entryDoor: hallwayProperties.door,
+  [symbolLevel]: Level.BUILDING,
+});
 
-const wurstHome = (() =>
-  addMeta(
-    { sonninstraße16 },
-    {
-      isPrimary: true,
-      level: Levels.HOME,
-      name: 'wurstHome',
-    }
-  ))();
+const wurstHome = element({ sonninstraße16, [symbolLevel]: Level.HOME });
 
 export const system = (() => {
   const id = Date.now().toString();
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  all._set.observe((value) => {
-    allTimer.active.$.value = value;
+  all.main.setState.observe((value) => {
+    allTimer.active.instance.value = value;
   }, true);
 
-  allTimer.$.i.observe(() => {
-    all._set.value = false;
+  allTimer.instance.observe(() => {
+    all.main.setState.value = false;
   });
 
   return {
     id,
-    system: addMeta(
-      {
-        all,
-        allLights,
-        allLightsOff,
-        allOff,
-        allTimer,
-        wurstHome,
-      },
-      {
-        id,
-        level: Levels.SYSTEM,
-      }
-    ),
+    system: element({
+      all,
+      allLights,
+      allLightsOff,
+      allOff,
+      allTimer,
+      [symbolLevel]: Level.SYSTEM,
+      wurstHome,
+    }),
   };
 })();

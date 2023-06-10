@@ -14,11 +14,11 @@ import { createHash } from 'node:crypto';
 
 const ROOT_IDENTIFIER = '$';
 
-export const inherit = Symbol('inherit');
+const inherit = Symbol('inherit');
 
 type Inherit = typeof inherit;
 
-export enum Levels {
+enum Levels {
   SYSTEM,
   HOME,
   BUILDING,
@@ -29,7 +29,7 @@ export enum Levels {
   PROPERTY,
 }
 
-export enum ValueType {
+enum ValueType {
   NULL,
   BOOLEAN,
   NUMBER,
@@ -37,7 +37,7 @@ export enum ValueType {
   RAW,
 }
 
-export enum ParentRelation {
+enum ParentRelation {
   META_RELATION,
   CONTROL_TRIGGER,
   CONTROL_EXTENSION,
@@ -45,24 +45,24 @@ export enum ParentRelation {
   DATA_AGGREGATION_SOURCE,
 }
 
-export type MetaSystem = {
+type MetaSystem = {
   id: string;
   level: Levels.SYSTEM;
 };
 
-export type MetaHome = {
+type MetaHome = {
   isPrimary?: true;
   level: Levels.HOME;
   name: string;
 };
 
-export type MetaBuilding = {
+type MetaBuilding = {
   isPrimary?: true;
   level: Levels.BUILDING;
   name: string;
 };
 
-export type MetaFloor = {
+type MetaFloor = {
   isBasement?: true;
   isGroundFloor?: true;
   isPartiallyOutside?: true;
@@ -71,19 +71,19 @@ export type MetaFloor = {
   name: string;
 };
 
-export type MetaRoom = {
+type MetaRoom = {
   isConnectingRoom?: true;
   isDaylit?: true;
   level: Levels.ROOM;
   name: string;
 };
 
-export type MetaArea = {
+type MetaArea = {
   level: Levels.AREA;
   name: string;
 };
 
-export type MetaDevice = {
+type MetaDevice = {
   host?: string;
   identifier?: number[];
   isSubDevice?: true;
@@ -100,20 +100,20 @@ type MetaProperty = {
   parentRelation?: ParentRelation;
 };
 
-export type MetaPropertySensor = MetaProperty & {
+type MetaPropertySensor = MetaProperty & {
   measured?: string | Inherit;
   type: 'sensor';
   unit?: string;
   valueType: ValueType;
 };
 
-export type MetaPropertyActuator = MetaProperty & {
+type MetaPropertyActuator = MetaProperty & {
   actuated?: string | Inherit;
   type: 'actuator';
   valueType: ValueType;
 };
 
-export type Meta =
+type Meta =
   | MetaSystem
   | MetaHome
   | MetaBuilding
@@ -136,29 +136,13 @@ interface MetadataExtensionStore {
   ): this;
 }
 
-export type Stream = ReadOnlyObservable<[number, unknown] | null>;
-export type Values = [number, unknown][];
+type Stream = ReadOnlyObservable<[number, unknown] | null>;
+type Values = [number, unknown][];
 
 const metadataStore = new WeakMap<object, Partial<Meta>>();
 const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
 
-export const addMeta = <T extends object, S extends Partial<Meta>>(
-  object: T,
-  meta: S
-): T => {
-  metadataStore.set(object, meta);
-  return object;
-};
-
-export const addMetaExtension = <S extends Meta, T extends object>(
-  object: T,
-  meta: Partial<Record<keyof T, Partial<S>>>
-): T => {
-  metadataExtensionStore.set(object, meta);
-  return object;
-};
-
-export const valueTypeMap = {
+const valueTypeMap = {
   [ValueType.BOOLEAN]: {
     typeof: 'boolean',
   },

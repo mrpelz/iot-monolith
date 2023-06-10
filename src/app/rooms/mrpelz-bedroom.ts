@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import {
   SceneMember,
   ledGrouping,
@@ -97,15 +97,14 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.$.i,
-  floodlightButton: devices.floodLight.button.$,
-  multiButton: devices.multiButton.$.i,
-  nightLightButton: devices.nightLight.button.$,
-  standingLampButton: devices.standingLamp.button.$,
-  wallswitchBed: devices.ceilingLight.button.$,
-  wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
-  wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
-  wallswitchDoorRight: devices.wallswitchDoor.button2.$,
+  button: devices.button.instance,
+  floodlightButton: devices.floodLight.button.instance,
+  multiButton: devices.multiButton.instance,
+  nightLightButton: devices.nightLight.button.instance,
+  wallswitchBed: devices.ceilingLight.button.instance,
+  wallswitchDoorLeft: devices.wallswitchDoor.button0.instance,
+  wallswitchDoorMiddle: devices.wallswitchDoor.button1.instance,
+  wallswitchDoorRight: devices.wallswitchDoor.button2.instance,
 };
 
 export const properties = {
@@ -114,8 +113,15 @@ export const properties = {
   bookshelfLedUpWWhite: devices.bookshelfLeds.ledR,
   brightness: devices.roomSensor.brightness,
   ceilingLight: devices.ceilingLight.relay,
-  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
-  heatLamp: devices.heatLamp.relay,
+  door: element({
+    open: devices.doorSensor.open,
+    [symbolLevel]: Level.AREA,
+  }),
+  floodLight: devices.floodLight.relay,
+  floodLightTimer: offTimer(epochs.hour, undefined, [
+    'mrpelz-bedroom/floodLightTimer',
+    persistence,
+  ]),
   humidity: devices.roomSensor.humidity,
   ionGenerator: devices.ionGenerator.relay,
   nightLight: devices.nightLight.relay,
@@ -127,10 +133,10 @@ export const properties = {
   standingLamp: devices.standingLamp.relay,
   temperature: devices.roomSensor.temperature,
   tvoc: devices.roomSensor.tvoc,
-  windowLeft: addMeta(
-    { open: devices.windowSensorLeft.open },
-    { level: Levels.AREA, name: 'window' }
-  ),
+  windowLeft: element({
+    open: devices.windowSensorLeft.open,
+    [symbolLevel]: Level.AREA,
+  }),
 };
 
 export const groups = {
@@ -161,30 +167,7 @@ export const groups = {
     properties.nightstandRightLedWWhite,
     properties.standingLamp,
   ]),
-  allWindows: inputGrouping(properties.windowLeft.open._get),
-  bookshelfLedWWhite: ledGrouping([
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpWWhite,
-  ]),
-  nightstandLedRed: ledGrouping([
-    properties.nightstandLeftLedRed,
-    properties.nightstandRightLedRed,
-  ]),
-  nightstandLedWWhite: ledGrouping([
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
-  redLeds: ledGrouping([
-    properties.bookshelfLedUpRed,
-    properties.nightstandLeftLedRed,
-    properties.nightstandRightLedRed,
-  ]),
-  wWhiteLeds: ledGrouping([
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpWWhite,
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
+  allWindows: inputGrouping(properties.windowLeft.open.main.instance),
 };
 
 const scenes = {
@@ -303,64 +286,76 @@ const sceneCycle = new EnumState(
 );
 
 (() => {
-  const offOrElse = (fn: () => void) => () => {
-    if (groups.allLights._set.value) {
-      groups.allLights._set.value = false;
+  instances.button.observe(() => {
+    if (groups.allLights.main.setState.value) {
+      groups.allLights.main.setState.value = false;
       return;
     }
 
-    fn();
-  };
-  instances.button.observe(
-    offOrElse(() => (scenes.onlyNightLight._set.value = true))
+    properties.nightLight.main.setState.value = true;
+  });
+
+  instances.floodlightButton.up(() =>
+    properties.floodLight.flip.instance.trigger()
+  );
+  instances.floodlightButton.longPress(
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  instances.multiButton.topLeft.observe(
-    offOrElse(() => (scenes.moodLight._set.value = true))
+  instances.multiButton.topLeft.observe(() =>
+    properties.ceilingLight.flip.instance.trigger()
   );
-  instances.multiButton.topRight.observe(
-    offOrElse(() => (scenes.ceilingLightPlus._set.value = true))
+  instances.multiButton.topRight.observe(() =>
+    properties.floodLight.flip.instance.trigger()
   );
-  instances.multiButton.bottomLeft.observe(() => sceneCycle.previous());
-  instances.multiButton.bottomRight.observe(() => sceneCycle.next());
+  instances.multiButton.bottomLeft.observe(() =>
+    properties.nightLight.flip.instance.trigger()
+  );
+  instances.multiButton.bottomRight.observe(() =>
+    groups.allLights.flip.instance.trigger()
+  );
 
-  instances.heatLampButton.up(() => properties.heatLamp._set.flip());
-  instances.heatLampButton.longPress(() => (groups.all._set.value = false));
+  instances.nightLightButton.up(() =>
+    properties.nightLight.flip.instance.trigger()
+  );
+  instances.nightLightButton.longPress(
+    () => (groups.allLights.main.setState.value = false)
+  );
 
-  instances.ionGeneratorButton.up(() => properties.ionGenerator._set.flip());
-  instances.ionGeneratorButton.longPress(() => (groups.all._set.value = false));
+  instances.wallswitchBed.up(() =>
+    properties.ceilingLight.flip.instance.trigger()
+  );
+  instances.wallswitchBed.longPress(
+    () => (groups.allLights.main.setState.value = false)
+  );
 
-  instances.nightLightButton.up(() => properties.nightLight._set.flip());
-  instances.nightLightButton.longPress(() => (groups.all._set.value = false));
+  instances.wallswitchDoorLeft.up(() =>
+    properties.nightLight.flip.instance.trigger()
+  );
+  instances.wallswitchDoorLeft.longPress(
+    () => (groups.allLights.main.setState.value = false)
+  );
 
-  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
-  instances.standingLampButton.longPress(() => (groups.all._set.value = false));
-
-  instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchBed.longPress(() => (groups.all._set.value = false));
-
-  instances.wallswitchDoorLeft.up(() => {
-    if (!groups.allLights._set.value) {
-      scenes.onlyNightLight._set.value = true;
-      return;
-    }
-
-  instances.wallswitchDoorMiddle.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchDoorMiddle.up(() =>
+    properties.ceilingLight.flip.instance.trigger()
+  );
   instances.wallswitchDoorMiddle.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  instances.wallswitchDoorRight.up(() => properties.floodLight._set.flip());
+  instances.wallswitchDoorRight.up(() =>
+    properties.floodLight.flip.instance.trigger()
+  );
   instances.wallswitchDoorRight.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  properties.floodLight._set.observe((value) => {
-    properties.floodLightTimer.active.$.value = value;
+  properties.floodLight.main.setState.observe((value) => {
+    properties.floodLightTimer.active.instance.value = value;
   }, true);
 
-  properties.floodLightTimer.$.i.observe(() => {
-    properties.floodLight._set.value = false;
+  properties.floodLightTimer.instance.observe(() => {
+    properties.floodLight.main.setState.value = false;
   });
   instances.wallswitchDoorLeft.longPress(() => (groups.all._set.value = false));
 
@@ -398,16 +393,9 @@ const sceneCycle = new EnumState(
   }
 })();
 
-export const mrpelzBedroom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-    ...scenes,
-  },
-  {
-    isDaylit: true,
-    level: Levels.ROOM,
-    name: 'mrpelzBedroom',
-  }
-);
+export const mrpelzBedroom = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, symbolInstance } from '../main-ng.js';
+import { element, symbolInstance } from '../main-ng.js';
 import { Ev1527Button } from '../../events/ev1527-button.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
@@ -15,7 +15,7 @@ export const ev1527ButtonX4 = (
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
-  return new Element({
+  return element({
     ...ev1527Device(device),
     [symbolInstance]: new StatelessMultiValueEvent(
       device.addEvent(new Ev1527Button()),
@@ -31,7 +31,7 @@ export const ev1527ButtonX1 = (
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
-  return new Element({
+  return element({
     ...ev1527Device(device),
     [symbolInstance]: new StatelessMultiValueEvent(
       device.addEvent(new Ev1527Button()),

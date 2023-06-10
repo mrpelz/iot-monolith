@@ -16,14 +16,14 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
+import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import {
-  Element,
   Level,
   ValueType as ValueTypeNg,
+  element,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
-import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
@@ -42,7 +42,7 @@ const actuatorStaleness = <T>(
   const loading = new BooleanState(true);
 
   return {
-    actuatorStaleness: new Element(
+    actuatorStaleness: element(
       {
         loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
         stale: getter(
@@ -85,7 +85,7 @@ export const led = (
     indicator
   );
 
-  return new Element(
+  return element(
     {
       ...actuatorStaleness(actualBrightness, setBrightness, device),
       brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
@@ -117,7 +117,7 @@ export const output = <T extends string>(
     indicator
   );
 
-  return new Element(
+  return element(
     {
       ...actuatorStaleness(actualState, setState, device),
       flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setState.flip())),
@@ -140,7 +140,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.$.m.$.i)
+      lights.map((light) => light.main.instance)
     )
   );
 
@@ -153,7 +153,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       0,
       lights.map(
         (light) =>
-          new ReadOnlyProxyObservable(light.children.brightness.$.i, (value) =>
+          new ReadOnlyProxyObservable(light.brightness.instance, (value) =>
             value === null ? 0 : value
           )
       )
@@ -162,7 +162,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light.$.m.$.setState)
+    lights.map((light) => light.main.setState)
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -171,10 +171,10 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     }
   })(
     0,
-    lights.map((light) => light.children.brightness.$.setState)
+    lights.map((light) => light.children.brightness.setState)
   );
 
-  return new Element({
+  return element({
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
     flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     [symbolLevel]: Level.PROPERTY,
@@ -190,16 +190,16 @@ export const outputGrouping = <T extends string>(
   const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      outputs.map((outputElement) => outputElement.$.m.$.i)
+      outputs.map((outputElement) => outputElement.main.instance)
     )
   );
 
   const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    outputs.map((outputElement) => outputElement.$.m.$.setState)
+    outputs.map((outputElement) => outputElement.main.setState)
   );
 
-  return new Element({
+  return element({
     flip: triggerNg(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
@@ -208,7 +208,7 @@ export const outputGrouping = <T extends string>(
 };
 
 export const resetDevice = (device: Device) => ({
-  resetDevice: new Element({
+  resetDevice: element({
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
@@ -218,7 +218,7 @@ export const resetDevice = (device: Device) => ({
 });
 
 export const identifyDevice = (indicator: Indicator) => ({
-  identifyDevice: new Element({
+  identifyDevice: element({
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
@@ -237,7 +237,7 @@ export const identifyDevice = (indicator: Indicator) => ({
 });
 
 export const trigger = <T extends string>(handler: () => void, topic: T) =>
-  new Element({
+  element({
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: triggerNg(
       ValueTypeNg.NULL,
@@ -273,7 +273,7 @@ export const scene = <T extends string>(
     proxyObservables
   );
 
-  return new Element({
+  return element({
     flip: triggerNg(ValueTypeNg.NULL, new NullState(() => set.flip())),
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene'),
@@ -289,7 +289,7 @@ export const setOnline = (
   const state = new BooleanState(initiallyOnline);
 
   return {
-    setOnline: new Element(
+    setOnline: element(
       {
         flip: triggerNg(ValueTypeNg.NULL, new NullState(() => state.flip())),
         [symbolLevel]: Level.PROPERTY,

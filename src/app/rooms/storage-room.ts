@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
 import { epochs } from '../../lib/epochs.js';
@@ -25,12 +25,15 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitch: devices.ceilingLight.button.$,
+  wallswitch: devices.ceilingLight.button.instance,
 };
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  door: element({
+    open: devices.doorSensor.open,
+    [symbolLevel]: Level.AREA,
+  }),
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
     persistence,
@@ -44,49 +47,46 @@ export const groups = {
 (() => {
   let indicatorInProgress = false;
 
-  instances.wallswitch.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitch.up(() =>
+    properties.ceilingLight.flip.instance.trigger()
+  );
 
   instances.wallswitch.longPress(async () => {
-    if (!properties.lightTimer._get.value) return;
+    if (!properties.lightTimer.main.instance.value) return;
 
     indicatorInProgress = true;
 
-    if (properties.ceilingLight._set.value) {
-      await ackBlinkFromOn(properties.ceilingLight._set);
+    if (properties.ceilingLight.main.setState.value) {
+      await ackBlinkFromOn(properties.ceilingLight.main.setState);
     } else {
-      await ackBlinkFromOff(properties.ceilingLight._set);
+      await ackBlinkFromOff(properties.ceilingLight.main.setState);
     }
 
     indicatorInProgress = false;
 
     // eslint-disable-next-line require-atomic-updates
-    properties.lightTimer.active.$.value = false;
+    properties.lightTimer.active.instance.value = false;
   });
 
-  properties.door.open._get.observe((value) => {
+  properties.door.open.main.instance.observe((value) => {
     if (!value) return;
-    properties.ceilingLight._set.value = true;
+    properties.ceilingLight.main.setState.value = true;
   });
 
-  properties.ceilingLight._set.observe((value) => {
+  properties.ceilingLight.main.setState.observe((value) => {
     if (indicatorInProgress) return;
 
-    properties.lightTimer.active.$.value = value;
+    properties.lightTimer.active.instance.value = value;
   }, true);
 
-  properties.lightTimer.$.i.observe(() => {
-    properties.ceilingLight._set.value = false;
+  properties.lightTimer.instance.observe(() => {
+    properties.ceilingLight.main.setState.value = false;
   });
 })();
 
-export const storageRoom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-  },
-  {
-    level: Levels.ROOM,
-    name: 'storageRoom',
-  }
-);
+export const storageRoom = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

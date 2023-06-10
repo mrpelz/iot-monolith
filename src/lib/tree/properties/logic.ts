@@ -2,9 +2,9 @@
 
 import { BooleanState, NullState } from '../../state.js';
 import {
-  Element,
   Level,
   ValueType,
+  element,
   symbolInstance,
   symbolLevel,
   symbolMain,
@@ -73,15 +73,15 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  return new Element({
-    active: new Element({
-      cancel: new Element({
+  return element({
+    active: element({
+      cancel: element({
         [symbolMain]: trigger(
           ValueType.NULL,
           new NullState(() => (active.value = false))
         ),
       }),
-      reset: new Element({
+      reset: element({
         [symbolMain]: trigger(
           ValueType.NULL,
           new NullState(() => {
@@ -93,19 +93,19 @@ export const offTimer = (
       [symbolInstance]: active,
       [symbolMain]: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
     }),
-    flip: new Element({
+    flip: element({
       [symbolMain]: trigger(
         ValueType.NULL,
         new NullState(() => enabled.flip())
       ),
     }),
-    runoutTime: new Element({
+    runoutTime: element({
       [symbolMain]: getter(ValueType.NUMBER, runoutTime, 'date'),
     }),
     [symbolInstance]: timer,
     [symbolLevel]: Level.PROPERTY,
     [symbolMain]: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
-    triggerTime: new Element({
+    triggerTime: element({
       [symbolMain]: getter(
         ValueType.NUMBER,
         new ReadOnlyObservable(triggerTime),
@@ -181,17 +181,17 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  return new Element({
-    cancel: new Element({
+  return element({
+    cancel: element({
       [symbolMain]: trigger(ValueType.NULL, new NullState(() => cancel())),
     }),
-    flip: new Element({
+    flip: element({
       [symbolMain]: trigger(
         ValueType.NULL,
         new NullState(() => enabled.flip())
       ),
     }),
-    nextCompletion: new Element({
+    nextCompletion: element({
       [symbolMain]: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
@@ -204,7 +204,7 @@ export const scheduledRamp = (
         'date'
       ),
     }),
-    nextExecution: new Element({
+    nextExecution: element({
       [symbolMain]: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
@@ -214,7 +214,7 @@ export const scheduledRamp = (
         'date'
       ),
     }),
-    progress: new Element({
+    progress: element({
       [symbolMain]: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
     }),
     [symbolLevel]: Level.PROPERTY,

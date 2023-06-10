@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
-  Element,
   Level,
   ValueType,
+  element,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -57,12 +57,12 @@ export const testDevice = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.$.m.$.i,
-      bme280Temperature.$.m.$.i,
+      mcp9808Temperature.main.instance,
+      bme280Temperature.main.instance,
     ])
   );
 
-  const temperature = new Element({
+  const temperature = element({
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     mcp9808: mcp9808Temperature,
@@ -70,7 +70,7 @@ export const testDevice = (
     [symbolMain]: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
   });
 
-  return new Element({
+  return element({
     ...async(device, timings.slow || timings.default),
     ...ipDevice(device, persistence, timings),
     ...mhz19(device, timings.slow || timings.default),

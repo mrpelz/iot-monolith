@@ -8,10 +8,10 @@ import {
   ReadOnlyProxyObservable,
 } from '../../observable.js';
 import {
-  Element,
   Level,
   TValueType,
   ValueType,
+  element,
   matchClass,
   matchValue,
   symbolInstance,
@@ -28,7 +28,7 @@ export const setter = <N extends string, V extends ValueType>(
   state?: AnyReadOnlyObservable<TValueType[V] | null>,
   name?: N
 ) =>
-  new Element({
+  element({
     name,
     setState,
     [symbolInstance]: state || new ReadOnlyObservable(setState),

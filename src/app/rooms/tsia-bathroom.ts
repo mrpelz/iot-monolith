@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import {
   SceneMember,
   outputGrouping,
@@ -67,11 +67,11 @@ export const devices = {
 };
 
 export const instances = {
-  bathtubButton: devices.bathtubButton.$.i,
-  mirrorLightButton: devices.mirrorLight.button.$,
-  nightLightButton: devices.nightLight.button.$,
-  wallswitchDoor: devices.ceilingLight.button.$,
-  wallswitchMirror: devices.wallswitchMirror.button0.$,
+  bathtubButton: devices.bathtubButton.instance,
+  mirrorLightButton: devices.mirrorLight.button.instance,
+  nightLightButton: devices.nightLight.button.instance,
+  wallswitchDoor: devices.ceilingLight.button.instance,
+  wallswitchMirror: devices.wallswitchMirror.button0.instance,
 };
 
 export const properties = {
@@ -80,7 +80,10 @@ export const properties = {
     persistence,
   ]),
   ceilingLight: devices.ceilingLight.relay,
-  door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  door: element({
+    open: devices.doorSensor.open,
+    [symbolLevel]: Level.AREA,
+  }),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
   nightLight: devices.nightLight.relay,
@@ -98,46 +101,46 @@ export const groups = {
 export const scenesPartial = {
   astronomicalTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight._set, false),
-      new SceneMember(properties.mirrorLed.brightness._set, 0),
-      new SceneMember(properties.mirrorLight._set, false),
-      new SceneMember(properties.nightLight._set, true, false),
+      new SceneMember(properties.ceilingLight.main.setState, false),
+      new SceneMember(properties.mirrorLed.brightness.setState, 0),
+      new SceneMember(properties.mirrorLight.main.setState, false),
+      new SceneMember(properties.nightLight.main.setState, true, false),
     ],
     'light'
   ),
   civilTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight._set, false),
-      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
-      new SceneMember(properties.mirrorLight._set, true, false),
-      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.ceilingLight.main.setState, false),
+      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
+      new SceneMember(properties.mirrorLight.main.setState, true, false),
+      new SceneMember(properties.nightLight.main.setState, false),
     ],
     'light'
   ),
   dayLighting: scene(
     [
-      new SceneMember(properties.ceilingLight._set, true, false),
-      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
-      new SceneMember(properties.mirrorLight._set, true, false),
-      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.ceilingLight.main.setState, true, false),
+      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
+      new SceneMember(properties.mirrorLight.main.setState, true, false),
+      new SceneMember(properties.nightLight.main.setState, false),
     ],
     'light'
   ),
   nauticalTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight._set, false),
-      new SceneMember(properties.mirrorLed.brightness._set, 1, 0),
-      new SceneMember(properties.mirrorLight._set, false),
-      new SceneMember(properties.nightLight._set, true, false),
+      new SceneMember(properties.ceilingLight.main.setState, false),
+      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
+      new SceneMember(properties.mirrorLight.main.setState, false),
+      new SceneMember(properties.nightLight.main.setState, true, false),
     ],
     'light'
   ),
   nightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight._set, false),
-      new SceneMember(properties.mirrorLed.brightness._set, 0.5, 0),
-      new SceneMember(properties.mirrorLight._set, false),
-      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.ceilingLight.main.setState, false),
+      new SceneMember(properties.mirrorLed.brightness.setState, 0.5, 0),
+      new SceneMember(properties.mirrorLight.main.setState, false),
+      new SceneMember(properties.nightLight.main.setState, false),
     ],
     'light'
   ),
@@ -151,8 +154,8 @@ export const scenes = {
     const elevation = sunElevation();
 
     if (isNight(elevation)) {
-      if (devices.nightLight.online._get.value) {
-        scenes.nightLighting._set.value = true;
+      if (devices.nightLight.online.main.instance.value) {
+        scenes.nightLighting.main.setState.value = true;
 
         return;
       }
@@ -162,10 +165,10 @@ export const scenes = {
 
     if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.leds.online._get.value ||
-        devices.nightLight.online._get.value
+        devices.leds.online.main.instance.value ||
+        devices.nightLight.online.main.instance.value
       ) {
-        scenes.astronomicalTwilightLighting._set.value = true;
+        scenes.astronomicalTwilightLighting.main.setState.value = true;
 
         return;
       }
@@ -175,10 +178,10 @@ export const scenes = {
 
     if (isNauticalTwilight(elevation) || failover) {
       if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value
+        devices.leds.online.main.instance.value ||
+        devices.mirrorLight.online.main.instance.value
       ) {
-        scenes.nauticalTwilightLighting._set.value = true;
+        scenes.nauticalTwilightLighting.main.setState.value = true;
 
         return;
       }
@@ -188,27 +191,27 @@ export const scenes = {
 
     if (isCivilTwilight(elevation) || failover) {
       if (
-        devices.leds.online._get.value ||
-        devices.mirrorLight.online._get.value ||
-        devices.nightLight.online._get.value
+        devices.leds.online.main.instance.value ||
+        devices.mirrorLight.online.main.instance.value ||
+        devices.nightLight.online.main.instance.value
       ) {
-        scenes.civilTwilightLighting._set.value = true;
+        scenes.civilTwilightLighting.main.setState.value = true;
 
         return;
       }
     }
 
     if (
-      devices.ceilingLight.online._get.value ||
-      devices.leds.online._get.value ||
-      devices.mirrorLight.online._get.value
+      devices.ceilingLight.online.main.instance.value ||
+      devices.leds.online.main.instance.value ||
+      devices.mirrorLight.online.main.instance.value
     ) {
-      scenes.dayLighting._set.value = true;
+      scenes.dayLighting.main.setState.value = true;
 
       return;
     }
 
-    groups.allLights._set.value = true;
+    groups.allLights.main.setState.value = true;
   }, 'light'),
 };
 
@@ -220,113 +223,114 @@ export const scenes = {
 
     timer.start();
 
-    if (!groups.allLights._set.value) {
-      scenes.nightLighting._set.value = true;
+    if (!groups.allLights.main.setState.value) {
+      scenes.nightLighting.main.setState.value = true;
 
       return;
     }
 
     if (firstPress) {
-      groups.allLights._set.value = false;
+      groups.allLights.main.setState.value = false;
 
       return;
     }
 
     if (
-      !properties.ceilingLight._set.value &&
-      !properties.mirrorLed._set.value &&
-      !properties.mirrorLight._set.value &&
-      properties.nightLight._set.value
+      !properties.ceilingLight.main.setState.value &&
+      !properties.mirrorLed.main.setState.value &&
+      !properties.mirrorLight.main.setState.value &&
+      properties.nightLight.main.setState.value
     ) {
-      scenes.astronomicalTwilightLighting._set.value = true;
+      scenes.astronomicalTwilightLighting.main.setState.value = true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight._set.value &&
-      !properties.mirrorLight._set.value &&
-      properties.mirrorLed._set.value &&
-      properties.nightLight._set.value
+      !properties.ceilingLight.main.setState.value &&
+      !properties.mirrorLight.main.setState.value &&
+      properties.mirrorLed.main.setState.value &&
+      properties.nightLight.main.setState.value
     ) {
-      scenes.nauticalTwilightLighting._set.value = true;
+      scenes.nauticalTwilightLighting.main.setState.value = true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight._set.value &&
-      !properties.nightLight._set.value &&
-      properties.mirrorLed._set.value &&
-      properties.mirrorLight._set.value
+      !properties.ceilingLight.main.setState.value &&
+      !properties.nightLight.main.setState.value &&
+      properties.mirrorLed.main.setState.value &&
+      properties.mirrorLight.main.setState.value
     ) {
-      scenes.civilTwilightLighting._set.value = true;
+      scenes.civilTwilightLighting.main.setState.value = true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight._set.value &&
-      properties.mirrorLed._set.value &&
-      properties.mirrorLight._set.value &&
-      properties.nightLight._set.value
+      !properties.ceilingLight.main.setState.value &&
+      properties.mirrorLed.main.setState.value &&
+      properties.mirrorLight.main.setState.value &&
+      properties.nightLight.main.setState.value
     ) {
-      scenes.dayLighting._set.value = true;
+      scenes.dayLighting.main.setState.value = true;
     }
   });
 
-  instances.mirrorLightButton.up(() => properties.mirrorLight._set.flip());
+  instances.mirrorLightButton.up(() =>
+    properties.mirrorLight.flip.instance.trigger()
+  );
   instances.mirrorLightButton.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  instances.nightLightButton.up(() => properties.nightLight._set.flip());
+  instances.nightLightButton.up(() =>
+    properties.nightLight.flip.instance.trigger()
+  );
   instances.nightLightButton.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
   instances.wallswitchDoor.up(() => {
-    if (groups.allLights._set.value) {
-      groups.allLights._set.value = false;
+    if (groups.allLights.main.setState.value) {
+      groups.allLights.main.setState.value = false;
       return;
     }
 
-    scenes.dayLighting._set.value = true;
+    scenes.dayLighting.main.setState.value = true;
   });
   instances.wallswitchDoor.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  instances.wallswitchMirror.up(() => properties.mirrorLight._set.flip());
+  instances.wallswitchMirror.up(() =>
+    properties.mirrorLight.flip.instance.trigger()
+  );
   instances.wallswitchMirror.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.allLights.main.setState.value = false)
   );
 
-  properties.door.open._get.observe((value) => {
+  properties.door.open.main.instance.observe((value) => {
     if (!value) return;
-    if (groups.allLights._set.value) return;
+    if (groups.allLights.main.setState.value) return;
 
-    scenes.autoLight._set.trigger();
+    scenes.autoLight.main.instance.trigger();
   });
 
-  groups.allLights._set.observe((value) => {
-    properties.allLightsTimer.active.$.value = value;
+  groups.allLights.main.setState.observe((value) => {
+    properties.allLightsTimer.active.instance.value = value;
   }, true);
 
-  properties.allLightsTimer.$.i.observe(() => {
-    groups.allLights._set.value = false;
+  properties.allLightsTimer.instance.observe(() => {
+    groups.allLights.main.setState.value = false;
   });
 })();
 
-export const tsiaBathroom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-    ...scenes,
-  },
-  {
-    level: Levels.ROOM,
-    name: 'tsiaBathroom',
-  }
-);
+export const tsiaBathroom = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+  scenes: element({ ...scenes, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, symbolLevel } from '../../lib/tree/main-ng.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -44,19 +44,19 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.$.button0.$.i,
-  wallswitchFrontLeft: devices.wallswitchFront.$.button0.$.i,
-  wallswitchFrontMiddle: devices.wallswitchFront.$.button1.$.i,
-  wallswitchFrontRight: devices.wallswitchFront.$.button2.$.i,
-  wallswitchMiddle: devices.wallswitchBack.$.button1.$.i,
+  wallswitchBack: devices.wallswitchBack.button0.instance,
+  wallswitchFrontLeft: devices.wallswitchFront.button0.instance,
+  wallswitchFrontMiddle: devices.wallswitchFront.button1.instance,
+  wallswitchFrontRight: devices.wallswitchFront.button2.instance,
+  wallswitchMiddle: devices.wallswitchBack.button1.instance,
 };
 
 const partialProperties = {
-  ceilingLightBack: devices.ceilingLightBack.$.relay,
-  ceilingLightFront: devices.ceilingLightFront.$.relay,
-  door: new Element({
+  ceilingLightBack: devices.ceilingLightBack.relay,
+  ceilingLightFront: devices.ceilingLightFront.relay,
+  door: element({
     name: 'entryDoor',
-    open: devices.doorSensor.$.open,
+    open: devices.doorSensor.open,
     [symbolLevel]: Level.AREA,
   }),
 };
@@ -86,12 +86,16 @@ export const properties = {
   );
   const { kitchenAdjacentChillax } = await import('../scenes.js');
 
-  instances.wallswitchBack.up(() => groups.ceilingLight.$.flip.$.i.trigger());
+  instances.wallswitchBack.up(() =>
+    groups.ceilingLight.flip.instance.trigger()
+  );
 
-  instances.wallswitchMiddle.up(() => groups.ceilingLight.$.flip.$.i.trigger());
+  instances.wallswitchMiddle.up(() =>
+    groups.ceilingLight.flip.instance.trigger()
+  );
 
   instances.wallswitchFrontLeft.up(() =>
-    properties.ceilingLightFront.$.flip.$.i.trigger()
+    properties.ceilingLightFront.flip.instance.trigger()
   );
   instances.wallswitchFrontLeft.longPress(() => {
     if (kitchenAdjacentLights._set.value) {
@@ -103,37 +107,37 @@ export const properties = {
   });
 
   instances.wallswitchFrontMiddle.up(() =>
-    properties.ceilingLightBack.$.flip.$.i.trigger()
+    properties.ceilingLightBack.flip.instance.trigger()
   );
-  instances.wallswitchFrontRight.up(() => (all.$.m.$.setState.value = false));
+  instances.wallswitchFrontRight.up(() => (all.main.setState.value = false));
   instances.wallswitchFrontRight.longPress(() =>
-    allLights.$.flip.$.i.trigger()
+    allLights.flip.instance.trigger()
   );
 
-  properties.door.$.open.$.m.$.i.observe((value) => {
+  properties.door.open.main.instance.observe((value) => {
     if (!value) {
-      if (!groups.ceilingLight.$.m.$.i.value) return;
+      if (!groups.ceilingLight.main.instance.value) return;
 
-      properties.entryDoorTimer.$.active.$.i.value = true;
+      properties.entryDoorTimer.active.instance.value = true;
 
       return;
     }
 
-    properties.ceilingLightFront.$.m.$.setState.value = true;
+    properties.ceilingLightFront.main.setState.value = true;
   });
 
-  groups.ceilingLight.$.m.$.setState.observe(
-    () => (properties.entryDoorTimer.$.active.$.i.value = false),
+  groups.ceilingLight.main.setState.observe(
+    () => (properties.entryDoorTimer.active.instance.value = false),
     true
   );
 
-  properties.entryDoorTimer.$.i.observe(() => {
-    groups.ceilingLight.$.m.$.setState.value = false;
+  properties.entryDoorTimer.instance.observe(() => {
+    groups.ceilingLight.main.setState.value = false;
   });
 })();
 
-export const hallway = new Element({
-  devices: new Element({ ...devices, [symbolLevel]: Level.NONE }),
+export const hallway = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
   ...groups,
   ...properties,
   [symbolLevel]: Level.ROOM,
