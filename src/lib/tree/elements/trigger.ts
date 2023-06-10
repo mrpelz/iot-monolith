@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import {
-  Element,
   Level,
   TValueType,
   ValueType,
+  element,
   matchClass,
   matchValue,
   symbolInstance,
@@ -20,7 +20,7 @@ export const trigger = <N extends string, V extends ValueType>(
   nullState: NullState<TValueType[V]>,
   name?: N
 ) =>
-  new Element({
+  element({
     name,
     [symbolInstance]: nullState,
     [symbolLevel]: Level.ELEMENT as const,

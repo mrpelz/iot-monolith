@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, ValueType, addMeta } from '../lib/tree/main.js';
+import {
+  Level,
+  ValueType,
+  element,
+  symbolLevel,
+  symbolMain,
+} from '../lib/tree/main-ng.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
@@ -11,9 +17,10 @@ import {
   sunElevation as sunElevationUtil,
 } from './util.js';
 import { Schedule } from '../lib/schedule.js';
+import { getter } from '../lib/tree/elements/getter.js';
 
 export const sunElevation = (schedule: Schedule) => {
-  const getter = () => {
+  const getValues = () => {
     const elevation = sunElevationUtil();
 
     return {
@@ -26,19 +33,19 @@ export const sunElevation = (schedule: Schedule) => {
     };
   };
 
-  const elevation = new Observable(getter().elevation);
+  const elevation = new Observable(getValues().elevation);
   const readOnlyElevation = new ReadOnlyObservable(elevation);
 
   const isAstronomicalTwilight = new Observable(
-    getter().isAstronomicalTwilight
+    getValues().isAstronomicalTwilight
   );
-  const isCivilTwilight = new Observable(getter().isCivilTwilight);
-  const isDay = new Observable(getter().isDay);
-  const isNauticalTwilight = new Observable(getter().isNauticalTwilight);
-  const isNight = new Observable(getter().isNight);
+  const isCivilTwilight = new Observable(getValues().isCivilTwilight);
+  const isDay = new Observable(getValues().isDay);
+  const isNauticalTwilight = new Observable(getValues().isNauticalTwilight);
+  const isNight = new Observable(getValues().isNight);
 
   schedule.addTask(() => {
-    const state = getter();
+    const state = getValues();
 
     elevation.value = state.elevation;
 
@@ -50,67 +57,23 @@ export const sunElevation = (schedule: Schedule) => {
   });
 
   return {
-    sunElevation: addMeta(
-      {
-        _get: readOnlyElevation,
-        isAstronomicalTwilight: addMeta(
-          {
-            _get: new ReadOnlyObservable(isAstronomicalTwilight),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ),
-        isCivilTwilight: addMeta(
-          {
-            _get: new ReadOnlyObservable(isCivilTwilight),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ),
-        isDay: addMeta(
-          {
-            _get: new ReadOnlyObservable(isDay),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ),
-        isNauticalTwilight: addMeta(
-          {
-            _get: new ReadOnlyObservable(isNauticalTwilight),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ),
-        isNight: addMeta(
-          {
-            _get: new ReadOnlyObservable(isNight),
-          },
-          {
-            level: Levels.PROPERTY,
-            type: 'sensor',
-            valueType: ValueType.BOOLEAN,
-          }
-        ),
-      },
-      {
-        level: Levels.PROPERTY,
-        measured: 'sunElevation',
-        type: 'sensor',
-        unit: 'deg',
-        valueType: ValueType.NUMBER,
-      }
-    ),
+    sunElevation: element({
+      isAstronomicalTwilight: getter(
+        ValueType.BOOLEAN,
+        new ReadOnlyObservable(isAstronomicalTwilight)
+      ),
+      isCivilTwilight: getter(
+        ValueType.BOOLEAN,
+        new ReadOnlyObservable(isCivilTwilight)
+      ),
+      isDay: getter(ValueType.BOOLEAN, new ReadOnlyObservable(isDay)),
+      isNauticalTwilight: getter(
+        ValueType.BOOLEAN,
+        new ReadOnlyObservable(isNauticalTwilight)
+      ),
+      isNight: getter(ValueType.BOOLEAN, new ReadOnlyObservable(isNight)),
+      [symbolLevel]: Level.PROPERTY,
+      [symbolMain]: getter(ValueType.NUMBER, readOnlyElevation),
+    }),
   };
 };

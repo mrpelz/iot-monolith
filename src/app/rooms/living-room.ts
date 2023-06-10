@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import {
   outputGrouping,
   trigger,
@@ -8,7 +8,6 @@ import {
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import fetch from 'node-fetch';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
@@ -56,24 +55,27 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton.$.i,
-  fanButton: devices.fan.button.$,
-  standingLampButton: devices.standingLamp.button.$,
-  wallswitchBottom: devices.wallswitch.button2.$,
-  wallswitchMiddle: devices.wallswitch.button1.$,
-  wallswitchTop: devices.wallswitch.button0.$,
+  couchButton: devices.couchButton.instance,
+  fanButton: devices.fan.button.instance,
+  standingLampButton: devices.standingLamp.button.instance,
+  wallswitchBottom: devices.wallswitch.button2.instance,
+  wallswitchMiddle: devices.wallswitch.button1.instance,
+  wallswitchTop: devices.wallswitch.button0.instance,
 };
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
-  window: addMeta({ open: devices.windowSensor.open }, { level: Levels.AREA }),
+  window: element({
+    open: devices.windowSensor.open,
+    [symbolLevel]: Level.AREA,
+  }),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
-  allWindows: inputGrouping(properties.window.open._get),
+  allWindows: inputGrouping(properties.window.open.main.instance),
 };
 
 export const scenes = {
@@ -103,85 +105,87 @@ export const scenes = {
   const { instances: testRoomInstances } = await import('./test-room.js');
 
   instances.couchButton.topLeft.observe(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.main.setState.value = true;
   });
-  instances.couchButton.topRight.observe(() => properties.fan._set.flip());
+  instances.couchButton.topRight.observe(() =>
+    properties.fan.flip.instance.trigger()
+  );
   instances.couchButton.bottomLeft.observe(() =>
-    scenes.mediaOnOrSwitch._set.trigger()
+    scenes.mediaOnOrSwitch.main.instance.trigger()
   );
   instances.couchButton.bottomRight.observe(() =>
-    scenes.mediaOff._set.trigger()
+    scenes.mediaOff.main.instance.trigger()
   );
 
   testRoomInstances.espNowButton0.up(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.main.setState.value = true;
   });
 
   testRoomInstances.espNowButton1.up(() =>
-    scenes.mediaOnOrSwitch._set.trigger()
+    scenes.mediaOnOrSwitch.main.instance.trigger()
   );
   testRoomInstances.espNowButton1.longPress(() =>
-    scenes.mediaOff._set.trigger()
+    scenes.mediaOff.main.instance.trigger()
   );
 
-  instances.fanButton.up(() => properties.fan._set.flip());
+  instances.fanButton.up(() => properties.fan.flip.instance.trigger());
 
-  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
+  instances.standingLampButton.up(() =>
+    properties.standingLamp.flip.instance.trigger()
+  );
   instances.standingLampButton.longPress(
-    () => (kitchenAdjacentLights._set.value = false)
+    () => (kitchenAdjacentLights.main.setState.value = false)
   );
 
-  instances.wallswitchBottom.up(() => properties.fan._set.flip());
+  instances.wallswitchBottom.up(() => properties.fan.flip.instance.trigger());
   instances.wallswitchBottom.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.main.setState.value = true;
   });
 
-  instances.wallswitchMiddle.up(() => properties.standingLamp._set.flip());
+  instances.wallswitchMiddle.up(() =>
+    properties.standingLamp.flip.instance.trigger()
+  );
   instances.wallswitchMiddle.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.main.setState.value = true;
   });
 
-  instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchTop.up(() =>
+    properties.ceilingLight.flip.instance.trigger()
+  );
   instances.wallswitchTop.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright._set.value = true;
+    kitchenAdjacentBright.main.setState.value = true;
   });
 })();
 
-export const livingRoom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-    ...scenes,
-  },
-  {
-    isDaylit: true,
-    level: Levels.ROOM,
-    name: 'livingRoom',
-  }
-);
+export const livingRoom = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+  scenes: element({ ...scenes, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

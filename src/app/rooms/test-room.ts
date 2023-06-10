@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Levels, addMeta } from '../../lib/tree/main.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
 import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
@@ -34,8 +34,8 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.button0.$,
-  espNowButton1: devices.espNowButton.espNow.button1.$,
+  espNowButton0: devices.espNowButton.espNow.button0.instance,
+  espNowButton1: devices.espNowButton.espNow.button1.instance,
 };
 
 export const properties = {
@@ -59,14 +59,9 @@ export const groups = {};
   // noop
 })();
 
-export const testRoom = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-  },
-  {
-    level: Levels.ROOM,
-    name: 'testRoom',
-  }
-);
+export const testRoom = element({
+  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+  ...groups,
+  ...properties,
+  [symbolLevel]: Level.ROOM,
+});

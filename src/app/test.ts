@@ -1,8 +1,8 @@
 import {
   Children,
-  Element,
   Level,
   ValueType,
+  element,
   matchClass,
   matchValue,
 } from '../lib/tree/main-ng.js';
@@ -12,16 +12,16 @@ import { selectSetter, setter } from '../lib/tree/elements/setter.js';
 import { inspect } from 'node:util';
 
 const testA = <C extends Children>(children = {} as C) =>
-  new Element({ level: Level.NONE, name: 'testA', ...children });
+  element({ level: Level.NONE, name: 'testA', ...children });
 
 const testB = <C extends Children>(id: string, children = {} as C) =>
-  new Element({ level: Level.NONE, name: id, ...children });
+  element({ level: Level.NONE, name: id, ...children });
 
 class TestMatcherClass<T extends string> {
   bar: T;
 }
 
-const testC = new Element(
+const testC = element(
   {
     instance: new TestMatcherClass(),
     level: Level.NONE,

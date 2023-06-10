@@ -1,4 +1,4 @@
-import { Observable } from './observable.js';
+import { AnyWritableObservable } from './observable.js';
 import { sleep } from './sleep.js';
 
 export type OrchestrationTimedStep<T> = [T, number];
@@ -19,7 +19,10 @@ export const orchestrate =
   <T>(
     orchestration: Orchestration<T>,
     _includeEndSleep?: boolean
-  ): ((state: Observable<T>, includeEndSleep?: boolean) => Promise<void>) =>
+  ): ((
+    state: AnyWritableObservable<T>,
+    includeEndSleep?: boolean
+  ) => Promise<void>) =>
   async (state, includeEndSleep = _includeEndSleep) => {
     let count = 1;
 

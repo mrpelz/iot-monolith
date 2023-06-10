@@ -56,8 +56,6 @@ export type Props = Record<string | symbol, unknown> & {
 };
 
 type ExtendedProps<T extends Props> = T & {
-  i: T[typeof symbolInstance];
-  m: T[typeof symbolMain];
   [symbolId]?: string;
   [symbolKey]?: string;
 };
@@ -73,7 +71,7 @@ export type MatcherPropsMap<T extends MatcherProps> = {
   [P in keyof T]: Exclude<T[P][number], T[P][0]>;
 };
 
-export class Element<T extends Props = Record<string | symbol, unknown>> {
+class Element<T extends Props = Record<string | symbol, unknown>> {
   private _hasBeenInitialized = false;
   private _id?: string;
   private _key?: string;
@@ -110,16 +108,6 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
     }
   }
 
-  get $(): ExtendedProps<T> {
-    return {
-      ...this._props,
-      i: this._props[symbolInstance],
-      m: this._props[symbolMain],
-      [symbolId]: this._id,
-      [symbolKey]: this._key,
-    } as ExtendedProps<T>;
-  }
-
   get children(): ExtractProperties<T, Element> {
     return Object.fromEntries(
       objectProperties(this._props)
@@ -128,8 +116,24 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
     ) as ExtractProperties<T, Element>;
   }
 
+  get instance(): T[typeof symbolInstance] {
+    return this._props[symbolInstance] as T[typeof symbolInstance];
+  }
+
+  get main(): T[typeof symbolMain] {
+    return this._props[symbolMain] as T[typeof symbolMain];
+  }
+
   get parent(): Element | undefined {
     return this._parent;
+  }
+
+  get props(): ExtendedProps<T> {
+    return {
+      ...this._props,
+      [symbolId]: this._id,
+      [symbolKey]: this._key,
+    } as ExtendedProps<T>;
   }
 
   init(parent?: Element, key = '^', path = [] as readonly string[]): void {
@@ -156,7 +160,7 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
 
     for (const property of objectProperties(props)) {
       const [matcher, ...values] = props[property];
-      const b = this.$[property as string];
+      const b = this.props[property as string];
 
       if (values.some((a) => matcher(a, b))) continue;
       return false;
@@ -230,6 +234,37 @@ export class Element<T extends Props = Record<string | symbol, unknown>> {
     return this._parent.matchParent(props, depth - 1);
   }
 }
+
+export type TElement = typeof Element;
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const element = <T extends Props = Record<string | symbol, unknown>>(
+  props: T,
+  initCallback?: InitFunction<Element<T>>
+) => {
+  const _element = new Element(props, initCallback);
+
+  return new Proxy(_element, {
+    get(target, property) {
+      if (property in target) {
+        return target[property as keyof typeof target];
+      }
+
+      if (property in target.props) {
+        return target.props[property as keyof typeof target.props];
+      }
+
+      return undefined;
+    },
+
+    has(target, property) {
+      if (property in target) return true;
+      if (property in target.props) return true;
+
+      return false;
+    },
+  }) as T & Element<T>;
+};
 
 export const matchClass = <M extends AbstractClass>(
   a: M | undefined,

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
-  Element,
   Level,
   ValueType,
+  element,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -67,14 +67,14 @@ export const ev1527WindowSensor = (
     (input) => input !== null
   );
 
-  return new Element({
+  return element({
     ...ev1527Device(device),
-    open: new Element({
+    open: element({
       ...lastChange(receivedOpen),
       isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
       [symbolLevel]: Level.PROPERTY,
       [symbolMain]: getter(ValueType.BOOLEAN, isOpen),
-      tamperSwitch: new Element({
+      tamperSwitch: element({
         ...lastChange(receivedTamperSwitch),
         [symbolMain]: getter(ValueType.BOOLEAN, tamperSwitch),
       }),

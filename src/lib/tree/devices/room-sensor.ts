@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import {
-  Element,
   Level,
   ValueType,
-  symbolInstance,
+  element,
   symbolLevel,
   symbolMain,
 } from '../main-ng.js';
@@ -55,12 +54,12 @@ export const roomSensor = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.$.m.$.i,
-      bme280Temperature.$.m.$.i,
+      mcp9808Temperature.main.instance,
+      bme280Temperature.main.instance,
     ])
   );
 
-  const temperature = new Element({
+  const temperature = element({
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     mcp9808: mcp9808Temperature,
@@ -69,7 +68,7 @@ export const roomSensor = (
   });
 
   const sgp30MeasurementInputGetter = () => {
-    const _humidity = humidity.$.m.$.i.value;
+    const _humidity = humidity.main.instance.value;
     const _temperature = temperatureState.value;
 
     if (_humidity === null || _temperature === null) return null;
@@ -80,7 +79,7 @@ export const roomSensor = (
     };
   };
 
-  return new Element({
+  return element({
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     // ...mhz19(device, timings.slow || timings.default),
     // ...sds011(device, timings.slow || timings.default),

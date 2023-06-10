@@ -6,10 +6,10 @@ import {
   ReadOnlyProxyObservable,
 } from '../../observable.js';
 import {
-  Element,
   Level,
   TValueType,
   ValueType,
+  element,
   matchClass,
   matchValue,
   symbolInstance,
@@ -26,7 +26,7 @@ export const getter = <N extends string, U extends string, V extends ValueType>(
   unit?: U,
   name?: N
 ) =>
-  new Element({
+  element({
     name,
     [symbolInstance]: state,
     [symbolLevel]: Level.ELEMENT as const,
