@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
 import { epochs } from '../../lib/epochs.js';

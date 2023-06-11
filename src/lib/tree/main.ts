@@ -1,24 +1,17 @@
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { objectProperties } from '../oop.js';
+import { v5 as uuidv5 } from 'uuid';
 
-import {
-  AnyReadOnlyObservable,
-  AnyWritableObservable,
-  Observable,
-  ReadOnlyObservable,
-  isWritableObservable,
-} from '../observable.js';
-import { RollingNumber } from '../rolling-number.js';
-import { createHash } from 'node:crypto';
+const TREE_UUID_NAMESPACE = '3908a9a5-cae8-4c7a-901f-6a02bb40a915';
 
-const ROOT_IDENTIFIER = '$';
+export const symbolId = Symbol('id');
+export const symbolInstance = Symbol('instance');
+export const symbolKey = Symbol('key');
+export const symbolMain = Symbol('main');
+export const symbolSpecies = Symbol('species');
 
-const inherit = Symbol('inherit');
-
-type Inherit = typeof inherit;
-
-enum Levels {
+export const symbolLevel = Symbol('level');
+export enum Level {
+  NONE,
   SYSTEM,
   HOME,
   BUILDING,
@@ -27,9 +20,11 @@ enum Levels {
   AREA,
   DEVICE,
   PROPERTY,
+  ELEMENT,
 }
 
-enum ValueType {
+export const symbolValueType = Symbol('valueType');
+export enum ValueType {
   NULL,
   BOOLEAN,
   NUMBER,
@@ -37,329 +32,277 @@ enum ValueType {
   RAW,
 }
 
-enum ParentRelation {
-  META_RELATION,
-  CONTROL_TRIGGER,
-  CONTROL_EXTENSION,
-  DATA_QUALIFIER,
-  DATA_AGGREGATION_SOURCE,
-}
-
-type MetaSystem = {
-  id: string;
-  level: Levels.SYSTEM;
+export type TValueType = {
+  [ValueType.BOOLEAN]: boolean;
+  [ValueType.NULL]: null;
+  [ValueType.NUMBER]: number;
+  [ValueType.RAW]: unknown;
+  [ValueType.STRING]: string;
 };
 
-type MetaHome = {
-  isPrimary?: true;
-  level: Levels.HOME;
-  name: string;
+export type AbstractClass = abstract new (...args: unknown[]) => unknown;
+export type ExtractProperties<T, F> = {
+  [P in keyof T as T[P] extends F ? P : never]: T[P];
 };
 
-type MetaBuilding = {
-  isPrimary?: true;
-  level: Levels.BUILDING;
-  name: string;
+export type Children = Record<string, Element>;
+export type InitFunction<T extends Element> = (self: T) => void;
+
+export type Props = Record<string | symbol, unknown> & {
+  [symbolLevel]?: Level;
+  [symbolMain]?: Element;
+  [symbolSpecies]?: symbol;
+  [symbolValueType]?: ValueType;
 };
 
-type MetaFloor = {
-  isBasement?: true;
-  isGroundFloor?: true;
-  isPartiallyOutside?: true;
-  isPrimary?: true;
-  level: Levels.FLOOR;
-  name: string;
+type ExtendedProps<T extends Props> = T & {
+  [symbolId]?: string;
+  [symbolKey]?: string;
 };
 
-type MetaRoom = {
-  isConnectingRoom?: true;
-  isDaylit?: true;
-  level: Levels.ROOM;
-  name: string;
+export type InstanceMap<T extends Props> = {
+  [P in keyof T]: T[P] extends AbstractClass ? InstanceType<T[P]> : T[P];
 };
 
-type MetaArea = {
-  level: Levels.AREA;
-  name: string;
+export type MatcherFunction<T> = (a: T, b: unknown) => boolean;
+export type MatcherFunctionTuple<T> = readonly [MatcherFunction<T>, ...T[]];
+export type MatcherProps = Record<string, MatcherFunctionTuple<unknown>>;
+export type MatcherPropsMap<T extends MatcherProps> = {
+  [P in keyof T]: Exclude<T[P][number], T[P][0]>;
 };
 
-type MetaDevice = {
-  host?: string;
-  identifier?: number[];
-  isSubDevice?: true;
-  level: Levels.DEVICE;
-  name: string;
-  port?: number;
-  transportType?: string;
-  type?: string;
-};
+class Element<T extends Props = Record<string | symbol, unknown>> {
+  private _hasBeenInitialized = false;
+  private _id?: string;
+  private _key?: string;
+  private _parent?: Element;
+  private _path?: string[];
 
-type MetaProperty = {
-  level: Levels.PROPERTY;
-  name: string | Inherit;
-  parentRelation?: ParentRelation;
-};
-
-type MetaPropertySensor = MetaProperty & {
-  measured?: string | Inherit;
-  type: 'sensor';
-  unit?: string;
-  valueType: ValueType;
-};
-
-type MetaPropertyActuator = MetaProperty & {
-  actuated?: string | Inherit;
-  type: 'actuator';
-  valueType: ValueType;
-};
-
-type Meta =
-  | MetaSystem
-  | MetaHome
-  | MetaBuilding
-  | MetaFloor
-  | MetaRoom
-  | MetaArea
-  | MetaDevice
-  | MetaPropertySensor
-  | MetaPropertyActuator;
-
-interface MetadataExtensionStore {
-  delete(key: object): boolean;
-  get<T extends Meta, K extends object>(
-    key: K
-  ): Partial<Record<keyof K, Partial<T>>> | undefined;
-  has(key: object): boolean;
-  set<T extends Meta, K extends object>(
-    key: K,
-    value: Partial<Record<keyof K, Partial<T>>>
-  ): this;
-}
-
-type Stream = ReadOnlyObservable<[number, unknown] | null>;
-type Values = [number, unknown][];
-
-const metadataStore = new WeakMap<object, Partial<Meta>>();
-const metadataExtensionStore = new WeakMap() as MetadataExtensionStore;
-
-const valueTypeMap = {
-  [ValueType.BOOLEAN]: {
-    typeof: 'boolean',
-  },
-  [ValueType.NULL]: {
-    typeof: 'object',
-    value: null,
-  },
-  [ValueType.NUMBER]: {
-    typeof: 'number',
-  },
-  [ValueType.RAW]: {
-    abort: true,
-  },
-  [ValueType.STRING]: {
-    typeof: 'string',
-  },
-};
-
-export const isValidValue = (value: unknown, valueType: ValueType): boolean => {
-  const valueTypeMapItem = valueTypeMap[valueType];
-  if (!valueTypeMapItem) return false;
-
-  if ('abort' in valueTypeMapItem && valueTypeMapItem.abort) {
-    return false;
-  }
-
-  if ('value' in valueTypeMapItem && valueTypeMapItem.value !== value) {
-    return false;
-  }
-
-  if (
-    'typeof' in valueTypeMapItem &&
-    valueTypeMapItem.typeof !== typeof value
+  constructor(
+    private readonly _props: T,
+    private readonly _initCallback?: InitFunction<Element<T>>
   ) {
-    return false;
+    Object.freeze(this._props);
   }
 
-  return true;
-};
-
-export class Tree {
-  private _getterIndex = new RollingNumber(0, Infinity);
-  private readonly _getters = new Map<AnyReadOnlyObservable<unknown>, number>();
-  private _setterIndex = new RollingNumber(0, Infinity);
-  private readonly _setters = new Map<
-    number,
-    [AnyWritableObservable<unknown>, ValueType]
-  >();
-
-  readonly stream: Stream;
-  readonly structure: any;
-
-  constructor(input: any) {
-    this.structure = this._serialize(input, [], ROOT_IDENTIFIER);
-    this.stream = this._stream();
-  }
-
-  private _getGetterIndex(value: AnyReadOnlyObservable<unknown>) {
-    const entry = this._getters.get(value);
-    if (entry !== undefined) return entry;
-
-    const entryIndex = this._getterIndex.get();
-    this._getters.set(value, entryIndex);
-
-    return entryIndex;
-  }
-
-  private _getSetterIndex(
-    value: AnyWritableObservable<unknown>,
-    valueType: ValueType
+  private _handleChildren(
+    childCallback: (child: Element, property: string) => void
   ) {
-    const entry = [...this._setters.entries()].find(
-      ([, [setter]]) => setter === value
-    )?.[0];
-    if (entry !== undefined) return entry;
+    for (const property of objectProperties(this.children)) {
+      const child = this.children[property];
 
-    const entryIndex = this._setterIndex.get();
-    this._setters.set(entryIndex, [value, valueType]);
+      if (child instanceof Element) {
+        childCallback(
+          child,
+          (() => {
+            if ((property as symbol) === symbolMain) return '$';
+            if (typeof property === 'string') return property;
+            if (typeof property === 'symbol') {
+              return `$${(property as symbol).description || '_'}`;
+            }
 
-    return entryIndex;
-  }
-
-  private _serialize<T extends Meta>(
-    object: any,
-    previousPath: string[],
-    property: string,
-    parentMeta?: T,
-    metaExtension?: Partial<Meta>
-  ) {
-    if (typeof object !== 'object') return undefined;
-
-    const extension = metadataExtensionStore.get(object) || undefined;
-
-    const meta = (() => {
-      const result = metadataStore.get(object) || undefined;
-      if (!result) return undefined;
-
-      for (const [key, value] of Object.entries(result)) {
-        if (value === inherit) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          result[key] = parentMeta[key];
-        }
+            return '_';
+          })()
+        );
       }
-
-      if (
-        result.level !== Levels.SYSTEM &&
-        (!('name' in result) || !result.name) &&
-        property
-      ) {
-        (result as Partial<Exclude<Meta, MetaSystem>>).name = property;
-      }
-
-      return {
-        ...result,
-        ...metaExtension,
-      } as Meta;
-    })();
-
-    const thisPath = [...previousPath, property];
-
-    const children = ((): any => {
-      const result = Object.entries(object)
-        .filter(([key]) => !['$', '_get', '_set'].includes(key))
-        .map(([key, node]) => [
-          key,
-          this._serialize(node, thisPath, key, meta as T, extension?.[key]),
-        ]);
-
-      return result.length ? Object.fromEntries(result) : undefined;
-    })();
-
-    const get = (() => {
-      if (!('_get' in object)) return undefined;
-      if (isWritableObservable(object._get)) {
-        return undefined;
-      }
-
-      return this._getGetterIndex(object._get);
-    })();
-
-    const set = (() => {
-      if (!('_set' in object)) return undefined;
-      if (!meta) return undefined;
-      if (meta.level !== Levels.PROPERTY) return undefined;
-      if (meta.valueType === undefined) return undefined;
-
-      return this._getSetterIndex(object._set, meta.valueType);
-    })();
-
-    const id =
-      property === ROOT_IDENTIFIER
-        ? ROOT_IDENTIFIER
-        : createHash('sha256').update(thisPath.join('\0')).digest('hex');
-
-    return {
-      children,
-      get,
-      id,
-      meta,
-      property,
-      set,
-    };
-  }
-
-  private _stream(): Stream {
-    const observable = new Observable<[number, unknown] | null>(null);
-
-    for (const [getter, key] of this._getters) {
-      (getter as unknown as AnyReadOnlyObservable<unknown>).observe(
-        (value) => (observable.value = [key, value])
-      );
     }
-
-    return new ReadOnlyObservable(observable);
   }
 
-  getter(index: number): AnyReadOnlyObservable<unknown> | undefined {
-    const result = Array.from(this._getters.entries()).find(
-      ([, gettersIndex]) => gettersIndex === index
+  get children(): ExtractProperties<T, Element> {
+    return Object.fromEntries(
+      objectProperties(this._props)
+        .filter((property) => this._props[property] instanceof Element)
+        .map((property) => [property, this._props[property]] as const)
+    ) as ExtractProperties<T, Element>;
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get instance() {
+    return this._props[symbolInstance] as T[typeof symbolInstance];
+  }
+
+  get key() {
+    return this._key;
+  }
+
+  get main() {
+    return this._props[symbolMain] as T[typeof symbolMain];
+  }
+
+  get parent() {
+    return this._parent;
+  }
+
+  get props() {
+    return {
+      ...this._props,
+      [symbolId]: this._id,
+      [symbolKey]: this._key,
+    } as ExtendedProps<T>;
+  }
+
+  init(parent?: Element, key = '^', path = [] as readonly string[]): void {
+    if (this._hasBeenInitialized) return;
+    this._hasBeenInitialized = true;
+
+    this._parent = parent;
+    this._key = key;
+    this._path = [...path, this._key];
+
+    this._id = uuidv5(this._path.join('\0'), TREE_UUID_NAMESPACE);
+
+    this._handleChildren((child, property) =>
+      child.init(this, property, this._path)
     );
 
-    if (!result) return undefined;
-
-    const [getter] = result;
-
-    return getter;
+    this._initCallback?.(this);
   }
 
-  set(index: number, value: unknown): void {
-    const item = this._setters.get(index);
-    if (!item) return;
+  match<M extends MatcherProps>(
+    props?: M
+  ): this is Element<InstanceMap<MatcherPropsMap<M>>> {
+    if (!props) return true;
 
-    const [setter, valueType] = item;
-    if (!isValidValue(value, valueType)) return;
+    for (const property of objectProperties(props)) {
+      const [matcher, ...values] = props[property];
+      const b = this.props[property as string];
 
-    setter.value = value;
+      if (values.some((a) => matcher(a, b))) continue;
+      return false;
+    }
+
+    return true;
   }
 
-  values(): Values {
-    return Array.from(this._getters.entries()).map(([state, index]) => [
-      index,
-      state.value,
-    ]);
+  matchAllChildren<M extends MatcherProps>(
+    props?: M,
+    depth = 1
+  ): (Element<InstanceMap<MatcherPropsMap<M>>> | undefined)[] {
+    const directMatch =
+      Object.values(this.children).filter(
+        (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
+          child instanceof Element && child.match(props)
+      ) || [];
+
+    if (!depth || !directMatch) return directMatch;
+
+    const indirectMatch = [
+      directMatch,
+      Object.values(this.children)
+        .map((child) =>
+          child instanceof Element
+            ? child.matchAllChildren(props, depth - 1)
+            : []
+        )
+        .flat(1) || [],
+    ].flat(1);
+
+    return indirectMatch;
+  }
+
+  matchFirstChild<M extends MatcherProps>(
+    props?: M,
+    depth = 1
+  ): Element<InstanceMap<MatcherPropsMap<M>>> | undefined {
+    const directMatch = Object.values(this.children).find(
+      (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
+        child instanceof Element && child.match(props)
+    );
+
+    if (directMatch) return directMatch;
+    if (!this.children || !depth) return undefined;
+
+    for (const child of Object.values(this.children)) {
+      const match =
+        child instanceof Element && child.matchFirstChild(props, depth - 1);
+
+      if (match) return match;
+    }
+
+    return undefined;
+  }
+
+  matchParent<M extends MatcherProps>(
+    props?: M,
+    depth = -1
+  ): Element<InstanceMap<MatcherPropsMap<M>>> | undefined {
+    if (!this._parent) return undefined;
+
+    const directMatch = this._parent.match(props);
+
+    if (directMatch) {
+      return this._parent as Element<InstanceMap<MatcherPropsMap<M>>>;
+    }
+
+    if (!depth) return undefined;
+
+    return this._parent.matchParent(props, depth - 1);
+  }
+
+  toString(): unknown {
+    return {
+      id: this.id,
+      instance: this.instance?.toString(),
+      key: this.key,
+      main: this.main?.toString(),
+      props: Object.fromEntries(
+        objectProperties(this._props).map(
+          (property) =>
+            [
+              typeof property === 'symbol'
+                ? property.description || 'unknown Symbol'
+                : property,
+              this._props[property]?.toString(),
+            ] as const
+        )
+      ),
+    };
   }
 }
 
-interface Dictionary<O extends object = {}> {
-  readonly size: number;
-  get<K extends keyof O>(key: K): O[K];
-  set<K extends PropertyKey, V>(
-    key: Exclude<K, keyof O>,
-    value: V
-  ): asserts this is Dictionary<{
-    [P in K | keyof O]: P extends K ? V : P extends keyof O ? O[P] : V;
-  }>;
-  set<K extends keyof O>(key: K, value: O[K]): void;
-}
-// eslint-disable-next-line @typescript-eslint/naming-convention
-declare const Dictionary: new () => Dictionary;
+export type TElement = typeof Element;
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const element = <T extends Props = Record<string | symbol, unknown>>(
+  props: T,
+  initCallback?: InitFunction<Element<T>>
+) => {
+  const _element = new Element(props, initCallback);
+
+  return new Proxy(_element, {
+    get(target, property) {
+      if (property in target) {
+        return target[property as keyof typeof target];
+      }
+
+      if (property in target.props) {
+        return target.props[property as keyof typeof target.props];
+      }
+
+      return undefined;
+    },
+
+    has(target, property) {
+      if (property in target) return true;
+      if (property in target.props) return true;
+
+      return false;
+    },
+  }) as T & Element<T>;
+};
+
+export const matchClass = <M extends AbstractClass>(
+  a: M | undefined,
+  b: unknown
+): b is InstanceType<M> => {
+  if (a === undefined) return true;
+  return b instanceof a;
+};
+
+export const matchValue = <M>(a: M | undefined, b: unknown): b is M => {
+  if (a === undefined) return true;
+  return a === b;
+};

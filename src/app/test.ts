@@ -5,7 +5,7 @@ import {
   element,
   matchClass,
   matchValue,
-} from '../lib/tree/main-ng.js';
+} from '../lib/tree/main.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import { getter, selectGetter } from '../lib/tree/elements/getter.js';
 import { selectSetter, setter } from '../lib/tree/elements/setter.js';

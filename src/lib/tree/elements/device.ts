@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, matchValue, symbolLevel, symbolSpecies } from '../main-ng.js';
+import { Level, matchValue, symbolLevel, symbolSpecies } from '../main.js';
 import {
   Timings,
   hello,
@@ -47,7 +47,7 @@ export const ipDevice = (
   persistence: Persistence,
   timings: Timings,
   indicator?: Indicator,
-  initiallyOnline?: boolean
+  initiallyOnline = false
 ) => ({
   ...deviceMeta(device),
   ...hello(device, timings.moderate || timings.default),

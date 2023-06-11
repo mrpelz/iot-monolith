@@ -1,4 +1,4 @@
-import { Tree, isValidValue } from './tree/main.js';
+import { Tree, isValidValue } from './tree/util.js';
 import { HttpServer } from './http-server.js';
 
 const PATH_HOOKS = '/hooks' as const;

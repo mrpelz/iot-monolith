@@ -5,7 +5,7 @@ import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
-import { element } from '../main-ng.js';
+import { element } from '../main.js';
 import { ipDevice } from '../elements/device.js';
 import { led } from '../properties/actuators.js';
 

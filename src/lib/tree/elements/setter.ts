@@ -18,7 +18,7 @@ import {
   symbolLevel,
   symbolSpecies,
   symbolValueType,
-} from '../main-ng.js';
+} from '../main.js';
 
 const $ = Symbol('setter');
 

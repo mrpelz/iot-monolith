@@ -23,7 +23,7 @@ import {
   element,
   symbolLevel,
   symbolMain,
-} from '../main-ng.js';
+} from '../main.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output } from '../../items/output.js';
@@ -284,7 +284,7 @@ export const scene = <T extends string>(
 export const setOnline = (
   device: IpDevice,
   _: Persistence,
-  initiallyOnline = true
+  initiallyOnline: boolean
 ) => {
   const state = new BooleanState(initiallyOnline);
 
