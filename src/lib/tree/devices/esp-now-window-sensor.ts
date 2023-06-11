@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
-import { Level, element, symbolLevel } from '../main-ng.js';
+import { Level, element, symbolLevel } from '../main.js';
 import { Timings, input } from '../properties/sensors.js';
 import { espNowDevice, ipDevice } from '../elements/device.js';
 import { Device } from '../../device/main.js';

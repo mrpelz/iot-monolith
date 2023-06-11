@@ -10,7 +10,7 @@ import {
   symbolLevel,
   symbolSpecies,
   symbolValueType,
-} from '../main-ng.js';
+} from '../main.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 
 const $ = Symbol('trigger');

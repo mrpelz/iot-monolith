@@ -6,7 +6,7 @@ import {
   element,
   symbolLevel,
   symbolMain,
-} from '../lib/tree/main-ng.js';
+} from '../lib/tree/main.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,

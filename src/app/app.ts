@@ -1,11 +1,12 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
-import { Tree } from '../lib/tree/main.js';
+import { Tree } from '../lib/tree/util.js';
 import { WebApi } from '../lib/web-api.js';
 import { hooks } from '../lib/hooks.js';
+import { inspect } from 'node:util';
 
 export const app = async (): Promise<void> => {
-  collectDefaultMetrics();
+  // collectDefaultMetrics();
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
@@ -13,20 +14,24 @@ export const app = async (): Promise<void> => {
     system: { id, system },
   } = await import('./system.js');
 
-  const httpServer = new HttpServer(logger, 1337);
-  httpServer.listen();
+  system.init();
 
-  const tree = new Tree(system);
+  console.log(inspect(system.toString(), undefined, null));
 
-  // eslint-disable-next-line no-new
-  new WebApi(logger, httpServer, id, tree);
+  // const httpServer = new HttpServer(logger, 1337);
+  // httpServer.listen();
 
-  hooks(httpServer, tree);
+  // const tree = new Tree(system);
 
-  process.on('exit', () => persistence.persist());
-  await persistence.restore();
+  // // eslint-disable-next-line no-new
+  // new WebApi(logger, httpServer, id, tree);
 
-  httpServer.route('/metrics', async ({ response }) => {
-    response.end(await register.metrics());
-  });
+  // hooks(httpServer, tree);
+
+  // process.on('exit', () => persistence.persist());
+  // await persistence.restore();
+
+  // httpServer.route('/metrics', async ({ response }) => {
+  //   response.end(await register.metrics());
+  // });
 };

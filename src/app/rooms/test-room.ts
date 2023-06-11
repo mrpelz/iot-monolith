@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main.js';
 import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';

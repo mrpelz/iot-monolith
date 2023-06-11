@@ -8,7 +8,7 @@ import {
   symbolInstance,
   symbolLevel,
   symbolMain,
-} from '../main-ng.js';
+} from '../main.js';
 import {
   Observable,
   ReadOnlyObservable,

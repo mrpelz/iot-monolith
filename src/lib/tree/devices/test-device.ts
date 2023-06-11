@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import {
-  Level,
-  ValueType,
-  element,
-  symbolLevel,
-  symbolMain,
-} from '../main-ng.js';
+import { Level, ValueType, element, symbolLevel, symbolMain } from '../main.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import {
   Timings,

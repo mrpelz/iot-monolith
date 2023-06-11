@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main-ng.js';
+import { Level, element, symbolLevel } from '../../lib/tree/main.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,

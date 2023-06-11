@@ -5,7 +5,7 @@ import { IncomingMessage } from 'node:http';
 import { Observable } from './observable.js';
 import { Socket } from 'node:net';
 import { Timer } from './timer.js';
-import { Tree } from './tree/main.js';
+import { Tree } from './tree/util.js';
 import WebSocket from 'ws';
 import { multiline } from './string.js';
 
