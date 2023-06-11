@@ -66,10 +66,10 @@ export const groups = {
     partialProperties.ceilingLightBack,
     partialProperties.ceilingLightFront,
   ]),
-  ceilingLight: outputGrouping([
-    partialProperties.ceilingLightBack,
-    partialProperties.ceilingLightFront,
-  ]),
+  ceilingLight: outputGrouping(
+    [partialProperties.ceilingLightBack, partialProperties.ceilingLightFront],
+    'lighting'
+  ),
 };
 
 export const properties = {

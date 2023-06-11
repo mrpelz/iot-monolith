@@ -1,4 +1,4 @@
-import { objectProperties } from '../oop.js';
+import { objectProperties, objectValues } from '../oop.js';
 import { v5 as uuidv5 } from 'uuid';
 
 const TREE_UUID_NAMESPACE = '3908a9a5-cae8-4c7a-901f-6a02bb40a915';
@@ -108,12 +108,12 @@ class Element<T extends Props = Record<string | symbol, unknown>> {
     }
   }
 
-  get children(): ExtractProperties<T, Element> {
+  get children() {
     return Object.fromEntries(
       objectProperties(this._props)
         .filter((property) => this._props[property] instanceof Element)
         .map((property) => [property, this._props[property]] as const)
-    ) as ExtractProperties<T, Element>;
+    ) as ExtractProperties<ExtendedProps<T>, Element>;
   }
 
   get id() {
@@ -179,25 +179,34 @@ class Element<T extends Props = Record<string | symbol, unknown>> {
 
   matchAllChildren<M extends MatcherProps>(
     props?: M,
-    depth = 1
+    depth = -1,
+    includeSelf = true
   ): (Element<InstanceMap<MatcherPropsMap<M>>> | undefined)[] {
+    const selfMatch =
+      includeSelf && this.match(props)
+        ? [this as Element<InstanceMap<MatcherPropsMap<M>>>]
+        : [];
+
+    if (includeSelf && !depth) return selfMatch;
+
     const directMatch =
-      Object.values(this.children).filter(
+      objectValues(this.children).filter(
         (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
           child instanceof Element && child.match(props)
       ) || [];
 
-    if (!depth || !directMatch) return directMatch;
+    if (!depth) return [selfMatch, directMatch].flat(1);
 
     const indirectMatch = [
+      selfMatch,
       directMatch,
-      Object.values(this.children)
+      objectValues(this.children)
         .map((child) =>
           child instanceof Element
             ? child.matchAllChildren(props, depth - 1)
             : []
         )
-        .flat(1) || [],
+        .flat(1),
     ].flat(1);
 
     return indirectMatch;
@@ -205,9 +214,17 @@ class Element<T extends Props = Record<string | symbol, unknown>> {
 
   matchFirstChild<M extends MatcherProps>(
     props?: M,
-    depth = 1
+    depth = -1,
+    includeSelf = true
   ): Element<InstanceMap<MatcherPropsMap<M>>> | undefined {
-    const directMatch = Object.values(this.children).find(
+    const selfMatch =
+      includeSelf && this.match(props)
+        ? (this as Element<InstanceMap<MatcherPropsMap<M>>>)
+        : undefined;
+
+    if (selfMatch) return selfMatch;
+
+    const directMatch = objectValues(this.children).find(
       (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
         child instanceof Element && child.match(props)
     );
@@ -215,7 +232,7 @@ class Element<T extends Props = Record<string | symbol, unknown>> {
     if (directMatch) return directMatch;
     if (!this.children || !depth) return undefined;
 
-    for (const child of Object.values(this.children)) {
+    for (const child of objectValues(this.children)) {
       const match =
         child instanceof Element && child.matchFirstChild(props, depth - 1);
 
@@ -244,18 +261,15 @@ class Element<T extends Props = Record<string | symbol, unknown>> {
 
   toString(): unknown {
     return {
-      id: this.id,
-      instance: this.instance?.toString(),
-      key: this.key,
-      main: this.main?.toString(),
+      parentKey: this.parent?.key,
       props: Object.fromEntries(
-        objectProperties(this._props).map(
+        objectProperties(this.props).map(
           (property) =>
             [
               typeof property === 'symbol'
-                ? property.description || 'unknown Symbol'
+                ? `$${property.description}` || '_'
                 : property,
-              this._props[property]?.toString(),
+              this.props[property]?.toString(),
             ] as const
         )
       ),
