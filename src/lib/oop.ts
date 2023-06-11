@@ -29,3 +29,6 @@ export const objectProperties = <T extends Record<string | symbol, unknown>>(
   ...Object.getOwnPropertySymbols(input),
   ...Object.getOwnPropertyNames(input),
 ];
+
+export const objectValues = <T>(input: Record<string | symbol, T>): T[] =>
+  objectProperties(input).map((property) => input[property]);
