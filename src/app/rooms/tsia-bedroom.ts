@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
+import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
@@ -21,6 +22,14 @@ export const devices = {
     'tsiabedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
+  fan: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'fan',
+    'tsiabedroom-fan.lan.wurstsalat.cloud'
+  ),
+  fanButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
   standingLamp: obiPlug(
     logger,
     persistence,
@@ -43,6 +52,8 @@ export const devices = {
 };
 
 export const instances = {
+  fanButton: devices.fan.button.$,
+  fanRfButton: devices.fanButton.$,
   standingLampButton: devices.standingLamp.button.$,
   wallswitchLeft: devices.wallswitch.button0.$,
   wallswitchMiddle: devices.wallswitch.button1.$,
@@ -52,6 +63,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  fan: devices.fan.relay,
   standingLamp: devices.standingLamp.relay,
   windowRight: addMeta(
     { open: devices.windowSensorRight.open },
@@ -65,6 +77,9 @@ export const groups = {
 };
 
 (() => {
+  instances.fanButton.up(() => properties.fan._set.flip());
+  instances.fanRfButton.observe(() => properties.fan._set.flip());
+
   instances.standingLampButton.up(() => properties.standingLamp._set.flip());
   instances.standingLampButton.longPress(
     () => (groups.allLights._set.value = false)

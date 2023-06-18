@@ -12,7 +12,6 @@ import { properties as tsiaBedroomProperties } from './rooms/tsia-bedroom.js';
 export const all = outputGrouping(
   [
     diningRoomProperties.ceilingLight,
-    diningRoomProperties.fan,
     diningRoomProperties.kallaxLedRGB.b,
     diningRoomProperties.kallaxLedRGB.g,
     diningRoomProperties.kallaxLedRGB.r,
@@ -44,6 +43,7 @@ export const all = outputGrouping(
     tsiaBathroomProperties.mirrorLight,
     tsiaBathroomProperties.nightLight,
     tsiaBedroomProperties.ceilingLight,
+    tsiaBedroomProperties.fan,
     tsiaBedroomProperties.standingLamp,
   ],
   'group'

@@ -12,7 +12,6 @@ import {
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
@@ -25,13 +24,6 @@ export const devices = {
     timings,
     'lighting',
     'diningroom-ceilinglight.lan.wurstsalat.cloud'
-  ),
-  fan: obiPlug(
-    logger,
-    persistence,
-    timings,
-    'fan',
-    'diningroom-fan.lan.wurstsalat.cloud'
   ),
   kallaxLeds: h801(
     logger,
@@ -58,7 +50,6 @@ export const devices = {
 };
 
 export const instances = {
-  fanButton: devices.fan.button.$,
   kallaxSideButton: devices.kallaxSideButton.$,
   tableButton: devices.tableButton.$,
   tableMultiButton: devices.tableMultiButton.$,
@@ -68,7 +59,6 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  fan: devices.fan.relay,
   kallaxLedRGB: addMeta(
     {
       b: devices.kallaxLeds.ledB,
@@ -111,8 +101,6 @@ export const groups = {
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../scenes.js'
   );
-
-  instances.fanButton.up(() => properties.fan._set.flip());
 
   instances.kallaxSideButton.observe(() =>
     properties.kallaxLedSide._set.flip()

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -25,7 +24,6 @@ export const devices = {
     timings,
     'kitchen-ledsright.lan.wurstsalat.cloud'
   ),
-  leftButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
   wallswitchBack: shellyi3(
     logger,
     persistence,
@@ -47,7 +45,6 @@ export const devices = {
 };
 
 export const instances = {
-  leftButton: devices.leftButton.$,
   wallswitchBack: devices.wallswitchBack.button0.$,
   wallswitchFrontBottomLeft: devices.wallswitchFront.button1.$,
   wallswitchFrontBottomRight: devices.wallswitchFront.button2.$,
@@ -102,8 +99,6 @@ export const groups = {
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../scenes.js'
   );
-
-  instances.leftButton.observe(() => groups.allLights._set.flip());
 
   instances.wallswitchFrontTop.up(() => groups.allLights._set.flip());
   instances.wallswitchFrontTop.longPress(() => {
