@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
@@ -66,36 +66,36 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.instance,
-  floodlightButton: devices.floodLight.button.instance,
-  multiButton: devices.multiButton.instance,
-  nightLightButton: devices.nightLight.button.instance,
-  wallswitchBed: devices.ceilingLight.button.instance,
-  wallswitchDoorLeft: devices.wallswitchDoor.button0.instance,
-  wallswitchDoorMiddle: devices.wallswitchDoor.button1.instance,
-  wallswitchDoorRight: devices.wallswitchDoor.button2.instance,
+  button: devices.button.props.state,
+  floodlightButton: devices.floodLight.props.button.props.state,
+  multiButton: devices.multiButton.props.state,
+  nightLightButton: devices.nightLight.props.button.props.state,
+  wallswitchBed: devices.ceilingLight.props.button.props.state,
+  wallswitchDoorLeft: devices.wallswitchDoor.props.button0.props.state,
+  wallswitchDoorMiddle: devices.wallswitchDoor.props.button1.props.state,
+  wallswitchDoorRight: devices.wallswitchDoor.props.button2.props.state,
 };
 
 export const properties = {
-  brightness: devices.roomSensor.brightness,
-  ceilingLight: devices.ceilingLight.relay,
-  door: element({
-    open: devices.doorSensor.open,
-    [symbolLevel]: Level.AREA,
+  brightness: devices.roomSensor.props.brightness,
+  ceilingLight: devices.ceilingLight.props.relay,
+  door: new Element({
+    level: Level.AREA as const,
+    open: devices.doorSensor.props.open,
   }),
-  floodLight: devices.floodLight.relay,
+  floodLight: devices.floodLight.props.relay,
   floodLightTimer: offTimer(epochs.hour, undefined, [
     'mrpelz-bedroom/floodLightTimer',
     persistence,
   ]),
-  humidity: devices.roomSensor.humidity,
-  nightLight: devices.nightLight.relay,
-  pressure: devices.roomSensor.pressure,
-  temperature: devices.roomSensor.temperature,
-  tvoc: devices.roomSensor.tvoc,
-  windowLeft: element({
-    open: devices.windowSensorLeft.open,
-    [symbolLevel]: Level.AREA,
+  humidity: devices.roomSensor.props.humidity,
+  nightLight: devices.nightLight.props.relay,
+  pressure: devices.roomSensor.props.pressure,
+  temperature: devices.roomSensor.props.temperature,
+  tvoc: devices.roomSensor.props.tvoc,
+  windowLeft: new Element({
+    level: Level.AREA as const,
+    open: devices.windowSensorLeft.props.open,
   }),
 };
 
@@ -105,86 +105,88 @@ export const groups = {
     properties.floodLight,
     properties.nightLight,
   ]),
-  allWindows: inputGrouping(properties.windowLeft.open.main.instance),
+  allWindows: inputGrouping(
+    properties.windowLeft.props.open.props.main.props.state
+  ),
 };
 
 (() => {
   instances.button.observe(() => {
-    if (groups.allLights.main.setState.value) {
-      groups.allLights.main.setState.value = false;
+    if (groups.allLights.props.main.props.setState.value) {
+      groups.allLights.props.main.props.setState.value = false;
       return;
     }
 
-    properties.nightLight.main.setState.value = true;
+    properties.nightLight.props.main.props.setState.value = true;
   });
 
   instances.floodlightButton.up(() =>
-    properties.floodLight.flip.instance.trigger()
+    properties.floodLight.props.flip.props.state.trigger()
   );
   instances.floodlightButton.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.multiButton.topLeft.observe(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.multiButton.topRight.observe(() =>
-    properties.floodLight.flip.instance.trigger()
+    properties.floodLight.props.flip.props.state.trigger()
   );
   instances.multiButton.bottomLeft.observe(() =>
-    properties.nightLight.flip.instance.trigger()
+    properties.nightLight.props.flip.props.state.trigger()
   );
   instances.multiButton.bottomRight.observe(() =>
-    groups.allLights.flip.instance.trigger()
+    groups.allLights.props.flip.props.state.trigger()
   );
 
   instances.nightLightButton.up(() =>
-    properties.nightLight.flip.instance.trigger()
+    properties.nightLight.props.flip.props.state.trigger()
   );
   instances.nightLightButton.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchBed.up(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.wallswitchBed.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchDoorLeft.up(() =>
-    properties.nightLight.flip.instance.trigger()
+    properties.nightLight.props.flip.props.state.trigger()
   );
   instances.wallswitchDoorLeft.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchDoorMiddle.up(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.wallswitchDoorMiddle.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchDoorRight.up(() =>
-    properties.floodLight.flip.instance.trigger()
+    properties.floodLight.props.flip.props.state.trigger()
   );
   instances.wallswitchDoorRight.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
-  properties.floodLight.main.setState.observe((value) => {
-    properties.floodLightTimer.active.instance.value = value;
+  properties.floodLight.props.main.props.setState.observe((value) => {
+    properties.floodLightTimer.props.active.props.state.value = value;
   }, true);
 
-  properties.floodLightTimer.instance.observe(() => {
-    properties.floodLight.main.setState.value = false;
+  properties.floodLightTimer.props.state.observe(() => {
+    properties.floodLight.props.main.props.setState.value = false;
   });
 })();
 
-export const mrpelzBedroom = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+export const mrpelzBedroom = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

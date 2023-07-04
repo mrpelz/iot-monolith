@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { BooleanState, NullState } from '../../state.js';
-import {
-  Level,
-  ValueType,
-  element,
-  symbolInstance,
-  symbolLevel,
-  symbolMain,
-} from '../main.js';
+import { Element, Level, ValueType } from '../main.js';
 import {
   Observable,
   ReadOnlyObservable,
@@ -73,16 +66,18 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  return element({
-    active: element({
-      cancel: element({
-        [symbolMain]: trigger(
+  return new Element({
+    $: 'offTimer' as const,
+    active: new Element({
+      cancel: new Element({
+        main: trigger(
           ValueType.NULL,
           new NullState(() => (active.value = false))
         ),
       }),
-      reset: element({
-        [symbolMain]: trigger(
+      main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
+      reset: new Element({
+        main: trigger(
           ValueType.NULL,
           new NullState(() => {
             if (!active.value) return;
@@ -90,23 +85,19 @@ export const offTimer = (
           })
         ),
       }),
-      [symbolInstance]: active,
-      [symbolMain]: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
+      state: active,
     }),
-    flip: element({
-      [symbolMain]: trigger(
-        ValueType.NULL,
-        new NullState(() => enabled.flip())
-      ),
+    flip: new Element({
+      main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
     }),
-    runoutTime: element({
-      [symbolMain]: getter(ValueType.NUMBER, runoutTime, 'date'),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    runoutTime: new Element({
+      main: getter(ValueType.NUMBER, runoutTime, 'date'),
     }),
-    [symbolInstance]: timer,
-    [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
-    triggerTime: element({
-      [symbolMain]: getter(
+    state: timer,
+    triggerTime: new Element({
+      main: getter(
         ValueType.NUMBER,
         new ReadOnlyObservable(triggerTime),
         'date'
@@ -181,18 +172,18 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  return element({
-    cancel: element({
-      [symbolMain]: trigger(ValueType.NULL, new NullState(() => cancel())),
+  return new Element({
+    $: 'scheduledRamp' as const,
+    cancel: new Element({
+      main: trigger(ValueType.NULL, new NullState(() => cancel())),
     }),
-    flip: element({
-      [symbolMain]: trigger(
-        ValueType.NULL,
-        new NullState(() => enabled.flip())
-      ),
+    flip: new Element({
+      main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
     }),
-    nextCompletion: element({
-      [symbolMain]: getter(
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    nextCompletion: new Element({
+      main: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
           schedule.nextExecution,
@@ -204,8 +195,8 @@ export const scheduledRamp = (
         'date'
       ),
     }),
-    nextExecution: element({
-      [symbolMain]: getter(
+    nextExecution: new Element({
+      main: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
           schedule.nextExecution,
@@ -214,10 +205,8 @@ export const scheduledRamp = (
         'date'
       ),
     }),
-    progress: element({
-      [symbolMain]: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
+    progress: new Element({
+      main: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
     }),
-    [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
   });
 };

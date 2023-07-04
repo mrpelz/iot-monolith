@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import {
   outputGrouping,
   trigger,
@@ -55,27 +55,29 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton.instance,
-  fanButton: devices.fan.button.instance,
-  standingLampButton: devices.standingLamp.button.instance,
-  wallswitchBottom: devices.wallswitch.button2.instance,
-  wallswitchMiddle: devices.wallswitch.button1.instance,
-  wallswitchTop: devices.wallswitch.button0.instance,
+  couchButton: devices.couchButton.props.state,
+  fanButton: devices.fan.props.button.props.state,
+  standingLampButton: devices.standingLamp.props.button.props.state,
+  wallswitchBottom: devices.wallswitch.props.button2.props.state,
+  wallswitchMiddle: devices.wallswitch.props.button1.props.state,
+  wallswitchTop: devices.wallswitch.props.button0.props.state,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.relay,
-  fan: devices.fan.relay,
-  standingLamp: devices.standingLamp.relay,
-  window: element({
-    open: devices.windowSensor.open,
-    [symbolLevel]: Level.AREA,
+  ceilingLight: devices.ceilingLight.props.relay,
+  fan: devices.fan.props.relay,
+  standingLamp: devices.standingLamp.props.relay,
+  window: new Element({
+    level: Level.AREA as const,
+    open: devices.windowSensor.props.open,
   }),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
-  allWindows: inputGrouping(properties.window.open.main.instance),
+  allWindows: inputGrouping(
+    properties.window.props.open.props.main.props.state
+  ),
 };
 
 export const scenes = {
@@ -105,87 +107,89 @@ export const scenes = {
   const { instances: testRoomInstances } = await import('./test-room.js');
 
   instances.couchButton.topLeft.observe(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.setState.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
   instances.couchButton.topRight.observe(() =>
-    properties.fan.flip.instance.trigger()
+    properties.fan.props.flip.props.state.trigger()
   );
   instances.couchButton.bottomLeft.observe(() =>
-    scenes.mediaOnOrSwitch.main.instance.trigger()
+    scenes.mediaOnOrSwitch.props.main.props.state.trigger()
   );
   instances.couchButton.bottomRight.observe(() =>
-    scenes.mediaOff.main.instance.trigger()
+    scenes.mediaOff.props.main.props.state.trigger()
   );
 
   testRoomInstances.espNowButton0.up(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.setState.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 
   testRoomInstances.espNowButton1.up(() =>
-    scenes.mediaOnOrSwitch.main.instance.trigger()
+    scenes.mediaOnOrSwitch.props.main.props.state.trigger()
   );
   testRoomInstances.espNowButton1.longPress(() =>
-    scenes.mediaOff.main.instance.trigger()
+    scenes.mediaOff.props.main.props.state.trigger()
   );
 
-  instances.fanButton.up(() => properties.fan.flip.instance.trigger());
+  instances.fanButton.up(() => properties.fan.props.flip.props.state.trigger());
 
   instances.standingLampButton.up(() =>
-    properties.standingLamp.flip.instance.trigger()
+    properties.standingLamp.props.flip.props.state.trigger()
   );
   instances.standingLampButton.longPress(
-    () => (kitchenAdjacentLights.main.setState.value = false)
+    () => (kitchenAdjacentLights.props.main.props.setState.value = false)
   );
 
-  instances.wallswitchBottom.up(() => properties.fan.flip.instance.trigger());
+  instances.wallswitchBottom.up(() =>
+    properties.fan.props.flip.props.state.trigger()
+  );
   instances.wallswitchBottom.longPress(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.setState.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 
   instances.wallswitchMiddle.up(() =>
-    properties.standingLamp.flip.instance.trigger()
+    properties.standingLamp.props.flip.props.state.trigger()
   );
   instances.wallswitchMiddle.longPress(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.setState.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 
   instances.wallswitchTop.up(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.wallswitchTop.longPress(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.setState.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright.main.setState.value = true;
+    kitchenAdjacentBright.props.main.props.setState.value = true;
   });
 })();
 
-export const livingRoom = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
-  scenes: element({ ...scenes, [symbolLevel]: Level.NONE }),
+export const livingRoom = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
+  scenes: new Element({ ...scenes, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types,sort-keys */
 
+import { Element } from '../main.js';
 import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Timings } from '../properties/sensors.js';
 import { UDPDevice } from '../../device/udp.js';
-import { element } from '../main.js';
 import { ipDevice } from '../elements/device.js';
 import { led } from '../properties/actuators.js';
 
@@ -21,7 +21,7 @@ export const h801 = (
 
   const indicator = device.addService(new Indicator(0));
 
-  return element({
+  return new Element({
     ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
     indicator,
     ledR: led(device, 0, indicator, persistence),

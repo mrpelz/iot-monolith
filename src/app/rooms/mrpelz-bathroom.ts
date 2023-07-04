@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import {
   SceneMember,
   outputGrouping,
@@ -74,13 +74,13 @@ export const devices = {
 };
 
 export const instances = {
-  mirrorHeatingButton: devices.mirrorHeating.button.instance,
-  mirrorLightButton: devices.mirrorLight.button.instance,
-  nightLightButton: devices.nightLight.button.instance,
-  showerButton: devices.showerButton.instance,
-  wallswitchDoor: devices.wallswitchDoor.button0.instance,
-  wallswitchMirrorBottom: devices.wallswitchDoor.button2.instance,
-  wallswitchMirrorTop: devices.wallswitchDoor.button1.instance,
+  mirrorHeatingButton: devices.mirrorHeating.props.button.props.state,
+  mirrorLightButton: devices.mirrorLight.props.button.props.state,
+  nightLightButton: devices.nightLight.props.button.props.state,
+  showerButton: devices.showerButton.props.state,
+  wallswitchDoor: devices.wallswitchDoor.props.button0.props.state,
+  wallswitchMirrorBottom: devices.wallswitchDoor.props.button2.props.state,
+  wallswitchMirrorTop: devices.wallswitchDoor.props.button1.props.state,
 };
 
 export const properties = {
@@ -88,15 +88,15 @@ export const properties = {
     'mrpelzbathroom/allTimer',
     persistence,
   ]),
-  ceilingLight: devices.ceilingLight.relay,
-  door: element({
-    open: devices.doorSensor.open,
-    [symbolLevel]: Level.AREA,
+  ceilingLight: devices.ceilingLight.props.relay,
+  door: new Element({
+    level: Level.AREA as const,
+    open: devices.doorSensor.props.open,
   }),
-  mirrorHeating: devices.mirrorHeating.relay,
-  mirrorLed: devices.leds.ledR,
-  mirrorLight: devices.mirrorLight.relay,
-  nightLight: devices.nightLight.relay,
+  mirrorHeating: devices.mirrorHeating.props.relay,
+  mirrorLed: devices.leds.props.ledR,
+  mirrorLight: devices.mirrorLight.props.relay,
+  nightLight: devices.nightLight.props.relay,
 };
 
 export const groups = {
@@ -121,46 +121,90 @@ export const groups = {
 const scenesPartial = {
   astronomicalTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight.main.setState, false),
-      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
-      new SceneMember(properties.mirrorLight.main.setState, false),
-      new SceneMember(properties.nightLight.main.setState, true, false),
+      new SceneMember(properties.ceilingLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.mirrorLed.props.brightness.props.setState,
+        1,
+        0
+      ),
+      new SceneMember(properties.mirrorLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.nightLight.props.main.props.setState,
+        true,
+        false
+      ),
     ],
     'light'
   ),
   civilTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight.main.setState, false),
-      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
-      new SceneMember(properties.mirrorLight.main.setState, true, false),
-      new SceneMember(properties.nightLight.main.setState, true, false),
+      new SceneMember(properties.ceilingLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.mirrorLed.props.brightness.props.setState,
+        1,
+        0
+      ),
+      new SceneMember(
+        properties.mirrorLight.props.main.props.setState,
+        true,
+        false
+      ),
+      new SceneMember(
+        properties.nightLight.props.main.props.setState,
+        true,
+        false
+      ),
     ],
     'light'
   ),
   dayLighting: scene(
     [
-      new SceneMember(properties.ceilingLight.main.setState, true, false),
-      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
-      new SceneMember(properties.mirrorLight.main.setState, true, false),
-      new SceneMember(properties.nightLight.main.setState, false),
+      new SceneMember(
+        properties.ceilingLight.props.main.props.setState,
+        true,
+        false
+      ),
+      new SceneMember(
+        properties.mirrorLed.props.brightness.props.setState,
+        1,
+        0
+      ),
+      new SceneMember(
+        properties.mirrorLight.props.main.props.setState,
+        true,
+        false
+      ),
+      new SceneMember(properties.nightLight.props.main.props.setState, false),
     ],
     'light'
   ),
   nauticalTwilightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight.main.setState, false),
-      new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
-      new SceneMember(properties.mirrorLight.main.setState, true, false),
-      new SceneMember(properties.nightLight.main.setState, false),
+      new SceneMember(properties.ceilingLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.mirrorLed.props.brightness.props.setState,
+        1,
+        0
+      ),
+      new SceneMember(
+        properties.mirrorLight.props.main.props.setState,
+        true,
+        false
+      ),
+      new SceneMember(properties.nightLight.props.main.props.setState, false),
     ],
     'light'
   ),
   nightLighting: scene(
     [
-      new SceneMember(properties.ceilingLight.main.setState, false),
-      new SceneMember(properties.mirrorLed.main.setState, false),
-      new SceneMember(properties.mirrorLight.main.setState, false),
-      new SceneMember(properties.nightLight.main.setState, true, false),
+      new SceneMember(properties.ceilingLight.props.main.props.setState, false),
+      new SceneMember(properties.mirrorLed.props.main.props.setState, false),
+      new SceneMember(properties.mirrorLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.nightLight.props.main.props.setState,
+        true,
+        false
+      ),
     ],
     'light'
   ),
@@ -174,8 +218,8 @@ export const scenes = {
     const elevation = sunElevation();
 
     if (isNight(elevation)) {
-      if (devices.nightLight.online.main.instance.value) {
-        scenes.nightLighting.main.setState.value = true;
+      if (devices.nightLight.props.online.props.main.props.state.value) {
+        scenes.nightLighting.props.main.props.setState.value = true;
 
         return;
       }
@@ -185,10 +229,11 @@ export const scenes = {
 
     if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.instance.value ||
-        devices.nightLight.online.main.instance.value
+        devices.leds.props.online.props.main.props.state.value ||
+        devices.nightLight.props.online.props.main.props.state.value
       ) {
-        scenes.astronomicalTwilightLighting.main.setState.value = true;
+        scenes.astronomicalTwilightLighting.props.main.props.setState.value =
+          true;
 
         return;
       }
@@ -198,10 +243,10 @@ export const scenes = {
 
     if (isNauticalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.instance.value ||
-        devices.mirrorLight.online.main.instance.value
+        devices.leds.props.online.props.main.props.state.value ||
+        devices.mirrorLight.props.online.props.main.props.state.value
       ) {
-        scenes.nauticalTwilightLighting.main.setState.value = true;
+        scenes.nauticalTwilightLighting.props.main.props.setState.value = true;
 
         return;
       }
@@ -211,50 +256,50 @@ export const scenes = {
 
     if (isCivilTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.instance.value ||
-        devices.mirrorLight.online.main.instance.value ||
-        devices.nightLight.online.main.instance.value
+        devices.leds.props.online.props.main.props.state.value ||
+        devices.mirrorLight.props.online.props.main.props.state.value ||
+        devices.nightLight.props.online.props.main.props.state.value
       ) {
-        scenes.civilTwilightLighting.main.setState.value = true;
+        scenes.civilTwilightLighting.props.main.props.setState.value = true;
 
         return;
       }
     }
 
     if (
-      devices.ceilingLight.online.main.instance.value ||
-      devices.leds.online.main.instance.value ||
-      devices.mirrorLight.online.main.instance.value
+      devices.ceilingLight.props.online.props.main.props.state.value ||
+      devices.leds.props.online.props.main.props.state.value ||
+      devices.mirrorLight.props.online.props.main.props.state.value
     ) {
-      scenes.dayLighting.main.setState.value = true;
+      scenes.dayLighting.props.main.props.setState.value = true;
 
       return;
     }
 
-    groups.allLights.main.setState.value = true;
+    groups.allLights.props.main.props.setState.value = true;
   }, 'light'),
 };
 
 (() => {
   instances.mirrorHeatingButton.up(() =>
-    properties.mirrorHeating.flip.instance.trigger()
+    properties.mirrorHeating.props.flip.props.state.trigger()
   );
   instances.mirrorHeatingButton.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   instances.mirrorLightButton.up(() =>
-    properties.mirrorLight.flip.instance.trigger()
+    properties.mirrorLight.props.flip.props.state.trigger()
   );
   instances.mirrorLightButton.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   instances.nightLightButton.up(() =>
-    properties.nightLight.flip.instance.trigger()
+    properties.nightLight.props.flip.props.state.trigger()
   );
   instances.nightLightButton.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   const timer = new Timer(epochs.second * 5);
@@ -264,120 +309,121 @@ export const scenes = {
 
     timer.start();
 
-    if (!groups.allLights.main.setState.value) {
-      scenes.nightLighting.main.setState.value = true;
+    if (!groups.allLights.props.main.props.setState.value) {
+      scenes.nightLighting.props.main.props.setState.value = true;
 
       return;
     }
 
     if (firstPress) {
-      groups.allLights.main.setState.value = false;
+      groups.allLights.props.main.props.setState.value = false;
 
       return;
     }
 
     if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.mirrorLed.main.setState.value &&
-      !properties.mirrorLight.main.setState.value &&
-      properties.nightLight.main.setState.value
+      !properties.ceilingLight.props.main.props.setState.value &&
+      !properties.mirrorLed.props.main.props.setState.value &&
+      !properties.mirrorLight.props.main.props.setState.value &&
+      properties.nightLight.props.main.props.setState.value
     ) {
-      scenes.astronomicalTwilightLighting.main.setState.value = true;
+      scenes.astronomicalTwilightLighting.props.main.props.setState.value =
+        true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.mirrorLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.nightLight.main.setState.value
+      !properties.ceilingLight.props.main.props.setState.value &&
+      !properties.mirrorLight.props.main.props.setState.value &&
+      properties.mirrorLed.props.main.props.setState.value &&
+      properties.nightLight.props.main.props.setState.value
     ) {
-      scenes.nauticalTwilightLighting.main.setState.value = true;
+      scenes.nauticalTwilightLighting.props.main.props.setState.value = true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.nightLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.mirrorLight.main.setState.value
+      !properties.ceilingLight.props.main.props.setState.value &&
+      !properties.nightLight.props.main.props.setState.value &&
+      properties.mirrorLed.props.main.props.setState.value &&
+      properties.mirrorLight.props.main.props.setState.value
     ) {
-      scenes.civilTwilightLighting.main.setState.value = true;
+      scenes.civilTwilightLighting.props.main.props.setState.value = true;
 
       return;
     }
 
     if (
-      !properties.ceilingLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.mirrorLight.main.setState.value &&
-      properties.nightLight.main.setState.value
+      !properties.ceilingLight.props.main.props.setState.value &&
+      properties.mirrorLed.props.main.props.setState.value &&
+      properties.mirrorLight.props.main.props.setState.value &&
+      properties.nightLight.props.main.props.setState.value
     ) {
-      scenes.dayLighting.main.setState.value = true;
+      scenes.dayLighting.props.main.props.setState.value = true;
 
       return;
     }
 
-    scenes.nightLighting.main.setState.value = true;
+    scenes.nightLighting.props.main.props.setState.value = true;
   });
 
   instances.wallswitchDoor.up(() => {
-    if (groups.all.main.setState.value) {
-      groups.all.main.setState.value = false;
+    if (groups.all.props.main.props.setState.value) {
+      groups.all.props.main.props.setState.value = false;
       return;
     }
 
-    scenes.dayLighting.main.setState.value = true;
+    scenes.dayLighting.props.main.props.setState.value = true;
   });
   instances.wallswitchDoor.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   instances.wallswitchMirrorTop.up(() =>
-    properties.mirrorLight.flip.instance.trigger()
+    properties.mirrorLight.props.flip.props.state.trigger()
   );
   instances.wallswitchMirrorTop.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   instances.wallswitchMirrorBottom.up(() => {
-    if (scenes.nightLighting.main.instance.value) {
-      groups.all.main.setState.value = false;
+    if (scenes.nightLighting.props.main.props.state.value) {
+      groups.all.props.main.props.setState.value = false;
       return;
     }
 
-    scenes.nightLighting.main.setState.value = true;
+    scenes.nightLighting.props.main.props.setState.value = true;
   });
   instances.wallswitchMirrorBottom.longPress(
-    () => (groups.all.main.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
-  properties.door.open.main.instance.observe((value) => {
+  properties.door.props.open.props.main.props.state.observe((value) => {
     if (!value) return;
-    if (groups.allLights.main.setState.value) return;
+    if (groups.allLights.props.main.props.setState.value) return;
 
-    scenes.autoLight.main.instance.trigger();
+    scenes.autoLight.props.main.props.state.trigger();
   });
 
-  groups.all.main.setState.observe((value) => {
-    properties.allTimer.active.instance.value = value;
+  groups.all.props.main.props.setState.observe((value) => {
+    properties.allTimer.props.active.props.state.value = value;
   }, true);
 
-  properties.allTimer.instance.observe(() => {
-    groups.all.main.setState.value = false;
+  properties.allTimer.props.state.observe(() => {
+    groups.all.props.main.props.setState.value = false;
   });
 
-  groups.allLights.main.setState.observe((value) => {
-    properties.mirrorHeating.main.setState.value = value;
+  groups.allLights.props.main.props.setState.observe((value) => {
+    properties.mirrorHeating.props.main.props.setState.value = value;
   });
 })();
 
-export const mrpelzBathroom = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
-  scenes: element({ ...scenes, [symbolLevel]: Level.NONE }),
+export const mrpelzBathroom = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
+  scenes: new Element({ ...scenes, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

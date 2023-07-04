@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -47,23 +47,23 @@ export const devices = {
 };
 
 export const instances = {
-  leftButton: devices.leftButton.instance,
-  wallswitchBack: devices.wallswitchBack.button0.instance,
-  wallswitchFrontBottomLeft: devices.wallswitchFront.button1.instance,
-  wallswitchFrontBottomRight: devices.wallswitchFront.button2.instance,
-  wallswitchFrontTop: devices.wallswitchFront.button0.instance,
+  leftButton: devices.leftButton.props.state,
+  wallswitchBack: devices.wallswitchBack.props.button0.props.state,
+  wallswitchFrontBottomLeft: devices.wallswitchFront.props.button1.props.state,
+  wallswitchFrontBottomRight: devices.wallswitchFront.props.button2.props.state,
+  wallswitchFrontTop: devices.wallswitchFront.props.button0.props.state,
 };
 
 export const properties = {
-  ledLeftCWhite: devices.ledsLeft.ledG,
-  ledLeftFloodlight: devices.ledsLeft.ledB,
-  ledLeftWWhite: devices.ledsLeft.ledR,
-  ledRightCWhite: devices.ledsRight.ledB,
-  ledRightFloodlight: devices.ledsRight.ledW1,
-  ledRightWWhite: devices.ledsRight.ledG,
-  window: element({
-    open: devices.windowSensor.open,
-    [symbolLevel]: Level.AREA,
+  ledLeftCWhite: devices.ledsLeft.props.ledG,
+  ledLeftFloodlight: devices.ledsLeft.props.ledB,
+  ledLeftWWhite: devices.ledsLeft.props.ledR,
+  ledRightCWhite: devices.ledsRight.props.ledB,
+  ledRightFloodlight: devices.ledsRight.props.ledW1,
+  ledRightWWhite: devices.ledsRight.props.ledG,
+  window: new Element({
+    level: Level.AREA as const,
+    open: devices.windowSensor.props.open,
   }),
 };
 
@@ -76,7 +76,9 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping(properties.window.open.main.instance),
+  allWindows: inputGrouping(
+    properties.window.props.open.props.main.props.state
+  ),
   cWhite: ledGrouping([properties.ledLeftCWhite, properties.ledRightCWhite]),
   floodlight: ledGrouping([
     properties.ledLeftFloodlight,
@@ -106,58 +108,62 @@ export const groups = {
     '../scenes.js'
   );
 
-  instances.leftButton.observe(() => groups.allLights.flip.instance.trigger());
+  instances.leftButton.observe(() =>
+    groups.allLights.props.flip.props.state.trigger()
+  );
 
   instances.wallswitchFrontTop.up(() =>
-    groups.allLights.flip.instance.trigger()
+    groups.allLights.props.flip.props.state.trigger()
   );
   instances.wallswitchFrontTop.longPress(() => {
-    if (kitchenAdjacentLights.main.instance.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.state.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright.main.setState.value = true;
+    kitchenAdjacentBright.props.main.props.setState.value = true;
   });
 
   instances.wallswitchFrontBottomLeft.up(() =>
-    groups.worklightWWhite.flip.instance.trigger()
+    groups.worklightWWhite.props.flip.props.state.trigger()
   );
   instances.wallswitchFrontBottomLeft.longPress(() => {
-    if (kitchenAdjacentLights.main.instance.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.state.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 
   instances.wallswitchFrontBottomRight.up(() =>
-    groups.floodlight.flip.instance.trigger()
+    groups.floodlight.props.flip.props.state.trigger()
   );
   instances.wallswitchFrontBottomRight.longPress(() => {
-    if (kitchenAdjacentLights.main.instance.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.state.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 
-  instances.wallswitchBack.up(() => groups.allLights.flip.instance.trigger());
+  instances.wallswitchBack.up(() =>
+    groups.allLights.props.flip.props.state.trigger()
+  );
   instances.wallswitchBack.longPress(() => {
-    if (kitchenAdjacentLights.main.instance.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+    if (kitchenAdjacentLights.props.main.props.state.value) {
+      kitchenAdjacentLights.props.main.props.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
 })();
 
-export const kitchen = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+export const kitchen = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

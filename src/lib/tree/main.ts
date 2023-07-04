@@ -1,15 +1,11 @@
-import { objectProperties, objectValues } from '../oop.js';
-import { v5 as uuidv5 } from 'uuid';
+import {
+  DeepValues,
+  EmptyObject,
+  ObjectValues,
+  objectKeys,
+  objectValues,
+} from '../oop.js';
 
-const TREE_UUID_NAMESPACE = '3908a9a5-cae8-4c7a-901f-6a02bb40a915';
-
-export const symbolId = Symbol('id');
-export const symbolInstance = Symbol('instance');
-export const symbolKey = Symbol('key');
-export const symbolMain = Symbol('main');
-export const symbolSpecies = Symbol('species');
-
-export const symbolLevel = Symbol('level');
 export enum Level {
   NONE,
   SYSTEM,
@@ -23,7 +19,6 @@ export enum Level {
   ELEMENT,
 }
 
-export const symbolValueType = Symbol('valueType');
 export enum ValueType {
   NULL,
   BOOLEAN,
@@ -40,283 +35,66 @@ export type TValueType = {
   [ValueType.STRING]: string;
 };
 
-export type AbstractClass = abstract new (...args: unknown[]) => unknown;
-export type ExtractProperties<T, F> = {
-  [P in keyof T as T[P] extends F ? P : never]: T[P];
-};
+const $ = Symbol('element');
 
-export type Children = Record<string, Element>;
-export type InitFunction<T extends Element> = (self: T) => void;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TElementAbstract = { [$]: null; props: any };
 
-export type Props = Record<string | symbol, unknown> & {
-  [symbolLevel]?: Level;
-  [symbolMain]?: Element;
-  [symbolSpecies]?: symbol;
-  [symbolValueType]?: ValueType;
-};
+export type TElementProps<T extends TElementAbstract> = T['props'];
+export type TElementPropValues<T extends TElementAbstract> = ObjectValues<
+  TElementProps<T>
+>;
 
-type ExtendedProps<T extends Props> = T & {
-  [symbolId]?: string;
-  [symbolKey]?: string;
-};
+export type TElementChildren<T extends TElementAbstract> = Element<
+  TElementProps<Extract<TElementPropValues<T>, TElementAbstract>>
+>;
 
-export type InstanceMap<T extends Props> = {
-  [P in keyof T]: T[P] extends AbstractClass ? InstanceType<T[P]> : T[P];
-};
+export type TElementChildrenDeep<T extends TElementAbstract> = Element<
+  TElementProps<DeepValues<T, TElementAbstract, 'props'>>
+>;
 
-export type MatcherFunction<T> = (a: T, b: unknown) => boolean;
-export type MatcherFunctionTuple<T> = readonly [MatcherFunction<T>, ...T[]];
-export type MatcherProps = Record<string, MatcherFunctionTuple<unknown>>;
-export type MatcherPropsMap<T extends MatcherProps> = {
-  [P in keyof T]: Exclude<T[P][number], T[P][0]>;
-};
+export class Element<T extends EmptyObject> {
+  readonly [$]: null;
 
-class Element<T extends Props = Record<string | symbol, unknown>> {
-  private _hasBeenInitialized = false;
-  private _id?: string;
-  private _key?: string;
-  private _parent?: Element;
-  private _path?: string[];
-
-  constructor(
-    private readonly _props: T,
-    private readonly _initCallback?: InitFunction<Element<T>>
-  ) {
-    Object.freeze(this._props);
+  constructor(public readonly props: T) {
+    Object.freeze(props);
   }
 
-  private _handleChildren(
-    childCallback: (child: Element, property: string) => void
-  ) {
-    for (const property of objectProperties(this.children)) {
-      const child = this.children[property];
-
-      if (child instanceof Element) {
-        childCallback(
-          child,
-          (() => {
-            if ((property as symbol) === symbolMain) return '$';
-            if (typeof property === 'string') return property;
-            if (typeof property === 'symbol') {
-              return `$${(property as symbol).description || '_'}`;
-            }
-
-            return '_';
-          })()
-        );
-      }
-    }
-  }
-
-  get children() {
-    return Object.fromEntries(
-      objectProperties(this._props)
-        .filter((property) => this._props[property] instanceof Element)
-        .map((property) => [property, this._props[property]] as const)
-    ) as ExtractProperties<ExtendedProps<T>, Element>;
-  }
-
-  get id() {
-    return this._id;
-  }
-
-  get instance() {
-    return this._props[symbolInstance] as T[typeof symbolInstance];
-  }
-
-  get key() {
-    return this._key;
-  }
-
-  get main() {
-    return this._props[symbolMain] as T[typeof symbolMain];
-  }
-
-  get parent() {
-    return this._parent;
-  }
-
-  get props() {
-    return {
-      ...this._props,
-      [symbolId]: this._id,
-      [symbolKey]: this._key,
-    } as ExtendedProps<T>;
-  }
-
-  init(parent?: Element, key = '^', path = [] as readonly string[]): void {
-    if (this._hasBeenInitialized) return;
-    this._hasBeenInitialized = true;
-
-    this._parent = parent;
-    this._key = key;
-    this._path = [...path, this._key];
-
-    this._id = uuidv5(this._path.join('\0'), TREE_UUID_NAMESPACE);
-
-    this._handleChildren((child, property) =>
-      child.init(this, property, this._path)
+  get children(): TElementChildren<this>[] {
+    return objectValues(this.props).filter(
+      (prop) => (prop as unknown) instanceof Element
     );
-
-    this._initCallback?.(this);
   }
 
-  match<M extends MatcherProps>(
-    props?: M
-  ): this is Element<InstanceMap<MatcherPropsMap<M>>> {
-    if (!props) return true;
+  match<M extends EmptyObject>(match: M): this is this & Element<M> {
+    for (const key of objectKeys(match)) {
+      const a = this.props[key as keyof T] as unknown;
+      const b = match[key];
 
-    for (const property of objectProperties(props)) {
-      const [matcher, ...values] = props[property];
-      const b = this.props[property as string];
+      if (a === b) continue;
 
-      if (values.some((a) => matcher(a, b))) continue;
       return false;
     }
 
     return true;
   }
 
-  matchAllChildren<M extends MatcherProps>(
-    props?: M,
-    depth = -1,
-    includeSelf = true
-  ): (Element<InstanceMap<MatcherPropsMap<M>>> | undefined)[] {
-    const selfMatch =
-      includeSelf && this.match(props)
-        ? [this as Element<InstanceMap<MatcherPropsMap<M>>>]
-        : [];
-
-    if (includeSelf && !depth) return selfMatch;
-
-    const directMatch =
-      objectValues(this.children).filter(
-        (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
-          child instanceof Element && child.match(props)
-      ) || [];
-
-    if (!depth) return [selfMatch, directMatch].flat(1);
-
-    const indirectMatch = [
-      selfMatch,
-      directMatch,
-      objectValues(this.children)
-        .map((child) =>
-          child instanceof Element
-            ? child.matchAllChildren(props, depth - 1)
-            : []
-        )
-        .flat(1),
-    ].flat(1);
-
-    return indirectMatch;
+  matchChildren<M extends EmptyObject>(
+    match: M
+  ): Element<Extract<TElementProps<TElementChildren<this>>, M>>[] {
+    return this.children.filter((child) => child.match(match));
   }
 
-  matchFirstChild<M extends MatcherProps>(
-    props?: M,
-    depth = -1,
-    includeSelf = true
-  ): Element<InstanceMap<MatcherPropsMap<M>>> | undefined {
-    const selfMatch =
-      includeSelf && this.match(props)
-        ? (this as Element<InstanceMap<MatcherPropsMap<M>>>)
-        : undefined;
-
-    if (selfMatch) return selfMatch;
-
-    const directMatch = objectValues(this.children).find(
-      (child): child is Element<InstanceMap<MatcherPropsMap<M>>> =>
-        child instanceof Element && child.match(props)
+  matchChildrenDeep<M extends EmptyObject>(
+    match: M
+  ): Element<Extract<TElementProps<TElementChildrenDeep<this>>, M>>[] {
+    const directMatch = this.matchChildren(match);
+    const deepMatch = this.children.flatMap((child) =>
+      child.matchChildrenDeep(match)
     );
 
-    if (directMatch) return directMatch;
-    if (!this.children || !depth) return undefined;
-
-    for (const child of objectValues(this.children)) {
-      const match =
-        child instanceof Element && child.matchFirstChild(props, depth - 1);
-
-      if (match) return match;
-    }
-
-    return undefined;
-  }
-
-  matchParent<M extends MatcherProps>(
-    props?: M,
-    depth = -1
-  ): Element<InstanceMap<MatcherPropsMap<M>>> | undefined {
-    if (!this._parent) return undefined;
-
-    const directMatch = this._parent.match(props);
-
-    if (directMatch) {
-      return this._parent as Element<InstanceMap<MatcherPropsMap<M>>>;
-    }
-
-    if (!depth) return undefined;
-
-    return this._parent.matchParent(props, depth - 1);
-  }
-
-  toString(): unknown {
-    return {
-      parentKey: this.parent?.key,
-      props: Object.fromEntries(
-        objectProperties(this.props).map(
-          (property) =>
-            [
-              typeof property === 'symbol'
-                ? `$${property.description}` || '_'
-                : property,
-              this.props[property]?.toString(),
-            ] as const
-        )
-      ),
-    };
+    return [directMatch, deepMatch].flat(1);
   }
 }
 
 export type TElement = typeof Element;
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const element = <T extends Props = Record<string | symbol, unknown>>(
-  props: T,
-  initCallback?: InitFunction<Element<T>>
-) => {
-  const _element = new Element(props, initCallback);
-
-  return new Proxy(_element, {
-    get(target, property) {
-      if (property in target) {
-        return target[property as keyof typeof target];
-      }
-
-      if (property in target.props) {
-        return target.props[property as keyof typeof target.props];
-      }
-
-      return undefined;
-    },
-
-    has(target, property) {
-      if (property in target) return true;
-      if (property in target.props) return true;
-
-      return false;
-    },
-  }) as T & Element<T>;
-};
-
-export const matchClass = <M extends AbstractClass>(
-  a: M | undefined,
-  b: unknown
-): b is InstanceType<M> => {
-  if (a === undefined) return true;
-  return b instanceof a;
-};
-
-export const matchValue = <M>(a: M | undefined, b: unknown): b is M => {
-  if (a === undefined) return true;
-  return a === b;
-};

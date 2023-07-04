@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, ValueType, element, symbolLevel, symbolMain } from '../main.js';
+import { Element, Level, ValueType } from '../main.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import {
   Timings,
@@ -48,21 +48,21 @@ export const roomSensor = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.main.instance,
-      bme280Temperature.main.instance,
+      mcp9808Temperature.props.main.props.state,
+      bme280Temperature.props.main.props.state,
     ])
   );
 
-  const temperature = element({
+  const temperature = new Element({
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
-    [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
   });
 
   const sgp30MeasurementInputGetter = () => {
-    const _humidity = humidity.main.instance.value;
+    const _humidity = humidity.props.main.props.state.value;
     const _temperature = temperatureState.value;
 
     if (_humidity === null || _temperature === null) return null;
@@ -73,7 +73,7 @@ export const roomSensor = (
     };
   };
 
-  return element({
+  return new Element({
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     // ...mhz19(device, timings.slow || timings.default),
     // ...sds011(device, timings.slow || timings.default),

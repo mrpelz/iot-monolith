@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
-import { Level, element, symbolLevel } from '../main.js';
+import { Element, Level } from '../main.js';
 import { Timings, input } from '../properties/sensors.js';
 import { espNowDevice, ipDevice } from '../elements/device.js';
 import { Device } from '../../device/main.js';
@@ -39,7 +39,7 @@ export const espNowWindowSensor = (
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
-      espNow: element({
+      espNow: new Element({
         ...children(device),
         ...espNowDevice(device),
         isSubDevice: true,
@@ -52,7 +52,7 @@ export const espNowWindowSensor = (
     const device = new UDPDevice(logger, host, port);
 
     return {
-      wifi: element({
+      wifi: new Element({
         ...children(device),
         ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
         isSubDevice: true,
@@ -60,9 +60,9 @@ export const espNowWindowSensor = (
     };
   })();
 
-  return element({
+  return new Element({
     ...espNow,
     ...wifi,
-    [symbolLevel]: Level.DEVICE,
+    level: Level.DEVICE as const,
   });
 };

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Timings, button } from '../properties/sensors.js';
+import { Element } from '../main.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { element } from '../main.js';
 import { ipDevice } from '../elements/device.js';
 
 export const shellyi3 = (
@@ -17,7 +17,7 @@ export const shellyi3 = (
 ) => {
   const device = new UDPDevice(logger, host, port);
 
-  return element({
+  return new Element({
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     button0: button(device, 0),
     button1: button(device, 1),

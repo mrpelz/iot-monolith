@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Timings, button } from '../properties/sensors.js';
+import { Element } from '../main.js';
 import { Indicator } from '../../services/indicator.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { element } from '../main.js';
 import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
 
@@ -22,7 +22,7 @@ export const sonoffBasic = (
 
   const indicator = device.addService(new Indicator(0));
 
-  return element({
+  return new Element({
     ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
     button: button(device, 0),
     indicator,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -44,20 +44,20 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.button0.instance,
-  wallswitchFrontLeft: devices.wallswitchFront.button0.instance,
-  wallswitchFrontMiddle: devices.wallswitchFront.button1.instance,
-  wallswitchFrontRight: devices.wallswitchFront.button2.instance,
-  wallswitchMiddle: devices.wallswitchBack.button1.instance,
+  wallswitchBack: devices.wallswitchBack.props.button0.props.state,
+  wallswitchFrontLeft: devices.wallswitchFront.props.button0.props.state,
+  wallswitchFrontMiddle: devices.wallswitchFront.props.button1.props.state,
+  wallswitchFrontRight: devices.wallswitchFront.props.button2.props.state,
+  wallswitchMiddle: devices.wallswitchBack.props.button1.props.state,
 };
 
 const partialProperties = {
-  ceilingLightBack: devices.ceilingLightBack.relay,
-  ceilingLightFront: devices.ceilingLightFront.relay,
-  door: element({
+  ceilingLightBack: devices.ceilingLightBack.props.relay,
+  ceilingLightFront: devices.ceilingLightFront.props.relay,
+  door: new Element({
+    level: Level.AREA as const,
     name: 'entryDoor',
-    open: devices.doorSensor.open,
-    [symbolLevel]: Level.AREA,
+    open: devices.doorSensor.props.open,
   }),
 };
 
@@ -84,49 +84,51 @@ export const properties = {
   const { all, allLights } = await import('../groups.js');
 
   instances.wallswitchBack.up(() =>
-    groups.ceilingLight.flip.instance.trigger()
+    groups.ceilingLight.props.flip.props.state.trigger()
   );
 
   instances.wallswitchMiddle.up(() =>
-    groups.ceilingLight.flip.instance.trigger()
+    groups.ceilingLight.props.flip.props.state.trigger()
   );
 
   instances.wallswitchFrontLeft.up(() =>
-    properties.ceilingLightFront.flip.instance.trigger()
+    properties.ceilingLightFront.props.flip.props.state.trigger()
   );
   instances.wallswitchFrontMiddle.up(() =>
-    properties.ceilingLightBack.flip.instance.trigger()
+    properties.ceilingLightBack.props.flip.props.state.trigger()
   );
-  instances.wallswitchFrontRight.up(() => (all.main.setState.value = false));
+  instances.wallswitchFrontRight.up(
+    () => (all.props.main.props.setState.value = false)
+  );
   instances.wallswitchFrontRight.longPress(() =>
-    allLights.flip.instance.trigger()
+    allLights.props.flip.props.state.trigger()
   );
 
-  properties.door.open.main.instance.observe((value) => {
+  properties.door.props.open.props.main.props.state.observe((value) => {
     if (!value) {
-      if (!groups.ceilingLight.main.instance.value) return;
+      if (!groups.ceilingLight.props.main.props.state.value) return;
 
-      properties.entryDoorTimer.active.instance.value = true;
+      properties.entryDoorTimer.props.active.props.state.value = true;
 
       return;
     }
 
-    properties.ceilingLightFront.main.setState.value = true;
+    properties.ceilingLightFront.props.main.props.setState.value = true;
   });
 
-  groups.ceilingLight.main.setState.observe(
-    () => (properties.entryDoorTimer.active.instance.value = false),
+  groups.ceilingLight.props.main.props.setState.observe(
+    () => (properties.entryDoorTimer.props.active.props.state.value = false),
     true
   );
 
-  properties.entryDoorTimer.instance.observe(() => {
-    groups.ceilingLight.main.setState.value = false;
+  properties.entryDoorTimer.props.state.observe(() => {
+    groups.ceilingLight.props.main.props.setState.value = false;
   });
 })();
 
-export const hallway = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+export const hallway = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

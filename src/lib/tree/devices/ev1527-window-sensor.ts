@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, ValueType, element, symbolLevel, symbolMain } from '../main.js';
+import { Element, Level, ValueType } from '../main.js';
 import { Observable, ReadOnlyProxyObservable } from '../../observable.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
@@ -61,16 +61,16 @@ export const ev1527WindowSensor = (
     (input) => input !== null
   );
 
-  return element({
+  return new Element({
     ...ev1527Device(device),
-    open: element({
+    open: new Element({
       ...lastChange(receivedOpen),
       isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
-      [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueType.BOOLEAN, isOpen),
-      tamperSwitch: element({
+      level: Level.PROPERTY as const,
+      main: getter(ValueType.BOOLEAN, isOpen),
+      tamperSwitch: new Element({
         ...lastChange(receivedTamperSwitch),
-        [symbolMain]: getter(ValueType.BOOLEAN, tamperSwitch),
+        main: getter(ValueType.BOOLEAN, tamperSwitch),
       }),
     }),
   });

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
@@ -43,63 +43,65 @@ export const devices = {
 };
 
 export const instances = {
-  standingLampButton: devices.standingLamp.button.instance,
-  wallswitchLeft: devices.wallswitch.button0.instance,
-  wallswitchMiddle: devices.wallswitch.button1.instance,
-  wallswitchRight: devices.wallswitch.button2.instance,
+  standingLampButton: devices.standingLamp.props.button.props.state,
+  wallswitchLeft: devices.wallswitch.props.button0.props.state,
+  wallswitchMiddle: devices.wallswitch.props.button1.props.state,
+  wallswitchRight: devices.wallswitch.props.button2.props.state,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.relay,
-  door: element({
-    open: devices.doorSensor.open,
-    [symbolLevel]: Level.AREA,
+  ceilingLight: devices.ceilingLight.props.relay,
+  door: new Element({
+    level: Level.AREA as const,
+    open: devices.doorSensor.props.open,
   }),
-  standingLamp: devices.standingLamp.relay,
-  windowRight: element({
-    open: devices.windowSensorRight.open,
-    [symbolLevel]: Level.AREA,
+  standingLamp: devices.standingLamp.props.relay,
+  windowRight: new Element({
+    level: Level.AREA as const,
+    open: devices.windowSensorRight.props.open,
   }),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
-  allWindows: inputGrouping(properties.windowRight.open.main.instance),
+  allWindows: inputGrouping(
+    properties.windowRight.props.open.props.main.props.state
+  ),
 };
 
 (() => {
   instances.standingLampButton.up(() =>
-    properties.standingLamp.flip.instance.trigger()
+    properties.standingLamp.props.flip.props.state.trigger()
   );
   instances.standingLampButton.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchLeft.up(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.wallswitchLeft.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchMiddle.up(() =>
-    properties.standingLamp.flip.instance.trigger()
+    properties.standingLamp.props.flip.props.state.trigger()
   );
   instances.wallswitchMiddle.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 
   instances.wallswitchRight.up(() =>
-    properties.ceilingLight.flip.instance.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger()
   );
   instances.wallswitchRight.longPress(
-    () => (groups.allLights.main.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false)
   );
 })();
 
-export const tsiaBedroom = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+export const tsiaBedroom = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });
