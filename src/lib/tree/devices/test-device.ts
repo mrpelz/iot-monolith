@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, ValueType, element, symbolLevel, symbolMain } from '../main.js';
+import { Element, Level, ValueType } from '../main.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import {
   Timings,
@@ -51,20 +51,20 @@ export const testDevice = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.main.instance,
-      bme280Temperature.main.instance,
+      mcp9808Temperature.props.main.props.state,
+      bme280Temperature.props.main.props.state,
     ])
   );
 
-  const temperature = element({
+  const temperature = new Element({
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
-    [symbolLevel]: Level.PROPERTY,
-    [symbolMain]: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
   });
 
-  return element({
+  return new Element({
     ...async(device, timings.slow || timings.default),
     ...ipDevice(device, persistence, timings),
     ...mhz19(device, timings.slow || timings.default),

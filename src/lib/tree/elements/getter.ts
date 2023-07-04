@@ -1,57 +1,23 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import {
-  AnyReadOnlyObservable,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../observable.js';
-import {
-  Level,
-  TValueType,
-  ValueType,
-  element,
-  matchClass,
-  matchValue,
-  symbolInstance,
-  symbolLevel,
-  symbolSpecies,
-  symbolValueType,
-} from '../main.js';
+import { Element, Level, TValueType, ValueType } from '../main.js';
+import { AnyReadOnlyObservable } from '../../observable.js';
 
-const $ = Symbol('getter');
-
-export const getter = <N extends string, U extends string, V extends ValueType>(
-  valueType: V,
-  state: AnyReadOnlyObservable<TValueType[V] | null>,
-  unit?: U,
-  name?: N
-) =>
-  element({
-    name,
-    [symbolInstance]: state,
-    [symbolLevel]: Level.ELEMENT as const,
-    [symbolSpecies]: $,
-    [symbolValueType]: valueType,
-    unit,
-  });
-
-export const selectGetter = <
-  V extends ValueType,
-  N extends string,
-  U extends string
+export const getter = <
+  N extends string | undefined,
+  U extends string | undefined,
+  V extends ValueType
 >(
   valueType: V,
-  unit?: U,
-  name?: N
-) => ({
-  name: [matchValue, name] as const,
-  [symbolInstance]: [
-    matchClass,
-    ReadOnlyObservable,
-    ReadOnlyProxyObservable,
-  ] as const,
-  [symbolLevel]: [matchValue, Level.ELEMENT] as const,
-  [symbolSpecies]: [matchValue, $] as const,
-  [symbolValueType]: [matchValue, valueType] as const,
-  unit: [matchValue, unit] as const,
-});
+  state: AnyReadOnlyObservable<TValueType[V] | null>,
+  unit: U = undefined as U,
+  name: N = undefined as N
+) =>
+  new Element({
+    $: 'getter' as const,
+    level: Level.ELEMENT as const,
+    name,
+    state,
+    unit,
+    valueType,
+  });

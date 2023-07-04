@@ -2,60 +2,21 @@
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
-  Observable,
-  ProxyObservable,
   ReadOnlyObservable,
-  ReadOnlyProxyObservable,
 } from '../../observable.js';
-import {
-  Level,
-  TValueType,
-  ValueType,
-  element,
-  matchClass,
-  matchValue,
-  symbolInstance,
-  symbolLevel,
-  symbolSpecies,
-  symbolValueType,
-} from '../main.js';
+import { Element, Level, TValueType, ValueType } from '../main.js';
 
-const $ = Symbol('setter');
-
-export const setter = <N extends string, V extends ValueType>(
+export const setter = <N extends string | undefined, V extends ValueType>(
   valueType: V,
   setState: AnyWritableObservable<TValueType[V]>,
-  state?: AnyReadOnlyObservable<TValueType[V] | null>,
-  name?: N
+  state: AnyReadOnlyObservable<TValueType[V] | null> | undefined = undefined,
+  name: N = undefined as N
 ) =>
-  element({
+  new Element({
+    $: 'setter' as const,
+    level: Level.ELEMENT as const,
     name,
     setState,
-    [symbolInstance]: state || new ReadOnlyObservable(setState),
-    [symbolLevel]: Level.ELEMENT as const,
-    [symbolSpecies]: $,
-    [symbolValueType]: valueType,
+    state: state || new ReadOnlyObservable(setState),
+    valueType,
   });
-
-export const selectSetter = <V extends ValueType, N extends string>(
-  valueType: V,
-  name?: N
-) => ({
-  name: [matchValue, name] as const,
-  setState: [matchClass, Observable, ProxyObservable] as const,
-  [symbolLevel]: [matchValue, Level.ELEMENT] as const,
-  [symbolSpecies]: [matchValue, $] as const,
-  [symbolValueType]: [matchValue, valueType] as const,
-});
-
-export const selectGetterSetter = <V extends ValueType, N extends string>(
-  valueType: V,
-  name?: N
-) => ({
-  ...selectSetter(valueType, name),
-  [symbolInstance]: [
-    matchClass,
-    ReadOnlyObservable,
-    ReadOnlyProxyObservable,
-  ] as const,
-});

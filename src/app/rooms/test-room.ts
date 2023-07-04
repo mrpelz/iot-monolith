@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
@@ -34,23 +34,23 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.button0.instance,
-  espNowButton1: devices.espNowButton.espNow.button1.instance,
+  espNowButton0: devices.espNowButton.props.espNow.props.button0.props.state,
+  espNowButton1: devices.espNowButton.props.espNow.props.button1.props.state,
 };
 
 export const properties = {
-  brightness: devices.testDevice.brightness,
-  co2: devices.testDevice.co2,
-  espNowWindowSensor0: devices.espNowWindowSensor.espNow.input0,
-  espNowWindowSensor1: devices.espNowWindowSensor.espNow.input1,
-  espNowWindowSensor2: devices.espNowWindowSensor.espNow.input2,
-  humidity: devices.testDevice.humidity,
-  motion: devices.testDevice.motion,
-  pm025: devices.testDevice.pm025,
-  pm10: devices.testDevice.pm10,
-  pressure: devices.testDevice.pressure,
-  temperature: devices.testDevice.temperature,
-  uvIndex: devices.testDevice.uvIndex,
+  brightness: devices.testDevice.props.brightness,
+  co2: devices.testDevice.props.co2,
+  espNowWindowSensor0: devices.espNowWindowSensor.props.espNow.props.input0,
+  espNowWindowSensor1: devices.espNowWindowSensor.props.espNow.props.input1,
+  espNowWindowSensor2: devices.espNowWindowSensor.props.espNow.props.input2,
+  humidity: devices.testDevice.props.humidity,
+  motion: devices.testDevice.props.motion,
+  pm025: devices.testDevice.props.pm025,
+  pm10: devices.testDevice.props.pm10,
+  pressure: devices.testDevice.props.pressure,
+  temperature: devices.testDevice.props.temperature,
+  uvIndex: devices.testDevice.props.uvIndex,
 };
 
 export const groups = {};
@@ -59,9 +59,9 @@ export const groups = {};
   // noop
 })();
 
-export const testRoom = element({
-  devices: element({ ...devices, [symbolLevel]: Level.NONE }),
+export const testRoom = new Element({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
   ...groups,
   ...properties,
-  [symbolLevel]: Level.ROOM,
+  level: Level.ROOM as const,
 });

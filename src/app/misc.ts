@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import {
-  Level,
-  ValueType,
-  element,
-  symbolLevel,
-  symbolMain,
-} from '../lib/tree/main.js';
+import { Element, Level, ValueType } from '../lib/tree/main.js';
 import { Observable, ReadOnlyObservable } from '../lib/observable.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
@@ -57,7 +51,7 @@ export const sunElevation = (schedule: Schedule) => {
   });
 
   return {
-    sunElevation: element({
+    sunElevation: new Element({
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
         new ReadOnlyObservable(isAstronomicalTwilight)
@@ -72,8 +66,8 @@ export const sunElevation = (schedule: Schedule) => {
         new ReadOnlyObservable(isNauticalTwilight)
       ),
       isNight: getter(ValueType.BOOLEAN, new ReadOnlyObservable(isNight)),
-      [symbolLevel]: Level.PROPERTY,
-      [symbolMain]: getter(ValueType.NUMBER, readOnlyElevation),
+      level: Level.PROPERTY as const,
+      main: getter(ValueType.NUMBER, readOnlyElevation),
     }),
   };
 };

@@ -13,9 +13,9 @@ export const all = outputGrouping(
   [
     diningRoomProperties.ceilingLight,
     diningRoomProperties.fan,
-    diningRoomProperties.kallaxLedRGB.b,
-    diningRoomProperties.kallaxLedRGB.g,
-    diningRoomProperties.kallaxLedRGB.r,
+    diningRoomProperties.kallaxLedRGB.props.b,
+    diningRoomProperties.kallaxLedRGB.props.g,
+    diningRoomProperties.kallaxLedRGB.props.r,
     diningRoomProperties.kallaxLedSide,
     diningRoomProperties.kallaxLedW,
     diningRoomProperties.tableLight,
@@ -61,9 +61,9 @@ export const all = outputGrouping(
 
 export const allLights = outputGrouping([
   diningRoomProperties.ceilingLight,
-  diningRoomProperties.kallaxLedRGB.b,
-  diningRoomProperties.kallaxLedRGB.g,
-  diningRoomProperties.kallaxLedRGB.r,
+  diningRoomProperties.kallaxLedRGB.props.b,
+  diningRoomProperties.kallaxLedRGB.props.g,
+  diningRoomProperties.kallaxLedRGB.props.r,
   diningRoomProperties.kallaxLedSide,
   diningRoomProperties.kallaxLedW,
   diningRoomProperties.tableLight,
@@ -103,9 +103,9 @@ export const allLights = outputGrouping([
 
 export const kitchenAdjacentLights = outputGrouping([
   diningRoomProperties.ceilingLight,
-  diningRoomProperties.kallaxLedRGB.b,
-  diningRoomProperties.kallaxLedRGB.g,
-  diningRoomProperties.kallaxLedRGB.r,
+  diningRoomProperties.kallaxLedRGB.props.b,
+  diningRoomProperties.kallaxLedRGB.props.g,
+  diningRoomProperties.kallaxLedRGB.props.r,
   diningRoomProperties.kallaxLedSide,
   diningRoomProperties.kallaxLedW,
   diningRoomProperties.tableLight,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, element, symbolLevel } from '../lib/tree/main.js';
+import { Element, Level } from '../lib/tree/main.js';
 import { all, allLights, kitchenAdjacentLights } from './groups.js';
 import {
   allLightsOff,
@@ -24,7 +24,8 @@ import { testRoom } from './rooms/test-room.js';
 import { tsiaBathroom } from './rooms/tsia-bathroom.js';
 import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 
-const firstFloor = element({
+const firstFloor = new Element({
+  $: 'firstFloor' as const,
   diningRoom: Object.assign(diningRoom, {
     kitchenAdjacentBright,
     kitchenAdjacentChillax,
@@ -42,6 +43,7 @@ const firstFloor = element({
   kitchenAdjacentBright,
   kitchenAdjacentChillax,
   kitchenAdjacentLights,
+  level: Level.FLOOR as const,
   livingRoom: Object.assign(livingRoom, {
     kitchenAdjacentBright,
     kitchenAdjacentChillax,
@@ -50,44 +52,49 @@ const firstFloor = element({
   mrpelzBathroom,
   mrpelzBedroom,
   storageRoom,
-  [symbolLevel]: Level.FLOOR,
   testRoom,
   tsiaBathroom,
   tsiaBedroom,
 });
 
-const sonninstraße16 = element({
+const sonninstraße16 = new Element({
+  $: 'sonninstraße16' as const,
   ...sunElevation(every5Seconds),
   firstFloor,
   // eslint-disable-next-line sort-keys
   entryDoor: hallwayProperties.door,
-  [symbolLevel]: Level.BUILDING,
+  level: Level.BUILDING as const,
 });
 
-const wurstHome = element({ sonninstraße16, [symbolLevel]: Level.HOME });
+const wurstHome = new Element({
+  $: 'wurstHome' as const,
+  level: Level.HOME as const,
+  sonninstraße16,
+});
 
 export const system = (() => {
   const id = Date.now().toString();
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  all.main.setState.observe((value) => {
-    allTimer.active.instance.value = value;
+  all.props.main.props.setState.observe((value) => {
+    allTimer.props.active.props.state.value = value;
   }, true);
 
-  allTimer.instance.observe(() => {
-    all.main.setState.value = false;
+  allTimer.props.state.observe(() => {
+    all.props.main.props.setState.value = false;
   });
 
   return {
     id,
-    system: element({
+    system: new Element({
+      $: 'system' as const,
       all,
       allLights,
       allLightsOff,
       allOff,
       allTimer,
-      [symbolLevel]: Level.SYSTEM,
+      level: Level.SYSTEM as const,
       wurstHome,
     }),
   };

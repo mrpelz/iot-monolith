@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Level, matchValue, symbolLevel, symbolSpecies } from '../main.js';
 import {
   Timings,
   hello,
@@ -17,27 +16,27 @@ import { Device } from '../../device/main.js';
 import { ESPNowDevice } from '../../device/esp-now.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Indicator } from '../../services/indicator.js';
+import { Level } from '../main.js';
 import { Persistence } from '../../persistence.js';
 import { TCPDevice } from '../../device/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
 
-const $ = Symbol('device');
-
 const deviceMeta = (device: Device) => ({
   identifier: device.identifier ? [...device.identifier] : undefined,
-  [symbolLevel]: Level.DEVICE,
-  [symbolSpecies]: $,
+  level: Level.DEVICE as const,
   transportType: device.transport.constructor.name,
   type: device.constructor.name,
 });
 
 export const espNowDevice = (device: ESPNowDevice) => ({
+  $: 'espNowDevice' as const,
   ...deviceMeta(device),
   ...lastSeen(device.seen),
   ...vcc(device),
 });
 
 export const ev1527Device = (device: Ev1527Device) => ({
+  $: 'ev1527Device' as const,
   ...deviceMeta(device),
   ...lastSeen(device.seen),
 });
@@ -49,6 +48,7 @@ export const ipDevice = (
   indicator?: Indicator,
   initiallyOnline = false
 ) => ({
+  $: 'ipDevice' as const,
   ...deviceMeta(device),
   ...hello(device, timings.moderate || timings.default),
   ...online(device),
@@ -58,8 +58,3 @@ export const ipDevice = (
   host: device.transport.host,
   port: device.transport.port,
 });
-
-export const selectDevice = {
-  [symbolLevel]: [matchValue, Level.DEVICE] as const,
-  [symbolSpecies]: [matchValue, $] as const,
-};
