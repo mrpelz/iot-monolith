@@ -23,9 +23,11 @@ export type EspNowWindowSensorOptions = {
 };
 
 const children = (device: Device) => ({
-  input0: input(device, 0, 'input0'),
-  input1: input(device, 1, 'input1'),
-  input2: input(device, 2, 'input2'),
+  internal: {
+    input0: input(device, 0, 'input0'),
+    input1: input(device, 1, 'input1'),
+    input2: input(device, 2, 'input2'),
+  },
 });
 
 export const espNowWindowSensor = (

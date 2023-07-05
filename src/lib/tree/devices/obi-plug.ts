@@ -9,11 +9,11 @@ import { UDPDevice } from '../../device/udp.js';
 import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
 
-export const obiPlug = (
+export const obiPlug = <T extends string>(
   logger: Logger,
   persistence: Persistence,
   timings: Timings,
-  topic: string,
+  topic: T,
   host: string,
   port = 1337,
   initiallyOnline?: boolean
@@ -26,6 +26,8 @@ export const obiPlug = (
     ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
     button: button(device, 0),
     indicator,
-    relay: output(device, 0, topic, indicator, persistence),
+    internal: {
+      relay: output(device, 0, topic, indicator, persistence),
+    },
   });
 };

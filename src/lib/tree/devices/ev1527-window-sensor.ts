@@ -63,15 +63,17 @@ export const ev1527WindowSensor = (
 
   return new Element({
     ...ev1527Device(device),
-    open: new Element({
-      ...lastChange(receivedOpen),
-      isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.BOOLEAN, isOpen),
-      tamperSwitch: new Element({
-        ...lastChange(receivedTamperSwitch),
-        main: getter(ValueType.BOOLEAN, tamperSwitch),
+    internal: {
+      open: new Element({
+        ...lastChange(receivedOpen),
+        isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
+        level: Level.PROPERTY as const,
+        main: getter(ValueType.BOOLEAN, isOpen),
+        tamperSwitch: new Element({
+          ...lastChange(receivedTamperSwitch),
+          main: getter(ValueType.BOOLEAN, tamperSwitch),
+        }),
       }),
-    }),
+    },
   });
 };

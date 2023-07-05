@@ -54,7 +54,7 @@ export type TElementChildrenDeep<T extends TElementAbstract> = Element<
 >;
 
 export class Element<T extends EmptyObject> {
-  readonly [$]: null;
+  readonly [$] = null;
 
   constructor(public readonly props: T) {
     Object.freeze(props);
@@ -82,19 +82,49 @@ export class Element<T extends EmptyObject> {
   matchChildren<M extends EmptyObject>(
     match: M
   ): Element<Extract<TElementProps<TElementChildren<this>>, M>>[] {
-    return this.children.filter((child) => child.match(match));
+    return Array.from(
+      new Set(this.children.filter((child) => child.match(match)))
+    );
   }
 
   matchChildrenDeep<M extends EmptyObject>(
     match: M
-  ): Element<Extract<TElementProps<TElementChildrenDeep<this>>, M>>[] {
+  ): Element<Extract<T | TElementProps<TElementChildrenDeep<this>>, M>>[] {
+    const selfMatch = this.match(match) ? [this] : [];
     const directMatch = this.matchChildren(match);
     const deepMatch = this.children.flatMap((child) =>
       child.matchChildrenDeep(match)
     );
 
-    return [directMatch, deepMatch].flat(1);
+    return Array.from(new Set([selfMatch, directMatch, deepMatch].flat(1)));
   }
 }
 
 export type TElement = typeof Element;
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export const init = <T extends () => void>(callback: T) => ({
+  init: true as const,
+  initCallback: callback,
+});
+
+export const getPath = (
+  source: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  target: Element<any>
+): (string | number | symbol)[] | null => {
+  if (!(source instanceof Element)) return null;
+
+  if (source === target) return [];
+
+  for (const key of objectKeys(source.props)) {
+    const prop = source.props[key];
+
+    const match = getPath(prop, target);
+    if (!match) continue;
+
+    return [key, match].flat(1);
+  }
+
+  return null;
+};

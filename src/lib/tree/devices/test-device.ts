@@ -65,15 +65,17 @@ export const testDevice = (
   });
 
   return new Element({
-    ...async(device, timings.slow || timings.default),
     ...ipDevice(device, persistence, timings),
-    ...mhz19(device, timings.slow || timings.default),
-    ...sds011(device, timings.slow || timings.default),
-    ...tsl2561(device, timings.default),
-    ...uvIndex(device, timings.default),
-    humidity,
-    motion: input(device, undefined, 'motion'),
-    pressure,
-    temperature,
+    internal: {
+      ...async(device, timings.slow || timings.default),
+      ...mhz19(device, timings.slow || timings.default),
+      ...sds011(device, timings.slow || timings.default),
+      ...tsl2561(device, timings.default),
+      ...uvIndex(device, timings.default),
+      humidity,
+      motion: input(device, undefined, 'motion'),
+      pressure,
+      temperature,
+    },
   });
 };

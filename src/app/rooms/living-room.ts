@@ -5,6 +5,7 @@ import {
   outputGrouping,
   trigger,
 } from '../../lib/tree/properties/actuators.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -22,7 +23,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'livingroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   couchButton: ev1527ButtonX4(ev1527Transport, 822302, logger),
@@ -30,14 +31,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'fan',
+    'fan' as const,
     'livingroom-fan.lan.wurstsalat.cloud'
   ),
   standingLamp: obiPlug(
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'livingroom-standinglamp.lan.wurstsalat.cloud'
   ),
   wallswitch: shellyi3(
@@ -64,12 +65,12 @@ export const instances = {
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.relay,
-  fan: devices.fan.props.relay,
-  standingLamp: devices.standingLamp.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
+  fan: devices.fan.props.internal.relay,
+  standingLamp: devices.standingLamp.props.internal.relay,
   window: new Element({
     level: Level.AREA as const,
-    open: devices.windowSensor.props.open,
+    open: devices.windowSensor.props.internal.open,
   }),
 };
 
@@ -187,8 +188,9 @@ export const scenes = {
 })();
 
 export const livingRoom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'livingRoom' as const,
   scenes: new Element({ ...scenes, level: Level.NONE as const }),
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

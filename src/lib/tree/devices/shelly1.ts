@@ -8,11 +8,11 @@ import { UDPDevice } from '../../device/udp.js';
 import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
 
-export const shelly1 = (
+export const shelly1 = <T extends string>(
   logger: Logger,
   persistence: Persistence,
   timings: Timings,
-  topic: string,
+  topic: T,
   host: string,
   port = 1337,
   initiallyOnline?: boolean
@@ -22,6 +22,8 @@ export const shelly1 = (
   return new Element({
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     button: button(device, 0),
-    relay: output(device, 0, topic, undefined, persistence),
+    internal: {
+      relay: output(device, 0, topic, undefined, persistence),
+    },
   });
 };

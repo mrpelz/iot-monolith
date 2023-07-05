@@ -24,10 +24,12 @@ export const h801 = (
   return new Element({
     ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
     indicator,
-    ledR: led(device, 0, indicator, persistence),
-    ledG: led(device, 1, undefined, persistence),
-    ledB: led(device, 2, undefined, persistence),
-    ledW1: led(device, 3, undefined, persistence),
-    ledW2: led(device, 4, undefined, persistence),
+    internal: {
+      ledR: led(device, 0, indicator, persistence),
+      ledG: led(device, 1, undefined, persistence),
+      ledB: led(device, 2, undefined, persistence),
+      ledW1: led(device, 3, undefined, persistence),
+      ledW2: led(device, 4, undefined, persistence),
+    },
   });
 };

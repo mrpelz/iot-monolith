@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Element, Level } from '../main.js';
 import {
   Timings,
   hello,
@@ -16,7 +17,6 @@ import { Device } from '../../device/main.js';
 import { ESPNowDevice } from '../../device/esp-now.js';
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Indicator } from '../../services/indicator.js';
-import { Level } from '../main.js';
 import { Persistence } from '../../persistence.js';
 import { TCPDevice } from '../../device/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
@@ -57,4 +57,11 @@ export const ipDevice = (
   ...(indicator ? identifyDevice(indicator) : {}),
   host: device.transport.host,
   port: device.transport.port,
+});
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const deviceMap = <T extends Record<string, Element<any>>>(
+  devices: T
+) => ({
+  devices: new Element({ ...devices, level: Level.NONE as const }),
 });

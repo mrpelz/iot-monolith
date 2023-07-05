@@ -2,6 +2,7 @@ import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
 import { Tree } from '../lib/tree/util.js';
 import { WebApi } from '../lib/web-api.js';
+import { getPath } from '../lib/tree/main.js';
 import { hooks } from '../lib/hooks.js';
 import { inspect } from 'node:util';
 
@@ -14,15 +15,51 @@ export const app = async (): Promise<void> => {
     system: { id, system },
   } = await import('./system.js');
 
+  for (const element of system.matchChildrenDeep({ init: true })) {
+    element.props.initCallback();
+  }
+
   const lightingOn = system
     .matchChildrenDeep({ topic: 'lighting' as const })
     .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
 
-  for (const light of lightingOn) {
-    light.props.setState.value = false;
-  }
+  const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
 
-  const test = system.matchChildrenDeep({ $: 'firstFloor' as const });
+  const allOutputs = [
+    system.matchChildrenDeep({ $: 'output' as const }),
+    system.matchChildrenDeep({ $: 'led' as const }),
+  ].flat(1);
+
+  const allLights = [
+    system.matchChildrenDeep({
+      $: 'output' as const,
+      topic: 'lighting' as const,
+    }),
+    system.matchChildrenDeep({ $: 'led' as const }),
+  ].flat(1);
+
+  // eslint-disable-next-line no-console
+  console.log(test);
+
+  // eslint-disable-next-line no-console
+  console.log(getPath(system, test));
+
+  // eslint-disable-next-line no-console
+  console.log(getPath(system, lightingOn[30]));
+
+  // eslint-disable-next-line no-console
+  console.log(allOutputs.length);
+
+  // eslint-disable-next-line no-console
+  console.log(allOutputs.map((child) => getPath(system, child)));
+
+  // eslint-disable-next-line no-console
+  console.log(allLights.length);
+
+  // eslint-disable-next-line no-console
+  console.log(allLights.map((child) => getPath(system, child)));
+
+  process.exit();
 
   // const httpServer = new HttpServer(logger, 1337);
   // httpServer.listen();

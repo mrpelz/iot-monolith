@@ -3,6 +3,7 @@
 import { Element, Level } from '../../lib/tree/main.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../bridges.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { logger } from '../logging.js';
@@ -17,7 +18,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'storage-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55632),
@@ -29,10 +30,10 @@ export const instances = {
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
   door: new Element({
     level: Level.AREA as const,
-    open: devices.doorSensor.props.open,
+    open: devices.doorSensor.props.internal.open,
   }),
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
@@ -85,7 +86,8 @@ export const groups = {
 })();
 
 export const storageRoom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'storageRoom' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Element, Level } from '../../lib/tree/main.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { espNowButton } from '../../lib/tree/devices/esp-now-button.js';
 import { espNowTransport } from '../bridges.js';
 import { espNowWindowSensor } from '../../lib/tree/devices/esp-now-window-sensor.js';
@@ -39,18 +40,21 @@ export const instances = {
 };
 
 export const properties = {
-  brightness: devices.testDevice.props.brightness,
-  co2: devices.testDevice.props.co2,
-  espNowWindowSensor0: devices.espNowWindowSensor.props.espNow.props.input0,
-  espNowWindowSensor1: devices.espNowWindowSensor.props.espNow.props.input1,
-  espNowWindowSensor2: devices.espNowWindowSensor.props.espNow.props.input2,
-  humidity: devices.testDevice.props.humidity,
-  motion: devices.testDevice.props.motion,
-  pm025: devices.testDevice.props.pm025,
-  pm10: devices.testDevice.props.pm10,
-  pressure: devices.testDevice.props.pressure,
-  temperature: devices.testDevice.props.temperature,
-  uvIndex: devices.testDevice.props.uvIndex,
+  brightness: devices.testDevice.props.internal.brightness,
+  co2: devices.testDevice.props.internal.co2,
+  espNowWindowSensor0:
+    devices.espNowWindowSensor.props.espNow.props.internal.input0,
+  espNowWindowSensor1:
+    devices.espNowWindowSensor.props.espNow.props.internal.input1,
+  espNowWindowSensor2:
+    devices.espNowWindowSensor.props.espNow.props.internal.input2,
+  humidity: devices.testDevice.props.internal.humidity,
+  motion: devices.testDevice.props.internal.motion,
+  pm025: devices.testDevice.props.internal.pm025,
+  pm10: devices.testDevice.props.internal.pm10,
+  pressure: devices.testDevice.props.internal.pressure,
+  temperature: devices.testDevice.props.internal.temperature,
+  uvIndex: devices.testDevice.props.internal.uvIndex,
 };
 
 export const groups = {};
@@ -60,7 +64,8 @@ export const groups = {};
 })();
 
 export const testRoom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'testRoom' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,
