@@ -11,9 +11,7 @@ export const app = async (): Promise<void> => {
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
-  const {
-    system: { id, system },
-  } = await import('./system.js');
+  const { system } = await import('./system.js');
 
   for (const element of system.matchChildrenDeep({ init: true })) {
     element.props.initCallback();
