@@ -166,10 +166,10 @@ export const kitchenAdjacentBright = scene(
   'lighting'
 );
 
-export const allLightsOff = trigger(() => {
-  allLights.props.main.props.setState.value = false;
+export const allLightsOff = trigger(async () => {
+  (await allLights).props.main.props.setState.value = false;
 }, 'lighting');
 
-export const allOff = trigger(() => {
-  all.props.main.props.setState.value = false;
+export const allOff = trigger(async () => {
+  (await all).props.main.props.setState.value = false;
 }, 'scene');

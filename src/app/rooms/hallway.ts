@@ -99,10 +99,10 @@ export const properties = {
     properties.ceilingLightBack.props.flip.props.state.trigger()
   );
   instances.wallswitchFrontRight.up(
-    () => (all.props.main.props.setState.value = false)
+    async () => ((await all).props.main.props.setState.value = false)
   );
-  instances.wallswitchFrontRight.longPress(() =>
-    allLights.props.flip.props.state.trigger()
+  instances.wallswitchFrontRight.longPress(async () =>
+    (await allLights).props.flip.props.state.trigger()
   );
 
   properties.door.props.open.props.main.props.state.observe((value) => {

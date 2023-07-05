@@ -66,36 +66,32 @@ const sonninstraße16 = new Element({
   level: Level.BUILDING as const,
 });
 
-const wurstHome = new Element({
+export const wurstHome = new Element({
   $: 'wurstHome' as const,
   level: Level.HOME as const,
   sonninstraße16,
 });
 
 export const system = (() => {
-  const id = Date.now().toString();
-
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  all.props.main.props.setState.observe((value) => {
-    allTimer.props.active.props.state.value = value;
-  }, true);
+  (async () =>
+    (await all).props.main.props.setState.observe((value) => {
+      allTimer.props.active.props.state.value = value;
+    }, true))();
 
-  allTimer.props.state.observe(() => {
-    all.props.main.props.setState.value = false;
+  allTimer.props.state.observe(async () => {
+    (await all).props.main.props.setState.value = false;
   });
 
-  return {
-    id,
-    system: new Element({
-      $: 'system' as const,
-      all,
-      allLights,
-      allLightsOff,
-      allOff,
-      allTimer,
-      level: Level.SYSTEM as const,
-      wurstHome,
-    }),
-  };
+  return new Element({
+    $: 'system' as const,
+    all,
+    allLights,
+    allLightsOff,
+    allOff,
+    allTimer,
+    level: Level.SYSTEM as const,
+    wurstHome,
+  });
 })();
