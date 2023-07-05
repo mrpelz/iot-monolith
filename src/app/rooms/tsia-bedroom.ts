@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Element, Level } from '../../lib/tree/main.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
@@ -17,7 +18,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'tsiabedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55696),
@@ -33,7 +34,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'tsiabedroom-standinglamp.lan.wurstsalat.cloud'
   ),
   wallswitch: shellyi3(
@@ -58,15 +59,15 @@ export const instances = {
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
   door: new Element({
     level: Level.AREA as const,
-    open: devices.doorSensor.props.open,
+    open: devices.doorSensor.props.internal.open,
   }),
-  standingLamp: devices.standingLamp.props.relay,
+  standingLamp: devices.standingLamp.props.internal.relay,
   windowRight: new Element({
     level: Level.AREA as const,
-    open: devices.windowSensorRight.props.open,
+    open: devices.windowSensorRight.props.internal.open,
   }),
 };
 
@@ -108,7 +109,8 @@ export const groups = {
 })();
 
 export const tsiaBedroom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'tsiaBedroom' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

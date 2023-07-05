@@ -11,7 +11,8 @@ import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../lib/tree/devices/ev1527-button.js';
-import { EnumState } from '../../lib/state.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -37,7 +38,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
@@ -45,29 +46,16 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'heating',
-    'diningroom-ceilinglight.lan.wurstsalat.cloud'
-  ),
-  ionGenerator: sonoffBasic(
-    logger,
-    persistence,
-    timings,
-    'heating',
-    'diningroom-tablelight.lan.wurstsalat.cloud'
+    'lighting' as const,
+    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud'
   ),
   multiButton: ev1527ButtonX4(ev1527Transport, 831834, logger),
   nightLight: obiPlug(
     logger,
     persistence,
     timings,
-    'lighting',
-    'bedroom-stonelamp.lan.wurstsalat.cloud'
-  ),
-  nightstandLeds: h801(
-    logger,
-    persistence,
-    timings,
-    'bedroom-nightstandleds.lan.wurstsalat.cloud'
+    'lighting' as const,
+    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
   ),
   roomSensor: roomSensor(
     logger,
@@ -108,25 +96,25 @@ export const instances = {
 };
 
 export const properties = {
-  brightness: devices.roomSensor.props.brightness,
-  ceilingLight: devices.ceilingLight.props.relay,
+  brightness: devices.roomSensor.props.internal.brightness,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
   door: new Element({
     level: Level.AREA as const,
-    open: devices.doorSensor.props.open,
+    open: devices.doorSensor.props.internal.open,
   }),
-  floodLight: devices.floodLight.props.relay,
+  floodLight: devices.floodLight.props.internal.relay,
   floodLightTimer: offTimer(epochs.hour, undefined, [
     'mrpelz-bedroom/floodLightTimer',
     persistence,
   ]),
-  humidity: devices.roomSensor.props.humidity,
-  nightLight: devices.nightLight.props.relay,
-  pressure: devices.roomSensor.props.pressure,
-  temperature: devices.roomSensor.props.temperature,
-  tvoc: devices.roomSensor.props.tvoc,
+  humidity: devices.roomSensor.props.internal.humidity,
+  nightLight: devices.nightLight.props.internal.relay,
+  pressure: devices.roomSensor.props.internal.pressure,
+  temperature: devices.roomSensor.props.internal.temperature,
+  tvoc: devices.roomSensor.props.internal.tvoc,
   windowLeft: new Element({
     level: Level.AREA as const,
-    open: devices.windowSensorLeft.props.open,
+    open: devices.windowSensorLeft.props.internal.open,
   }),
 };
 
@@ -387,7 +375,8 @@ const sceneCycle = new EnumState(
 })();
 
 export const mrpelzBedroom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'mrpelzBedroom' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

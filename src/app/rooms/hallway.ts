@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Element, Level } from '../../lib/tree/main.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -18,14 +19,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'hallway-ceilinglightback.lan.wurstsalat.cloud'
   ),
   ceilingLightFront: shelly1(
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'hallway-ceilinglightfront.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55024),
@@ -52,12 +53,12 @@ export const instances = {
 };
 
 const partialProperties = {
-  ceilingLightBack: devices.ceilingLightBack.props.relay,
-  ceilingLightFront: devices.ceilingLightFront.props.relay,
+  ceilingLightBack: devices.ceilingLightBack.props.internal.relay,
+  ceilingLightFront: devices.ceilingLightFront.props.internal.relay,
   door: new Element({
     level: Level.AREA as const,
     name: 'entryDoor',
-    open: devices.doorSensor.props.open,
+    open: devices.doorSensor.props.internal.open,
   }),
 };
 
@@ -139,7 +140,8 @@ export const properties = {
 })();
 
 export const hallway = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'hallway' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

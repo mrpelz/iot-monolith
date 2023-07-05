@@ -75,17 +75,19 @@ export const roomSensor = (
 
   return new Element({
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
-    // ...mhz19(device, timings.slow || timings.default),
-    // ...sds011(device, timings.slow || timings.default),
-    ...sgp30(
-      device,
-      timings.slow || timings.default,
-      sgp30MeasurementInputGetter
-    ),
-    ...tsl2561(device, timings.default),
-    humidity,
-    // motion: input(device, undefined, 'motion'),
-    pressure,
-    temperature,
+    internal: {
+      // ...mhz19(device, timings.slow || timings.default),
+      // ...sds011(device, timings.slow || timings.default),
+      ...sgp30(
+        device,
+        timings.slow || timings.default,
+        sgp30MeasurementInputGetter
+      ),
+      ...tsl2561(device, timings.default),
+      humidity,
+      // motion: input(device, undefined, 'motion'),
+      pressure,
+      temperature,
+    },
   });
 };

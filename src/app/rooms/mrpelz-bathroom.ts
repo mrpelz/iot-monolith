@@ -15,6 +15,7 @@ import {
   sunElevation,
 } from '../util.js';
 import { Timer } from '../../lib/timer.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
@@ -33,7 +34,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'mrpelzbathroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 720256),
@@ -47,21 +48,21 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'heating',
+    'heating' as const,
     'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud'
   ),
   mirrorLight: sonoffBasic(
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud'
   ),
   nightLight: sonoffBasic(
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'mrpelzbathroom-nightlight.lan.wurstsalat.cloud'
   ),
   showerButton: ev1527ButtonX1(ev1527Transport, 628217, logger),
@@ -88,15 +89,15 @@ export const properties = {
     'mrpelzbathroom/allTimer',
     persistence,
   ]),
-  ceilingLight: devices.ceilingLight.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
   door: new Element({
     level: Level.AREA as const,
-    open: devices.doorSensor.props.open,
+    open: devices.doorSensor.props.internal.open,
   }),
-  mirrorHeating: devices.mirrorHeating.props.relay,
-  mirrorLed: devices.leds.props.ledR,
-  mirrorLight: devices.mirrorLight.props.relay,
-  nightLight: devices.nightLight.props.relay,
+  mirrorHeating: devices.mirrorHeating.props.internal.relay,
+  mirrorLed: devices.leds.props.internal.ledR,
+  mirrorLight: devices.mirrorLight.props.internal.relay,
+  nightLight: devices.nightLight.props.internal.relay,
 };
 
 export const groups = {
@@ -421,7 +422,8 @@ export const scenes = {
 })();
 
 export const mrpelzBathroom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'mrpelzBathroom' as const,
+  ...deviceMap(devices),
   scenes: new Element({ ...scenes, level: Level.NONE as const }),
   ...groups,
   ...properties,

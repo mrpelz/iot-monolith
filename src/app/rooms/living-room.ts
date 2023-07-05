@@ -7,13 +7,7 @@ import {
   scene,
   trigger,
 } from '../../lib/tree/properties/actuators.js';
-import { every5Seconds, timings } from '../timings.js';
-import {
-  relativeSunElevationOfDay,
-  relativeSunElevationOfNight,
-} from '../util.js';
-import { BooleanState } from '../../lib/state.js';
-import { epochs } from '../../lib/epochs.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -27,12 +21,26 @@ import { promiseGuard } from '../../lib/promise.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
 
 export const devices = {
+  ceilingLight: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'lighting' as const,
+    'livingroom-ceilinglight.lan.wurstsalat.cloud'
+  ),
   couchButton: ev1527ButtonX4(ev1527Transport, 822302, logger),
+  fan: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'fan' as const,
+    'livingroom-fan.lan.wurstsalat.cloud'
+  ),
   standingLamp: obiPlug(
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'livingroom-standinglamp.lan.wurstsalat.cloud'
   ),
   terrariumLeds: h801(
@@ -59,12 +67,12 @@ export const instances = {
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.relay,
-  fan: devices.fan.props.relay,
-  standingLamp: devices.standingLamp.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
+  fan: devices.fan.props.internal.relay,
+  standingLamp: devices.standingLamp.props.internal.relay,
   window: new Element({
     level: Level.AREA as const,
-    open: devices.windowSensor.props.open,
+    open: devices.windowSensor.props.internal.open,
   }),
 };
 
@@ -244,8 +252,9 @@ export const scenes = {
 })();
 
 export const livingRoom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'livingRoom' as const,
   scenes: new Element({ ...scenes, level: Level.NONE as const }),
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

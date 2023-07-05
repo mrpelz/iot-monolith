@@ -9,6 +9,7 @@ import {
   ledGrouping,
   outputGrouping,
 } from '../../lib/tree/properties/actuators.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
 import { logger } from '../logging.js';
@@ -23,14 +24,14 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'diningroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   fan: obiPlug(
     logger,
     persistence,
     timings,
-    'fan',
+    'fan' as const,
     'diningroom-fan.lan.wurstsalat.cloud'
   ),
   kallaxLeds: h801(
@@ -45,7 +46,7 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'lighting',
+    'lighting' as const,
     'diningroom-tablelight.lan.wurstsalat.cloud'
   ),
   tableMultiButton: ev1527ButtonX4(ev1527Transport, 426506, logger),
@@ -67,17 +68,17 @@ export const instances = {
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.relay,
-  fan: devices.fan.props.relay,
+  ceilingLight: devices.ceilingLight.props.internal.relay,
+  fan: devices.fan.props.internal.relay,
   kallaxLedRGB: new Element({
-    b: devices.kallaxLeds.props.ledB,
-    g: devices.kallaxLeds.props.ledG,
+    b: devices.kallaxLeds.props.internal.ledB,
+    g: devices.kallaxLeds.props.internal.ledG,
     level: Level.NONE as const,
-    r: devices.kallaxLeds.props.ledR,
+    r: devices.kallaxLeds.props.internal.ledR,
   }),
-  kallaxLedSide: devices.kallaxLeds.props.ledW2,
-  kallaxLedW: devices.kallaxLeds.props.ledW1,
-  tableLight: devices.tableLight.props.relay,
+  kallaxLedSide: devices.kallaxLeds.props.internal.ledW2,
+  kallaxLedW: devices.kallaxLeds.props.internal.ledW1,
+  tableLight: devices.tableLight.props.internal.relay,
 };
 
 export const groups = {
@@ -159,7 +160,8 @@ export const groups = {
 })();
 
 export const diningRoom = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'diningRoom' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,

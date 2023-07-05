@@ -16,7 +16,7 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
-import { Element, Level, ValueType as ValueTypeNg } from '../main.js';
+import { Element, Level, ValueType as ValueTypeNg, init } from '../main.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
@@ -50,6 +50,19 @@ const actuatorStaleness = <T>(
           ])
         )
       ),
+      ...init(() => {
+        state.observe((value) => {
+          if (setState.value === value) return;
+          loading.value = true;
+        }, true);
+
+        state.observe((value) => {
+          stale.value = value === null;
+
+          if (value !== null && setState.value !== value) return;
+          loading.value = false;
+        }, true);
+      }),
     }),
   };
 };
@@ -73,6 +86,14 @@ export const led = (
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
+    ...init(() => {
+      if (persistence) {
+        persistence.observe(
+          `led/${device.transport.host}:${device.transport.port}/${index}`,
+          setBrightness
+        );
+      }
+    }),
   });
 };
 
@@ -98,6 +119,14 @@ export const output = <T extends string>(
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
     topic,
+    ...init(() => {
+      if (persistence) {
+        persistence.observe(
+          `output/${device.transport.host}:${device.transport.port}/${index}`,
+          setState
+        );
+      }
+    }),
   });
 };
 
@@ -265,6 +294,26 @@ export const setOnline = (
       flip: triggerElement(ValueTypeNg.NULL, new NullState(() => state.flip())),
       level: Level.PROPERTY as const,
       main: setter(ValueTypeNg.BOOLEAN, state),
+      ...init(() => {
+        if (initiallyOnline) {
+          device.transport.connect();
+        }
+
+        state.observe((value) => {
+          if (value) {
+            device.transport.connect();
+
+            return;
+          }
+
+          device.transport.disconnect();
+        });
+
+        // persistence.observe(
+        //   `setOnline/${device.transport.host}:${device.transport.port}`,
+        //   state
+        // );
+      }),
     }),
   };
 };

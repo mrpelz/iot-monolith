@@ -52,6 +52,7 @@ export const sunElevation = (schedule: Schedule) => {
 
   return {
     sunElevation: new Element({
+      $: 'sunElevation' as const,
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
         new ReadOnlyObservable(isAstronomicalTwilight)

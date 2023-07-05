@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Element, Level } from '../../lib/tree/main.js';
+import { deviceMap } from '../../lib/tree/elements/device.js';
 import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
@@ -54,15 +55,15 @@ export const instances = {
 };
 
 export const properties = {
-  ledLeftCWhite: devices.ledsLeft.props.ledG,
-  ledLeftFloodlight: devices.ledsLeft.props.ledB,
-  ledLeftWWhite: devices.ledsLeft.props.ledR,
-  ledRightCWhite: devices.ledsRight.props.ledB,
-  ledRightFloodlight: devices.ledsRight.props.ledW1,
-  ledRightWWhite: devices.ledsRight.props.ledG,
+  ledLeftCWhite: devices.ledsLeft.props.internal.ledG,
+  ledLeftFloodlight: devices.ledsLeft.props.internal.ledB,
+  ledLeftWWhite: devices.ledsLeft.props.internal.ledR,
+  ledRightCWhite: devices.ledsRight.props.internal.ledB,
+  ledRightFloodlight: devices.ledsRight.props.internal.ledW1,
+  ledRightWWhite: devices.ledsRight.props.internal.ledG,
   window: new Element({
     level: Level.AREA as const,
-    open: devices.windowSensor.props.open,
+    open: devices.windowSensor.props.internal.open,
   }),
 };
 
@@ -161,7 +162,8 @@ export const groups = {
 })();
 
 export const kitchen = new Element({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  $: 'kitchen' as const,
+  ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,
