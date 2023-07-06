@@ -78,7 +78,7 @@ export const led = (
     indicator
   );
 
-  return new Element({
+  const props = {
     $: 'led' as const,
     ...actuatorStaleness(actualBrightness, setBrightness, device),
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
@@ -86,6 +86,10 @@ export const led = (
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
+  };
+
+  return new Element({
+    ...props,
     ...init(() => {
       if (persistence) {
         persistence.observe(
@@ -109,7 +113,7 @@ export const output = <T extends string>(
     indicator
   );
 
-  return new Element({
+  const props = {
     $: 'output' as const,
     ...actuatorStaleness(actualState, setState, device),
     flip: triggerElement(
@@ -119,6 +123,10 @@ export const output = <T extends string>(
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
     topic,
+  };
+
+  return new Element({
+    ...props,
     ...init(() => {
       if (persistence) {
         persistence.observe(

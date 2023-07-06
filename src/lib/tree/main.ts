@@ -103,7 +103,10 @@ export class Element<T extends EmptyObject> {
 export type TElement = typeof Element;
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const init = <T extends () => void>(callback: T) => ({
+export const init = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  callback: (element: Element<any>) => void
+) => ({
   init: true as const,
   initCallback: callback,
 });

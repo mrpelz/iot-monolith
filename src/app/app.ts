@@ -18,7 +18,7 @@ export const app = async (): Promise<void> => {
   const system = await _system;
 
   for (const element of system.matchChildrenDeep({ init: true })) {
-    element.props.initCallback();
+    element.props.initCallback(element);
   }
 
   const lightingOn = system
