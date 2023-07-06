@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../lib/tree/main.js';
+import { Element, Level, init } from '../../lib/tree/main.js';
 import { all as _all, allLights, kitchenAdjacentLights } from './groups.js';
 import {
   allLightsOff,
@@ -9,15 +9,15 @@ import {
   kitchenAdjacentChillax,
 } from './scenes.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
-import { epochs } from '../lib/epochs.js';
-import { every5Seconds } from './timings.js';
+import { diningRoom } from './rooms/dining-room.js';
+import { epochs } from '../../lib/epochs.js';
+import { every5Seconds } from '../timings.js';
 import { kitchen } from './rooms/kitchen.js';
 import { livingRoom } from './rooms/living-room.js';
 import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
 import { mrpelzBedroom } from './rooms/mrpelz-bedroom.js';
-import { offTimer } from '../lib/tree/properties/logic.js';
-import { office } from './rooms/office.js';
-import { persistence } from './persistence.js';
+import { offTimer } from '../../lib/tree/properties/logic.js';
+import { persistence } from '../persistence.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { sunElevation } from './misc.js';
 import { testRoom } from './rooms/test-room.js';
@@ -26,29 +26,14 @@ import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 
 const firstFloor = new Element({
   $: 'firstFloor' as const,
-  diningRoom: Object.assign(diningRoom, {
-    kitchenAdjacentBright,
-    kitchenAdjacentChillax,
-    kitchenAdjacentLights,
-  }),
-  hallway: Object.assign(hallway, {
-    kitchenAdjacentChillax,
-    kitchenAdjacentLights,
-  }),
-  kitchen: Object.assign(kitchen, {
-    kitchenAdjacentBright,
-    kitchenAdjacentChillax,
-    kitchenAdjacentLights,
-  }),
+  diningRoom,
+  hallway,
+  kitchen,
   kitchenAdjacentBright,
   kitchenAdjacentChillax,
   kitchenAdjacentLights,
   level: Level.FLOOR as const,
-  livingRoom: Object.assign(livingRoom, {
-    kitchenAdjacentBright,
-    kitchenAdjacentChillax,
-    kitchenAdjacentLights,
-  }),
+  livingRoom,
   mrpelzBathroom,
   mrpelzBedroom,
   storageRoom,
@@ -77,14 +62,6 @@ export const system = (async () => {
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  all.props.main.props.setState.observe((value) => {
-    allTimer.props.active.props.state.value = value;
-  }, true);
-
-  allTimer.props.state.observe(() => {
-    all.props.main.props.setState.value = false;
-  });
-
   return new Element({
     $: 'system' as const,
     all,
@@ -94,5 +71,14 @@ export const system = (async () => {
     allTimer,
     level: Level.SYSTEM as const,
     wurstHome,
+    ...init(() => {
+      all.props.main.props.setState.observe((value) => {
+        allTimer.props.active.props.state.value = value;
+      }, true);
+
+      allTimer.props.state.observe(() => {
+        all.props.main.props.setState.value = false;
+      });
+    }),
   });
 })();

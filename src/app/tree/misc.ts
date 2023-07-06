@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, ValueType } from '../lib/tree/main.js';
-import { Observable, ReadOnlyObservable } from '../lib/observable.js';
+import { Element, Level, ValueType } from '../../lib/tree/main.js';
+import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
   isCivilTwilight as isCivilTwilightUtil,
@@ -9,9 +9,9 @@ import {
   isNauticalTwilight as isNauticalTwilightUtil,
   isNight as isNightUtil,
   sunElevation as sunElevationUtil,
-} from './util.js';
-import { Schedule } from '../lib/schedule.js';
-import { getter } from '../lib/tree/elements/getter.js';
+} from '../util.js';
+import { Schedule } from '../../lib/schedule.js';
+import { getter } from '../../lib/tree/elements/getter.js';
 
 export const sunElevation = (schedule: Schedule) => {
   const getValues = () => {

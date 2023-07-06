@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../lib/tree/main.js';
+import { Element, Level } from '../../../lib/tree/main.js';
 import {
   SceneMember,
   ledGrouping,
@@ -10,21 +10,22 @@ import {
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
-} from '../../lib/tree/devices/ev1527-button.js';
-import { deviceMap } from '../../lib/tree/elements/device.js';
-import { epochs } from '../../lib/epochs.js';
-import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../lib/tree/devices/h801.js';
-import { inputGrouping } from '../../lib/tree/properties/sensors.js';
-import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { persistence } from '../persistence.js';
-import { roomSensor } from '../../lib/tree/devices/room-sensor.js';
-import { shelly1 } from '../../lib/tree/devices/shelly1.js';
-import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { timings } from '../timings.js';
+} from '../../../lib/tree/devices/ev1527-button.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { epochs } from '../../../lib/epochs.js';
+import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
+import { logger } from '../../logging.js';
+import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import { persistence } from '../../persistence.js';
+import { roomSensor } from '../../../lib/tree/devices/room-sensor.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { timings } from '../../timings.js';
 
 export const devices = {
   bookshelfLeds: h801(

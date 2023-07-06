@@ -53,6 +53,9 @@ export type TElementChildrenDeep<T extends TElementAbstract> = Element<
   TElementProps<DeepValues<T, TElementAbstract, 'props'>>
 >;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TElementCallback = (element: Element<any>) => void;
+
 export class Element<T extends EmptyObject> {
   readonly [$] = null;
 
@@ -103,10 +106,7 @@ export class Element<T extends EmptyObject> {
 export type TElement = typeof Element;
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const init = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callback: (element: Element<any>) => void
-) => ({
+export const init = (callback: TElementCallback) => ({
   init: true as const,
   initCallback: callback,
 });
