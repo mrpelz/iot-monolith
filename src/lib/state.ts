@@ -217,3 +217,13 @@ export class ReadOnlyNullState<T = null> {
     return this._nullState.observe(observerCallback);
   }
 }
+
+export const isNullState = (
+  input: unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): input is NullState<any> | ReadOnlyNullState<any> => {
+  if (input instanceof NullState) return true;
+  if (input instanceof ReadOnlyNullState) return true;
+
+  return false;
+};

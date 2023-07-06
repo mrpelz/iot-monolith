@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { Element, Level } from '../lib/tree/main.js';
-import { all, allLights, kitchenAdjacentLights } from './groups.js';
+import { all as _all, allLights, kitchenAdjacentLights } from './groups.js';
 import {
   allLightsOff,
   allOff,
@@ -72,16 +72,17 @@ export const wurstHome = new Element({
   sonninstraße16,
 });
 
-export const system = (() => {
+export const system = (async () => {
+  const all = await _all;
+
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  (async () =>
-    (await all).props.main.props.setState.observe((value) => {
-      allTimer.props.active.props.state.value = value;
-    }, true))();
+  all.props.main.props.setState.observe((value) => {
+    allTimer.props.active.props.state.value = value;
+  }, true);
 
-  allTimer.props.state.observe(async () => {
-    (await all).props.main.props.setState.value = false;
+  allTimer.props.state.observe(() => {
+    all.props.main.props.setState.value = false;
   });
 
   return new Element({
