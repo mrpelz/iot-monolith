@@ -1,17 +1,21 @@
+import { Element, getPath } from '../lib/tree/main.js';
 import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
 import { Tree } from '../lib/tree/util.js';
 import { WebApi } from '../lib/web-api.js';
-import { getPath } from '../lib/tree/main.js';
 import { hooks } from '../lib/hooks.js';
 import { inspect } from 'node:util';
+import { isNullState } from '../lib/state.js';
+import { isObservable } from '../lib/observable.js';
 
 export const app = async (): Promise<void> => {
   // collectDefaultMetrics();
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
-  const { system } = await import('./system.js');
+  const { system: _system } = await import('./system.js');
+
+  const system = await _system;
 
   for (const element of system.matchChildrenDeep({ init: true })) {
     element.props.initCallback();
@@ -56,6 +60,37 @@ export const app = async (): Promise<void> => {
 
   // eslint-disable-next-line no-console
   console.log(allLights.map((child) => getPath(system, child)));
+
+  // eslint-disable-next-line no-console
+  console.log(
+    JSON.stringify(
+      system,
+      (key, value) => {
+        if (value === null) return value;
+
+        if (
+          ['boolean', 'number', 'string', 'undefined'].includes(typeof value)
+        ) {
+          return value;
+        }
+
+        if (value instanceof Element) return value.props;
+
+        if (isObservable(value)) {
+          return '<Observable>';
+        }
+
+        if (isNullState(value)) {
+          return '<NullState>';
+        }
+
+        if (key === 'internal' && typeof value === 'object') return value;
+
+        return undefined;
+      },
+      2
+    )
+  );
 
   process.exit();
 

@@ -230,6 +230,18 @@ export class ObservableGroup<T> extends Observable<T> {
   }
 }
 
+export const isObservable = (
+  input: unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): input is AnyObservable<any> => {
+  if (input instanceof Observable) return true;
+  if (input instanceof ReadOnlyObservable) return true;
+  if (input instanceof ProxyObservable) return true;
+  if (input instanceof ReadOnlyProxyObservable) return true;
+
+  return false;
+};
+
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) =>
   class extends aClass {
