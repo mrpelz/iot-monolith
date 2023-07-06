@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../lib/tree/main.js';
+import { Element, Level } from '../../../lib/tree/main.js';
 import {
   outputGrouping,
   trigger,
-} from '../../lib/tree/properties/actuators.js';
-import { deviceMap } from '../../lib/tree/elements/device.js';
-import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
-import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { inputGrouping } from '../../lib/tree/properties/sensors.js';
-import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { persistence } from '../persistence.js';
-import { promiseGuard } from '../../lib/promise.js';
-import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { timings } from '../timings.js';
+} from '../../../lib/tree/properties/actuators.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
+import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
+import { logger } from '../../logging.js';
+import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
+import { persistence } from '../../persistence.js';
+import { promiseGuard } from '../../../lib/promise.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { timings } from '../../timings.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
@@ -101,9 +101,9 @@ export const scenes = {
 };
 
 (async () => {
-  const { kitchenAdjacentLights } = await import('../groups.js');
+  const { kitchenAdjacentLights } = await import('../../tree/groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
-    '../scenes.js'
+    '../../tree/scenes.js'
   );
   const { instances: testRoomInstances } = await import('./test-room.js');
 

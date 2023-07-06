@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../lib/tree/main.js';
-import { deviceMap } from '../../lib/tree/elements/device.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
-import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../lib/tree/devices/h801.js';
-import { inputGrouping } from '../../lib/tree/properties/sensors.js';
-import { ledGrouping } from '../../lib/tree/properties/actuators.js';
-import { logger } from '../logging.js';
-import { persistence } from '../persistence.js';
-import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { timings } from '../timings.js';
+import { Element, Level } from '../../../lib/tree/main.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
+import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { h801 } from '../../../lib/tree/devices/h801.js';
+import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
+import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
+import { logger } from '../../logging.js';
+import { persistence } from '../../persistence.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { timings } from '../../timings.js';
 
 export const devices = {
   ledsLeft: h801(
@@ -104,9 +104,9 @@ export const groups = {
 };
 
 (async () => {
-  const { kitchenAdjacentLights } = await import('../groups.js');
+  const { kitchenAdjacentLights } = await import('../../tree/groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
-    '../scenes.js'
+    '../../tree/scenes.js'
   );
 
   instances.leftButton.observe(() =>

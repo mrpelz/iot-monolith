@@ -2,7 +2,7 @@ import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
-import { outputGrouping } from '../lib/tree/properties/actuators.js';
+import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 
 export const all = (async () => {
   const { wurstHome } = await import('./system.js');

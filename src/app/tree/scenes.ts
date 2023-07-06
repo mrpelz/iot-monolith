@@ -2,7 +2,7 @@ import {
   SceneMember,
   scene,
   trigger,
-} from '../lib/tree/properties/actuators.js';
+} from '../../lib/tree/properties/actuators.js';
 import { all, allLights } from './groups.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';

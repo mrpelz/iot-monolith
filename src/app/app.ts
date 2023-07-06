@@ -13,11 +13,11 @@ export const app = async (): Promise<void> => {
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
-  const { system: _system } = await import('./system.js');
+  const { system: _system } = await import('./tree/system.js');
 
   const system = await _system;
 
-  for (const element of system.matchChildrenDeep({ init: true })) {
+  for (const element of system.matchChildrenDeep({ init: true as const })) {
     element.props.initCallback(element);
   }
 

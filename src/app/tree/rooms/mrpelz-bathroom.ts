@@ -1,83 +1,92 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../lib/tree/main.js';
+import { Element, Level } from '../../../lib/tree/main.js';
 import {
   SceneMember,
   outputGrouping,
   scene,
   trigger,
-} from '../../lib/tree/properties/actuators.js';
+} from '../../../lib/tree/properties/actuators.js';
 import {
   isAstronomicalTwilight,
   isCivilTwilight,
   isNauticalTwilight,
   isNight,
   sunElevation,
-} from '../util.js';
-import { Timer } from '../../lib/timer.js';
-import { deviceMap } from '../../lib/tree/elements/device.js';
-import { epochs } from '../../lib/epochs.js';
-import { ev1527ButtonX1 } from '../../lib/tree/devices/ev1527-button.js';
-import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../lib/tree/devices/h801.js';
-import { logger } from '../logging.js';
-import { offTimer } from '../../lib/tree/properties/logic.js';
-import { persistence } from '../persistence.js';
-import { shelly1 } from '../../lib/tree/devices/shelly1.js';
-import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { timings } from '../timings.js';
+} from '../../util.js';
+import { Timer } from '../../../lib/timer.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { epochs } from '../../../lib/epochs.js';
+import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
+import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { h801 } from '../../../lib/tree/devices/h801.js';
+import { logger } from '../../logging.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { persistence } from '../../persistence.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { timings } from '../../timings.js';
 
 export const devices = {
-  bathtubButton: ev1527ButtonX1(ev1527Transport, 823914, logger),
   ceilingLight: shelly1(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'tsiabathroom-ceilinglight.lan.wurstsalat.cloud'
+    'mrpelzbathroom-ceilinglight.lan.wurstsalat.cloud'
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 721216),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 720256),
   leds: h801(
     logger,
     persistence,
     timings,
-    'tsiabathroom-leds.lan.wurstsalat.cloud'
+    'mrpelzbathroom-leds.lan.wurstsalat.cloud'
+  ),
+  mirrorHeating: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'heating' as const,
+    'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud'
   ),
   mirrorLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'tsiabathroom-mirrorlight.lan.wurstsalat.cloud'
+    'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud'
   ),
   nightLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'tsiabathroom-nightlight.lan.wurstsalat.cloud'
+    'mrpelzbathroom-nightlight.lan.wurstsalat.cloud'
   ),
-  wallswitchMirror: shellyi3(
+  showerButton: ev1527ButtonX1(ev1527Transport, 628217, logger),
+  wallswitchDoor: shellyi3(
     logger,
     persistence,
     timings,
-    'tsiabathroom-wallswitchmirror.lan.wurstsalat.cloud'
+    'mrpelzbathroom-wallswitchdoor.lan.wurstsalat.cloud'
   ),
 };
 
 export const instances = {
-  bathtubButton: devices.bathtubButton.props.state,
+  mirrorHeatingButton: devices.mirrorHeating.props.button.props.state,
   mirrorLightButton: devices.mirrorLight.props.button.props.state,
   nightLightButton: devices.nightLight.props.button.props.state,
-  wallswitchDoor: devices.ceilingLight.props.button.props.state,
-  wallswitchMirror: devices.wallswitchMirror.props.button0.props.state,
+  showerButton: devices.showerButton.props.state,
+  wallswitchDoor: devices.wallswitchDoor.props.button0.props.state,
+  wallswitchMirrorBottom: devices.wallswitchDoor.props.button2.props.state,
+  wallswitchMirrorTop: devices.wallswitchDoor.props.button1.props.state,
 };
 
 export const properties = {
-  allLightsTimer: offTimer(epochs.minute * 30, true, [
-    'tsiabathroom/allLightsTimer',
+  allTimer: offTimer(epochs.minute * 30, true, [
+    'mrpelzbathroom/allTimer',
     persistence,
   ]),
   ceilingLight: devices.ceilingLight.props.internal.relay,
@@ -85,12 +94,23 @@ export const properties = {
     level: Level.AREA as const,
     open: devices.doorSensor.props.internal.open,
   }),
+  mirrorHeating: devices.mirrorHeating.props.internal.relay,
   mirrorLed: devices.leds.props.internal.ledR,
   mirrorLight: devices.mirrorLight.props.internal.relay,
   nightLight: devices.nightLight.props.internal.relay,
 };
 
 export const groups = {
+  all: outputGrouping(
+    [
+      properties.ceilingLight,
+      properties.mirrorHeating,
+      properties.mirrorLed,
+      properties.mirrorLight,
+      properties.nightLight,
+    ],
+    'group'
+  ),
   allLights: outputGrouping([
     properties.ceilingLight,
     properties.mirrorLed,
@@ -99,11 +119,15 @@ export const groups = {
   ]),
 };
 
-export const scenesPartial = {
+const scenesPartial = {
   astronomicalTwilightLighting: scene(
     [
       new SceneMember(properties.ceilingLight.props.main.props.setState, false),
-      new SceneMember(properties.mirrorLed.props.brightness.props.setState, 0),
+      new SceneMember(
+        properties.mirrorLed.props.brightness.props.setState,
+        1,
+        0
+      ),
       new SceneMember(properties.mirrorLight.props.main.props.setState, false),
       new SceneMember(
         properties.nightLight.props.main.props.setState,
@@ -126,7 +150,11 @@ export const scenesPartial = {
         true,
         false
       ),
-      new SceneMember(properties.nightLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.nightLight.props.main.props.setState,
+        true,
+        false
+      ),
     ],
     'light'
   ),
@@ -159,25 +187,25 @@ export const scenesPartial = {
         1,
         0
       ),
-      new SceneMember(properties.mirrorLight.props.main.props.setState, false),
       new SceneMember(
-        properties.nightLight.props.main.props.setState,
+        properties.mirrorLight.props.main.props.setState,
         true,
         false
       ),
+      new SceneMember(properties.nightLight.props.main.props.setState, false),
     ],
     'light'
   ),
   nightLighting: scene(
     [
       new SceneMember(properties.ceilingLight.props.main.props.setState, false),
-      new SceneMember(
-        properties.mirrorLed.props.brightness.props.setState,
-        0.5,
-        0
-      ),
+      new SceneMember(properties.mirrorLed.props.main.props.setState, false),
       new SceneMember(properties.mirrorLight.props.main.props.setState, false),
-      new SceneMember(properties.nightLight.props.main.props.setState, false),
+      new SceneMember(
+        properties.nightLight.props.main.props.setState,
+        true,
+        false
+      ),
     ],
     'light'
   ),
@@ -254,9 +282,30 @@ export const scenes = {
 };
 
 (() => {
+  instances.mirrorHeatingButton.up(() =>
+    properties.mirrorHeating.props.flip.props.state.trigger()
+  );
+  instances.mirrorHeatingButton.longPress(
+    () => (groups.all.props.main.props.setState.value = false)
+  );
+
+  instances.mirrorLightButton.up(() =>
+    properties.mirrorLight.props.flip.props.state.trigger()
+  );
+  instances.mirrorLightButton.longPress(
+    () => (groups.all.props.main.props.setState.value = false)
+  );
+
+  instances.nightLightButton.up(() =>
+    properties.nightLight.props.flip.props.state.trigger()
+  );
+  instances.nightLightButton.longPress(
+    () => (groups.all.props.main.props.setState.value = false)
+  );
+
   const timer = new Timer(epochs.second * 5);
 
-  instances.bathtubButton.observe(() => {
+  instances.showerButton.observe(() => {
     const firstPress = !timer.isRunning;
 
     timer.start();
@@ -314,40 +363,42 @@ export const scenes = {
       properties.nightLight.props.main.props.setState.value
     ) {
       scenes.dayLighting.props.main.props.setState.value = true;
+
+      return;
     }
+
+    scenes.nightLighting.props.main.props.setState.value = true;
   });
 
-  instances.mirrorLightButton.up(() =>
-    properties.mirrorLight.props.flip.props.state.trigger()
-  );
-  instances.mirrorLightButton.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
-  );
-
-  instances.nightLightButton.up(() =>
-    properties.nightLight.props.flip.props.state.trigger()
-  );
-  instances.nightLightButton.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
-  );
-
   instances.wallswitchDoor.up(() => {
-    if (groups.allLights.props.main.props.setState.value) {
-      groups.allLights.props.main.props.setState.value = false;
+    if (groups.all.props.main.props.setState.value) {
+      groups.all.props.main.props.setState.value = false;
       return;
     }
 
     scenes.dayLighting.props.main.props.setState.value = true;
   });
   instances.wallswitchDoor.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
-  instances.wallswitchMirror.up(() =>
+  instances.wallswitchMirrorTop.up(() =>
     properties.mirrorLight.props.flip.props.state.trigger()
   );
-  instances.wallswitchMirror.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+  instances.wallswitchMirrorTop.longPress(
+    () => (groups.all.props.main.props.setState.value = false)
+  );
+
+  instances.wallswitchMirrorBottom.up(() => {
+    if (scenes.nightLighting.props.main.props.state.value) {
+      groups.all.props.main.props.setState.value = false;
+      return;
+    }
+
+    scenes.nightLighting.props.main.props.setState.value = true;
+  });
+  instances.wallswitchMirrorBottom.longPress(
+    () => (groups.all.props.main.props.setState.value = false)
   );
 
   properties.door.props.open.props.main.props.state.observe((value) => {
@@ -357,19 +408,23 @@ export const scenes = {
     scenes.autoLight.props.main.props.state.trigger();
   });
 
-  groups.allLights.props.main.props.setState.observe((value) => {
-    properties.allLightsTimer.props.active.props.state.value = value;
+  groups.all.props.main.props.setState.observe((value) => {
+    properties.allTimer.props.active.props.state.value = value;
   }, true);
 
-  properties.allLightsTimer.props.state.observe(() => {
-    groups.allLights.props.main.props.setState.value = false;
+  properties.allTimer.props.state.observe(() => {
+    groups.all.props.main.props.setState.value = false;
+  });
+
+  groups.allLights.props.main.props.setState.observe((value) => {
+    properties.mirrorHeating.props.main.props.setState.value = value;
   });
 })();
 
-export const tsiaBathroom = new Element({
-  $: 'tsiaBathroom' as const,
-  scenes: new Element({ ...scenes, level: Level.NONE as const }),
+export const mrpelzBathroom = new Element({
+  $: 'mrpelzBathroom' as const,
   ...deviceMap(devices),
+  scenes: new Element({ ...scenes, level: Level.NONE as const }),
   ...groups,
   ...properties,
   level: Level.ROOM as const,
