@@ -14,7 +14,7 @@ import {
   ReadOnlyNullState,
 } from '../../state.js';
 import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
-import { Element, Level, ValueType, init } from '../main.js';
+import { Element, Level, ValueType } from '../main.js';
 import {
   MeasurementInputGetter,
   MultiValueSensor,
@@ -42,6 +42,7 @@ import { Veml6070 } from '../../services/veml6070.js';
 import { byteLengthAddress } from '../../device/ev1527.js';
 import { epochs } from '../../epochs.js';
 import { getter } from '../elements/getter.js';
+import { initCallback } from '../operations/init.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -55,7 +56,7 @@ export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
       $: 'lastChange' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, new ReadOnlyObservable(seen), 'date'),
-      ...init(() => {
+      ...initCallback(() => {
         state.observe((value) => {
           if (value === null) return;
 
@@ -76,7 +77,7 @@ export const lastSeen = <T>(
       $: 'lastSeen' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, new ReadOnlyObservable(seen), 'date'),
-      ...init(() => {
+      ...initCallback(() => {
         state.observe((value) => {
           if (state instanceof ReadOnlyObservable && value === null) return;
 
@@ -99,7 +100,7 @@ export const metricStaleness = <T>(
       $: 'metricStaleness' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(stale)),
-      ...init(() => {
+      ...initCallback(() => {
         const timer = new Timer(timeout + epochs.second * 10);
         timer.observe(() => {
           stale.value = true;

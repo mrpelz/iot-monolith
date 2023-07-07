@@ -1,12 +1,12 @@
-import { Element, getPath } from '../lib/tree/main.js';
 import { collectDefaultMetrics, register } from 'prom-client';
+import { Element } from '../lib/tree/main.js';
 import { HttpServer } from '../lib/http-server.js';
-import { Tree } from '../lib/tree/util.js';
 import { WebApi } from '../lib/web-api.js';
+import { calculatePaths } from '../lib/tree/operations/identify.js';
 import { hooks } from '../lib/hooks.js';
+import { init } from '../lib/tree/operations/init.js';
 import { inspect } from 'node:util';
-import { isNullState } from '../lib/state.js';
-import { isObservable } from '../lib/observable.js';
+import { serialize } from '../lib/tree/operations/serialize.js';
 
 export const app = async (): Promise<void> => {
   // collectDefaultMetrics();
@@ -17,80 +17,20 @@ export const app = async (): Promise<void> => {
 
   const system = await _system;
 
-  for (const element of system.matchChildrenDeep({ init: true as const })) {
-    element.props.initCallback(element);
-  }
+  calculatePaths(system);
+  init(system);
 
-  const lightingOn = system
-    .matchChildrenDeep({ topic: 'lighting' as const })
-    .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
+  // const lightingOn = system
+  //   .matchChildrenDeep({ topic: 'lighting' as const })
+  //   .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
 
-  const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
-
-  const allOutputs = [
-    system.matchChildrenDeep({ $: 'output' as const }),
-    system.matchChildrenDeep({ $: 'led' as const }),
-  ].flat(1);
-
-  const allLights = [
-    system.matchChildrenDeep({
-      $: 'output' as const,
-      topic: 'lighting' as const,
-    }),
-    system.matchChildrenDeep({ $: 'led' as const }),
-  ].flat(1);
+  // const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
 
   // eslint-disable-next-line no-console
-  console.log(test);
+  // console.log(getPathFromElement(system, test));
 
   // eslint-disable-next-line no-console
-  console.log(getPath(system, test));
-
-  // eslint-disable-next-line no-console
-  console.log(getPath(system, lightingOn[30]));
-
-  // eslint-disable-next-line no-console
-  console.log(allOutputs.length);
-
-  // eslint-disable-next-line no-console
-  console.log(allOutputs.map((child) => getPath(system, child)));
-
-  // eslint-disable-next-line no-console
-  console.log(allLights.length);
-
-  // eslint-disable-next-line no-console
-  console.log(allLights.map((child) => getPath(system, child)));
-
-  // eslint-disable-next-line no-console
-  console.log(
-    JSON.stringify(
-      system,
-      (key, value) => {
-        if (value === null) return value;
-
-        if (
-          ['boolean', 'number', 'string', 'undefined'].includes(typeof value)
-        ) {
-          return value;
-        }
-
-        if (value instanceof Element) return value.props;
-
-        if (isObservable(value)) {
-          return '<Observable>';
-        }
-
-        if (isNullState(value)) {
-          return '<NullState>';
-        }
-
-        if (key === 'internal' && typeof value === 'object') return value;
-
-        return undefined;
-      },
-      2
-    )
-  );
+  console.log(serialize(system));
 
   process.exit();
 
