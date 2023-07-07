@@ -16,7 +16,7 @@ import {
   NullState,
 } from '../../state.js';
 import { Device, IpDevice } from '../../device/main.js';
-import { Element, Level, ValueType as ValueTypeNg, init } from '../main.js';
+import { Element, Level, ValueType as ValueTypeNg } from '../main.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import { Led } from '../../items/led.js';
 import { Led as LedService } from '../../services/led.js';
@@ -24,6 +24,7 @@ import { Output } from '../../items/output.js';
 import { Output as OutputService } from '../../services/output.js';
 import { Persistence } from '../../persistence.js';
 import { getter } from '../elements/getter.js';
+import { initCallback } from '../operations/init.js';
 import { setter } from '../elements/setter.js';
 import { trigger as triggerElement } from '../elements/trigger.js';
 
@@ -50,7 +51,7 @@ const actuatorStaleness = <T>(
           ])
         )
       ),
-      ...init(() => {
+      ...initCallback(() => {
         state.observe((value) => {
           if (setState.value === value) return;
           loading.value = true;
@@ -90,7 +91,7 @@ export const led = (
 
   return new Element({
     ...props,
-    ...init(() => {
+    ...initCallback(() => {
       if (persistence) {
         persistence.observe(
           `led/${device.transport.host}:${device.transport.port}/${index}`,
@@ -127,7 +128,7 @@ export const output = <T extends string>(
 
   return new Element({
     ...props,
-    ...init(() => {
+    ...initCallback(() => {
       if (persistence) {
         persistence.observe(
           `output/${device.transport.host}:${device.transport.port}/${index}`,
@@ -302,7 +303,7 @@ export const setOnline = (
       flip: triggerElement(ValueTypeNg.NULL, new NullState(() => state.flip())),
       level: Level.PROPERTY as const,
       main: setter(ValueTypeNg.BOOLEAN, state),
-      ...init(() => {
+      ...initCallback(() => {
         if (initiallyOnline) {
           device.transport.connect();
         }

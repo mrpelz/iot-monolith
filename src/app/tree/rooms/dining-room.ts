@@ -12,6 +12,7 @@ import {
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
+import { initCallback } from '../../../lib/tree/operations/init.js';
 import { logger } from '../../logging.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../../persistence.js';
@@ -105,7 +106,7 @@ export const groups = {
   whiteLeds: ledGrouping([properties.kallaxLedSide, properties.kallaxLedW]),
 };
 
-(async () => {
+const callback = async () => {
   const { kitchenAdjacentLights } = await import('../groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../scenes.js'
@@ -157,12 +158,13 @@ export const groups = {
 
     kitchenAdjacentBright.props.main.props.setState.value = true;
   });
-})();
+};
 
 export const diningRoom = new Element({
   $: 'diningRoom' as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
+  ...initCallback(callback),
   level: Level.ROOM as const,
 });

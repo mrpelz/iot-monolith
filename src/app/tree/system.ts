@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, init } from '../../lib/tree/main.js';
+import { Element, Level } from '../../lib/tree/main.js';
 import { all as _all, allLights, kitchenAdjacentLights } from './groups.js';
 import {
   allLightsOff,
@@ -12,6 +12,7 @@ import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { epochs } from '../../lib/epochs.js';
 import { every5Seconds } from '../timings.js';
+import { initCallback } from '../../lib/tree/operations/init.js';
 import { kitchen } from './rooms/kitchen.js';
 import { livingRoom } from './rooms/living-room.js';
 import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
@@ -71,7 +72,7 @@ export const system = (async () => {
     allTimer,
     level: Level.SYSTEM as const,
     wurstHome,
-    ...init(() => {
+    ...initCallback(() => {
       all.props.main.props.setState.observe((value) => {
         allTimer.props.active.props.state.value = value;
       }, true);

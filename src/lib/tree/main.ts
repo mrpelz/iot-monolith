@@ -56,6 +56,9 @@ export type TElementChildrenDeep<T extends TElementAbstract> = Element<
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TElementCallback = (element: Element<any>) => void;
 
+export type TElementClass = typeof Element;
+export type TElement = InstanceType<TElementClass>;
+
 export class Element<T extends EmptyObject> {
   readonly [$] = null;
 
@@ -102,32 +105,3 @@ export class Element<T extends EmptyObject> {
     return Array.from(new Set([selfMatch, directMatch, deepMatch].flat(1)));
   }
 }
-
-export type TElement = typeof Element;
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const init = (callback: TElementCallback) => ({
-  init: true as const,
-  initCallback: callback,
-});
-
-export const getPath = (
-  source: unknown,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  target: Element<any>
-): (string | number | symbol)[] | null => {
-  if (!(source instanceof Element)) return null;
-
-  if (source === target) return [];
-
-  for (const key of objectKeys(source.props)) {
-    const prop = source.props[key];
-
-    const match = getPath(prop, target);
-    if (!match) continue;
-
-    return [key, match].flat(1);
-  }
-
-  return null;
-};
