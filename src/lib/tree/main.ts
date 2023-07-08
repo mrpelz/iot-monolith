@@ -1,5 +1,5 @@
 import {
-  DeepValues,
+  DeepPropValues,
   EmptyObject,
   ObjectValues,
   objectKeys,
@@ -50,7 +50,7 @@ export type TElementChildren<T extends TElementAbstract> = Element<
 >;
 
 export type TElementChildrenDeep<T extends TElementAbstract> = Element<
-  TElementProps<DeepValues<T, TElementAbstract, 'props'>>
+  TElementProps<DeepPropValues<T, TElementAbstract, 'props'>>
 >;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
