@@ -37,22 +37,43 @@ type Prev = [
   ...0[]
 ];
 
-export type DeepPaths<
-  T,
-  N extends object,
-  P extends keyof N,
-  D extends number = 20
-> = [D] extends [never]
+export type DeepPaths<T, D extends number = 20> = [D] extends [never]
   ? never
-  : T extends N
+  : T extends object
   ? {
-      [K in keyof T[P]]-?: K extends string | number
-        ? `${K}` | Join<K, DeepPaths<T[P][K], N, P, Prev[D]>>
+      [K in keyof T]-?: K extends string | number
+        ? Join<K, DeepPaths<T[K], Prev[D]>>
         : never;
-    }[keyof T[P]]
+    }[keyof T]
   : '';
 
-export type DeepValues<
+export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
+  ? never
+  : T extends object
+  ? {
+      [K in keyof T]-?: K extends string | number
+        ? `${K}` | Join<K, DeepPaths<T[K], Prev[D]>>
+        : never;
+    }[keyof T]
+  : '';
+
+export type DeepValues<T, D extends number = 20> = [D] extends [never]
+  ? never
+  : T extends object
+  ? {
+      [K in keyof T]-?: DeepValues<T[K], Prev[D]>;
+    }[keyof T]
+  : T;
+
+export type DeepValuesInclusive<T, D extends number = 20> = [D] extends [never]
+  ? never
+  : T extends object
+  ? {
+      [K in keyof T]-?: T[K] | DeepValues<T[K], Prev[D]>;
+    }[keyof T]
+  : T;
+
+export type DeepPropValues<
   T,
   N extends object,
   P extends keyof N,
@@ -63,7 +84,7 @@ export type DeepValues<
   ? {
       [K in keyof T[P]]-?:
         | (T[P][K] extends N ? T[P][K] : never)
-        | DeepValues<T[P][K], N, P, Prev[D]>;
+        | DeepPropValues<T[P][K], N, P, Prev[D]>;
     }[keyof T[P]]
   : never;
 
