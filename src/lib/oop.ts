@@ -73,7 +73,7 @@ export type DeepValuesInclusive<T, D extends number = 20> = [D] extends [never]
     }[keyof T]
   : T;
 
-export type DeepPropValues<
+export type DeepClassStructureViaChildField<
   T,
   N extends object,
   P extends keyof N,
@@ -84,7 +84,7 @@ export type DeepPropValues<
   ? {
       [K in keyof T[P]]-?:
         | (T[P][K] extends N ? T[P][K] : never)
-        | DeepPropValues<T[P][K], N, P, Prev[D]>;
+        | DeepClassStructureViaChildField<T[P][K], N, P, Prev[D]>;
     }[keyof T[P]]
   : never;
 
