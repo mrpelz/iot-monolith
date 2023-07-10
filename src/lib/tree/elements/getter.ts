@@ -21,3 +21,5 @@ export const getter = <
     unit,
     valueType,
   });
+
+export type Getter = ReturnType<typeof getter>;

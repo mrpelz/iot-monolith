@@ -1,10 +1,7 @@
 import { Element, TElement } from '../main.js';
 import { objectKeys } from '../../oop.js';
 
-type Path = (string | number | symbol)[];
-
-let root: TElement | null = null;
-const paths = new WeakMap<TElement, Path>();
+export type Path = (string | number | symbol)[];
 
 export const getPathFromElement = (
   source: unknown,
@@ -13,10 +10,6 @@ export const getPathFromElement = (
   if (!(source instanceof Element)) return null;
 
   if (source === target) return [];
-
-  if (source === root && paths.has(target)) {
-    return paths.get(target) ?? null;
-  }
 
   for (const key of objectKeys(source.props)) {
     const prop = source.props[key];
@@ -47,15 +40,25 @@ export const getElementFromPath = (
   return getElementFromPath(property, rest);
 };
 
-export const calculatePaths = (source: TElement): void => {
-  if (root) return;
+export class Paths<T extends TElement> {
+  private readonly _elements = new Map<Path, TElement>();
+  private readonly _paths = new Map<TElement, Path>();
 
-  root = source;
+  constructor(root: T) {
+    for (const element of root.matchChildrenDeep({})) {
+      const path = getPathFromElement(root, element);
+      if (!path) continue;
 
-  for (const element of root.matchChildrenDeep({})) {
-    const path = getPathFromElement(root, element);
-    if (!path) continue;
-
-    paths.set(element, path);
+      this._elements.set(path, element);
+      this._paths.set(element, path);
+    }
   }
-};
+
+  getElement(path: Path): TElement | null {
+    return this._elements.get(path) ?? null;
+  }
+
+  getPath(target: TElement): Path | null {
+    return this._paths.get(target) ?? null;
+  }
+}

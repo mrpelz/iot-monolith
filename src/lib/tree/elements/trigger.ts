@@ -14,3 +14,5 @@ export const trigger = <N extends string | undefined, V extends ValueType>(
     state: nullState,
     valueType,
   });
+
+export type Trigger = ReturnType<typeof trigger>;

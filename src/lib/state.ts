@@ -218,10 +218,12 @@ export class ReadOnlyNullState<T = null> {
   }
 }
 
+export type AnyNullState<T> = NullState<T> | ReadOnlyNullState<T>;
+
 export const isNullState = (
   input: unknown
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): input is NullState<any> | ReadOnlyNullState<any> => {
+): input is AnyNullState<any> => {
   if (input instanceof NullState) return true;
   if (input instanceof ReadOnlyNullState) return true;
 
