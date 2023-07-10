@@ -5,6 +5,7 @@ export type Constructor<T> = { new (...args: any[]): T };
 export type EmptyObject = Record<string | symbol, any>;
 export type ObjectValues<T extends EmptyObject> = T[keyof T];
 
+// https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
 type Join<K, P> = K extends string | number
   ? P extends string | number
     ? `${K}${'' extends P ? '' : '.'}${P}`
@@ -100,6 +101,15 @@ export const instanceMethods = (instance: Record<string, unknown>): string[] =>
     (name) => name !== 'constructor' && name[0] !== '_'
   );
 
+export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
+  ...Object.getOwnPropertySymbols(input),
+  ...Object.getOwnPropertyNames(input),
+];
+
+export const objectValues = <T extends EmptyObject>(
+  input: T
+): ObjectValues<T>[] => objectKeys(input).map((property) => input[property]);
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rebind = (context: any, ...names: string[]): void => {
   for (const name of names) {
@@ -109,12 +119,3 @@ export const rebind = (context: any, ...names: string[]): void => {
     context[name] = fn.bind(context);
   }
 };
-
-export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
-  ...Object.getOwnPropertySymbols(input),
-  ...Object.getOwnPropertyNames(input),
-];
-
-export const objectValues = <T extends EmptyObject>(
-  input: T
-): ObjectValues<T>[] => objectKeys(input).map((property) => input[property]);

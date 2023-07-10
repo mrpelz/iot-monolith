@@ -20,3 +20,5 @@ export const setter = <N extends string | undefined, V extends ValueType>(
     state: state || new ReadOnlyObservable(setState),
     valueType,
   });
+
+export type Setter = ReturnType<typeof setter>;
