@@ -33,9 +33,11 @@ export const addMetric = <
 >(
   metricName: N,
   metricValue: T,
-  metricLabels: L = {} as L
+  metricLabels: L = {} as L,
+  metricHelp = 'help'
 ) => ({
   metric: true as const,
+  metricHelp,
   metricLabels,
   metricName,
   metricValue,
@@ -52,7 +54,7 @@ export const setupMetrics = <T extends Element>(
     if (!path) continue;
 
     const {
-      props: { metricLabels, metricName, metricValue },
+      props: { metricHelp, metricLabels, metricName, metricValue },
     } = element as Element<ReturnType<typeof addMetric>>;
 
     const outputLabels = {
@@ -63,7 +65,7 @@ export const setupMetrics = <T extends Element>(
     const keys = objectKeys(metricLabels);
 
     const gauge = new Gauge({
-      help: 'help',
+      help: metricHelp,
       labelNames: ['path', ...keys.map(cleanLabel)],
       name: `${METRIC_NAME_PREFIX}${cleanLabel(metricName)}`,
     });

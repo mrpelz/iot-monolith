@@ -24,3 +24,10 @@ export const setter = <N extends string | undefined, V extends ValueType>(
   });
 
 export type Setter = ReturnType<typeof setter>;
+
+export const isSetter = (input: unknown): input is Setter => {
+  if (!(input instanceof Element)) return false;
+  if (!input.match({ $ })) return false;
+
+  return true;
+};

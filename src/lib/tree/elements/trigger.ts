@@ -18,3 +18,10 @@ export const trigger = <N extends string | undefined, V extends ValueType>(
   });
 
 export type Trigger = ReturnType<typeof trigger>;
+
+export const isTrigger = (input: unknown): input is Trigger => {
+  if (!(input instanceof Element)) return false;
+  if (!input.match({ $ })) return false;
+
+  return true;
+};

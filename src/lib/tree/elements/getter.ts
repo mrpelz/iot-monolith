@@ -25,3 +25,10 @@ export const getter = <
   });
 
 export type Getter = ReturnType<typeof getter>;
+
+export const isGetter = (input: unknown): input is Getter => {
+  if (!(input instanceof Element)) return false;
+  if (!input.match({ $ })) return false;
+
+  return true;
+};
