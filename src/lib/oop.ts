@@ -6,13 +6,13 @@ export type EmptyObject = Record<string | symbol, any>;
 export type ObjectValues<T extends EmptyObject> = T[keyof T];
 
 // https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
-type Join<K, P> = K extends string | number
+export type Join<K, P> = K extends string | number
   ? P extends string | number
     ? `${K}${'' extends P ? '' : '.'}${P}`
     : never
   : never;
 
-type Prev = [
+export type Prev = [
   never,
   0,
   1,

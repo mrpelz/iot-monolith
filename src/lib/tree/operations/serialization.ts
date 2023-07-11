@@ -2,8 +2,14 @@ import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import { Element, TElement, ValueType, isValueType } from '../main.js';
-import { EmptyObject, objectKeys } from '../../oop.js';
+import {
+  Element,
+  TElement,
+  TElementProps,
+  ValueType,
+  isValueType,
+} from '../main.js';
+import { EmptyObject, Prev, objectKeys } from '../../oop.js';
 import { Getter, $ as getterMark } from '../elements/getter.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 import { Setter, $ as setterMark } from '../elements/setter.js';
@@ -15,22 +21,49 @@ export enum InteractionType {
   COLLECT,
 }
 
-const INTERACTION_UUID_NAMESPACE = 'cfe7d23c-1bdd-401b-bfb4-f1210694ab83';
+const INTERACTION_UUID_NAMESPACE =
+  'cfe7d23c-1bdd-401b-bfb4-f1210694ab83' as const;
+
+export type InteractionReference<
+  R extends string,
+  T extends InteractionType
+> = {
+  $: typeof INTERACTION_UUID_NAMESPACE;
+  reference: R;
+  type: T;
+};
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,
   type: T
-) => ({
+): InteractionReference<R, T> => ({
   $: INTERACTION_UUID_NAMESPACE,
   reference,
   type,
 });
 
-export type InteractionReference = ReturnType<typeof makeInteractionReference>;
-
 export type InteractionUpdate = [string, unknown];
 
 export type CollectorCallback = (value: unknown) => void;
+
+export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
+  ? never
+  : T extends TElement
+  ? {
+      [K in keyof TElementProps<T> as ElementSerialization<
+        TElementProps<T>[K],
+        Prev[D]
+      > extends never
+        ? never
+        : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
+    }
+  : T extends object
+  ? T extends AnyReadOnlyObservable<unknown>
+    ? InteractionReference<string, InteractionType.EMIT>
+    : T extends AnyWritableObservable<unknown> | NullState<unknown>
+    ? InteractionReference<string, InteractionType.COLLECT>
+    : never
+  : T;
 
 // const isInteractionReference = (
 //   input: unknown
@@ -50,14 +83,14 @@ export type CollectorCallback = (value: unknown) => void;
 //   return true;
 // };
 
-export class Serialization<T extends TElement> {
+export class Serialization<T extends Element<EmptyObject>> {
   private readonly _collectorCallbacks = new Map<string, CollectorCallback>();
   private readonly _emitter = new NullState<InteractionUpdate>();
 
   readonly emitter: ReadOnlyNullState<InteractionUpdate>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly tree: any;
+  readonly tree: ElementSerialization<T>;
 
   constructor(root: T) {
     this.emitter = new ReadOnlyNullState(this._emitter);
@@ -91,19 +124,22 @@ export class Serialization<T extends TElement> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement(element: TElement, parentId: string) {
+  private _serializeElement<E extends Element<EmptyObject>>(
+    element: E,
+    parentId: string
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = {} as any;
 
     let props: EmptyObject;
 
     if (element.match({ $: getterMark })) {
-      const { state, ...rest } = (element as Getter).props;
+      const { state, ...rest } = (element as E & Getter).props;
       props = rest;
 
       result.state = this._registerEmitter(uuidv5('state', parentId), state);
     } else if (element.match({ $: setterMark })) {
-      const { state, setState, ...rest } = (element as Setter).props;
+      const { state, setState, ...rest } = (element as E & Setter).props;
       const { valueType } = rest;
       props = rest;
 
@@ -115,7 +151,7 @@ export class Serialization<T extends TElement> {
         valueType
       );
     } else if (element.match({ $: triggerMark })) {
-      const { state, ...rest } = (element as Trigger).props;
+      const { state, ...rest } = (element as E & Trigger).props;
       const { valueType } = rest;
       props = rest;
 
@@ -134,10 +170,8 @@ export class Serialization<T extends TElement> {
       const { [key]: sourceProperty } = props;
 
       const targetProperty = (() => {
-        const id = uuidv5(key, parentId);
-
         if (sourceProperty instanceof Element) {
-          return this._serializeElement(sourceProperty, id);
+          return this._serializeElement(sourceProperty, uuidv5(key, parentId));
         }
 
         if (['object', 'function'].includes(typeof sourceProperty)) {
