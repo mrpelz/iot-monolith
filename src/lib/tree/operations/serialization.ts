@@ -4,10 +4,10 @@ import {
 } from '../../observable.js';
 import { Element, TElementProps, ValueType, isValueType } from '../main.js';
 import { EmptyObject, Prev, objectKeys } from '../../oop.js';
-import { Getter, $ as getterMark } from '../elements/getter.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
-import { Setter, $ as setterMark } from '../elements/setter.js';
-import { Trigger, $ as triggerMark } from '../elements/trigger.js';
+import { isGetter } from '../elements/getter.js';
+import { isSetter } from '../elements/setter.js';
+import { isTrigger } from '../elements/trigger.js';
 import { v5 as uuidv5 } from 'uuid';
 
 export enum InteractionType {
@@ -101,7 +101,11 @@ export class Serialization<T extends Element> {
     collector.observe((value) => this._emitter.trigger([id, value]));
 
     this._collectorCallbacks.set(id, (value) => {
-      if (!isValueType(value, valueType)) return;
+      if (!isValueType(value, valueType)) {
+        throw new Error(
+          `error collecting value "${value}": type does not match collector`
+        );
+      }
 
       collector.value = value;
     });
@@ -124,13 +128,13 @@ export class Serialization<T extends Element> {
 
     let props: EmptyObject;
 
-    if (element.match({ $: getterMark })) {
-      const { state, ...rest } = (element as E & Getter).props;
+    if (isGetter(element)) {
+      const { state, ...rest } = element.props;
       props = rest;
 
       result.state = this._registerEmitter(uuidv5('state', parentId), state);
-    } else if (element.match({ $: setterMark })) {
-      const { state, setState, ...rest } = (element as E & Setter).props;
+    } else if (isSetter(element)) {
+      const { state, setState, ...rest } = element.props;
       const { valueType } = rest;
       props = rest;
 
@@ -141,8 +145,8 @@ export class Serialization<T extends Element> {
         setState,
         valueType
       );
-    } else if (element.match({ $: triggerMark })) {
-      const { state, ...rest } = (element as E & Trigger).props;
+    } else if (isTrigger(element)) {
+      const { state, ...rest } = element.props;
       const { valueType } = rest;
       props = rest;
 

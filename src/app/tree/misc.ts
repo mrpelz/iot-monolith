@@ -65,14 +65,19 @@ export const sunElevation = (schedule: Schedule) => {
   return {
     sunElevation: new Element({
       $: 'sunElevation' as const,
-      ...addMetric('sunElevation' as const, readOnlyElevation, {
-        isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
-        isCivilTwilight: readOnlyIsCivilTwilight,
-        isDay: readOnlyIsDay,
-        isNauticalTwilight: readOnlyIsNauticalTwilight,
-        isNight: readOnlyIsNight,
-        unit: 'degrees',
-      }),
+      ...addMetric(
+        'sunElevation' as const,
+        readOnlyElevation,
+        {
+          isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
+          isCivilTwilight: readOnlyIsCivilTwilight,
+          isDay: readOnlyIsDay,
+          isNauticalTwilight: readOnlyIsNauticalTwilight,
+          isNight: readOnlyIsNight,
+          unit: 'degrees',
+        },
+        'sun elevation angle in degrees'
+      ),
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
         readOnlyIsAstronomicalTwilight
