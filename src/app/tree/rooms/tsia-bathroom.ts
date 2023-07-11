@@ -5,7 +5,7 @@ import {
   SceneMember,
   outputGrouping,
   scene,
-  trigger,
+  triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import {
   isAstronomicalTwilight,
@@ -185,7 +185,7 @@ export const scenesPartial = {
 
 export const scenes = {
   ...scenesPartial,
-  autoLight: trigger(() => {
+  autoLight: triggerElement(() => {
     let failover = false;
 
     const elevation = sunElevation();

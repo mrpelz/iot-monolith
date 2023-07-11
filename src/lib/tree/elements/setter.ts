@@ -6,6 +6,8 @@ import {
 } from '../../observable.js';
 import { Element, Level, TValueType, ValueType } from '../main.js';
 
+export const $ = 'setter' as const;
+
 export const setter = <N extends string | undefined, V extends ValueType>(
   valueType: V,
   setState: AnyWritableObservable<TValueType[V]>,
@@ -13,7 +15,7 @@ export const setter = <N extends string | undefined, V extends ValueType>(
   name: N = undefined as N
 ) =>
   new Element({
-    $: 'setter' as const,
+    $,
     level: Level.ELEMENT as const,
     name,
     setState,

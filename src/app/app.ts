@@ -1,11 +1,11 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
-import { Paths } from '../lib/tree/operations/paths.js';
+// import { Paths } from '../lib/tree/operations/paths.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
-import { WebApi } from '../lib/web-api.js';
-import { hooks } from '../lib/hooks.js';
+// import { WebApi } from '../lib/web-api.js';
+// import { hooks } from '../lib/hooks.js';
 import { init } from '../lib/tree/operations/init.js';
-import { inspect } from 'node:util';
+import { sleep } from '../lib/sleep.js';
 
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
@@ -16,9 +16,18 @@ export const app = async (): Promise<void> => {
 
   const system = await _system;
 
-  init(system);
   // const paths = new Paths(system);
-  const { serialization } = new Serialization(system);
+  const serialization = new Serialization(system);
+
+  // eslint-disable-next-line no-console
+  serialization.emitter.observe((value) => console.log(value));
+
+  init(system);
+
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify(serialization.tree, undefined, 2));
+
+  serialization.inject(['6d0e71c7-9f87-5b45-8060-71eae53e2ac2', null]);
 
   // const lightingOn = system
   //   .matchChildrenDeep({ topic: 'lighting' as const })
@@ -29,9 +38,7 @@ export const app = async (): Promise<void> => {
   // eslint-disable-next-line no-console
   // console.log(getPathFromElement(system, test));
 
-  // eslint-disable-next-line no-console
-  console.log(inspect(serialization, undefined, null));
-
+  await sleep(5000);
   process.exit();
 
   const httpServer = new HttpServer(logger, 1337);

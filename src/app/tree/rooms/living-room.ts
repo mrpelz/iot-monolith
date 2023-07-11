@@ -3,7 +3,7 @@
 import { Element, Level } from '../../../lib/tree/main.js';
 import {
   outputGrouping,
-  trigger,
+  triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -82,7 +82,7 @@ export const groups = {
 };
 
 export const scenes = {
-  mediaOff: trigger(() => {
+  mediaOff: triggerElement(() => {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
@@ -90,7 +90,7 @@ export const scenes = {
       })
     );
   }, 'media'),
-  mediaOnOrSwitch: trigger(() => {
+  mediaOnOrSwitch: triggerElement(() => {
     promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',

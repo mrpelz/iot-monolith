@@ -1,11 +1,13 @@
-import { Element, TElement } from '../main.js';
-import { NullState, ReadOnlyNullState } from '../../state.js';
 import {
-  isObservable,
-  isReadOnlyObservable,
-  isWritableObservable,
+  AnyReadOnlyObservable,
+  AnyWritableObservable,
 } from '../../observable.js';
-import { objectKeys } from '../../oop.js';
+import { Element, TElement, ValueType, isValueType } from '../main.js';
+import { EmptyObject, objectKeys } from '../../oop.js';
+import { Getter, $ as getterMark } from '../elements/getter.js';
+import { NullState, ReadOnlyNullState } from '../../state.js';
+import { Setter, $ as setterMark } from '../elements/setter.js';
+import { Trigger, $ as triggerMark } from '../elements/trigger.js';
 import { v5 as uuidv5 } from 'uuid';
 
 export enum InteractionType {
@@ -26,11 +28,9 @@ const makeInteractionReference = <R extends string, T extends InteractionType>(
 
 export type InteractionReference = ReturnType<typeof makeInteractionReference>;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type InteractionUpdate = [string, any];
+export type InteractionUpdate = [string, unknown];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type CollectorCallback = (value: any) => void;
+export type CollectorCallback = (value: unknown) => void;
 
 // const isInteractionReference = (
 //   input: unknown
@@ -52,30 +52,81 @@ export type CollectorCallback = (value: any) => void;
 
 export class Serialization<T extends TElement> {
   private readonly _collectorCallbacks = new Map<string, CollectorCallback>();
-
   private readonly _emitter = new NullState<InteractionUpdate>();
 
-  readonly collector = new NullState<InteractionUpdate>();
   readonly emitter: ReadOnlyNullState<InteractionUpdate>;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly serialization: any;
+  readonly tree: any;
 
   constructor(root: T) {
     this.emitter = new ReadOnlyNullState(this._emitter);
 
-    this.serialization = this._serializeElement(
-      root,
-      INTERACTION_UUID_NAMESPACE
-    );
-    Object.freeze(this.serialization);
+    this.tree = this._serializeElement(root, INTERACTION_UUID_NAMESPACE);
+    Object.freeze(this.tree);
+  }
+
+  private _registerCollector(
+    id: string,
+    collector: AnyWritableObservable<unknown> | NullState<unknown>,
+    valueType: ValueType
+  ) {
+    collector.observe((value) => this._emitter.trigger([id, value]));
+
+    this._collectorCallbacks.set(id, (value) => {
+      if (!isValueType(value, valueType)) return;
+
+      collector.value = value;
+    });
+
+    return makeInteractionReference(id, InteractionType.COLLECT);
+  }
+
+  private _registerEmitter(
+    id: string,
+    emitter: AnyReadOnlyObservable<unknown>
+  ) {
+    emitter.observe((value) => this._emitter.trigger([id, value]));
+
+    return makeInteractionReference(id, InteractionType.EMIT);
   }
 
   private _serializeElement(element: TElement, parentId: string) {
-    const { props } = element;
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = {} as any;
+
+    let props: EmptyObject;
+
+    if (element.match({ $: getterMark })) {
+      const { state, ...rest } = (element as Getter).props;
+      props = rest;
+
+      result.state = this._registerEmitter(uuidv5('state', parentId), state);
+    } else if (element.match({ $: setterMark })) {
+      const { state, setState, ...rest } = (element as Setter).props;
+      const { valueType } = rest;
+      props = rest;
+
+      result.state = this._registerEmitter(uuidv5('state', parentId), state);
+
+      result.setState = this._registerCollector(
+        uuidv5('setState', parentId),
+        setState,
+        valueType
+      );
+    } else if (element.match({ $: triggerMark })) {
+      const { state, ...rest } = (element as Trigger).props;
+      const { valueType } = rest;
+      props = rest;
+
+      result.state = this._registerCollector(
+        uuidv5('state', parentId),
+        state,
+        valueType
+      );
+    } else {
+      props = element.props;
+    }
 
     for (const key of objectKeys(props)) {
       if (typeof key === 'symbol') continue;
@@ -87,25 +138,6 @@ export class Serialization<T extends TElement> {
 
         if (sourceProperty instanceof Element) {
           return this._serializeElement(sourceProperty, id);
-        }
-
-        if (isReadOnlyObservable(sourceProperty)) {
-          sourceProperty.observe((value) => this._emitter.trigger([id, value]));
-
-          return makeInteractionReference(id, InteractionType.EMIT);
-        }
-
-        if (
-          (isObservable(sourceProperty) &&
-            isWritableObservable(sourceProperty)) ||
-          sourceProperty instanceof NullState
-        ) {
-          this._collectorCallbacks.set(
-            id,
-            (value) => (sourceProperty.value = value)
-          );
-
-          return makeInteractionReference(id, InteractionType.COLLECT);
         }
 
         if (['object', 'function'].includes(typeof sourceProperty)) {
@@ -121,5 +153,9 @@ export class Serialization<T extends TElement> {
     }
 
     return result;
+  }
+
+  inject([id, value]: InteractionUpdate): void {
+    this._collectorCallbacks.get(id)?.(value);
   }
 }

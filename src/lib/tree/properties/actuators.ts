@@ -26,7 +26,7 @@ import { Persistence } from '../../persistence.js';
 import { getter } from '../elements/getter.js';
 import { initCallback } from '../operations/init.js';
 import { setter } from '../elements/setter.js';
-import { trigger as triggerElement } from '../elements/trigger.js';
+import { trigger } from '../elements/trigger.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -83,7 +83,7 @@ export const led = (
     $: 'led' as const,
     ...actuatorStaleness(actualBrightness, setBrightness, device),
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
-    flip: triggerElement(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
+    flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
@@ -117,10 +117,7 @@ export const output = <T extends string>(
   const props = {
     $: 'output' as const,
     ...actuatorStaleness(actualState, setState, device),
-    flip: triggerElement(
-      ValueTypeNg.NULL,
-      new NullState(() => setState.flip())
-    ),
+    flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
     topic,
@@ -181,7 +178,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   return new Element({
     $: 'ledGrouping' as const,
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
-    flip: triggerElement(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
+    flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting',
@@ -206,10 +203,7 @@ export const outputGrouping = <T extends string>(
 
   return new Element({
     $: 'outputGrouping' as const,
-    flip: triggerElement(
-      ValueTypeNg.NULL,
-      new NullState(() => setState.flip())
-    ),
+    flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
     topic,
@@ -220,10 +214,7 @@ export const resetDevice = (device: Device) => ({
   resetDevice: new Element({
     $: 'resetDevice' as const,
     level: Level.PROPERTY as const,
-    main: triggerElement(
-      ValueTypeNg.NULL,
-      new NullState(() => device.triggerReset())
-    ),
+    main: trigger(ValueTypeNg.NULL, new NullState(() => device.triggerReset())),
   }),
 });
 
@@ -231,7 +222,7 @@ export const identifyDevice = (indicator: Indicator) => ({
   identifyDevice: new Element({
     $: 'identifyDevice' as const,
     level: Level.PROPERTY as const,
-    main: triggerElement(
+    main: trigger(
       ValueTypeNg.NULL,
       new NullState(() =>
         indicator
@@ -247,11 +238,14 @@ export const identifyDevice = (indicator: Indicator) => ({
   }),
 });
 
-export const trigger = <T extends string>(handler: () => void, topic: T) =>
+export const triggerElement = <T extends string>(
+  handler: () => void,
+  topic: T
+) =>
   new Element({
-    $: 'trigger' as const,
+    $: 'triggerElement' as const,
     level: Level.PROPERTY as const,
-    main: triggerElement(ValueTypeNg.NULL, new NullState(handler), 'trigger'),
+    main: trigger(ValueTypeNg.NULL, new NullState(handler), 'trigger'),
     topic,
   });
 
@@ -283,7 +277,7 @@ export const scene = <T extends string>(
 
   return new Element({
     $: 'scene' as const,
-    flip: triggerElement(ValueTypeNg.NULL, new NullState(() => set.flip())),
+    flip: trigger(ValueTypeNg.NULL, new NullState(() => set.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene'),
     topic,
@@ -300,7 +294,7 @@ export const setOnline = (
   return {
     setOnline: new Element({
       $: 'setOnline' as const,
-      flip: triggerElement(ValueTypeNg.NULL, new NullState(() => state.flip())),
+      flip: trigger(ValueTypeNg.NULL, new NullState(() => state.flip())),
       level: Level.PROPERTY as const,
       main: setter(ValueTypeNg.BOOLEAN, state),
       ...initCallback(() => {
