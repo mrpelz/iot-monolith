@@ -2,13 +2,7 @@ import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import {
-  Element,
-  TElement,
-  TElementProps,
-  ValueType,
-  isValueType,
-} from '../main.js';
+import { Element, TElementProps, ValueType, isValueType } from '../main.js';
 import { EmptyObject, Prev, objectKeys } from '../../oop.js';
 import { Getter, $ as getterMark } from '../elements/getter.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
@@ -48,7 +42,7 @@ export type CollectorCallback = (value: unknown) => void;
 
 export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
   ? never
-  : T extends TElement
+  : T extends Element
   ? {
       [K in keyof TElementProps<T> as ElementSerialization<
         TElementProps<T>[K],
@@ -83,7 +77,7 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
 //   return true;
 // };
 
-export class Serialization<T extends Element<EmptyObject>> {
+export class Serialization<T extends Element> {
   private readonly _collectorCallbacks = new Map<string, CollectorCallback>();
   private readonly _emitter = new NullState<InteractionUpdate>();
 
@@ -124,10 +118,7 @@ export class Serialization<T extends Element<EmptyObject>> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends Element<EmptyObject>>(
-    element: E,
-    parentId: string
-  ) {
+  private _serializeElement<E extends Element>(element: E, parentId: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = {} as any;
 

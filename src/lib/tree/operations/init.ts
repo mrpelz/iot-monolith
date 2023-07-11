@@ -1,4 +1,4 @@
-import { TElement, TElementCallback } from '../main.js';
+import { Element, TElementCallback } from '../main.js';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const initCallback = (callback: TElementCallback) => ({
@@ -6,7 +6,7 @@ export const initCallback = (callback: TElementCallback) => ({
   initCallback: callback,
 });
 
-export const init = <T extends TElement>(root: T): void => {
+export const init = <T extends Element>(root: T): void => {
   for (const element of root.matchChildrenDeep({ init: true as const })) {
     element.props.initCallback(element);
   }

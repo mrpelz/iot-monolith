@@ -11,6 +11,7 @@ import {
   sunElevation as sunElevationUtil,
 } from '../util.js';
 import { Schedule } from '../../lib/schedule.js';
+import { addMetric } from '../../lib/tree/operations/metrics.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 
 export const sunElevation = (schedule: Schedule) => {
@@ -33,10 +34,21 @@ export const sunElevation = (schedule: Schedule) => {
   const isAstronomicalTwilight = new Observable(
     getValues().isAstronomicalTwilight
   );
+  const readOnlyIsAstronomicalTwilight = new ReadOnlyObservable(
+    isAstronomicalTwilight
+  );
+
   const isCivilTwilight = new Observable(getValues().isCivilTwilight);
+  const readOnlyIsCivilTwilight = new ReadOnlyObservable(isCivilTwilight);
+
   const isDay = new Observable(getValues().isDay);
+  const readOnlyIsDay = new ReadOnlyObservable(isDay);
+
   const isNauticalTwilight = new Observable(getValues().isNauticalTwilight);
+  const readOnlyIsNauticalTwilight = new ReadOnlyObservable(isNauticalTwilight);
+
   const isNight = new Observable(getValues().isNight);
+  const readOnlyIsNight = new ReadOnlyObservable(isNight);
 
   schedule.addTask(() => {
     const state = getValues();
@@ -53,20 +65,22 @@ export const sunElevation = (schedule: Schedule) => {
   return {
     sunElevation: new Element({
       $: 'sunElevation' as const,
+      ...addMetric('sunElevation' as const, readOnlyElevation, {
+        isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
+        isCivilTwilight: readOnlyIsCivilTwilight,
+        isDay: readOnlyIsDay,
+        isNauticalTwilight: readOnlyIsNauticalTwilight,
+        isNight: readOnlyIsNight,
+        unit: 'degrees',
+      }),
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
-        new ReadOnlyObservable(isAstronomicalTwilight)
+        readOnlyIsAstronomicalTwilight
       ),
-      isCivilTwilight: getter(
-        ValueType.BOOLEAN,
-        new ReadOnlyObservable(isCivilTwilight)
-      ),
-      isDay: getter(ValueType.BOOLEAN, new ReadOnlyObservable(isDay)),
-      isNauticalTwilight: getter(
-        ValueType.BOOLEAN,
-        new ReadOnlyObservable(isNauticalTwilight)
-      ),
-      isNight: getter(ValueType.BOOLEAN, new ReadOnlyObservable(isNight)),
+      isCivilTwilight: getter(ValueType.BOOLEAN, readOnlyIsCivilTwilight),
+      isDay: getter(ValueType.BOOLEAN, readOnlyIsDay),
+      isNauticalTwilight: getter(ValueType.BOOLEAN, readOnlyIsNauticalTwilight),
+      isNight: getter(ValueType.BOOLEAN, readOnlyIsNight),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, readOnlyElevation),
     }),
