@@ -1,28 +1,30 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
-// import { Paths } from '../lib/tree/operations/paths.js';
+import { Paths } from '../lib/tree/operations/paths.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
 // import { WebApi } from '../lib/web-api.js';
 // import { hooks } from '../lib/hooks.js';
 import { init } from '../lib/tree/operations/init.js';
-import { sleep } from '../lib/sleep.js';
+import { setupMetrics } from '../lib/tree/operations/metrics.js';
 
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
   const { logger } = await import('./logging.js');
-  const { persistence } = await import('./persistence.js');
+  // const { persistence } = await import('./persistence.js');
   const { system: _system } = await import('./tree/system.js');
 
   const system = await _system;
 
-  // const paths = new Paths(system);
+  const paths = new Paths(system);
+  init(system);
+
   const serialization = new Serialization(system);
+
+  setupMetrics(system, paths);
 
   // eslint-disable-next-line no-console
   serialization.emitter.observe((value) => console.log(value));
-
-  init(system);
 
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(serialization.tree, undefined, 2));
@@ -33,13 +35,10 @@ export const app = async (): Promise<void> => {
   //   .matchChildrenDeep({ topic: 'lighting' as const })
   //   .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
 
-  // const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
+  const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
 
   // eslint-disable-next-line no-console
-  // console.log(getPathFromElement(system, test));
-
-  await sleep(5000);
-  process.exit();
+  console.log(paths.getPath(test));
 
   const httpServer = new HttpServer(logger, 1337);
   httpServer.listen();
@@ -49,10 +48,11 @@ export const app = async (): Promise<void> => {
 
   // hooks(httpServer, tree);
 
-  process.on('exit', () => persistence.persist());
-  await persistence.restore();
+  // process.on('exit', () => persistence.persist());
+  // await persistence.restore();
 
   httpServer.route('/metrics', async ({ response }) => {
+    response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });
 };

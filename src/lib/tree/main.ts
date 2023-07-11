@@ -73,13 +73,10 @@ export type TElementChildrenDeep<T extends TElementAbstract> = Element<
   TElementProps<DeepClassStructureViaChildField<T, TElementAbstract, 'props'>>
 >;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TElementCallback = (element: Element<any>) => void;
-
+export type TElementCallback = (element: Element) => void;
 export type TElementClass = typeof Element;
-export type TElement = InstanceType<TElementClass>;
 
-export class Element<T extends EmptyObject> {
+export class Element<T extends EmptyObject = EmptyObject> {
   readonly [$] = null;
 
   constructor(public readonly props: T) {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, TElement } from '../main.js';
+import { Element, Level } from '../main.js';
 import {
   Timings,
   hello,
@@ -59,6 +59,6 @@ export const ipDevice = (
   port: device.transport.port,
 });
 
-export const deviceMap = <T extends Record<string, TElement>>(devices: T) => ({
+export const deviceMap = <T extends Record<string, Element>>(devices: T) => ({
   devices: new Element({ ...devices, level: Level.NONE as const }),
 });

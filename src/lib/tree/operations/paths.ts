@@ -1,11 +1,11 @@
-import { Element, TElement } from '../main.js';
+import { Element } from '../main.js';
 import { objectKeys } from '../../oop.js';
 
 export type Path = (string | number | symbol)[];
 
 export const getPathFromElement = (
   source: unknown,
-  target: TElement
+  target: Element
 ): Path | null => {
   if (!(source instanceof Element)) return null;
 
@@ -24,9 +24,9 @@ export const getPathFromElement = (
 };
 
 export const getElementFromPath = (
-  source: TElement,
+  source: Element,
   path: Path
-): TElement | null => {
+): Element | null => {
   const [key, ...rest] = path;
 
   const props = source.props;
@@ -40,9 +40,9 @@ export const getElementFromPath = (
   return getElementFromPath(property, rest);
 };
 
-export class Paths<T extends TElement> {
-  private readonly _elements = new Map<Path, TElement>();
-  private readonly _paths = new Map<TElement, Path>();
+export class Paths<T extends Element = Element> {
+  private readonly _elements = new Map<Path, Element>();
+  private readonly _paths = new Map<Element, Path>();
 
   constructor(root: T) {
     for (const element of root.matchChildrenDeep({})) {
@@ -54,11 +54,11 @@ export class Paths<T extends TElement> {
     }
   }
 
-  getElement(path: Path): TElement | null {
+  getElement(path: Path): Element | null {
     return this._elements.get(path) ?? null;
   }
 
-  getPath(target: TElement): Path | null {
+  getPath(target: Element): Path | null {
     return this._paths.get(target) ?? null;
   }
 }
