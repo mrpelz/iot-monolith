@@ -35,6 +35,26 @@ export type TValueType = {
   [ValueType.STRING]: string;
 };
 
+export const isValueType = <T extends ValueType>(
+  value: unknown,
+  type: T
+): value is TValueType[T] => {
+  switch (type) {
+    case ValueType.NULL:
+      return value === null;
+    case ValueType.BOOLEAN:
+      return typeof value === 'boolean';
+    case ValueType.NUMBER:
+      return typeof value === 'number';
+    case ValueType.STRING:
+      return typeof value === 'string';
+    case ValueType.RAW:
+      return typeof value === 'object';
+    default:
+      return false;
+  }
+};
+
 const $ = Symbol('element');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

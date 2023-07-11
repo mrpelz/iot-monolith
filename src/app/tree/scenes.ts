@@ -1,7 +1,7 @@
 import {
   SceneMember,
   scene,
-  trigger,
+  triggerElement,
 } from '../../lib/tree/properties/actuators.js';
 import { all, allLights } from './groups.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
@@ -166,10 +166,10 @@ export const kitchenAdjacentBright = scene(
   'lighting'
 );
 
-export const allLightsOff = trigger(async () => {
+export const allLightsOff = triggerElement(async () => {
   (await allLights).props.main.props.setState.value = false;
 }, 'lighting');
 
-export const allOff = trigger(async () => {
+export const allOff = triggerElement(async () => {
   (await all).props.main.props.setState.value = false;
 }, 'scene');

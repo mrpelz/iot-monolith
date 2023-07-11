@@ -3,6 +3,8 @@
 import { Element, Level, TValueType, ValueType } from '../main.js';
 import { AnyReadOnlyObservable } from '../../observable.js';
 
+export const $ = 'getter' as const;
+
 export const getter = <
   N extends string | undefined,
   U extends string | undefined,
@@ -14,7 +16,7 @@ export const getter = <
   name: N = undefined as N
 ) =>
   new Element({
-    $: 'getter' as const,
+    $,
     level: Level.ELEMENT as const,
     name,
     state,

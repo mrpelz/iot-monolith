@@ -4,8 +4,7 @@ import { Element, Level } from '../../../lib/tree/main.js';
 import {
   SceneMember,
   outputGrouping,
-  scene,
-  trigger,
+  triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -86,8 +85,8 @@ export const groups = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const scenes = {
-  mediaOff: trigger(async () => {
-    await promiseGuard(
+  mediaOff: triggerElement(() => {
+    promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
@@ -96,8 +95,8 @@ export const scenes = {
 
     isTerrariumLedsOverride.value = false;
   }, 'media'),
-  mediaOnOrSwitch: trigger(async () => {
-    await promiseGuard(
+  mediaOnOrSwitch: triggerElement(() => {
+    promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
