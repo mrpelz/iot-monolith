@@ -2,7 +2,7 @@ import { collectDefaultMetrics, register } from 'prom-client';
 import { HttpServer } from '../lib/http-server.js';
 import { Paths } from '../lib/tree/operations/paths.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
-// import { WebApi } from '../lib/web-api.js';
+import { WebApi } from '../lib/web-api.js';
 // import { hooks } from '../lib/hooks.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
@@ -24,7 +24,7 @@ export const app = async (): Promise<void> => {
   setupMetrics(system, paths);
 
   // eslint-disable-next-line no-console
-  serialization.emitter.observe((value) => console.log(value));
+  serialization.updates.observe((value) => console.log(value));
 
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(serialization.tree, undefined, 2));
@@ -41,12 +41,13 @@ export const app = async (): Promise<void> => {
   console.log(paths.getPath(test));
 
   const httpServer = new HttpServer(logger, 1337);
-  httpServer.listen();
 
   // eslint-disable-next-line no-new
-  // new WebApi(logger, httpServer, id, tree);
+  new WebApi(logger, httpServer, serialization);
 
   // hooks(httpServer, tree);
+
+  httpServer.listen();
 
   // process.on('exit', () => persistence.persist());
   // await persistence.restore();

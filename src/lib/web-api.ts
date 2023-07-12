@@ -1,13 +1,21 @@
 import { HttpServer, RouteHandle } from './http-server.js';
 import { Input, Logger, callstack } from './log.js';
+import {
+  InteractionUpdate,
+  Serialization,
+} from './tree/operations/serialization.js';
+import WebSocket, { WebSocketServer } from 'ws';
 import { Duplex } from 'node:stream';
+import { Element } from './tree/main.js';
 import { IncomingMessage } from 'node:http';
 import { Observable } from './observable.js';
 import { Socket } from 'node:net';
 import { Timer } from './timer.js';
-import { Tree } from './tree/util.js';
-import WebSocket from 'ws';
 import { multiline } from './string.js';
+import { objectKeys } from './oop.js';
+import { v5 as uuidv5 } from 'uuid';
+
+const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
 
 const PATH_HIERARCHY = '/api/hierarchy';
 const PATH_ID = '/api/id';
@@ -15,26 +23,24 @@ const PATH_STREAM = '/api/stream';
 const PATH_VALUES = '/api/values';
 
 const WEBSOCKET_PING_INTERVAL = 5000;
-const WEBSOCKET_MARCOPOLO_PAYLOAD = '9B864FA5-F0DE-4182-A868-B4DBB81EEC16';
+const websocketMarcopoloPayload = uuidv5('marcopolo', WEB_API_UUID_NAMESPACE);
 
 export class WebApi {
-  private readonly _httpServer: HttpServer;
+  private readonly _hierarchy: string;
   private readonly _id: string;
   private readonly _log: Input;
   private readonly _streamCount: Observable<number>;
-  private readonly _tree: Tree;
-  private readonly _wss: WebSocket.Server;
+  private readonly _wss: WebSocketServer;
 
-  constructor(logger: Logger, httpServer: HttpServer, id: string, tree: Tree) {
+  constructor(
+    logger: Logger,
+    private readonly _httpServer: HttpServer,
+    private readonly _serialization: Serialization<Element>
+  ) {
     this._log = logger.getInput({ head: this.constructor.name });
-
-    this._tree = tree;
-
-    this._httpServer = httpServer;
-    this._wss = new WebSocket.Server({ noServer: true });
-
-    this._id = id;
-
+    this._wss = new WebSocketServer({ noServer: true });
+    this._hierarchy = JSON.stringify(_serialization.tree);
+    this._id = uuidv5(this._hierarchy, WEB_API_UUID_NAMESPACE);
     this._streamCount = new Observable(0);
 
     this._httpServer.route(PATH_HIERARCHY, (handle) =>
@@ -42,7 +48,7 @@ export class WebApi {
     );
 
     this._httpServer.route(PATH_ID, ({ response }) => {
-      response.end(this._id.toString());
+      response.end(this._id);
     });
 
     this._httpServer.route(PATH_STREAM, (handle) =>
@@ -74,33 +80,35 @@ export class WebApi {
     }
 
     response.setHeader('Content-Type', 'application/json');
-    response.end(JSON.stringify(this._tree.structure));
+    response.end(this._hierarchy);
   }
 
   private _handleStream(ws: WebSocket) {
     try {
-      for (const entry of this._tree.values()) {
-        ws.send(JSON.stringify(entry));
+      const values = this._serialization.values;
+      for (const key of objectKeys(values)) {
+        const value = values[key];
+        ws.send(JSON.stringify([key, value]));
       }
 
       const streamCountObserver = this._streamCount.observe((value) => {
         ws.send(JSON.stringify([-1, value]));
       });
 
-      const observer = this._tree.stream.observe((entry) => {
+      const observer = this._serialization.updates.observe((entry) => {
         if (!entry) return;
 
         ws.send(JSON.stringify(entry));
       });
 
-      this._streamCount.value = this._tree.stream.listeners;
+      this._streamCount.value = this._serialization.updates.listeners;
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
 
       ws.on('message', (data) => {
-        if (data.toString() === WEBSOCKET_MARCOPOLO_PAYLOAD) {
-          ws.send(WEBSOCKET_MARCOPOLO_PAYLOAD);
+        if (data.toString() === websocketMarcopoloPayload) {
+          ws.send(websocketMarcopoloPayload);
 
           return;
         }
@@ -117,9 +125,7 @@ export class WebApi {
 
         if (!payload || !Array.isArray(payload) || payload.length < 2) return;
 
-        const [index, value] = payload;
-
-        this._tree.set(index, value);
+        this._serialization.inject(payload as InteractionUpdate);
       });
 
       ws.on('pong', () => {
@@ -133,7 +139,7 @@ export class WebApi {
         streamCountObserver.remove();
         observer.remove();
 
-        this._streamCount.value = this._tree.stream.listeners;
+        this._streamCount.value = this._serialization.updates.listeners;
 
         ws.close();
       };
@@ -215,6 +221,19 @@ export class WebApi {
     }
 
     response.setHeader('Content-Type', 'application/json');
-    response.end(JSON.stringify(this._tree.values()));
+    response.end(
+      JSON.stringify(
+        (() => {
+          const values = this._serialization.values;
+          const result = {} as Record<string, unknown>;
+
+          for (const key of objectKeys(values)) {
+            result[key] = values[key];
+          }
+
+          return result;
+        })()
+      )
+    );
   }
 }
