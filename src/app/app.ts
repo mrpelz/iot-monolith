@@ -21,7 +21,7 @@ export const app = async (): Promise<void> => {
 
   const serialization = new Serialization(system);
 
-  setupMetrics(system, paths);
+  setupMetrics(logger, system, paths);
 
   // eslint-disable-next-line no-console
   serialization.updates.observe((value) => console.log(value));
@@ -45,7 +45,7 @@ export const app = async (): Promise<void> => {
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
 
-  httpHooks(httpServer, serialization);
+  httpHooks(logger, httpServer, serialization);
 
   httpServer.listen();
 

@@ -131,8 +131,8 @@ export class WebApi {
 
         try {
           this._serialization.inject(payload as InteractionUpdate);
-        } catch {
-          // noop
+        } catch (error) {
+          this._log.error(() => error.message, callstack(error));
         }
       });
 
