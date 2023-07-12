@@ -1,6 +1,7 @@
 import { AnyReadOnlyObservable } from '../../observable.js';
 import { Element } from '../main.js';
 import { Gauge } from 'prom-client';
+import { Logger } from '../../log.js';
 import { Paths } from './paths.js';
 import { objectKeys } from '../../oop.js';
 
@@ -44,59 +45,68 @@ export const addMetric = <
 });
 
 export const setupMetrics = <T extends Element>(
+  logger: Logger,
   root: T,
   paths: Paths
 ): void => {
+  const log = logger.getInput({
+    head: 'setupMetrics',
+  });
+
   for (const element of root.matchChildrenDeep({
     metric: true as const,
   })) {
-    const path = paths.getPath(element);
-    if (!path) continue;
+    try {
+      const path = paths.getPath(element);
+      if (!path) continue;
 
-    const {
-      props: { metricHelp, metricLabels, metricName, metricValue },
-    } = element as Element<ReturnType<typeof addMetric>>;
+      const {
+        props: { metricHelp, metricLabels, metricName, metricValue },
+      } = element as Element<ReturnType<typeof addMetric>>;
 
-    const outputLabels = {
-      path: path.join('.'),
-    } as Record<string, string | number>;
-    let outputValue = cleanValue(metricValue.value);
+      const outputLabels = {
+        path: path.join('.'),
+      } as Record<string, string | number>;
+      let outputValue = cleanValue(metricValue.value);
 
-    const keys = objectKeys(metricLabels);
+      const keys = objectKeys(metricLabels);
 
-    const gauge = new Gauge({
-      help: metricHelp,
-      labelNames: ['path', ...keys.map(cleanLabel)],
-      name: `${METRIC_NAME_PREFIX}${cleanLabel(metricName)}`,
-    });
+      const gauge = new Gauge({
+        help: metricHelp,
+        labelNames: ['path', ...keys.map(cleanLabel)],
+        name: `${METRIC_NAME_PREFIX}${cleanLabel(metricName)}`,
+      });
 
-    const set = () => gauge.set(outputLabels, outputValue);
+      const set = () => gauge.set(outputLabels, outputValue);
 
-    metricValue.observe((value) => {
-      outputValue = cleanValue(value);
+      metricValue.observe((value) => {
+        outputValue = cleanValue(value);
 
-      set();
-    });
-
-    for (const key of keys) {
-      const label = metricLabels[key];
-
-      const cleanKey = cleanLabel(key);
-
-      if (typeof label === 'string') {
-        outputLabels[cleanKey] = label;
-
-        continue;
-      }
-
-      outputLabels[cleanKey] = cleanLabelValue(label.value);
-
-      label.observe((value) => {
-        outputLabels[cleanKey] = cleanLabelValue(value);
         set();
       });
-    }
 
-    set();
+      for (const key of keys) {
+        const label = metricLabels[key];
+
+        const cleanKey = cleanLabel(key);
+
+        if (typeof label === 'string') {
+          outputLabels[cleanKey] = label;
+
+          continue;
+        }
+
+        outputLabels[cleanKey] = cleanLabelValue(label.value);
+
+        label.observe((value) => {
+          outputLabels[cleanKey] = cleanLabelValue(value);
+          set();
+        });
+      }
+
+      set();
+    } catch (error) {
+      log.error(() => error.message, error.stack);
+    }
   }
 };
