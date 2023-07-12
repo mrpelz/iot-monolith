@@ -3,7 +3,6 @@ import { HttpServer } from '../lib/http-server.js';
 import { Paths } from '../lib/tree/operations/paths.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
 import { WebApi } from '../lib/web-api.js';
-// import { hooks } from '../lib/hooks.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
 
@@ -44,8 +43,6 @@ export const app = async (): Promise<void> => {
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
-
-  // hooks(httpServer, tree);
 
   httpServer.listen();
 

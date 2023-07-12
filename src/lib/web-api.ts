@@ -127,7 +127,11 @@ export class WebApi {
 
         if (!payload || !Array.isArray(payload) || payload.length < 2) return;
 
-        this._serialization.inject(payload as InteractionUpdate);
+        try {
+          this._serialization.inject(payload as InteractionUpdate);
+        } catch {
+          // noop
+        }
       });
 
       ws.on('pong', () => {
@@ -231,16 +235,11 @@ export class WebApi {
     response.setHeader('Content-Type', 'application/json');
     response.end(
       JSON.stringify(
-        (() => {
-          const values = this._serialization.values;
-          const result = {} as Record<string, unknown>;
-
-          for (const key of objectKeys(values)) {
-            result[key] = values[key];
-          }
-
-          return result;
-        })()
+        Object.fromEntries(
+          Object.entries(this._serialization.values).map(
+            ([key, observable]) => [key, observable.value] as const
+          )
+        )
       )
     );
   }

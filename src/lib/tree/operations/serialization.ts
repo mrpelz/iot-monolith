@@ -1,8 +1,15 @@
 import {
+  AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import { Element, TElementProps, ValueType, isValueType } from '../main.js';
+import {
+  Element,
+  TElementProps,
+  TValueType,
+  ValueType,
+  isValueType,
+} from '../main.js';
 import { EmptyObject, Prev, objectKeys } from '../../oop.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 import { isGetter } from '../elements/getter.js';
@@ -14,6 +21,23 @@ export enum InteractionType {
   EMIT,
   COLLECT,
 }
+
+export type Interaction<T extends ValueType = ValueType> =
+  | {
+      state: AnyReadOnlyObservable<TValueType[T]>;
+      type: InteractionType.EMIT;
+      valueType: T;
+    }
+  | {
+      state: AnyWritableObservable<TValueType[T]> | NullState<TValueType[T]>;
+      type: InteractionType.COLLECT;
+      valueType: T;
+    };
+
+export type Values = Record<
+  string,
+  AnyObservable<unknown> | NullState<unknown>
+>;
 
 const INTERACTION_UUID_NAMESPACE =
   'cfe7d23c-1bdd-401b-bfb4-f1210694ab83' as const;
@@ -27,18 +51,7 @@ export type InteractionReference<
   type: T;
 };
 
-const makeInteractionReference = <R extends string, T extends InteractionType>(
-  reference: R,
-  type: T
-): InteractionReference<R, T> => ({
-  $: INTERACTION_UUID_NAMESPACE,
-  reference,
-  type,
-});
-
 export type InteractionUpdate = [string, unknown];
-
-export type CollectorCallback = (value: unknown) => void;
 
 export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
   ? never
@@ -59,6 +72,15 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
     : never
   : T;
 
+const makeInteractionReference = <R extends string, T extends InteractionType>(
+  reference: R,
+  type: T
+): InteractionReference<R, T> => ({
+  $: INTERACTION_UUID_NAMESPACE,
+  reference,
+  type,
+});
+
 // const isInteractionReference = (
 //   input: unknown
 // ): input is InteractionReference => {
@@ -78,9 +100,8 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
 // };
 
 export class Serialization<T extends Element> {
-  private readonly _collectorCallbacks = new Map<string, CollectorCallback>();
+  private readonly _interactions = new Map<string, Interaction>();
   private readonly _updates = new NullState<InteractionUpdate>();
-  private readonly _values = {} as { readonly [key: string]: unknown };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly tree: ElementSerialization<T>;
@@ -94,53 +115,46 @@ export class Serialization<T extends Element> {
     Object.freeze(this.tree);
   }
 
-  get values(): typeof this._values {
-    return this._values;
+  get values(): Values {
+    const result = {} as Values;
+
+    for (const [id, { state }] of this._interactions.entries()) {
+      result[id] = state;
+    }
+
+    return result;
   }
 
-  private _registerCollector(
+  private _registerCollector<V extends ValueType>(
     id: string,
-    collector: AnyWritableObservable<unknown> | NullState<unknown>,
-    valueType: ValueType
+    state: AnyWritableObservable<unknown> | NullState<unknown>,
+    valueType: V
   ) {
-    this._registerStream(id, collector);
+    state.observe((value) => this._updates.trigger([id, value]));
 
-    this._collectorCallbacks.set(id, (value) => {
-      if (!isValueType(value, valueType)) {
-        throw new Error(
-          `error collecting value "${value}": type does not match collector`
-        );
-      }
-
-      collector.value = value;
+    this._interactions.set(id, {
+      state,
+      type: InteractionType.COLLECT,
+      valueType,
     });
 
     return makeInteractionReference(id, InteractionType.COLLECT);
   }
 
-  private _registerEmitter(
+  private _registerEmitter<V extends ValueType>(
     id: string,
-    emitter: AnyReadOnlyObservable<unknown>
-  ) {
-    this._registerStream(id, emitter);
-
-    return makeInteractionReference(id, InteractionType.EMIT);
-  }
-
-  private _registerStream(
-    id: string,
-    state:
-      | AnyReadOnlyObservable<unknown>
-      | AnyWritableObservable<unknown>
-      | NullState<unknown>
+    state: AnyReadOnlyObservable<unknown>,
+    valueType: V
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
-    Object.defineProperty(this._values, id, {
-      get() {
-        return state.value;
-      },
+    this._interactions.set(id, {
+      state,
+      type: InteractionType.EMIT,
+      valueType,
     });
+
+    return makeInteractionReference(id, InteractionType.EMIT);
   }
 
   private _serializeElement<E extends Element>(element: E, parentId: string) {
@@ -151,15 +165,24 @@ export class Serialization<T extends Element> {
 
     if (isGetter(element)) {
       const { state, ...rest } = element.props;
+      const { valueType } = rest;
       props = rest;
 
-      result.state = this._registerEmitter(uuidv5('state', parentId), state);
+      result.state = this._registerEmitter(
+        uuidv5('state', parentId),
+        state,
+        valueType
+      );
     } else if (isSetter(element)) {
       const { state, setState, ...rest } = element.props;
       const { valueType } = rest;
       props = rest;
 
-      result.state = this._registerEmitter(uuidv5('state', parentId), state);
+      result.state = this._registerEmitter(
+        uuidv5('state', parentId),
+        state,
+        valueType
+      );
 
       result.setState = this._registerCollector(
         uuidv5('setState', parentId),
@@ -206,6 +229,19 @@ export class Serialization<T extends Element> {
   }
 
   inject([id, value]: InteractionUpdate): void {
-    this._collectorCallbacks.get(id)?.(value);
+    const interaction = this._interactions.get(id);
+    if (!interaction) throw new Error('interaction not found');
+
+    const { state, type, valueType } = interaction;
+
+    if (type !== InteractionType.COLLECT) {
+      throw new Error('interaction not writable');
+    }
+
+    if (!isValueType(value, valueType)) {
+      throw new Error('wrong value type given for interaction');
+    }
+
+    state.value = value;
   }
 }
