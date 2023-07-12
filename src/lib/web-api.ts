@@ -71,10 +71,12 @@ export class WebApi {
 
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
-      response.end(multiline`
-        400 Bad request
-        The client didn\'t supply the correct "id" query parameter.
-      `);
+      response.end(
+        multiline`
+          400 Bad request
+          The client didn\'t supply the correct "id" query parameter.
+        `()
+      );
 
       return;
     }
@@ -160,19 +162,23 @@ export class WebApi {
 
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
-      response.end(multiline`
-        400 Bad request
-        The client didn\'t supply the correct "id" query parameter.
-      `);
+      response.end(
+        multiline`
+          400 Bad request
+          The client didn\'t supply the correct "id" query parameter.
+        `()
+      );
 
       return;
     }
 
     response.writeHead(426, 'Upgrade required');
-    response.end(multiline`
-      426 Upgrade required
-      The client should repeat the request using the "websocket" protocol.
-    `);
+    response.end(
+      multiline`
+        426 Upgrade required
+        The client should repeat the request using the "websocket" protocol.
+      `()
+    );
   }
 
   private _handleStreamUpgrade(
@@ -212,10 +218,12 @@ export class WebApi {
 
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
-      response.end(multiline`
-        400 Bad request
-        The client didn\'t supply the correct "id" query parameter.
-      `);
+      response.end(
+        multiline`
+          400 Bad request
+          The client didn\'t supply the correct "id" query parameter.
+        `()
+      );
 
       return;
     }

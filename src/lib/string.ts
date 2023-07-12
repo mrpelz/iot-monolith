@@ -11,36 +11,52 @@ export const parse = (input: string): string | number | boolean => {
   return input;
 };
 
-const indentMatcher = new RegExp('\\s*');
-export const multiline = (
-  strings: TemplateStringsArray | string,
-  ...tags: string[]
-): string => {
-  const _strings = [...strings];
-  const parts: string[] = [];
+export type MultilineFn = (nested?: boolean) => string;
 
-  while (_strings.length || tags.length) {
-    parts.push(_strings.shift() || '');
-    parts.push(tags.shift() || '');
-  }
+const NEST_MARKER = 'de924c86-f0f3-4ecd-8fe6-e3941beeb577';
 
-  const lines = parts.join('').trim().split('\n');
+export const multiline =
+  (
+    raw: TemplateStringsArray | string,
+    ...tags: (string | MultilineFn)[]
+  ): MultilineFn =>
+  (nested = false) => {
+    const indent = (() => {
+      if (nested) return 0;
 
-  let indent = 0;
+      const protoLines = String.raw(
+        { raw },
+        ...Array(tags.length).fill('')
+      ).split('\n');
 
-  for (const line of lines) {
-    const lineIndent = indentMatcher.exec(line)?.[0]?.length || 0;
-    if (lineIndent && (!indent || lineIndent < indent)) indent = lineIndent;
-  }
+      return protoLines.reduce((prev, line) => {
+        const lineIndent = new RegExp('\\s*').exec(line)?.[0].length || 0;
 
-  const text = lines
-    .map((line) => {
-      const localIndent = indentMatcher.exec(line)?.[0]?.length || 0;
-      const finalIndent = localIndent < indent ? 0 : localIndent - indent;
+        if (!lineIndent) return prev;
+        if (!line.trim().length) return prev;
+        if (lineIndent < prev) return lineIndent;
+        return prev;
+      }, Number.MAX_SAFE_INTEGER);
+    })();
 
-      return `${''.padStart(finalIndent, ' ')}${line.slice(localIndent)}`;
-    })
-    .join('\n');
+    const indentString = Array(indent).fill(' ').join('');
 
-  return `${text}\n`;
-};
+    const result = String.raw(
+      { raw },
+      ...tags.map((tag) => (typeof tag === 'string' ? tag : tag(true)))
+    )
+      .split('\n')
+      .map((line) =>
+        line.startsWith(indentString) ? line.replace(indentString, '') : line
+      )
+      .map((line) => (line.trim().length ? line : ''))
+      .join('\n');
+
+    return nested
+      ? `${NEST_MARKER}${result}${NEST_MARKER}`
+      : result
+          .replace(new RegExp('^\\n*'), '')
+          .replace(new RegExp('\\n*$'), '')
+          .replaceAll(new RegExp(`(?:\n *)?${NEST_MARKER}`, 'g'), '')
+          .replaceAll(NEST_MARKER, '');
+  };
