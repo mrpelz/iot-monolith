@@ -35,6 +35,14 @@ export type TValueType = {
   [ValueType.STRING]: string;
 };
 
+export const descriptionValueType = {
+  [ValueType.BOOLEAN]: 'boolean',
+  [ValueType.NULL]: 'null',
+  [ValueType.NUMBER]: 'number',
+  [ValueType.RAW]: 'unknown',
+  [ValueType.STRING]: 'string',
+};
+
 export const isValueType = <T extends ValueType>(
   value: unknown,
   type: T

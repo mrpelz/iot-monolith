@@ -12,7 +12,6 @@ import { Observable } from './observable.js';
 import { Socket } from 'node:net';
 import { Timer } from './timer.js';
 import { multiline } from './string.js';
-import { objectKeys } from './oop.js';
 import { v5 as uuidv5 } from 'uuid';
 
 const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
@@ -87,9 +86,12 @@ export class WebApi {
 
   private _handleStream(ws: WebSocket) {
     try {
-      const values = this._serialization.values;
-      for (const key of objectKeys(values)) {
-        const value = values[key];
+      const { interactions } = this._serialization;
+
+      for (const key of interactions.keys()) {
+        const value = interactions.get(key);
+        if (value === undefined) continue;
+
         ws.send(JSON.stringify([key, value]));
       }
 
@@ -236,8 +238,8 @@ export class WebApi {
     response.end(
       JSON.stringify(
         Object.fromEntries(
-          Object.entries(this._serialization.values).map(
-            ([key, observable]) => [key, observable.value] as const
+          Array.from(this._serialization.interactions.entries()).map(
+            ([key, interaction]) => [key, interaction.state.value] as const
           )
         )
       )
