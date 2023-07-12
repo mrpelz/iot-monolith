@@ -36,8 +36,8 @@ export class HttpServer {
         ? multiline`
           ${message}
           ${body}
-        `
-        : message
+        `()
+        : message()
     );
   }
 
@@ -53,14 +53,14 @@ export class HttpServer {
         405 Method not allowed
         The resource was requested using a method that is not allowed.
         This resource is only available via method "${method}".
-      `;
+      `();
 
       response.end(
         body
           ? multiline`
             ${message}
             ${body}
-          `
+          `()
           : message
       );
 
@@ -80,7 +80,7 @@ export class HttpServer {
         ? multiline`
           ${message}
           ${body}
-        `
+        `()
         : message
     );
   }
@@ -98,8 +98,8 @@ export class HttpServer {
         ? multiline`
           ${message}
           ${body}
-        `
-        : message
+        `()
+        : message()
     );
   }
 
