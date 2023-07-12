@@ -100,8 +100,9 @@ const makeInteractionReference = <R extends string, T extends InteractionType>(
 // };
 
 export class Serialization<T extends Element> {
-  private readonly _interactions = new Map<string, Interaction>();
   private readonly _updates = new NullState<InteractionUpdate>();
+
+  readonly interactions = new Map<string, Interaction>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly tree: ElementSerialization<T>;
@@ -115,16 +116,6 @@ export class Serialization<T extends Element> {
     Object.freeze(this.tree);
   }
 
-  get values(): Values {
-    const result = {} as Values;
-
-    for (const [id, { state }] of this._interactions.entries()) {
-      result[id] = state;
-    }
-
-    return result;
-  }
-
   private _registerCollector<V extends ValueType>(
     id: string,
     state: AnyWritableObservable<unknown> | NullState<unknown>,
@@ -132,11 +123,14 @@ export class Serialization<T extends Element> {
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
-    this._interactions.set(id, {
-      state,
-      type: InteractionType.COLLECT,
-      valueType,
-    });
+    this.interactions.set(
+      id,
+      Object.freeze({
+        state,
+        type: InteractionType.COLLECT,
+        valueType,
+      })
+    );
 
     return makeInteractionReference(id, InteractionType.COLLECT);
   }
@@ -148,11 +142,14 @@ export class Serialization<T extends Element> {
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
-    this._interactions.set(id, {
-      state,
-      type: InteractionType.EMIT,
-      valueType,
-    });
+    this.interactions.set(
+      id,
+      Object.freeze({
+        state,
+        type: InteractionType.EMIT,
+        valueType,
+      })
+    );
 
     return makeInteractionReference(id, InteractionType.EMIT);
   }
@@ -229,7 +226,7 @@ export class Serialization<T extends Element> {
   }
 
   inject([id, value]: InteractionUpdate): void {
-    const interaction = this._interactions.get(id);
+    const interaction = this.interactions.get(id);
     if (!interaction) throw new Error('interaction not found');
 
     const { state, type, valueType } = interaction;

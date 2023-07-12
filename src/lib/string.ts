@@ -36,7 +36,7 @@ export const multiline =
         if (!line.trim().length) return prev;
         if (lineIndent < prev) return lineIndent;
         return prev;
-      }, Number.MAX_SAFE_INTEGER);
+      }, 64);
     })();
 
     const indentString = Array(indent).fill(' ').join('');
