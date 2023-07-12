@@ -79,18 +79,23 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
 
 export class Serialization<T extends Element> {
   private readonly _collectorCallbacks = new Map<string, CollectorCallback>();
-  private readonly _emitter = new NullState<InteractionUpdate>();
-
-  readonly emitter: ReadOnlyNullState<InteractionUpdate>;
+  private readonly _updates = new NullState<InteractionUpdate>();
+  private readonly _values = {} as { readonly [key: string]: unknown };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly tree: ElementSerialization<T>;
 
+  readonly updates: ReadOnlyNullState<InteractionUpdate>;
+
   constructor(root: T) {
-    this.emitter = new ReadOnlyNullState(this._emitter);
+    this.updates = new ReadOnlyNullState(this._updates);
 
     this.tree = this._serializeElement(root, INTERACTION_UUID_NAMESPACE);
     Object.freeze(this.tree);
+  }
+
+  get values(): typeof this._values {
+    return this._values;
   }
 
   private _registerCollector(
@@ -98,7 +103,7 @@ export class Serialization<T extends Element> {
     collector: AnyWritableObservable<unknown> | NullState<unknown>,
     valueType: ValueType
   ) {
-    collector.observe((value) => this._emitter.trigger([id, value]));
+    this._registerStream(id, collector);
 
     this._collectorCallbacks.set(id, (value) => {
       if (!isValueType(value, valueType)) {
@@ -117,9 +122,25 @@ export class Serialization<T extends Element> {
     id: string,
     emitter: AnyReadOnlyObservable<unknown>
   ) {
-    emitter.observe((value) => this._emitter.trigger([id, value]));
+    this._registerStream(id, emitter);
 
     return makeInteractionReference(id, InteractionType.EMIT);
+  }
+
+  private _registerStream(
+    id: string,
+    state:
+      | AnyReadOnlyObservable<unknown>
+      | AnyWritableObservable<unknown>
+      | NullState<unknown>
+  ) {
+    state.observe((value) => this._updates.trigger([id, value]));
+
+    Object.defineProperty(this._values, id, {
+      get() {
+        return state.value;
+      },
+    });
   }
 
   private _serializeElement<E extends Element>(element: E, parentId: string) {

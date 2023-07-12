@@ -174,6 +174,10 @@ export class NullState<T = null> {
       : new Set();
   }
 
+  get listeners(): number {
+    return this._observers.size;
+  }
+
   get value(): T {
     return undefined as unknown as T;
   }
@@ -211,6 +215,10 @@ export class ReadOnlyNullState<T = null> {
 
   constructor(nullState: NullState<T>) {
     this._nullState = nullState;
+  }
+
+  get listeners(): number {
+    return this._nullState.listeners;
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {
