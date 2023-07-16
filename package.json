@@ -34,6 +34,7 @@
   "author": "Lennart Pelz <mail@mrpelz.de>",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@types/common-tags": "^1.8.1",
     "@types/node": "^18.14.6",
     "@types/suncalc": "^1.8.1",
     "@types/uuid": "^9.0.2",
@@ -47,6 +48,7 @@
   },
   "type": "module",
   "dependencies": {
+    "common-tags": "^1.8.2",
     "prom-client": "^14.0.1",
     "suncalc": "^1.8.0",
     "uuid": "^9.0.0",

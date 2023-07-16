@@ -1,6 +1,6 @@
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { Input, Logger, callstack } from './log.js';
-import { multiline } from './string.js';
+import { stripIndent } from 'common-tags';
 
 export type RouteUtils = {
   badRequest: (body?: string) => void;
@@ -28,12 +28,12 @@ export class HttpServer {
     response.writeHead(400, 'Bad request');
 
     response.end(
-      multiline`
+      stripIndent`
         400 Bad request
         The request could not be understood by the server due to malformed syntax.
 
         ${body || ''}
-      `()
+      `
     );
   }
 
@@ -49,7 +49,7 @@ export class HttpServer {
       response.writeHead(405, 'Method not allowed');
 
       response.end(
-        multiline`
+        stripIndent`
           405 Method not allowed
           The resource was requested using a method that is not allowed.
 
@@ -57,7 +57,7 @@ export class HttpServer {
           ${allowedMethods.join(', ')}
 
           ${body || ''}
-        `()
+        `
       );
 
       return true;
@@ -70,11 +70,11 @@ export class HttpServer {
     response.writeHead(500, 'Internal server error');
 
     response.end(
-      multiline`
+      stripIndent`
         500 Internal server error
 
         ${body || ''}
-      `()
+      `
     );
   }
 
@@ -82,12 +82,12 @@ export class HttpServer {
     response.writeHead(404, 'Not found');
 
     response.end(
-      multiline`
+      stripIndent`
         404 Not found
         The resource could not be found.
 
         ${body || ''}
-      `()
+      `
     );
   }
 

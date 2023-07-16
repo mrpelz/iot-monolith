@@ -7,7 +7,7 @@ import { Logger, callstack } from './log.js';
 import { AnyWritableObservable } from './observable.js';
 import { HttpServer } from './http-server.js';
 import { NullState } from './state.js';
-import { multiline } from './string.js';
+import { stripIndent } from 'common-tags';
 
 const PATH_HOOKS = '/hooks' as const;
 
@@ -30,7 +30,7 @@ export const httpHooks = (
       log.info(() => 'no id provided');
 
       utils.badRequest(
-        multiline`
+        stripIndent`
           no "id" query parameter provided
 
           # How to Use
@@ -43,7 +43,7 @@ export const httpHooks = (
           ## writing a value
           * POST request
           * add a single-value JSON-string to the request body
-        `()
+        `
       );
 
       return;
@@ -54,9 +54,9 @@ export const httpHooks = (
       log.info(() => `interaction "${id}" not found`);
 
       utils.notFound(
-        multiline`
+        stripIndent`
           no interaction with UUID "${id}" has been found
-        `()
+        `
       );
 
       return;
@@ -68,9 +68,9 @@ export const httpHooks = (
       type !== InteractionType.COLLECT &&
       utils.constrainMethod(
         'GET',
-        multiline`
+        stripIndent`
           interaction with UUID "${id}" cannot be written
-        `()
+        `
       )
     ) {
       log.info(
@@ -87,9 +87,9 @@ export const httpHooks = (
         log.info(() => `write to interaction "${id}": no value provided`);
 
         utils.badRequest(
-          multiline`
+          stripIndent`
             no value provided in request body
-          `()
+          `
         );
 
         return;
@@ -106,11 +106,11 @@ export const httpHooks = (
         );
 
         utils.badRequest(
-          multiline`
+          stripIndent`
             error parsing given request body:
 
             ${error.message}
-          `()
+          `
         );
 
         return;
@@ -120,12 +120,12 @@ export const httpHooks = (
         log.info(() => `write to interaction "${id}": wrong value type`);
 
         utils.badRequest(
-          multiline`
+          stripIndent`
             value provided in request body has wrong type
 
             provided value is of type "${typeof value}"
             required type for interaction is ${descriptionValueType[valueType]}
-          `()
+          `
         );
 
         return;
