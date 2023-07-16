@@ -11,7 +11,7 @@ import { IncomingMessage } from 'node:http';
 import { Observable } from './observable.js';
 import { Socket } from 'node:net';
 import { Timer } from './timer.js';
-import { multiline } from './string.js';
+import { stripIndent } from 'common-tags';
 import { v5 as uuidv5 } from 'uuid';
 
 const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
@@ -71,10 +71,10 @@ export class WebApi {
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
       response.end(
-        multiline`
+        stripIndent`
           400 Bad request
           The client didn\'t supply the correct "id" query parameter.
-        `()
+        `
       );
 
       return;
@@ -169,10 +169,10 @@ export class WebApi {
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
       response.end(
-        multiline`
+        stripIndent`
           400 Bad request
           The client didn\'t supply the correct "id" query parameter.
-        `()
+        `
       );
 
       return;
@@ -180,10 +180,10 @@ export class WebApi {
 
     response.writeHead(426, 'Upgrade required');
     response.end(
-      multiline`
+      stripIndent`
         426 Upgrade required
         The client should repeat the request using the "websocket" protocol.
-      `()
+      `
     );
   }
 
@@ -225,10 +225,10 @@ export class WebApi {
     if (url.searchParams.get('id') !== this._id) {
       response.writeHead(400, 'Bad request');
       response.end(
-        multiline`
+        stripIndent`
           400 Bad request
           The client didn\'t supply the correct "id" query parameter.
-        `()
+        `
       );
 
       return;
