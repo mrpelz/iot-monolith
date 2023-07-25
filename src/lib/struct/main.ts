@@ -96,7 +96,7 @@ export class FixedBuffer extends StructMember<Buffer> {
 
 export const staticValue = <T>(
   value: T,
-  member: StructMember<T>
+  member: StructMember<T>,
 ): FixedBuffer => new FixedBuffer(member.encode(value));
 
 export class StaticBuffer extends StructMember<Buffer> {
@@ -140,7 +140,7 @@ export type TBitmap = [
   boolean,
   boolean,
   boolean,
-  boolean
+  boolean,
 ];
 
 export class Bitmap extends StructMember<TBitmap> {
@@ -168,8 +168,8 @@ export class Bitmap extends StructMember<TBitmap> {
       input.reduce(
         // eslint-disable-next-line no-bitwise
         (accumulator, value, index) => accumulator | (value ? 1 : 0 << index),
-        0
-      )
+        0,
+      ),
     );
   }
 }
@@ -200,7 +200,7 @@ export class StaticString extends StructMember<string> {
       padding = StringPadding.START,
       fill = '\0',
       unpad = true,
-    }: StringOptions = {}
+    }: StringOptions = {},
   ) {
     super(length);
 
@@ -228,18 +228,20 @@ export class StaticString extends StructMember<string> {
     }
 
     switch (this._padding) {
-      case StringPadding.START:
+      case StringPadding.START: {
         this.buffer.write(
           input.padStart(this.size, this._fill),
-          this._encoding
+          this._encoding,
         );
         break;
-      case StringPadding.END:
+      }
+      case StringPadding.END: {
         this.buffer.write(input.padEnd(this.size, this._fill), this._encoding);
         break;
-      case StringPadding.NONE:
-      default:
+      }
+      default: {
         this.buffer.write(input, this._encoding);
+      }
     }
   }
 }
@@ -247,11 +249,11 @@ export class StaticString extends StructMember<string> {
 export type IntegerStructByteCount = 1 | 2 | 3 | 4 | 5 | 6;
 
 class IntegerStructMember<
-  T extends IntegerStructByteCount
+  T extends IntegerStructByteCount,
 > extends StructMember<number, T> {
   protected static contraint(
     input: number,
-    [min, max]: readonly [number, number]
+    [min, max]: readonly [number, number],
   ): void {
     if (!Number.isInteger(input)) throw new Error('input is not integer');
 
@@ -371,8 +373,10 @@ export class IntLE extends IntegerStructMember<
 }
 
 class FloatStructMember extends StructMember<number> {
-  static readonly maxValue = 340282346638528859811704183484516925440.0;
-  static readonly minValue = -340282346638528859811704183484516925440.0;
+  static readonly maxValue = 340_282_346_638_528_859_811_704_183_484_516_925_440;
+  static readonly minValue =
+    -340_282_346_638_528_859_811_704_183_484_516_925_440;
+
   static readonly size = 4;
 
   protected static constraint(input: number): void {
@@ -380,13 +384,13 @@ class FloatStructMember extends StructMember<number> {
 
     if (input < FloatStructMember.minValue) {
       throw new Error(
-        `input below representable value (${FloatStructMember.minValue})`
+        `input below representable value (${FloatStructMember.minValue})`,
       );
     }
 
     if (input > FloatStructMember.maxValue) {
       throw new Error(
-        `input above representable value (${FloatStructMember.maxValue})`
+        `input above representable value (${FloatStructMember.maxValue})`,
       );
     }
   }
@@ -421,9 +425,11 @@ export class FloatLE extends FloatStructMember {
 }
 
 class DoubleStructMember extends StructMember<number> {
-  static readonly maxValue = 179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0;
+  static readonly maxValue =
+    179_769_313_486_231_570_814_527_423_731_704_356_798_070_567_525_844_996_598_917_476_803_157_260_780_028_538_760_589_558_632_766_878_171_540_458_953_514_382_464_234_321_326_889_464_182_768_467_546_703_537_516_986_049_910_576_551_282_076_245_490_090_389_328_944_075_868_508_455_133_942_304_583_236_903_222_948_165_808_559_332_123_348_274_797_826_204_144_723_168_738_177_180_919_299_881_250_404_026_184_124_858_368n;
+
   static readonly minValue =
-    -179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0;
+    -179_769_313_486_231_570_814_527_423_731_704_356_798_070_567_525_844_996_598_917_476_803_157_260_780_028_538_760_589_558_632_766_878_171_540_458_953_514_382_464_234_321_326_889_464_182_768_467_546_703_537_516_986_049_910_576_551_282_076_245_490_090_389_328_944_075_868_508_455_133_942_304_583_236_903_222_948_165_808_559_332_123_348_274_797_826_204_144_723_168_738_177_180_919_299_881_250_404_026_184_124_858_368n;
 
   static readonly size = 8;
 
@@ -432,13 +438,13 @@ class DoubleStructMember extends StructMember<number> {
 
     if (input < DoubleStructMember.minValue) {
       throw new Error(
-        `input below representable value (${DoubleStructMember.minValue})`
+        `input below representable value (${DoubleStructMember.minValue})`,
       );
     }
 
     if (input > DoubleStructMember.maxValue) {
       throw new Error(
-        `input above representable value (${DoubleStructMember.maxValue})`
+        `input above representable value (${DoubleStructMember.maxValue})`,
       );
     }
   }
@@ -495,7 +501,7 @@ export enum DecodeOpenendedAlignment {
 export class Struct<T extends StructMembers> {
   private static _assignSubarrays<M extends StructMembers>(
     buffer: Buffer,
-    members: M
+    members: M,
   ): void {
     let offset = 0;
 
@@ -509,7 +515,7 @@ export class Struct<T extends StructMembers> {
   }
 
   private static _calculateSize<M extends { size: number }[]>(
-    members: M
+    members: M,
   ): number {
     return members.reduce((accumulator, { size }) => accumulator + size, 0);
   }
@@ -536,9 +542,9 @@ export class Struct<T extends StructMembers> {
   }
 
   set value(input: StructMemberValues<T>) {
-    input.forEach((memberInput, index) => {
+    for (const [index, memberInput] of input.entries()) {
       this._members[index].value = memberInput;
-    });
+    }
   }
 
   allocate(): Buffer {
@@ -570,7 +576,7 @@ export class Struct<T extends StructMembers> {
 
   decodeOpenended(
     input: Buffer,
-    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START,
   ): [StructMemberValues<T>, Buffer] {
     if (input.length < this.size) {
       throw new Error('input buffer too short');
@@ -603,7 +609,7 @@ export class Struct<T extends StructMembers> {
 export class MappedStruct<T extends MappedStructMembers> {
   private static _assignSubarrays<M extends MappedStructMembers>(
     buffer: Buffer,
-    members: M
+    members: M,
   ): void {
     let offset = 0;
 
@@ -617,16 +623,16 @@ export class MappedStruct<T extends MappedStructMembers> {
   }
 
   private static _calculateSize<M extends MappedStructMembers>(
-    members: M
+    members: M,
   ): number {
     return Object.values(members).reduce(
       (accumulator, { size }) => accumulator + size,
-      0
+      0,
     );
   }
 
   private static _unassignSubarrays<M extends MappedStructMembers>(
-    members: M
+    members: M,
   ): void {
     for (const member of Object.values(members)) {
       member.unassign();
@@ -649,15 +655,15 @@ export class MappedStruct<T extends MappedStructMembers> {
       Object.entries(this._members).map(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        ([property, member]) => [property, member.value] as const
-      )
+        ([property, member]) => [property, member.value] as const,
+      ),
     );
   }
 
   set value(input: MappedStructMemberValues<T>) {
-    Object.entries(input).forEach(([property, memberInput]) => {
+    for (const [property, memberInput] of Object.entries(input)) {
       this._members[property].value = memberInput;
-    });
+    }
   }
 
   allocate(): Buffer {
@@ -689,7 +695,7 @@ export class MappedStruct<T extends MappedStructMembers> {
 
   decodeOpenended(
     input: Buffer,
-    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START,
   ): [MappedStructMemberValues<T>, Buffer] {
     if (input.length < this.size) {
       throw new Error('input buffer too short');
@@ -720,5 +726,5 @@ export class MappedStruct<T extends MappedStructMembers> {
 }
 
 export type TStruct<
-  T extends Struct<StructMembers> | MappedStruct<MappedStructMembers>
+  T extends Struct<StructMembers> | MappedStruct<MappedStructMembers>,
 > = T['value'];

@@ -1,29 +1,29 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { epochs } from '../../lib/epochs.js';
 import { Element, Level } from '../../lib/tree/main.js';
+import { initCallback } from '../../lib/tree/operations/init.js';
+import { offTimer } from '../../lib/tree/properties/logic.js';
+import { persistence } from '../persistence.js';
+import { every5Seconds } from '../timings.js';
 import { all as _all, allLights, kitchenAdjacentLights } from './groups.js';
+import { sunElevation } from './misc.js';
+import { diningRoom } from './rooms/dining-room.js';
+import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
+import { kitchen } from './rooms/kitchen.js';
+import { livingRoom } from './rooms/living-room.js';
+import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
+import { mrpelzBedroom } from './rooms/mrpelz-bedroom.js';
+import { storageRoom } from './rooms/storage-room.js';
+import { testRoom } from './rooms/test-room.js';
+import { tsiaBathroom } from './rooms/tsia-bathroom.js';
+import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 import {
   allLightsOff,
   allOff,
   kitchenAdjacentBright,
   kitchenAdjacentChillax,
 } from './scenes.js';
-import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
-import { diningRoom } from './rooms/dining-room.js';
-import { epochs } from '../../lib/epochs.js';
-import { every5Seconds } from '../timings.js';
-import { initCallback } from '../../lib/tree/operations/init.js';
-import { kitchen } from './rooms/kitchen.js';
-import { livingRoom } from './rooms/living-room.js';
-import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
-import { mrpelzBedroom } from './rooms/mrpelz-bedroom.js';
-import { offTimer } from '../../lib/tree/properties/logic.js';
-import { persistence } from '../persistence.js';
-import { storageRoom } from './rooms/storage-room.js';
-import { sunElevation } from './misc.js';
-import { testRoom } from './rooms/test-room.js';
-import { tsiaBathroom } from './rooms/tsia-bathroom.js';
-import { tsiaBedroom } from './rooms/tsia-bedroom.js';
 
 const firstFloor = new Element({
   $: 'firstFloor' as const,
@@ -48,7 +48,7 @@ const sonninstraße16 = new Element({
   ...sunElevation(every5Seconds),
   firstFloor,
   // eslint-disable-next-line sort-keys
-  entryDoor: hallwayProperties.door,
+  entryDoor: hallwayProperties.entryDoor,
   level: Level.BUILDING as const,
 });
 

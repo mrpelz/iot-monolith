@@ -1,7 +1,7 @@
 import SunCalc from 'suncalc';
 
-export const LATITUDE = 53.54747;
-export const LONGITUDE = 10.01598;
+export const LATITUDE = 53.547_47;
+export const LONGITUDE = 10.015_98;
 
 const DEGREES_PER_RADIAN = 180 / Math.PI;
 
@@ -14,9 +14,9 @@ export const sunElevation = (): number => {
 };
 
 export const isTwilightPhase = (
-  min = -Infinity,
-  max = Infinity,
-  elevation = sunElevation()
+  min = Number.NEGATIVE_INFINITY,
+  max = Number.POSITIVE_INFINITY,
+  elevation = sunElevation(),
 ): boolean => elevation > min && elevation <= max;
 
 export const isDay = (elevation?: number): boolean =>

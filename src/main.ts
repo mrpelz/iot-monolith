@@ -1,6 +1,6 @@
 import { app } from './app/app.js';
-import { callstack } from './lib/log.js';
 import { logger as globalLogger } from './app/logging.js';
+import { callstack } from './lib/log.js';
 
 const logger = globalLogger.getInput({
   head: 'root',
@@ -14,6 +14,7 @@ logger.info(() => ({
 
 const quit = (code: number) => {
   process.nextTick(() => {
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(code);
   });
 };
@@ -30,14 +31,15 @@ const exit = async (code = 0) => {
 };
 
 process.on('uncaughtException', async (cause) => {
-  const error = new Error('uncaughtException', { cause });
+  const error =
+    cause instanceof Error ? cause : new Error('uncaughtException', { cause });
 
   await logger.emergency(
     () => ({
       body: error.message,
       head: error.name,
     }),
-    callstack(error)
+    callstack(error),
   );
 
   exit();
@@ -46,14 +48,15 @@ process.on('uncaughtException', async (cause) => {
 process.on('unhandledRejection', async (cause) => {
   if (!cause) return;
 
-  const error = new Error('uncaughtRejection', { cause });
+  const error =
+    cause instanceof Error ? cause : new Error('uncaughtRejection', { cause });
 
   await logger.emergency(
     () => ({
       body: error.message,
       head: error.name,
     }),
-    callstack(error)
+    callstack(error),
   );
 
   exit();

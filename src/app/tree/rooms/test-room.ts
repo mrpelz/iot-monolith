@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
-import { espNowTransport } from '../../tree/bridges.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
+import { testDevice } from '../../../lib/tree/devices/test-device.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
 import { logger } from '../../logging.js';
 import { persistence } from '../../persistence.js';
-import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { timings } from '../../timings.js';
+import { espNowTransport } from '../../tree/bridges.js';
 
 export const devices = {
   espNowButton: espNowButton(logger, persistence, timings, {

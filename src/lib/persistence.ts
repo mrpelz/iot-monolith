@@ -1,8 +1,9 @@
-import { AnyWritableObservable, Observer } from './observable.js';
-import { Input, Logger, callstack } from './log.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
 import { readFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
+
+import { callstack, Input, Logger } from './log.js';
+import { AnyWritableObservable, Observer } from './observable.js';
 
 export class Persistence {
   private readonly _log: Input;
@@ -23,7 +24,7 @@ export class Persistence {
 
   observe(
     identifier: string,
-    observable: AnyWritableObservable<unknown>
+    observable: AnyWritableObservable<unknown>,
   ): Observer {
     if (this._observables.has(identifier)) {
       throw new Error(`identifier "${identifier}" already in use`);
