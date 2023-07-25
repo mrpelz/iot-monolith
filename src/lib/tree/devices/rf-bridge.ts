@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Timings, rfReadout } from '../properties/sensors.js';
+import { UDPDevice } from '../../device/udp.js';
 import { ESPNow } from '../../events/esp-now.js';
-import { ESPNowTransport } from '../../transport/esp-now.js';
-import { Element } from '../main.js';
-import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Rf433 } from '../../events/rf433.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
-import { Rf433 } from '../../events/rf433.js';
-import { UDPDevice } from '../../device/udp.js';
+import { ESPNowTransport } from '../../transport/esp-now.js';
+import { Ev1527Transport } from '../../transport/ev1527.js';
 import { ipDevice } from '../elements/device.js';
+import { Element } from '../main.js';
+import { rfReadout, Timings } from '../properties/sensors.js';
 
 export const rfBridge = (
   logger: Logger,
@@ -17,7 +17,7 @@ export const rfBridge = (
   timings: Timings,
   host: string,
   port = 1337,
-  initiallyOnline?: boolean
+  initiallyOnline?: boolean,
 ) => {
   const device = new UDPDevice(logger, host, port);
 

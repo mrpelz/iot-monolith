@@ -1,25 +1,25 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { ESPNowDevice } from '../../device/esp-now.js';
+import { Ev1527Device } from '../../device/ev1527.js';
+import { Device } from '../../device/main.js';
+import { TCPDevice } from '../../device/tcp.js';
+import { UDPDevice } from '../../device/udp.js';
+import { Persistence } from '../../persistence.js';
+import { Indicator } from '../../services/indicator.js';
 import { Element, Level } from '../main.js';
-import {
-  Timings,
-  hello,
-  lastSeen,
-  online,
-  vcc,
-} from '../properties/sensors.js';
 import {
   identifyDevice,
   resetDevice,
   setOnline,
 } from '../properties/actuators.js';
-import { Device } from '../../device/main.js';
-import { ESPNowDevice } from '../../device/esp-now.js';
-import { Ev1527Device } from '../../device/ev1527.js';
-import { Indicator } from '../../services/indicator.js';
-import { Persistence } from '../../persistence.js';
-import { TCPDevice } from '../../device/tcp.js';
-import { UDPDevice } from '../../device/udp.js';
+import {
+  hello,
+  lastSeen,
+  online,
+  Timings,
+  vcc,
+} from '../properties/sensors.js';
 
 const deviceMeta = (device: Device) => ({
   identifier: device.identifier ? [...device.identifier] : undefined,
@@ -46,7 +46,7 @@ export const ipDevice = (
   persistence: Persistence,
   timings: Timings,
   indicator?: Indicator,
-  initiallyOnline = false
+  initiallyOnline = false,
 ) => ({
   $: 'ipDevice' as const,
   ...deviceMeta(device),

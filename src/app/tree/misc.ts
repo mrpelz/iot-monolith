@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, ValueType } from '../../lib/tree/main.js';
 import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
+import { Schedule } from '../../lib/schedule.js';
+import { getter } from '../../lib/tree/elements/getter.js';
+import { Element, Level, ValueType } from '../../lib/tree/main.js';
+import { addMetric } from '../../lib/tree/operations/metrics.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
   isCivilTwilight as isCivilTwilightUtil,
@@ -10,9 +13,6 @@ import {
   isNight as isNightUtil,
   sunElevation as sunElevationUtil,
 } from '../util.js';
-import { Schedule } from '../../lib/schedule.js';
-import { addMetric } from '../../lib/tree/operations/metrics.js';
-import { getter } from '../../lib/tree/elements/getter.js';
 
 export const sunElevation = (schedule: Schedule) => {
   const getValues = () => {
@@ -32,10 +32,10 @@ export const sunElevation = (schedule: Schedule) => {
   const readOnlyElevation = new ReadOnlyObservable(elevation);
 
   const isAstronomicalTwilight = new Observable(
-    getValues().isAstronomicalTwilight
+    getValues().isAstronomicalTwilight,
   );
   const readOnlyIsAstronomicalTwilight = new ReadOnlyObservable(
-    isAstronomicalTwilight
+    isAstronomicalTwilight,
   );
 
   const isCivilTwilight = new Observable(getValues().isCivilTwilight);
@@ -76,11 +76,11 @@ export const sunElevation = (schedule: Schedule) => {
           isNight: readOnlyIsNight,
           unit: 'degrees',
         },
-        'sun elevation angle in degrees'
+        'sun elevation angle in degrees',
       ),
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
-        readOnlyIsAstronomicalTwilight
+        readOnlyIsAstronomicalTwilight,
       ),
       isCivilTwilight: getter(ValueType.BOOLEAN, readOnlyIsCivilTwilight),
       isDay: getter(ValueType.BOOLEAN, readOnlyIsDay),

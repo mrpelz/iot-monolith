@@ -7,7 +7,7 @@ export const rfBridge = _rfBridge(
   logger,
   persistence,
   timings,
-  'olimex-esp32-gateway.iot-ng.lan.wurstsalat.cloud'
+  'olimex-esp32-gateway.iot-ng.lan.wurstsalat.cloud',
 );
 
 const {

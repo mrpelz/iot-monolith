@@ -1,21 +1,22 @@
+import { v5 as uuidv5 } from 'uuid';
+
 import {
   AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import {
-  Element,
-  TElementProps,
-  TValueType,
-  ValueType,
-  isValueType,
-} from '../main.js';
-import { EmptyObject, Prev, objectKeys } from '../../oop.js';
+import { EmptyObject, objectKeys, Prev } from '../../oop.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 import { isGetter } from '../elements/getter.js';
 import { isSetter } from '../elements/setter.js';
 import { isTrigger } from '../elements/trigger.js';
-import { v5 as uuidv5 } from 'uuid';
+import {
+  Element,
+  isValueType,
+  TElementProps,
+  TValueType,
+  ValueType,
+} from '../main.js';
 
 export enum InteractionType {
   EMIT,
@@ -44,7 +45,7 @@ const INTERACTION_UUID_NAMESPACE =
 
 export type InteractionReference<
   R extends string,
-  T extends InteractionType
+  T extends InteractionType,
 > = {
   $: typeof INTERACTION_UUID_NAMESPACE;
   reference: R;
@@ -74,7 +75,7 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,
-  type: T
+  type: T,
 ): InteractionReference<R, T> => ({
   $: INTERACTION_UUID_NAMESPACE,
   reference,
@@ -119,7 +120,7 @@ export class Serialization<T extends Element> {
   private _registerCollector<V extends ValueType>(
     id: string,
     state: AnyWritableObservable<unknown> | NullState<unknown>,
-    valueType: V
+    valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
@@ -129,7 +130,7 @@ export class Serialization<T extends Element> {
         state,
         type: InteractionType.COLLECT,
         valueType,
-      })
+      }),
     );
 
     return makeInteractionReference(id, InteractionType.COLLECT);
@@ -138,7 +139,7 @@ export class Serialization<T extends Element> {
   private _registerEmitter<V extends ValueType>(
     id: string,
     state: AnyReadOnlyObservable<unknown>,
-    valueType: V
+    valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
@@ -148,7 +149,7 @@ export class Serialization<T extends Element> {
         state,
         type: InteractionType.EMIT,
         valueType,
-      })
+      }),
     );
 
     return makeInteractionReference(id, InteractionType.EMIT);
@@ -168,7 +169,7 @@ export class Serialization<T extends Element> {
       result.state = this._registerEmitter(
         uuidv5('state', parentId),
         state,
-        valueType
+        valueType,
       );
     } else if (isSetter(element)) {
       const { state, setState, ...rest } = element.props;
@@ -178,13 +179,13 @@ export class Serialization<T extends Element> {
       result.state = this._registerEmitter(
         uuidv5('state', parentId),
         state,
-        valueType
+        valueType,
       );
 
       result.setState = this._registerCollector(
         uuidv5('setState', parentId),
         setState,
-        valueType
+        valueType,
       );
     } else if (isTrigger(element)) {
       const { state, ...rest } = element.props;
@@ -194,7 +195,7 @@ export class Serialization<T extends Element> {
       result.state = this._registerCollector(
         uuidv5('state', parentId),
         state,
-        valueType
+        valueType,
       );
     } else {
       props = element.props;

@@ -12,7 +12,7 @@ export const setter = <N extends string | undefined, V extends ValueType>(
   valueType: V,
   setState: AnyWritableObservable<TValueType[V]>,
   state: AnyReadOnlyObservable<TValueType[V] | null> | undefined = undefined,
-  name: N = undefined as N
+  name: N = undefined as N,
 ) =>
   new Element({
     $,

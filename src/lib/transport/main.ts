@@ -1,12 +1,12 @@
-import { Input, Logger, callstack } from '../log.js';
-import { BooleanState } from '../state.js';
 import { Device } from '../device/main.js';
+import { callstack, Input, Logger } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
+import { BooleanState } from '../state.js';
 
 export class TransportDevice {
   static _isValidDeviceForTransport(
     devices: Set<TransportDevice>,
-    device: Device
+    device: Device,
   ): void {
     for (const previousTransportDevice of devices) {
       const previousDeviceIdentifier =
@@ -18,7 +18,7 @@ export class TransportDevice {
         previousDeviceIdentifier.equals(device.identifier)
       ) {
         throw new Error(
-          `cannot use the same identifier for multiple devices (${device.identifier})`
+          `cannot use the same identifier for multiple devices (${device.identifier})`,
         );
       }
     }
@@ -48,7 +48,7 @@ export class TransportDevice {
       ) {
         this._log.error(
           () => 'incoming message identifier has wrong length for device',
-          callstack()
+          callstack(),
         );
 
         return;
@@ -71,7 +71,7 @@ export class TransportDevice {
   _writeToTransport(payload: Buffer): void {
     this._transport.writeToNetwork(
       this._transport.identifierLength ? this.device.identifier : null,
-      payload
+      payload,
     );
   }
 }
@@ -103,7 +103,7 @@ export class Transport {
    */
   protected _ingestIntoDeviceInstances(
     identifier: Buffer | null,
-    payload: Buffer
+    payload: Buffer,
   ): void {
     for (const device of this._devices) {
       device._ingestIntoDeviceInstance(identifier, payload);
@@ -166,7 +166,7 @@ export class Transport {
    */
   writeToNetwork(deviceIdentifier: Buffer | null, payload: Buffer): void {
     throw new Error(
-      `no write method defined in ${this} to process identifier "${deviceIdentifier}" and payload "${payload}"`
+      `no write method defined in ${this} to process identifier "${deviceIdentifier}" and payload "${payload}"`,
     );
   }
 }

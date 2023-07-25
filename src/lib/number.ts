@@ -32,7 +32,7 @@ export const maxmin = (input: number, max = 1, min = 0): number =>
 export const gammaCorrect = (
   input: number,
   range: number,
-  gamma = 3.6
+  gamma = 3.6,
 ): number => {
   if (input === 0) return 0;
   if (input === range) return range;

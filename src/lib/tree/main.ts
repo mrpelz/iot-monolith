@@ -1,8 +1,8 @@
 import {
   DeepClassStructureViaChildField,
   EmptyObject,
-  ObjectValues,
   objectKeys,
+  ObjectValues,
   objectValues,
 } from '../oop.js';
 
@@ -45,7 +45,7 @@ export const descriptionValueType = {
 
 export const isValueType = <T extends ValueType>(
   value: unknown,
-  type: T
+  type: T,
 ): value is TValueType[T] => {
   switch (type) {
     case ValueType.NULL:
@@ -93,7 +93,7 @@ export class Element<T extends EmptyObject = EmptyObject> {
 
   get children(): TElementChildren<this>[] {
     return objectValues(this.props).filter(
-      (prop) => (prop as unknown) instanceof Element
+      (prop) => (prop as unknown) instanceof Element,
     );
   }
 
@@ -111,20 +111,20 @@ export class Element<T extends EmptyObject = EmptyObject> {
   }
 
   matchChildren<M extends EmptyObject>(
-    match: M
+    match: M,
   ): Element<Extract<TElementProps<TElementChildren<this>>, M>>[] {
     return Array.from(
-      new Set(this.children.filter((child) => child.match(match)))
+      new Set(this.children.filter((child) => child.match(match))),
     );
   }
 
   matchChildrenDeep<M extends EmptyObject>(
-    match: M
+    match: M,
   ): Element<Extract<T | TElementProps<TElementChildrenDeep<this>>, M>>[] {
     const selfMatch = this.match(match) ? [this] : [];
     const directMatch = this.matchChildren(match);
     const deepMatch = this.children.flatMap((child) =>
-      child.matchChildrenDeep(match)
+      child.matchChildrenDeep(match),
     );
 
     return Array.from(new Set([selfMatch, directMatch, deepMatch].flat(1)));

@@ -216,7 +216,7 @@ export class Logger {
 
   private _shouldLog(level: Level) {
     return Boolean(
-      [...this._outputs].find((output) => output.levels.includes(level))
+      [...this._outputs].find((output) => output.levels.includes(level)),
     );
   }
 
@@ -250,8 +250,8 @@ export class Logger {
         output.ingestLog({
           ...log,
           level,
-        })
-      )
+        }),
+      ),
     ).then(() => undefined);
   }
 

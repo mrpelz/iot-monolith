@@ -3,5 +3,5 @@
     "outDir": "dist",
   },
   "extends": "./node_modules/@mrpelz/boilerplate/config/tsconfig.base.json",
-  "include": ["src/*"]
+  "include": ["src/**/*"]
 }

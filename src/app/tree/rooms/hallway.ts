@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { epochs } from '../../../lib/epochs.js';
-import { ev1527Transport } from '../../tree/bridges.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { logger } from '../../logging.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
-import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { persistence } from '../../persistence.js';
-import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
+import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { logger } from '../../logging.js';
+import { persistence } from '../../persistence.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport } from '../../tree/bridges.js';
 
 export const devices = {
   ceilingLightBack: sonoffBasic(
@@ -20,27 +20,27 @@ export const devices = {
     persistence,
     timings,
     'lighting' as const,
-    'hallway-ceilinglightback.lan.wurstsalat.cloud'
+    'hallway-ceilinglightback.lan.wurstsalat.cloud',
   ),
   ceilingLightFront: shelly1(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'hallway-ceilinglightfront.lan.wurstsalat.cloud'
+    'hallway-ceilinglightfront.lan.wurstsalat.cloud',
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55024),
   wallswitchBack: shellyi3(
     logger,
     persistence,
     timings,
-    'hallway-wallswitchback.lan.wurstsalat.cloud'
+    'hallway-wallswitchback.lan.wurstsalat.cloud',
   ),
   wallswitchFront: shellyi3(
     logger,
     persistence,
     timings,
-    'hallway-wallswitchfront.lan.wurstsalat.cloud'
+    'hallway-wallswitchfront.lan.wurstsalat.cloud',
   ),
 };
 
@@ -69,7 +69,7 @@ export const groups = {
   ]),
   ceilingLight: outputGrouping(
     [partialProperties.ceilingLightBack, partialProperties.ceilingLightFront],
-    'lighting'
+    'lighting',
   ),
 };
 
@@ -85,24 +85,24 @@ export const properties = {
   const { all, allLights } = await import('../groups.js');
 
   instances.wallswitchBack.up(() =>
-    groups.ceilingLight.props.flip.props.state.trigger()
+    groups.ceilingLight.props.flip.props.state.trigger(),
   );
 
   instances.wallswitchMiddle.up(() =>
-    groups.ceilingLight.props.flip.props.state.trigger()
+    groups.ceilingLight.props.flip.props.state.trigger(),
   );
 
   instances.wallswitchFrontLeft.up(() =>
-    properties.ceilingLightFront.props.flip.props.state.trigger()
+    properties.ceilingLightFront.props.flip.props.state.trigger(),
   );
   instances.wallswitchFrontMiddle.up(() =>
-    properties.ceilingLightBack.props.flip.props.state.trigger()
+    properties.ceilingLightBack.props.flip.props.state.trigger(),
   );
   instances.wallswitchFrontRight.up(
-    async () => ((await all).props.main.props.setState.value = false)
+    async () => ((await all).props.main.props.setState.value = false),
   );
   instances.wallswitchFrontRight.longPress(async () =>
-    (await allLights).props.flip.props.state.trigger()
+    (await allLights).props.flip.props.state.trigger(),
   );
 
   properties.door.props.open.props.main.props.state.observe((value) => {
@@ -119,7 +119,7 @@ export const properties = {
 
   groups.ceilingLight.props.main.props.setState.observe(
     () => (properties.entryDoorTimer.props.active.props.state.value = false),
-    true
+    true,
   );
 
   properties.entryDoorTimer.props.state.observe(() => {

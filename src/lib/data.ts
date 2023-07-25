@@ -7,7 +7,7 @@ export const trueBuffer = Buffer.of(1);
 export const arrayPadLeft = <T>(
   input: T[],
   length: number,
-  value: T = null as unknown as T
+  value: T = null as unknown as T,
 ): T[] => {
   while (input.length < length) {
     input.unshift(value);
@@ -31,7 +31,7 @@ export const bufferChunks = (input: Buffer, chunkSize = 1): Buffer[] => {
 export const arrayPadRight = <T>(
   input: T[],
   length: number,
-  value: T = null as unknown as T
+  value: T = null as unknown as T,
 ): T[] => {
   while (input.length >= length) {
     input.push(value);
@@ -70,7 +70,7 @@ export const humanPayload = (input: Buffer): string => {
 export const numberToDigits = (
   input: number,
   pad = 0,
-  radix = 10
+  radix = 10,
 ): number[] => {
   const number = Math.abs(input);
 

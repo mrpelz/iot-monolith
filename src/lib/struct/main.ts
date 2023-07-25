@@ -96,7 +96,7 @@ export class FixedBuffer extends StructMember<Buffer> {
 
 export const staticValue = <T>(
   value: T,
-  member: StructMember<T>
+  member: StructMember<T>,
 ): FixedBuffer => new FixedBuffer(member.encode(value));
 
 export class StaticBuffer extends StructMember<Buffer> {
@@ -140,7 +140,7 @@ export type TBitmap = [
   boolean,
   boolean,
   boolean,
-  boolean
+  boolean,
 ];
 
 export class Bitmap extends StructMember<TBitmap> {
@@ -168,8 +168,8 @@ export class Bitmap extends StructMember<TBitmap> {
       input.reduce(
         // eslint-disable-next-line no-bitwise
         (accumulator, value, index) => accumulator | (value ? 1 : 0 << index),
-        0
-      )
+        0,
+      ),
     );
   }
 }
@@ -200,7 +200,7 @@ export class StaticString extends StructMember<string> {
       padding = StringPadding.START,
       fill = '\0',
       unpad = true,
-    }: StringOptions = {}
+    }: StringOptions = {},
   ) {
     super(length);
 
@@ -231,7 +231,7 @@ export class StaticString extends StructMember<string> {
       case StringPadding.START:
         this.buffer.write(
           input.padStart(this.size, this._fill),
-          this._encoding
+          this._encoding,
         );
         break;
       case StringPadding.END:
@@ -247,11 +247,11 @@ export class StaticString extends StructMember<string> {
 export type IntegerStructByteCount = 1 | 2 | 3 | 4 | 5 | 6;
 
 class IntegerStructMember<
-  T extends IntegerStructByteCount
+  T extends IntegerStructByteCount,
 > extends StructMember<number, T> {
   protected static contraint(
     input: number,
-    [min, max]: readonly [number, number]
+    [min, max]: readonly [number, number],
   ): void {
     if (!Number.isInteger(input)) throw new Error('input is not integer');
 
@@ -380,13 +380,13 @@ class FloatStructMember extends StructMember<number> {
 
     if (input < FloatStructMember.minValue) {
       throw new Error(
-        `input below representable value (${FloatStructMember.minValue})`
+        `input below representable value (${FloatStructMember.minValue})`,
       );
     }
 
     if (input > FloatStructMember.maxValue) {
       throw new Error(
-        `input above representable value (${FloatStructMember.maxValue})`
+        `input above representable value (${FloatStructMember.maxValue})`,
       );
     }
   }
@@ -432,13 +432,13 @@ class DoubleStructMember extends StructMember<number> {
 
     if (input < DoubleStructMember.minValue) {
       throw new Error(
-        `input below representable value (${DoubleStructMember.minValue})`
+        `input below representable value (${DoubleStructMember.minValue})`,
       );
     }
 
     if (input > DoubleStructMember.maxValue) {
       throw new Error(
-        `input above representable value (${DoubleStructMember.maxValue})`
+        `input above representable value (${DoubleStructMember.maxValue})`,
       );
     }
   }
@@ -495,7 +495,7 @@ export enum DecodeOpenendedAlignment {
 export class Struct<T extends StructMembers> {
   private static _assignSubarrays<M extends StructMembers>(
     buffer: Buffer,
-    members: M
+    members: M,
   ): void {
     let offset = 0;
 
@@ -509,7 +509,7 @@ export class Struct<T extends StructMembers> {
   }
 
   private static _calculateSize<M extends { size: number }[]>(
-    members: M
+    members: M,
   ): number {
     return members.reduce((accumulator, { size }) => accumulator + size, 0);
   }
@@ -570,7 +570,7 @@ export class Struct<T extends StructMembers> {
 
   decodeOpenended(
     input: Buffer,
-    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START,
   ): [StructMemberValues<T>, Buffer] {
     if (input.length < this.size) {
       throw new Error('input buffer too short');
@@ -603,7 +603,7 @@ export class Struct<T extends StructMembers> {
 export class MappedStruct<T extends MappedStructMembers> {
   private static _assignSubarrays<M extends MappedStructMembers>(
     buffer: Buffer,
-    members: M
+    members: M,
   ): void {
     let offset = 0;
 
@@ -617,16 +617,16 @@ export class MappedStruct<T extends MappedStructMembers> {
   }
 
   private static _calculateSize<M extends MappedStructMembers>(
-    members: M
+    members: M,
   ): number {
     return Object.values(members).reduce(
       (accumulator, { size }) => accumulator + size,
-      0
+      0,
     );
   }
 
   private static _unassignSubarrays<M extends MappedStructMembers>(
-    members: M
+    members: M,
   ): void {
     for (const member of Object.values(members)) {
       member.unassign();
@@ -649,8 +649,8 @@ export class MappedStruct<T extends MappedStructMembers> {
       Object.entries(this._members).map(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        ([property, member]) => [property, member.value] as const
-      )
+        ([property, member]) => [property, member.value] as const,
+      ),
     );
   }
 
@@ -689,7 +689,7 @@ export class MappedStruct<T extends MappedStructMembers> {
 
   decodeOpenended(
     input: Buffer,
-    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START
+    alignment: DecodeOpenendedAlignment = DecodeOpenendedAlignment.START,
   ): [MappedStructMemberValues<T>, Buffer] {
     if (input.length < this.size) {
       throw new Error('input buffer too short');
@@ -720,5 +720,5 @@ export class MappedStruct<T extends MappedStructMembers> {
 }
 
 export type TStruct<
-  T extends Struct<StructMembers> | MappedStruct<MappedStructMembers>
+  T extends Struct<StructMembers> | MappedStruct<MappedStructMembers>,
 > = T['value'];

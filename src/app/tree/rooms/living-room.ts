@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { promiseGuard } from '../../../lib/promise.js';
+import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Element, Level } from '../../../lib/tree/main.js';
 import {
   outputGrouping,
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
-import { ev1527Transport } from '../../tree/bridges.js';
-import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
 import { logger } from '../../logging.js';
-import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../../persistence.js';
-import { promiseGuard } from '../../../lib/promise.js';
-import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport } from '../../tree/bridges.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
@@ -24,7 +24,7 @@ export const devices = {
     persistence,
     timings,
     'lighting' as const,
-    'livingroom-ceilinglight.lan.wurstsalat.cloud'
+    'livingroom-ceilinglight.lan.wurstsalat.cloud',
   ),
   couchButton: ev1527ButtonX4(ev1527Transport, 822302, logger),
   fan: obiPlug(
@@ -32,26 +32,26 @@ export const devices = {
     persistence,
     timings,
     'fan' as const,
-    'livingroom-fan.lan.wurstsalat.cloud'
+    'livingroom-fan.lan.wurstsalat.cloud',
   ),
   standingLamp: obiPlug(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'livingroom-standinglamp.lan.wurstsalat.cloud'
+    'livingroom-standinglamp.lan.wurstsalat.cloud',
   ),
   wallswitch: shellyi3(
     logger,
     persistence,
     timings,
-    'livingroom-wallswitch.lan.wurstsalat.cloud'
+    'livingroom-wallswitch.lan.wurstsalat.cloud',
   ),
   windowSensor: ev1527WindowSensor(
     logger,
     persistence,
     ev1527Transport,
-    670496
+    670496,
   ),
 };
 
@@ -77,7 +77,7 @@ export const properties = {
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
   allWindows: inputGrouping(
-    properties.window.props.open.props.main.props.state
+    properties.window.props.open.props.main.props.state,
   ),
 };
 
@@ -87,7 +87,7 @@ export const scenes = {
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
-      })
+      }),
     );
   }, 'media'),
   mediaOnOrSwitch: triggerElement(() => {
@@ -95,7 +95,7 @@ export const scenes = {
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
-      })
+      }),
     );
   }, 'media'),
 };
@@ -116,13 +116,13 @@ export const scenes = {
     kitchenAdjacentChillax.props.main.props.setState.value = true;
   });
   instances.couchButton.topRight.observe(() =>
-    properties.fan.props.flip.props.state.trigger()
+    properties.fan.props.flip.props.state.trigger(),
   );
   instances.couchButton.bottomLeft.observe(() =>
-    scenes.mediaOnOrSwitch.props.main.props.state.trigger()
+    scenes.mediaOnOrSwitch.props.main.props.state.trigger(),
   );
   instances.couchButton.bottomRight.observe(() =>
-    scenes.mediaOff.props.main.props.state.trigger()
+    scenes.mediaOff.props.main.props.state.trigger(),
   );
 
   testRoomInstances.espNowButton0.up(() => {
@@ -135,23 +135,23 @@ export const scenes = {
   });
 
   testRoomInstances.espNowButton1.up(() =>
-    scenes.mediaOnOrSwitch.props.main.props.state.trigger()
+    scenes.mediaOnOrSwitch.props.main.props.state.trigger(),
   );
   testRoomInstances.espNowButton1.longPress(() =>
-    scenes.mediaOff.props.main.props.state.trigger()
+    scenes.mediaOff.props.main.props.state.trigger(),
   );
 
   instances.fanButton.up(() => properties.fan.props.flip.props.state.trigger());
 
   instances.standingLampButton.up(() =>
-    properties.standingLamp.props.flip.props.state.trigger()
+    properties.standingLamp.props.flip.props.state.trigger(),
   );
   instances.standingLampButton.longPress(
-    () => (kitchenAdjacentLights.props.main.props.setState.value = false)
+    () => (kitchenAdjacentLights.props.main.props.setState.value = false),
   );
 
   instances.wallswitchBottom.up(() =>
-    properties.fan.props.flip.props.state.trigger()
+    properties.fan.props.flip.props.state.trigger(),
   );
   instances.wallswitchBottom.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.setState.value) {
@@ -163,7 +163,7 @@ export const scenes = {
   });
 
   instances.wallswitchMiddle.up(() =>
-    properties.standingLamp.props.flip.props.state.trigger()
+    properties.standingLamp.props.flip.props.state.trigger(),
   );
   instances.wallswitchMiddle.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.setState.value) {
@@ -175,7 +175,7 @@ export const scenes = {
   });
 
   instances.wallswitchTop.up(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.state.trigger(),
   );
   instances.wallswitchTop.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.setState.value) {

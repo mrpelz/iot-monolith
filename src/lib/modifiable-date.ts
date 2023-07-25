@@ -279,7 +279,7 @@ export class ModifiableDate {
       case Unit.WEEK:
         this._date.setDate(
           this._date.getDate() -
-            (this._date.getDay() < 1 ? 6 : this._date.getDay() - 1)
+            (this._date.getDay() < 1 ? 6 : this._date.getDay() - 1),
         );
         if (inclusive) this.truncateTo(Unit.DAY);
         break;

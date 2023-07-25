@@ -1,8 +1,8 @@
-import { Input, Logger } from '../log.js';
-import { Rf433, Rf433Payload } from '../events/rf433.js';
-import { EVENT_IDENTIFIER } from '../device/main.js';
-import { Transport } from './main.js';
 import { humanPayload } from '../data.js';
+import { EVENT_IDENTIFIER } from '../device/main.js';
+import { Rf433, Rf433Payload } from '../events/rf433.js';
+import { Input, Logger } from '../log.js';
+import { Transport } from './main.js';
 
 // PACKET FORMAT
 //
@@ -21,7 +21,7 @@ export class Ev1527Transport extends Transport {
     this._log = logger.getInput({ head: this.constructor.name });
 
     event.observable.observe((payload: Rf433Payload) =>
-      this._handleMessage(payload)
+      this._handleMessage(payload),
     );
   }
 
@@ -37,12 +37,12 @@ export class Ev1527Transport extends Transport {
       () =>
         `msg incoming\nfrom: ${[...deviceIdentifier]
           .map((octet) => octet.toString(16))
-          .join(':')}\n\n${humanPayload(data)}`
+          .join(':')}\n\n${humanPayload(data)}`,
     );
 
     this._ingestIntoDeviceInstances(
       deviceIdentifier,
-      Buffer.concat([Buffer.of(EVENT_IDENTIFIER, 0), data])
+      Buffer.concat([Buffer.of(EVENT_IDENTIFIER, 0), data]),
     );
   }
 }

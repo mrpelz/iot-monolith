@@ -11,17 +11,17 @@ export type Orchestration<T> =
   | OrchestrationUniformSteps<T>;
 
 const isOrchestrationTimedSteps = <T>(
-  orchestration: Orchestration<T>
+  orchestration: Orchestration<T>,
 ): orchestration is OrchestrationTimedSteps<T> =>
   Array.isArray(orchestration[0]);
 
 export const orchestrate =
   <T>(
     orchestration: Orchestration<T>,
-    _includeEndSleep?: boolean
+    _includeEndSleep?: boolean,
   ): ((
     state: AnyWritableObservable<T>,
-    includeEndSleep?: boolean
+    includeEndSleep?: boolean,
   ) => Promise<void>) =>
   async (state, includeEndSleep = _includeEndSleep) => {
     let count = 1;

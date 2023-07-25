@@ -1,6 +1,6 @@
 import { app } from './app/app.js';
-import { callstack } from './lib/log.js';
 import { logger as globalLogger } from './app/logging.js';
+import { callstack } from './lib/log.js';
 
 const logger = globalLogger.getInput({
   head: 'root',
@@ -37,7 +37,7 @@ process.on('uncaughtException', async (cause) => {
       body: error.message,
       head: error.name,
     }),
-    callstack(error)
+    callstack(error),
   );
 
   exit();
@@ -53,7 +53,7 @@ process.on('unhandledRejection', async (cause) => {
       body: error.message,
       head: error.name,
     }),
-    callstack(error)
+    callstack(error),
   );
 
   exit();

@@ -4,7 +4,7 @@
   "description": "monolithic approach to Node.js-enabled home automation",
   "repository": {
     "type": "git",
-    "url": "wslt@git.wurstsalat.cloud:IoT/iot-monolith.git"
+    "url": "https://git.i.wurstsalat.cloud/iot/iot-monolith.git"
   },
   "license": "UNLICENSED",
   "author": "Lennart Pelz <mail@mrpelz.de>",
@@ -50,7 +50,7 @@
     "@commitlint/config-conventional": "latest",
     "@commitlint/types": "latest",
     "@jest/globals": "latest",
-    "@mrpelz/boilerplate": "^4.0.2",
+    "@mrpelz/boilerplate": "latest",
     "@types/common-tags": "latest",
     "@types/eslint": "latest",
     "@types/node": "latest",

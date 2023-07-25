@@ -16,7 +16,7 @@ export const sunElevation = (): number => {
 export const isTwilightPhase = (
   min = -Infinity,
   max = Infinity,
-  elevation = sunElevation()
+  elevation = sunElevation(),
 ): boolean => elevation > min && elevation <= max;
 
 export const isDay = (elevation?: number): boolean =>

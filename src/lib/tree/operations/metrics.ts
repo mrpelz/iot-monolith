@@ -1,9 +1,10 @@
-import { AnyReadOnlyObservable } from '../../observable.js';
-import { Element } from '../main.js';
 import { Gauge } from 'prom-client';
+
 import { Logger } from '../../log.js';
-import { Paths } from './paths.js';
+import { AnyReadOnlyObservable } from '../../observable.js';
 import { objectKeys } from '../../oop.js';
+import { Element } from '../main.js';
+import { Paths } from './paths.js';
 
 const METRIC_NAME_PREFIX = 'iot_';
 
@@ -23,19 +24,19 @@ const cleanLabelValue = (value: string | number | boolean) => {
   return value;
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const addMetric = <
   N extends string,
   T extends AnyReadOnlyObservable<number | boolean | null>,
   L extends Record<
     string,
     string | AnyReadOnlyObservable<string | number | boolean>
-  >
+  >,
 >(
   metricName: N,
   metricValue: T,
   metricLabels: L = {} as L,
-  metricHelp = 'help'
+  metricHelp = 'help',
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 ) => ({
   metric: true as const,
   metricHelp,
@@ -47,7 +48,7 @@ export const addMetric = <
 export const setupMetrics = <T extends Element>(
   logger: Logger,
   root: T,
-  paths: Paths
+  paths: Paths,
 ): void => {
   const log = logger.getInput({
     head: 'setupMetrics',

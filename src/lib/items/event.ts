@@ -1,6 +1,6 @@
-import { NullState, ReadOnlyNullState } from '../state.js';
-import { Observable, ReadOnlyObservable } from '../observable.js';
 import { Event } from '../device/main.js';
+import { Observable, ReadOnlyObservable } from '../observable.js';
+import { NullState, ReadOnlyNullState } from '../state.js';
 
 export class SingleValueEvent<T = unknown> {
   private readonly _event: Event<T>;
@@ -19,7 +19,7 @@ export class SingleValueEvent<T = unknown> {
 
 export class MultiValueEvent<
   T extends Record<string, unknown>,
-  K extends keyof T
+  K extends keyof T,
 > {
   private readonly _event: Event<T>;
   private readonly _properties: K[];
@@ -68,7 +68,7 @@ export class StatelessSingleValueEvent<T = unknown> {
 
 export class StatelessMultiValueEvent<
   T extends Record<string, unknown>,
-  K extends keyof T
+  K extends keyof T,
 > {
   private readonly _event: Event<T>;
   private readonly _properties: K[];
