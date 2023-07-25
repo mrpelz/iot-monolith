@@ -35,7 +35,7 @@ export type Prev = [
   18,
   19,
   20,
-  ...0[]
+  ...0[],
 ];
 
 export type DeepPaths<T, D extends number = 20> = [D] extends [never]
@@ -78,7 +78,7 @@ export type DeepClassStructureViaChildField<
   T,
   N extends object,
   P extends keyof N,
-  D extends number = 20
+  D extends number = 20,
 > = [D] extends [never]
   ? never
   : T extends N
@@ -90,15 +90,15 @@ export type DeepClassStructureViaChildField<
   : never;
 
 export const classMethods = (
-  classDefinition: Constructor<Record<string, unknown>>
+  classDefinition: Constructor<Record<string, unknown>>,
 ): string[] =>
   Object.keys(
-    Object.getOwnPropertyDescriptors(classDefinition.prototype)
+    Object.getOwnPropertyDescriptors(classDefinition.prototype),
   ).filter((name) => name !== 'constructor' && name[0] !== '_');
 
 export const instanceMethods = (instance: Record<string, unknown>): string[] =>
   Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
-    (name) => name !== 'constructor' && name[0] !== '_'
+    (name) => name !== 'constructor' && name[0] !== '_',
   );
 
 export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
@@ -107,7 +107,7 @@ export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
 ];
 
 export const objectValues = <T extends EmptyObject>(
-  input: T
+  input: T,
 ): ObjectValues<T>[] => objectKeys(input).map((property) => input[property]);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

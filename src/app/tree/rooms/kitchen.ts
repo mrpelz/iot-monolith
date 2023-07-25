@@ -1,49 +1,49 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
-import { ev1527Transport } from '../../tree/bridges.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
-import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
 import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
+import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { logger } from '../../logging.js';
 import { persistence } from '../../persistence.js';
-import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport } from '../../tree/bridges.js';
 
 export const devices = {
   ledsLeft: h801(
     logger,
     persistence,
     timings,
-    'kitchen-ledsleft.lan.wurstsalat.cloud'
+    'kitchen-ledsleft.lan.wurstsalat.cloud',
   ),
   ledsRight: h801(
     logger,
     persistence,
     timings,
-    'kitchen-ledsright.lan.wurstsalat.cloud'
+    'kitchen-ledsright.lan.wurstsalat.cloud',
   ),
-  leftButton: ev1527ButtonX1(ev1527Transport, 898570, logger),
+  leftButton: ev1527ButtonX1(ev1527Transport, 898_570, logger),
   wallswitchBack: shellyi3(
     logger,
     persistence,
     timings,
-    'kitchen-wallswitchback.lan.wurstsalat.cloud'
+    'kitchen-wallswitchback.lan.wurstsalat.cloud',
   ),
   wallswitchFront: shellyi3(
     logger,
     persistence,
     timings,
-    'kitchen-wallswitchfront.lan.wurstsalat.cloud'
+    'kitchen-wallswitchfront.lan.wurstsalat.cloud',
   ),
   windowSensor: ev1527WindowSensor(
     logger,
     persistence,
     ev1527Transport,
-    841520
+    841_520,
   ),
 };
 
@@ -62,10 +62,7 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.props.internal.ledB,
   ledRightFloodlight: devices.ledsRight.props.internal.ledW1,
   ledRightWWhite: devices.ledsRight.props.internal.ledG,
-  window: new Element({
-    level: Level.AREA as const,
-    open: devices.windowSensor.props.internal.open,
-  }),
+  window: window(devices.windowSensor),
 };
 
 export const groups = {
@@ -78,7 +75,7 @@ export const groups = {
     properties.ledRightWWhite,
   ]),
   allWindows: inputGrouping(
-    properties.window.props.open.props.main.props.state
+    properties.window.props.open.props.main.props.state,
   ),
   cWhite: ledGrouping([properties.ledLeftCWhite, properties.ledRightCWhite]),
   floodlight: ledGrouping([
@@ -110,11 +107,11 @@ export const groups = {
   );
 
   instances.leftButton.observe(() =>
-    groups.allLights.props.flip.props.state.trigger()
+    groups.allLights.props.flip.props.setState.trigger(),
   );
 
   instances.wallswitchFrontTop.up(() =>
-    groups.allLights.props.flip.props.state.trigger()
+    groups.allLights.props.flip.props.setState.trigger(),
   );
   instances.wallswitchFrontTop.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {
@@ -126,7 +123,7 @@ export const groups = {
   });
 
   instances.wallswitchFrontBottomLeft.up(() =>
-    groups.worklightWWhite.props.flip.props.state.trigger()
+    groups.worklightWWhite.props.flip.props.setState.trigger(),
   );
   instances.wallswitchFrontBottomLeft.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {
@@ -138,7 +135,7 @@ export const groups = {
   });
 
   instances.wallswitchFrontBottomRight.up(() =>
-    groups.floodlight.props.flip.props.state.trigger()
+    groups.floodlight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchFrontBottomRight.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {
@@ -150,7 +147,7 @@ export const groups = {
   });
 
   instances.wallswitchBack.up(() =>
-    groups.allLights.props.flip.props.state.trigger()
+    groups.allLights.props.flip.props.setState.trigger(),
   );
   instances.wallswitchBack.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {

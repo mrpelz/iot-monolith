@@ -1,4 +1,4 @@
-import { Input, Logger, callstack } from './log.js';
+import { callstack, Input, Logger } from './log.js';
 import { Observable, ReadOnlyObservable } from './observable.js';
 
 export type ScheduleEpochPair = [Schedule, number];
@@ -10,10 +10,10 @@ type TaskRemove = {
 };
 
 type NextExecutionProvider = (
-  previousExecution: Date | undefined
+  previousExecution: Date | undefined,
 ) => Date | null;
 
-const MAX_TIMEOUT = 2147483647;
+const MAX_TIMEOUT = 2_147_483_647;
 
 export class Schedule {
   private readonly _log: Input;
@@ -30,7 +30,7 @@ export class Schedule {
     logger: Logger,
     nextExecutionProvider: NextExecutionProvider,
     start = true,
-    once = false
+    once = false,
   ) {
     this._log = logger.getInput({ head: this.constructor.name });
     this._nextExecutionProvider = nextExecutionProvider;
@@ -67,7 +67,7 @@ export class Schedule {
         () => ({
           body: 'next execution missing or not in the future, stopping execution',
         }),
-        callstack()
+        callstack(),
       );
 
       this._previousExecution = null;
@@ -81,7 +81,7 @@ export class Schedule {
     if (timeUntilNextExecution > MAX_TIMEOUT) {
       this._timeout = setTimeout(
         () => this._scheduleNextExecution(nextExecution),
-        MAX_TIMEOUT
+        MAX_TIMEOUT,
       );
 
       return;

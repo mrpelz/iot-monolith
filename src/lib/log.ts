@@ -215,9 +215,7 @@ export class Logger {
   private readonly _outputs = new Set<Output>();
 
   private _shouldLog(level: Level) {
-    return Boolean(
-      [...this._outputs].find((output) => output.levels.includes(level))
-    );
+    return [...this._outputs].some((output) => output.levels.includes(level));
   }
 
   addOutput(output: Output): { remove: () => void } {
@@ -250,8 +248,8 @@ export class Logger {
         output.ingestLog({
           ...log,
           level,
-        })
-      )
+        }),
+      ),
     ).then(() => undefined);
   }
 
@@ -261,6 +259,7 @@ export class Logger {
 }
 
 export const callstack = (error?: Error): string | undefined =>
+  // eslint-disable-next-line unicorn/error-message
   (error || new Error()).stack
     ?.split('\n')
     .splice(2)

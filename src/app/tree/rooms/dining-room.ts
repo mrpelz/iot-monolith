@@ -1,24 +1,24 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../../lib/tree/devices/ev1527-button.js';
+import { h801 } from '../../../lib/tree/devices/h801.js';
+import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
+import { initCallback } from '../../../lib/tree/operations/init.js';
 import {
   ledGrouping,
   outputGrouping,
 } from '../../../lib/tree/properties/actuators.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { ev1527Transport } from '../bridges.js';
-import { h801 } from '../../../lib/tree/devices/h801.js';
-import { initCallback } from '../../../lib/tree/operations/init.js';
 import { logger } from '../../logging.js';
-import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../../persistence.js';
-import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
@@ -26,36 +26,36 @@ export const devices = {
     persistence,
     timings,
     'lighting' as const,
-    'diningroom-ceilinglight.lan.wurstsalat.cloud'
+    'diningroom-ceilinglight.lan.wurstsalat.cloud',
   ),
   fan: obiPlug(
     logger,
     persistence,
     timings,
     'fan' as const,
-    'diningroom-fan.lan.wurstsalat.cloud'
+    'diningroom-fan.lan.wurstsalat.cloud',
   ),
   kallaxLeds: h801(
     logger,
     persistence,
     timings,
-    'diningroom-kallaxleds.lan.wurstsalat.cloud'
+    'diningroom-kallaxleds.lan.wurstsalat.cloud',
   ),
-  kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992584, logger),
-  tableButton: ev1527ButtonX1(ev1527Transport, 307536, logger),
+  kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992_584, logger),
+  tableButton: ev1527ButtonX1(ev1527Transport, 307_536, logger),
   tableLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'diningroom-tablelight.lan.wurstsalat.cloud'
+    'diningroom-tablelight.lan.wurstsalat.cloud',
   ),
-  tableMultiButton: ev1527ButtonX4(ev1527Transport, 426506, logger),
+  tableMultiButton: ev1527ButtonX4(ev1527Transport, 426_506, logger),
   wallswitch: shellyi3(
     logger,
     persistence,
     timings,
-    'diningroom-wallswitch.lan.wurstsalat.cloud'
+    'diningroom-wallswitch.lan.wurstsalat.cloud',
   ),
 };
 
@@ -112,31 +112,33 @@ const callback = async () => {
     '../scenes.js'
   );
 
-  instances.fanButton.up(() => properties.fan.props.flip.props.state.trigger());
+  instances.fanButton.up(() =>
+    properties.fan.props.flip.props.setState.trigger(),
+  );
 
   instances.kallaxSideButton.observe(() =>
-    properties.kallaxLedSide.props.flip.props.state.trigger()
+    properties.kallaxLedSide.props.flip.props.setState.trigger(),
   );
 
   instances.tableButton.observe(() =>
-    properties.tableLight.props.flip.props.state.trigger()
+    properties.tableLight.props.flip.props.setState.trigger(),
   );
 
   instances.tableMultiButton.topLeft.observe(() =>
-    properties.kallaxLedRGB.props.r.props.flip.props.state.trigger()
+    properties.kallaxLedRGB.props.r.props.flip.props.setState.trigger(),
   );
   instances.tableMultiButton.topRight.observe(() =>
-    properties.kallaxLedRGB.props.g.props.flip.props.state.trigger()
+    properties.kallaxLedRGB.props.g.props.flip.props.setState.trigger(),
   );
   instances.tableMultiButton.bottomLeft.observe(() =>
-    properties.kallaxLedRGB.props.b.props.flip.props.state.trigger()
+    properties.kallaxLedRGB.props.b.props.flip.props.setState.trigger(),
   );
   instances.tableMultiButton.bottomRight.observe(() =>
-    properties.kallaxLedW.props.flip.props.state.trigger()
+    properties.kallaxLedW.props.flip.props.setState.trigger(),
   );
 
   instances.wallswitchBottom.up(() =>
-    properties.tableLight.props.flip.props.state.trigger()
+    properties.tableLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchBottom.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {
@@ -148,7 +150,7 @@ const callback = async () => {
   });
 
   instances.wallswitchTop.up(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchTop.longPress(() => {
     if (kitchenAdjacentLights.props.main.props.state.value) {

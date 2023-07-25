@@ -1,11 +1,11 @@
-import { Element } from '../main.js';
 import { objectKeys } from '../../oop.js';
+import { Element } from '../main.js';
 
 export type Path = (string | number | symbol)[];
 
 export const getPathFromElement = (
   source: unknown,
-  target: Element
+  target: Element,
 ): Path | null => {
   if (!(source instanceof Element)) return null;
 
@@ -25,7 +25,7 @@ export const getPathFromElement = (
 
 export const getElementFromPath = (
   source: Element,
-  path: Path
+  path: Path,
 ): Element | null => {
   const [key, ...rest] = path;
 
@@ -35,7 +35,7 @@ export const getElementFromPath = (
   const property = props[key];
   if (!property || !(property instanceof Element)) return null;
 
-  if (!rest.length) return property;
+  if (rest.length === 0) return property;
 
   return getElementFromPath(property, rest);
 };
