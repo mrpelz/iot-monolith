@@ -35,8 +35,23 @@ export type Prev = [
   18,
   19,
   20,
-  ...0[]
+  ...0[],
 ];
+
+// https://stackoverflow.com/a/71097605
+export type Index<T, K extends string> = K extends keyof T
+  ? T[K]
+  : K extends `${number}`
+  ? number extends keyof T
+    ? T[number]
+    : never
+  : never;
+
+export type DeepIndex<T, K extends string> = T extends object
+  ? K extends `${infer F}.${infer R}`
+    ? DeepIndex<Index<T, F>, R>
+    : Index<T, K>
+  : never;
 
 export type DeepPaths<T, D extends number = 20> = [D] extends [never]
   ? never
@@ -46,17 +61,17 @@ export type DeepPaths<T, D extends number = 20> = [D] extends [never]
         ? Join<K, DeepPaths<T[K], Prev[D]>>
         : never;
     }[keyof T]
-  : '';
+  : never;
 
 export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
   ? {
       [K in keyof T]-?: K extends string | number
-        ? `${K}` | Join<K, DeepPaths<T[K], Prev[D]>>
+        ? `${K}` | Join<K, DeepPathsInclusive<T[K], Prev[D]>>
         : never;
     }[keyof T]
-  : '';
+  : never;
 
 export type DeepValues<T, D extends number = 20> = [D] extends [never]
   ? never
@@ -78,7 +93,7 @@ export type DeepClassStructureViaChildField<
   T,
   N extends object,
   P extends keyof N,
-  D extends number = 20
+  D extends number = 20,
 > = [D] extends [never]
   ? never
   : T extends N
@@ -90,15 +105,15 @@ export type DeepClassStructureViaChildField<
   : never;
 
 export const classMethods = (
-  classDefinition: Constructor<Record<string, unknown>>
+  classDefinition: Constructor<Record<string, unknown>>,
 ): string[] =>
   Object.keys(
-    Object.getOwnPropertyDescriptors(classDefinition.prototype)
+    Object.getOwnPropertyDescriptors(classDefinition.prototype),
   ).filter((name) => name !== 'constructor' && name[0] !== '_');
 
 export const instanceMethods = (instance: Record<string, unknown>): string[] =>
   Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
-    (name) => name !== 'constructor' && name[0] !== '_'
+    (name) => name !== 'constructor' && name[0] !== '_',
   );
 
 export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
@@ -107,7 +122,7 @@ export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
 ];
 
 export const objectValues = <T extends EmptyObject>(
-  input: T
+  input: T,
 ): ObjectValues<T>[] => objectKeys(input).map((property) => input[property]);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

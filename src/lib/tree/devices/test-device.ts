@@ -1,9 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, ValueType } from '../main.js';
+import { UDPDevice } from '../../device/udp.js';
+import { Logger } from '../../log.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
+import { Persistence } from '../../persistence.js';
+import { ipDevice } from '../elements/device.js';
+import { getter } from '../elements/getter.js';
+import { Element, Level, ValueType } from '../main.js';
 import {
-  Timings,
   async,
   bme280,
   input,
@@ -11,34 +15,30 @@ import {
   metricStaleness,
   mhz19,
   sds011,
+  Timings,
   tsl2561,
   uvIndex,
 } from '../properties/sensors.js';
-import { Logger } from '../../log.js';
-import { Persistence } from '../../persistence.js';
-import { UDPDevice } from '../../device/udp.js';
-import { getter } from '../elements/getter.js';
-import { ipDevice } from '../elements/device.js';
 
 class MergedObservableGroup extends ObservableGroup<number | null> {
   protected _merge(): number | null {
     const validValues = this.values.filter(
-      (value): value is number => typeof value === 'number'
+      (value): value is number => typeof value === 'number',
     );
 
-    return validValues.length ? Math.min(...validValues) : null;
+    return validValues.length > 0 ? Math.min(...validValues) : null;
   }
 }
 
 export const testDevice = (
   logger: Logger,
   persistence: Persistence,
-  timings: Timings
+  timings: Timings,
 ) => {
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
-    1337
+    1337,
   );
 
   const {
@@ -53,7 +53,7 @@ export const testDevice = (
     new MergedObservableGroup(null, [
       mcp9808Temperature.props.main.props.state,
       bme280Temperature.props.main.props.state,
-    ])
+    ]),
   );
 
   const temperature = new Element({

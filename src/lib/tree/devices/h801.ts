@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types,sort-keys */
 
-import { Element } from '../main.js';
-import { Indicator } from '../../services/indicator.js';
+import { UDPDevice } from '../../device/udp.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
-import { Timings } from '../properties/sensors.js';
-import { UDPDevice } from '../../device/udp.js';
+import { Indicator } from '../../services/indicator.js';
 import { ipDevice } from '../elements/device.js';
+import { Element } from '../main.js';
 import { led } from '../properties/actuators.js';
+import { Timings } from '../properties/sensors.js';
 
 export const h801 = (
   logger: Logger,
@@ -15,7 +15,7 @@ export const h801 = (
   timings: Timings,
   host: string,
   port = 1337,
-  initiallyOnline?: boolean
+  initiallyOnline?: boolean,
 ) => {
   const device = new UDPDevice(logger, host, port);
 

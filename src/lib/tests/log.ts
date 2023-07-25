@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { DevOutput, Logger, callstack } from '../log.js';
+import { callstack, DevOutput, Logger } from '../log.js';
 
 const globalLogger = new Logger();
 const devOutput = new DevOutput();

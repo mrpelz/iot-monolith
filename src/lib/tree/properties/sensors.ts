@@ -1,5 +1,20 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { byteLengthAddress } from '../../device/ev1527.js';
+import { Device } from '../../device/main.js';
+import { epochs } from '../../epochs.js';
+import { Button as ButtonEvent } from '../../events/button.js';
+import { ESPNow } from '../../events/esp-now.js';
+import { Input } from '../../events/input.js';
+import { Rf433 } from '../../events/rf433.js';
+import { VCC } from '../../events/vcc.js';
+import { Button } from '../../items/button.js';
+import { SingleValueEvent } from '../../items/event.js';
+import {
+  MeasurementInputGetter,
+  MultiValueSensor,
+  SingleValueSensor,
+} from '../../items/sensor.js';
 import {
   AnyObservable,
   AnyReadOnlyObservable,
@@ -7,41 +22,27 @@ import {
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '../../observable.js';
+import { ScheduleEpochPair } from '../../schedule.js';
+import { Async } from '../../services/async.js';
+import { Bme280 } from '../../services/bme280.js';
+import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
+import { Hello } from '../../services/hello.js';
+import { Mcp9808 } from '../../services/mcp9808.js';
+import { Mhz19 } from '../../services/mhz19.js';
+import { Sds011 } from '../../services/sds011.js';
+import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
+import { Tsl2561 } from '../../services/tsl2561.js';
+import { Veml6070 } from '../../services/veml6070.js';
 import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
   ReadOnlyNullState,
 } from '../../state.js';
-import { Ccs811, Ccs811Request } from '../../services/ccs811.js';
-import { Element, Level, ValueType } from '../main.js';
-import {
-  MeasurementInputGetter,
-  MultiValueSensor,
-  SingleValueSensor,
-} from '../../items/sensor.js';
-import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
-import { Async } from '../../services/async.js';
-import { Bme280 } from '../../services/bme280.js';
-import { Button } from '../../items/button.js';
-import { Button as ButtonEvent } from '../../events/button.js';
-import { Device } from '../../device/main.js';
-import { ESPNow } from '../../events/esp-now.js';
-import { Hello } from '../../services/hello.js';
-import { Input } from '../../events/input.js';
-import { Mcp9808 } from '../../services/mcp9808.js';
-import { Mhz19 } from '../../services/mhz19.js';
-import { Rf433 } from '../../events/rf433.js';
-import { ScheduleEpochPair } from '../../schedule.js';
-import { Sds011 } from '../../services/sds011.js';
-import { SingleValueEvent } from '../../items/event.js';
 import { Timer } from '../../timer.js';
-import { Tsl2561 } from '../../services/tsl2561.js';
-import { VCC } from '../../events/vcc.js';
-import { Veml6070 } from '../../services/veml6070.js';
-import { byteLengthAddress } from '../../device/ev1527.js';
-import { epochs } from '../../epochs.js';
+import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
+import { Element, Level, ValueType } from '../main.js';
 import { initCallback } from '../operations/init.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
@@ -68,7 +69,7 @@ export const lastChange = <T>(state: AnyReadOnlyObservable<T>) => {
 };
 
 export const lastSeen = <T>(
-  state: ReadOnlyObservable<T> | ReadOnlyNullState<T>
+  state: ReadOnlyObservable<T> | ReadOnlyNullState<T>,
 ) => {
   const seen = new Observable<number | null>(null);
 
@@ -90,7 +91,7 @@ export const lastSeen = <T>(
 
 export const metricStaleness = <T>(
   state: ReadOnlyObservable<T | null>,
-  timeout: number
+  timeout: number,
 ) => {
   const stale = new BooleanState(true);
 
@@ -118,25 +119,27 @@ export const metricStaleness = <T>(
 export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const { state } = new SingleValueSensor(
     device.addService(new Async()),
-    schedule
+    schedule,
   );
 
-  return new Element({
-    $: 'async' as const,
-    ...metricStaleness(state, epoch),
-    level: Level.PROPERTY as const,
-    main: getter(ValueType.RAW, state),
-  });
+  return {
+    async: new Element({
+      $: 'async' as const,
+      ...metricStaleness(state, epoch),
+      level: Level.PROPERTY as const,
+      main: getter(ValueType.RAW, state),
+    }),
+  };
 };
 
 export const bme280 = (
   device: Device,
-  [schedule, epoch]: ScheduleEpochPair
+  [schedule, epoch]: ScheduleEpochPair,
 ) => {
   const { state } = new MultiValueSensor(
     device.addService(new Bme280()),
     ['humidity', 'pressure', 'temperature'] as const,
-    schedule
+    schedule,
   );
 
   return {
@@ -164,7 +167,7 @@ export const bme280 = (
 export const ccs811 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
-  measurementInputGetter: MeasurementInputGetter<Ccs811Request>
+  measurementInputGetter: MeasurementInputGetter<Ccs811Request>,
 ) => {
   const metrics = ['eco2', 'temperature', 'tvoc'] as const;
 
@@ -172,7 +175,7 @@ export const ccs811 = (
     device.addService(new Ccs811()),
     metrics,
     schedule,
-    measurementInputGetter
+    measurementInputGetter,
   );
 
   return {
@@ -207,10 +210,20 @@ export const button = (device: Device, index = 0) => {
   });
 };
 
+export const door = (sensor: ReturnType<typeof ev1527WindowSensor>) => {
+  const { open } = sensor.props.internal;
+
+  return new Element({
+    $: 'door' as const,
+    level: Level.PROPERTY as const,
+    open,
+  });
+};
+
 export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const { state } = new SingleValueSensor(
     device.addService(new Hello()),
-    schedule
+    schedule,
   );
 
   return {
@@ -226,7 +239,7 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
 export const input = <T extends string>(
   device: Device,
   index = 0,
-  topic: T
+  topic: T,
 ) => {
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
@@ -243,8 +256,8 @@ export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
     inputs.map(
       (anInput) =>
-        new ReadOnlyProxyObservable(anInput, (value) => Boolean(value))
-    )
+        new ReadOnlyProxyObservable(anInput, (value) => Boolean(value)),
+    ),
   );
 
   return new Element({
@@ -256,11 +269,11 @@ export const inputGrouping = (...inputs: AnyObservable<boolean | null>[]) => {
 
 export const mcp9808 = (
   device: Device,
-  [schedule, epoch]: ScheduleEpochPair
+  [schedule, epoch]: ScheduleEpochPair,
 ) => {
   const { state } = new SingleValueSensor(
     device.addService(new Mcp9808()),
-    schedule
+    schedule,
   );
 
   return {
@@ -285,7 +298,7 @@ export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   const { state } = new MultiValueSensor(
     device.addService(new Mhz19()),
     metrics,
-    schedule
+    schedule,
   );
 
   return {
@@ -357,7 +370,7 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
             .join('')}`,
         },
       };
-    }
+    },
   );
 
   const readOnlyState = new ReadOnlyObservable(state);
@@ -374,14 +387,14 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
 
 export const sds011 = (
   device: Device,
-  [schedule, epoch]: ScheduleEpochPair
+  [schedule, epoch]: ScheduleEpochPair,
 ) => {
   const metrics = ['pm025', 'pm10'] as const;
 
   const { state } = new MultiValueSensor(
     device.addService(new Sds011()),
     metrics,
-    schedule
+    schedule,
   );
 
   return {
@@ -403,7 +416,7 @@ export const sds011 = (
 export const sgp30 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
-  measurementInputGetter: MeasurementInputGetter<Sgp30Request>
+  measurementInputGetter: MeasurementInputGetter<Sgp30Request>,
 ) => {
   const metrics = ['eco2', 'ethanol', 'h2', 'tvoc'] as const;
 
@@ -411,7 +424,7 @@ export const sgp30 = (
     device.addService(new Sgp30()),
     metrics,
     schedule,
-    measurementInputGetter
+    measurementInputGetter,
   );
 
   return {
@@ -439,11 +452,11 @@ export const sgp30 = (
 
 export const tsl2561 = (
   device: Device,
-  [schedule, epoch]: ScheduleEpochPair
+  [schedule, epoch]: ScheduleEpochPair,
 ) => {
   const { state } = new SingleValueSensor(
     device.addService(new Tsl2561()),
-    schedule
+    schedule,
   );
 
   return {
@@ -458,11 +471,11 @@ export const tsl2561 = (
 
 export const uvIndex = (
   device: Device,
-  [schedule, epoch]: ScheduleEpochPair
+  [schedule, epoch]: ScheduleEpochPair,
 ) => {
   const { state } = new SingleValueSensor(
     device.addService(new Veml6070()),
-    schedule
+    schedule,
   );
 
   return {
@@ -485,4 +498,14 @@ export const vcc = (device: Device) => {
       main: getter(ValueType.NUMBER, state),
     }),
   };
+};
+
+export const window = (sensor: ReturnType<typeof ev1527WindowSensor>) => {
+  const { open } = sensor.props.internal;
+
+  return new Element({
+    $: 'window' as const,
+    level: Level.PROPERTY as const,
+    open,
+  });
 };

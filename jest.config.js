@@ -1,5 +1,3 @@
-// @ts-check
-
 // @ts-ignore
 import config from '@mrpelz/boilerplate/config/jest.config.js';
 

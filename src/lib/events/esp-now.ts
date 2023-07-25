@@ -1,5 +1,5 @@
-import { MappedStruct, StaticBuffer, TStruct } from '../struct/main.js';
 import { Event } from '../device/main.js';
+import { MappedStruct, StaticBuffer, TStruct } from '../struct/main.js';
 
 const payload = new MappedStruct({
   deviceIdentifier: new StaticBuffer(6),

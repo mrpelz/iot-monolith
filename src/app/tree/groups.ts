@@ -1,7 +1,8 @@
+import { outputGrouping } from '../../lib/tree/properties/actuators.js';
+import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
-import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 
 export const all = (async () => {
   const { wurstHome } = await import('./system.js');
@@ -11,7 +12,7 @@ export const all = (async () => {
       wurstHome.matchChildrenDeep({ $: 'output' as const }),
       wurstHome.matchChildrenDeep({ $: 'led' as const }),
     ].flat(1),
-    'group'
+    'group',
   );
 })();
 
@@ -25,7 +26,7 @@ export const allLights = (async () => {
         topic: 'lighting' as const,
       }),
       wurstHome.matchChildrenDeep({ $: 'led' as const }),
-    ].flat(1)
+    ].flat(1),
   );
 })();
 

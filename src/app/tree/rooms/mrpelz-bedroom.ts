@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
+import { epochs } from '../../../lib/epochs.js';
 import {
   SceneMember,
   ledGrouping,
@@ -11,58 +11,56 @@ import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../../lib/tree/devices/ev1527-button.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { epochs } from '../../../lib/epochs.js';
-import { ev1527Transport } from '../../tree/bridges.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
-import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { persistence } from '../../persistence.js';
 import { roomSensor } from '../../../lib/tree/devices/room-sensor.js';
-import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
+import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import {
+  door,
+  inputGrouping,
+  window,
+} from '../../../lib/tree/properties/sensors.js';
+import { logger } from '../../logging.js';
+import { persistence } from '../../persistence.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport } from '../../tree/bridges.js';
 
 export const devices = {
-  bookshelfLeds: h801(
-    logger,
-    persistence,
-    timings,
-    'bedroom-bedrgbwleds.lan.wurstsalat.cloud'
-  ),
-  button: ev1527ButtonX1(ev1527Transport, 74160, logger),
+  button: ev1527ButtonX1(ev1527Transport, 74_160, logger),
   ceilingLight: shelly1(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud'
+    'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud',
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
-  heatLamp: sonoffBasic(
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724_720),
+  floodLight: obiPlug(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud'
+    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud',
   ),
-  multiButton: ev1527ButtonX4(ev1527Transport, 831834, logger),
-  nightLight: obiPlug(
+  multiButton: ev1527ButtonX4(ev1527Transport, 831_834, logger),
+  nightLight: sonoffBasic(
     logger,
     persistence,
     timings,
     'lighting' as const,
-    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
+    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud',
   ),
   roomSensor: roomSensor(
     logger,
     persistence,
     timings,
-    'test-room-sensor.lan.wurstsalat.cloud'
+    'test-room-sensor.lan.wurstsalat.cloud',
   ),
   standingLamp: obiPlug(
     logger,
@@ -75,13 +73,13 @@ export const devices = {
     logger,
     persistence,
     timings,
-    'mrpelzbedroom-wallswitchdoor.lan.wurstsalat.cloud'
+    'mrpelzbedroom-wallswitchdoor.lan.wurstsalat.cloud',
   ),
   windowSensorLeft: ev1527WindowSensor(
     logger,
     persistence,
     ev1527Transport,
-    762272
+    762_272,
   ),
 };
 
@@ -99,10 +97,7 @@ export const instances = {
 export const properties = {
   brightness: devices.roomSensor.props.internal.brightness,
   ceilingLight: devices.ceilingLight.props.internal.relay,
-  door: new Element({
-    level: Level.AREA as const,
-    open: devices.doorSensor.props.internal.open,
-  }),
+  door: door(devices.doorSensor),
   floodLight: devices.floodLight.props.internal.relay,
   floodLightTimer: offTimer(epochs.hour, undefined, [
     'mrpelz-bedroom/floodLightTimer',
@@ -113,10 +108,7 @@ export const properties = {
   pressure: devices.roomSensor.props.internal.pressure,
   temperature: devices.roomSensor.props.internal.temperature,
   tvoc: devices.roomSensor.props.internal.tvoc,
-  windowLeft: new Element({
-    level: Level.AREA as const,
-    open: devices.windowSensorLeft.props.internal.open,
-  }),
+  windowLeft: window(devices.windowSensorLeft),
 };
 
 export const groups = {
@@ -148,7 +140,7 @@ export const groups = {
     properties.standingLamp,
   ]),
   allWindows: inputGrouping(
-    properties.windowLeft.props.open.props.main.props.state
+    properties.windowLeft.props.open.props.main.props.state,
   ),
 };
 
@@ -278,58 +270,58 @@ const sceneCycle = new EnumState(
   });
 
   instances.floodlightButton.up(() =>
-    properties.floodLight.props.flip.props.state.trigger()
+    properties.floodLight.props.flip.props.setState.trigger(),
   );
   instances.floodlightButton.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   instances.multiButton.topLeft.observe(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.setState.trigger(),
   );
   instances.multiButton.topRight.observe(() =>
-    properties.floodLight.props.flip.props.state.trigger()
+    properties.floodLight.props.flip.props.setState.trigger(),
   );
   instances.multiButton.bottomLeft.observe(() =>
-    properties.nightLight.props.flip.props.state.trigger()
+    properties.nightLight.props.flip.props.setState.trigger(),
   );
   instances.multiButton.bottomRight.observe(() =>
-    groups.allLights.props.flip.props.state.trigger()
+    groups.allLights.props.flip.props.setState.trigger(),
   );
 
   instances.nightLightButton.up(() =>
-    properties.nightLight.props.flip.props.state.trigger()
+    properties.nightLight.props.flip.props.setState.trigger(),
   );
   instances.nightLightButton.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   instances.wallswitchBed.up(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchBed.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   instances.wallswitchDoorLeft.up(() =>
-    properties.nightLight.props.flip.props.state.trigger()
+    properties.nightLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchDoorLeft.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   instances.wallswitchDoorMiddle.up(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchDoorMiddle.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   instances.wallswitchDoorRight.up(() =>
-    properties.floodLight.props.flip.props.state.trigger()
+    properties.floodLight.props.flip.props.setState.trigger(),
   );
   instances.wallswitchDoorRight.longPress(
-    () => (groups.allLights.props.main.props.setState.value = false)
+    () => (groups.allLights.props.main.props.setState.value = false),
   );
 
   properties.floodLight.props.main.props.setState.observe((value) => {

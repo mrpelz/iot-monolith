@@ -1,32 +1,33 @@
-import { HttpServer, RouteHandle } from './http-server.js';
-import { Input, Logger, callstack } from './log.js';
+import { IncomingMessage } from 'node:http';
+import { Socket } from 'node:net';
+import { Duplex } from 'node:stream';
+
+import { stripIndent } from 'proper-tags';
+import { v5 as uuidv5 } from 'uuid';
+import WebSocket, { WebSocketServer } from 'ws';
+
+import { HttpServer, RouteHandle } from '../http-server.js';
+import { callstack, Input, Logger } from '../log.js';
+import { Observable } from '../observable.js';
+import { Timer } from '../timer.js';
+import { Element } from '../tree/main.js';
 import {
   InteractionUpdate,
   Serialization,
-} from './tree/operations/serialization.js';
-import WebSocket, { WebSocketServer } from 'ws';
-import { Duplex } from 'node:stream';
-import { Element } from './tree/main.js';
-import { IncomingMessage } from 'node:http';
-import { Observable } from './observable.js';
-import { Socket } from 'node:net';
-import { Timer } from './timer.js';
-import { stripIndent } from 'common-tags';
-import { v5 as uuidv5 } from 'uuid';
+} from '../tree/operations/serialization.js';
 
 const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
 
 const PATH_HIERARCHY = '/api/hierarchy';
-const PATH_ID = '/api/id';
 const PATH_STREAM = '/api/stream';
 const PATH_VALUES = '/api/values';
 
 const WEBSOCKET_PING_INTERVAL = 5000;
+
 const websocketMarcopoloPayload = uuidv5('marcopolo', WEB_API_UUID_NAMESPACE);
 
 export class WebApi {
   private readonly _hierarchy: string;
-  private readonly _id: string;
   private readonly _log: Input;
   private readonly _streamCount: Observable<number>;
   private readonly _wss: WebSocketServer;
@@ -34,51 +35,34 @@ export class WebApi {
   constructor(
     logger: Logger,
     private readonly _httpServer: HttpServer,
-    private readonly _serialization: Serialization<Element>
+    private readonly _serialization: Serialization<Element>,
   ) {
     this._log = logger.getInput({ head: this.constructor.name });
     this._wss = new WebSocketServer({ noServer: true });
     this._hierarchy = JSON.stringify(_serialization.tree);
-    this._id = uuidv5(this._hierarchy, WEB_API_UUID_NAMESPACE);
     this._streamCount = new Observable(0);
 
     this._httpServer.route(PATH_HIERARCHY, (handle) =>
-      this._handleHierarchyGet(handle)
+      this._handleHierarchyGet(handle),
     );
 
-    this._httpServer.route(PATH_ID, ({ response }) => {
-      response.end(this._id);
-    });
-
     this._httpServer.route(PATH_STREAM, (handle) =>
-      this._handleStreamGet(handle)
+      this._handleStreamGet(handle),
     );
 
     this._httpServer.route(PATH_VALUES, (handle) =>
-      this._handleValuesGet(handle)
+      this._handleValuesGet(handle),
     );
 
     this._httpServer.server.on('upgrade', (request, socket, head) =>
-      this._handleStreamUpgrade(request, socket, head)
+      this._handleStreamUpgrade(request, socket, head),
     );
 
     this._wss.on('connection', (ws) => this._handleStream(ws));
   }
 
-  private _handleHierarchyGet({ response, url, utils }: RouteHandle) {
+  private _handleHierarchyGet({ response, utils }: RouteHandle) {
     if (utils.constrainMethod('GET')) return;
-
-    if (url.searchParams.get('id') !== this._id) {
-      response.writeHead(400, 'Bad request');
-      response.end(
-        stripIndent`
-          400 Bad request
-          The client didn\'t supply the correct "id" query parameter.
-        `
-      );
-
-      return;
-    }
 
     response.setHeader('Content-Type', 'application/json');
     response.end(this._hierarchy);
@@ -86,26 +70,19 @@ export class WebApi {
 
   private _handleStream(ws: WebSocket) {
     try {
-      const { interactions } = this._serialization;
-
-      for (const key of interactions.keys()) {
-        const value = interactions.get(key);
-        if (value === undefined) continue;
-
-        ws.send(JSON.stringify([key, value]));
-      }
+      const { updates } = this._serialization;
 
       const streamCountObserver = this._streamCount.observe((value) => {
         ws.send(JSON.stringify([-1, value]));
       });
 
-      const observer = this._serialization.updates.observe((entry) => {
+      const observer = updates.observe((entry) => {
         if (!entry) return;
 
         ws.send(JSON.stringify(entry));
       });
 
-      this._streamCount.value = this._serialization.updates.listeners;
+      this._streamCount.value += 1;
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
@@ -147,7 +124,7 @@ export class WebApi {
         streamCountObserver.remove();
         observer.remove();
 
-        this._streamCount.value = this._serialization.updates.listeners;
+        this._streamCount.value -= 1;
 
         ws.close();
       };
@@ -163,50 +140,28 @@ export class WebApi {
     }
   }
 
-  private _handleStreamGet({ response, url, utils }: RouteHandle) {
+  private _handleStreamGet({ response, utils }: RouteHandle) {
     if (utils.constrainMethod('GET')) return;
-
-    if (url.searchParams.get('id') !== this._id) {
-      response.writeHead(400, 'Bad request');
-      response.end(
-        stripIndent`
-          400 Bad request
-          The client didn\'t supply the correct "id" query parameter.
-        `
-      );
-
-      return;
-    }
 
     response.writeHead(426, 'Upgrade required');
     response.end(
       stripIndent`
         426 Upgrade required
         The client should repeat the request using the "websocket" protocol.
-      `
+      `,
     );
   }
 
   private _handleStreamUpgrade(
     request: IncomingMessage,
     socket: Duplex,
-    head: Buffer
+    head: Buffer,
   ) {
     if (!request.url) return;
 
     const url = this._httpServer.requestUrl(request.url);
 
-    if (url.pathname !== PATH_STREAM) {
-      socket.destroy();
-
-      return;
-    }
-
-    if (url.searchParams.get('id') !== this._id) {
-      socket.destroy();
-
-      return;
-    }
+    if (url.pathname !== PATH_STREAM) return;
 
     if (!(socket instanceof Socket)) {
       socket.destroy();
@@ -215,34 +170,22 @@ export class WebApi {
     }
 
     this._wss.handleUpgrade(request, socket, head, (ws) =>
-      this._wss.emit('connection', ws, request)
+      this._wss.emit('connection', ws, request),
     );
   }
 
-  private _handleValuesGet({ response, url, utils }: RouteHandle) {
+  private _handleValuesGet({ response, utils }: RouteHandle) {
     if (utils.constrainMethod('GET')) return;
-
-    if (url.searchParams.get('id') !== this._id) {
-      response.writeHead(400, 'Bad request');
-      response.end(
-        stripIndent`
-          400 Bad request
-          The client didn\'t supply the correct "id" query parameter.
-        `
-      );
-
-      return;
-    }
 
     response.setHeader('Content-Type', 'application/json');
     response.end(
       JSON.stringify(
         Object.fromEntries(
           Array.from(this._serialization.interactions.entries()).map(
-            ([key, interaction]) => [key, interaction.state.value] as const
-          )
-        )
-      )
+            ([key, interaction]) => [key, interaction.state.value] as const,
+          ),
+        ),
+      ),
     );
   }
 }
