@@ -1,0 +1,1 @@
+/home/mrpelz/work/iot/iot-monolith/node_modules/@mrpelz/boilerplate/config/dev.sh
