@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { BooleanState, NullState } from '../../state.js';
-import { Element, Level, ValueType } from '../main.js';
+import { maxmin } from '../../number.js';
 import {
   Observable,
   ReadOnlyObservable,
@@ -9,16 +8,17 @@ import {
 } from '../../observable.js';
 import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
+import { BooleanState, NullState } from '../../state.js';
 import { Timer } from '../../timer.js';
 import { getter } from '../elements/getter.js';
-import { maxmin } from '../../number.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
+import { Element, Level, ValueType } from '../main.js';
 
 export const offTimer = (
   time: number,
   enableFromStart = true,
-  persistenceSet?: [string, Persistence]
+  persistenceSet?: [string, Persistence],
 ) => {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
@@ -72,7 +72,7 @@ export const offTimer = (
       cancel: new Element({
         main: trigger(
           ValueType.NULL,
-          new NullState(() => (active.value = false))
+          new NullState(() => (active.value = false)),
         ),
       }),
       main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
@@ -82,7 +82,7 @@ export const offTimer = (
           new NullState(() => {
             if (!active.value) return;
             active.value = true;
-          })
+          }),
         ),
       }),
       state: active,
@@ -100,7 +100,7 @@ export const offTimer = (
       main: getter(
         ValueType.NUMBER,
         new ReadOnlyObservable(triggerTime),
-        'date'
+        'date',
       ),
     }),
   });
@@ -110,7 +110,7 @@ export const scheduledRamp = (
   [schedule, epoch]: ScheduleEpochPair,
   refresh: number,
   handler: (progress: number) => void,
-  persistenceSet?: [string, Persistence]
+  persistenceSet?: [string, Persistence],
 ) => {
   const enabled = new BooleanState(false);
   schedule[enabled.value ? 'start' : 'stop']();
@@ -190,9 +190,9 @@ export const scheduledRamp = (
           (date) => {
             if (!date) return 0;
             return date.getTime() + epoch;
-          }
+          },
         ),
-        'date'
+        'date',
       ),
     }),
     nextExecution: new Element({
@@ -200,9 +200,9 @@ export const scheduledRamp = (
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
           schedule.nextExecution,
-          (date) => date?.getTime() || 0
+          (date) => date?.getTime() || 0,
         ),
-        'date'
+        'date',
       ),
     }),
     progress: new Element({

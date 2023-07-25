@@ -1,6 +1,8 @@
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
-import { Input, Logger, callstack } from './log.js';
-import { stripIndent } from 'common-tags';
+
+import { stripIndent } from 'proper-tags';
+
+import { callstack, Input, Logger } from './log.js';
 
 export type RouteUtils = {
   badRequest: (body?: string) => void;
@@ -33,7 +35,7 @@ export class HttpServer {
         The request could not be understood by the server due to malformed syntax.
 
         ${body || ''}
-      `
+      `,
     );
   }
 
@@ -41,7 +43,7 @@ export class HttpServer {
     allowedMethod: string | string[],
     response: ServerResponse,
     { method }: IncomingMessage,
-    body?: string
+    body?: string,
   ): boolean {
     const allowedMethods = [allowedMethod].flat();
 
@@ -57,7 +59,7 @@ export class HttpServer {
           ${allowedMethods.join(', ')}
 
           ${body || ''}
-        `
+        `,
       );
 
       return true;
@@ -74,7 +76,7 @@ export class HttpServer {
         500 Internal server error
 
         ${body || ''}
-      `
+      `,
     );
   }
 
@@ -87,7 +89,7 @@ export class HttpServer {
         The resource could not be found.
 
         ${body || ''}
-      `
+      `,
     );
   }
 
@@ -112,7 +114,7 @@ export class HttpServer {
 
     this.server = new Server();
     this.server.on('request', (request, response) =>
-      this._handleRequest(request, response)
+      this._handleRequest(request, response),
     );
 
     this.route('/favicon.ico', ({ response }) => HttpServer.notFound(response));

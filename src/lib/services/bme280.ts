@@ -1,7 +1,7 @@
 /* eslint-disable sort-keys */
 
-import { FloatLE, MappedStruct, TStruct } from '../struct/main.js';
 import { Service } from '../device/main.js';
+import { FloatLE, MappedStruct, TStruct } from '../struct/main.js';
 
 const response = new MappedStruct({
   temperature: new FloatLE(),

@@ -1,20 +1,21 @@
-import { Element, descriptionValueType, isValueType } from './tree/main.js';
+import { stripIndent } from 'proper-tags';
+
+import { HttpServer } from './http-server.js';
+import { callstack, Logger } from './log.js';
+import { AnyWritableObservable } from './observable.js';
+import { NullState } from './state.js';
+import { Element, isValueType, valueTypeDescription } from './tree/main.js';
 import {
   InteractionType,
   Serialization,
 } from './tree/operations/serialization.js';
-import { Logger, callstack } from './log.js';
-import { AnyWritableObservable } from './observable.js';
-import { HttpServer } from './http-server.js';
-import { NullState } from './state.js';
-import { stripIndent } from 'common-tags';
 
 const PATH_HOOKS = '/hooks' as const;
 
 export const httpHooks = (
   logger: Logger,
   httpServer: HttpServer,
-  serialization: Serialization<Element>
+  serialization: Serialization<Element>,
 ): void => {
   const log = logger.getInput({ head: 'httpHooks' });
 
@@ -43,7 +44,7 @@ export const httpHooks = (
           ## writing a value
           * POST request
           * add a single-value JSON-string to the request body
-        `
+        `,
       );
 
       return;
@@ -56,7 +57,7 @@ export const httpHooks = (
       utils.notFound(
         stripIndent`
           no interaction with UUID "${id}" has been found
-        `
+        `,
       );
 
       return;
@@ -70,11 +71,11 @@ export const httpHooks = (
         'GET',
         stripIndent`
           interaction with UUID "${id}" cannot be written
-        `
+        `,
       )
     ) {
       log.info(
-        () => `write to interaction "${id}": interaction is non-writable`
+        () => `write to interaction "${id}": interaction is non-writable`,
       );
 
       return;
@@ -89,7 +90,7 @@ export const httpHooks = (
         utils.badRequest(
           stripIndent`
             no value provided in request body
-          `
+          `,
         );
 
         return;
@@ -102,7 +103,7 @@ export const httpHooks = (
       } catch (error) {
         log.error(
           () => `write to interaction "${id}": provided value non-parsable`,
-          callstack(error)
+          callstack(error),
         );
 
         utils.badRequest(
@@ -110,7 +111,7 @@ export const httpHooks = (
             error parsing given request body:
 
             ${error.message}
-          `
+          `,
         );
 
         return;
@@ -124,8 +125,8 @@ export const httpHooks = (
             value provided in request body has wrong type
 
             provided value is of type "${typeof value}"
-            required type for interaction is ${descriptionValueType[valueType]}
-          `
+            required type for interaction is ${valueTypeDescription[valueType]}
+          `,
         );
 
         return;

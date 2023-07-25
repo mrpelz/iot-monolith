@@ -7,7 +7,7 @@ export const trueBuffer = Buffer.of(1);
 export const arrayPadLeft = <T>(
   input: T[],
   length: number,
-  value: T = null as unknown as T
+  value: T = null as unknown as T,
 ): T[] => {
   while (input.length < length) {
     input.unshift(value);
@@ -31,7 +31,7 @@ export const bufferChunks = (input: Buffer, chunkSize = 1): Buffer[] => {
 export const arrayPadRight = <T>(
   input: T[],
   length: number,
-  value: T = null as unknown as T
+  value: T = null as unknown as T,
 ): T[] => {
   while (input.length >= length) {
     input.push(value);
@@ -70,7 +70,7 @@ export const humanPayload = (input: Buffer): string => {
 export const numberToDigits = (
   input: number,
   pad = 0,
-  radix = 10
+  radix = 10,
 ): number[] => {
   const number = Math.abs(input);
 
@@ -96,14 +96,18 @@ export const readNumber = (input: Buffer, bytes = 1): number => {
   }
 
   switch (bytes) {
-    case 1:
+    case 1: {
       return input.readUInt8(0);
-    case 2:
+    }
+    case 2: {
       return input.readUInt16LE(0);
-    case 4:
+    }
+    case 4: {
       return input.readUInt32LE(0);
-    default:
+    }
+    default: {
       throw new Error('illegal number of bytes specified');
+    }
   }
 };
 
@@ -116,9 +120,9 @@ export const bufferToBoolean = (input: Buffer): boolean =>
 export const swapByte = (input: number): number => {
   let byte = input;
   /* eslint-disable no-bitwise */
-  byte = ((byte & 0b11110000) >> 4) | ((byte & 0b1111) << 4);
-  byte = ((byte & 0b11001100) >> 2) | ((byte & 0b110011) << 2);
-  byte = ((byte & 0b10101010) >> 1) | ((byte & 0b1010101) << 1);
+  byte = ((byte & 0b1111_0000) >> 4) | ((byte & 0b1111) << 4);
+  byte = ((byte & 0b1100_1100) >> 2) | ((byte & 0b11_0011) << 2);
+  byte = ((byte & 0b1010_1010) >> 1) | ((byte & 0b101_0101) << 1);
   /* eslint-enable no-bitwise */
   return byte;
 };
@@ -131,17 +135,21 @@ export const writeNumber = (input: number, bytes = 1): Buffer => {
   const cache = Buffer.alloc(bytes);
 
   switch (bytes) {
-    case 1:
+    case 1: {
       cache.writeUInt8(input);
       break;
-    case 2:
+    }
+    case 2: {
       cache.writeUInt16LE(input);
       break;
-    case 4:
+    }
+    case 4: {
       cache.writeUInt32LE(input);
       break;
-    default:
+    }
+    default: {
       throw new Error('illegal number of bytes specified');
+    }
   }
   return cache;
 };

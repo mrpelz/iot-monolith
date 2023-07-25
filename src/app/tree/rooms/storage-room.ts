@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level } from '../../../lib/tree/main.js';
-import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
-import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
-import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { epochs } from '../../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { logger } from '../../logging.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
-import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { persistence } from '../../persistence.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Element, Level } from '../../../lib/tree/main.js';
+import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { door } from '../../../lib/tree/properties/sensors.js';
+import { logger } from '../../logging.js';
+import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
+import { persistence } from '../../persistence.js';
 import { timings } from '../../timings.js';
+import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 
 export const devices = {
   ceilingLight: shelly1(
@@ -19,9 +20,9 @@ export const devices = {
     persistence,
     timings,
     'lighting' as const,
-    'storage-ceilinglight.lan.wurstsalat.cloud'
+    'storage-ceilinglight.lan.wurstsalat.cloud',
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55632),
+  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55_632),
   rfBridge,
 };
 
@@ -31,10 +32,7 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.props.internal.relay,
-  door: new Element({
-    level: Level.AREA as const,
-    open: devices.doorSensor.props.internal.open,
-  }),
+  door: door(devices.doorSensor),
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
     persistence,
@@ -49,7 +47,7 @@ export const groups = {
   let indicatorInProgress = false;
 
   instances.wallswitch.up(() =>
-    properties.ceilingLight.props.flip.props.state.trigger()
+    properties.ceilingLight.props.flip.props.setState.trigger(),
   );
 
   instances.wallswitch.longPress(async () => {
@@ -57,11 +55,9 @@ export const groups = {
 
     indicatorInProgress = true;
 
-    if (properties.ceilingLight.props.main.props.setState.value) {
-      await ackBlinkFromOn(properties.ceilingLight.props.main.props.setState);
-    } else {
-      await ackBlinkFromOff(properties.ceilingLight.props.main.props.setState);
-    }
+    await (properties.ceilingLight.props.main.props.setState.value
+      ? ackBlinkFromOn(properties.ceilingLight.props.main.props.setState)
+      : ackBlinkFromOff(properties.ceilingLight.props.main.props.setState));
 
     indicatorInProgress = false;
 

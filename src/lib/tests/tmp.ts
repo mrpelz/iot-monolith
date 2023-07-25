@@ -1,10 +1,10 @@
+import { UDPDevice } from '../device/udp.js';
 import { DevOutput, Logger } from '../log.js';
 import { Bme280 } from '../services/bme280.js';
 import { Ccs811 } from '../services/ccs811.js';
 import { Mcp9808 } from '../services/mcp9808.js';
 import { Sgp30 } from '../services/sgp30.js';
 import { Tsl2561 } from '../services/tsl2561.js';
-import { UDPDevice } from '../device/udp.js';
 
 const logger = new Logger();
 logger.addOutput(new DevOutput(6));
@@ -12,7 +12,7 @@ logger.addOutput(new DevOutput(6));
 const device = new UDPDevice(
   logger,
   'test-room-sensor.lan.wurstsalat.cloud',
-  1337
+  1337,
 );
 device.transport.connect();
 

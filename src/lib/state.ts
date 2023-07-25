@@ -32,7 +32,7 @@ export enum BooleanGroupStrategy {
 export class BooleanStateGroup extends ObservableGroup<boolean> {
   private static _getValue(
     strategy: BooleanGroupStrategy,
-    observables: AnyObservable<boolean>[]
+    observables: AnyObservable<boolean>[],
   ) {
     const values = observables.map(({ value }) => value);
 
@@ -45,7 +45,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 
   constructor(
     strategy: BooleanGroupStrategy,
-    states: AnyObservable<boolean>[] = []
+    states: AnyObservable<boolean>[] = [],
   ) {
     super(BooleanStateGroup._getValue(strategy, states), states);
 
@@ -59,14 +59,14 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
   get allOn(): boolean {
     return BooleanStateGroup._getValue(
       BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-      this.observables
+      this.observables,
     );
   }
 
   get someOn(): boolean {
     return BooleanStateGroup._getValue(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      this.observables
+      this.observables,
     );
   }
 
@@ -80,7 +80,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 export class BooleanNullableStateGroup extends BooleanStateGroup {
   constructor(
     strategy: BooleanGroupStrategy,
-    observables: AnyObservable<boolean | null>[] = []
+    observables: AnyObservable<boolean | null>[] = [],
   ) {
     super(
       strategy,
@@ -89,9 +89,9 @@ export class BooleanNullableStateGroup extends BooleanStateGroup {
           new ProxyObservable(
             observable,
             (value) => Boolean(value),
-            (value) => value
-          )
-      )
+            (value) => value,
+          ),
+      ),
     );
   }
 }
@@ -229,7 +229,7 @@ export class ReadOnlyNullState<T = null> {
 export type AnyNullState<T> = NullState<T> | ReadOnlyNullState<T>;
 
 export const isNullState = (
-  input: unknown
+  input: unknown,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): input is AnyNullState<any> => {
   if (input instanceof NullState) return true;

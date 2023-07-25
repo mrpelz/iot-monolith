@@ -1,30 +1,30 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element, Level, ValueType } from '../main.js';
+import { UDPDevice } from '../../device/udp.js';
+import { Logger } from '../../log.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
+import { Persistence } from '../../persistence.js';
+import { ipDevice } from '../elements/device.js';
+import { getter } from '../elements/getter.js';
+import { Element, Level, ValueType } from '../main.js';
 import {
-  Timings,
   bme280,
   // input,
   mcp9808,
   metricStaleness,
   // mhz19,
   sgp30,
+  Timings,
   tsl2561,
 } from '../properties/sensors.js';
-import { Logger } from '../../log.js';
-import { Persistence } from '../../persistence.js';
-import { UDPDevice } from '../../device/udp.js';
-import { getter } from '../elements/getter.js';
-import { ipDevice } from '../elements/device.js';
 
 class MergedObservableGroup extends ObservableGroup<number | null> {
   protected _merge(): number | null {
     const validValues = this.values.filter(
-      (value): value is number => typeof value === 'number'
+      (value): value is number => typeof value === 'number',
     );
 
-    return validValues.length ? Math.min(...validValues) : null;
+    return validValues.length > 0 ? Math.min(...validValues) : null;
   }
 }
 
@@ -34,7 +34,7 @@ export const roomSensor = (
   timings: Timings,
   host: string,
   port = 1337,
-  initiallyOnline?: boolean
+  initiallyOnline?: boolean,
 ) => {
   const device = new UDPDevice(logger, host, port);
 
@@ -50,7 +50,7 @@ export const roomSensor = (
     new MergedObservableGroup(null, [
       mcp9808Temperature.props.main.props.state,
       bme280Temperature.props.main.props.state,
-    ])
+    ]),
   );
 
   const temperature = new Element({
@@ -81,7 +81,7 @@ export const roomSensor = (
       ...sgp30(
         device,
         timings.slow || timings.default,
-        sgp30MeasurementInputGetter
+        sgp30MeasurementInputGetter,
       ),
       ...tsl2561(device, timings.default),
       humidity,

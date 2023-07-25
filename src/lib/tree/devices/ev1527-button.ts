@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Element } from '../main.js';
-import { Ev1527Button } from '../../events/ev1527-button.js';
 import { Ev1527Device } from '../../device/ev1527.js';
-import { Ev1527Transport } from '../../transport/ev1527.js';
-import { Logger } from '../../log.js';
+import { Ev1527Button } from '../../events/ev1527-button.js';
 import { StatelessMultiValueEvent } from '../../items/event.js';
+import { Logger } from '../../log.js';
+import { Ev1527Transport } from '../../transport/ev1527.js';
 import { ev1527Device } from '../elements/device.js';
+import { Element } from '../main.js';
 
 export const ev1527ButtonX4 = (
   transport: Ev1527Transport,
   address: number,
-  logger: Logger
+  logger: Logger,
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
@@ -29,7 +29,7 @@ export const ev1527ButtonX4 = (
 export const ev1527ButtonX1 = (
   transport: Ev1527Transport,
   address: number,
-  logger: Logger
+  logger: Logger,
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 

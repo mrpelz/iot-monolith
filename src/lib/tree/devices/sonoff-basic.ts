@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Timings, button } from '../properties/sensors.js';
-import { Element } from '../main.js';
-import { Indicator } from '../../services/indicator.js';
+import { UDPDevice } from '../../device/udp.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
-import { UDPDevice } from '../../device/udp.js';
+import { Indicator } from '../../services/indicator.js';
 import { ipDevice } from '../elements/device.js';
+import { Element } from '../main.js';
 import { output } from '../properties/actuators.js';
+import { button, Timings } from '../properties/sensors.js';
 
 export const sonoffBasic = <T extends string>(
   logger: Logger,
@@ -16,7 +16,7 @@ export const sonoffBasic = <T extends string>(
   topic: T,
   host: string,
   port = 1337,
-  initiallyOnline?: boolean
+  initiallyOnline?: boolean,
 ) => {
   const device = new UDPDevice(logger, host, port);
 

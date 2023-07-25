@@ -1,21 +1,22 @@
+import { v5 as uuidv5 } from 'uuid';
+
 import {
   AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import {
-  Element,
-  TElementProps,
-  TValueType,
-  ValueType,
-  isValueType,
-} from '../main.js';
-import { EmptyObject, Prev, objectKeys } from '../../oop.js';
+import { EmptyObject, objectKeys, Prev } from '../../oop.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 import { isGetter } from '../elements/getter.js';
 import { isSetter } from '../elements/setter.js';
 import { isTrigger } from '../elements/trigger.js';
-import { v5 as uuidv5 } from 'uuid';
+import {
+  Element,
+  isValueType,
+  TElementProps,
+  TValueType,
+  ValueType,
+} from '../main.js';
 
 export enum InteractionType {
   EMIT,
@@ -43,8 +44,8 @@ const INTERACTION_UUID_NAMESPACE =
   'cfe7d23c-1bdd-401b-bfb4-f1210694ab83' as const;
 
 export type InteractionReference<
-  R extends string,
-  T extends InteractionType
+  R extends string = string,
+  T extends InteractionType = InteractionType,
 > = {
   $: typeof INTERACTION_UUID_NAMESPACE;
   reference: R;
@@ -52,6 +53,14 @@ export type InteractionReference<
 };
 
 export type InteractionUpdate = [string, unknown];
+
+export type TElementSerialization =
+  | boolean
+  | null
+  | number
+  | string
+  | InteractionReference
+  | { [key: string]: TElementSerialization };
 
 export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
   ? never
@@ -74,30 +83,30 @@ export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,
-  type: T
+  type: T,
 ): InteractionReference<R, T> => ({
   $: INTERACTION_UUID_NAMESPACE,
   reference,
   type,
 });
 
-// const isInteractionReference = (
-//   input: unknown
-// ): input is InteractionReference => {
-//   if (typeof input !== 'object') return false;
-//   if (input === null) return false;
+export const isInteractionReference = (
+  input: unknown,
+): input is InteractionReference => {
+  if (typeof input !== 'object') return false;
+  if (input === null) return false;
 
-//   if (!('$' in input)) return false;
-//   if (input.$ !== INTERACTION_REFERENCE_MARKER) return false;
+  if (!('$' in input)) return false;
+  if (input.$ !== INTERACTION_UUID_NAMESPACE) return false;
 
-//   if (!('reference' in input)) return false;
-//   if (typeof input.reference !== 'string') return false;
+  if (!('reference' in input)) return false;
+  if (typeof input.reference !== 'string') return false;
 
-//   if (!('type' in input)) return false;
-//   if (typeof input.type !== 'number') return false;
+  if (!('type' in input)) return false;
+  if (typeof input.type !== 'number') return false;
 
-//   return true;
-// };
+  return true;
+};
 
 export class Serialization<T extends Element> {
   private readonly _updates = new NullState<InteractionUpdate>();
@@ -119,7 +128,7 @@ export class Serialization<T extends Element> {
   private _registerCollector<V extends ValueType>(
     id: string,
     state: AnyWritableObservable<unknown> | NullState<unknown>,
-    valueType: V
+    valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
@@ -129,7 +138,7 @@ export class Serialization<T extends Element> {
         state,
         type: InteractionType.COLLECT,
         valueType,
-      })
+      }),
     );
 
     return makeInteractionReference(id, InteractionType.COLLECT);
@@ -138,7 +147,7 @@ export class Serialization<T extends Element> {
   private _registerEmitter<V extends ValueType>(
     id: string,
     state: AnyReadOnlyObservable<unknown>,
-    valueType: V
+    valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
@@ -148,15 +157,14 @@ export class Serialization<T extends Element> {
         state,
         type: InteractionType.EMIT,
         valueType,
-      })
+      }),
     );
 
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
   private _serializeElement<E extends Element>(element: E, parentId: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = {} as any;
+    const result = {} as Record<string, TElementSerialization>;
 
     let props: EmptyObject;
 
@@ -168,7 +176,7 @@ export class Serialization<T extends Element> {
       result.state = this._registerEmitter(
         uuidv5('state', parentId),
         state,
-        valueType
+        valueType,
       );
     } else if (isSetter(element)) {
       const { state, setState, ...rest } = element.props;
@@ -178,23 +186,23 @@ export class Serialization<T extends Element> {
       result.state = this._registerEmitter(
         uuidv5('state', parentId),
         state,
-        valueType
+        valueType,
       );
 
       result.setState = this._registerCollector(
         uuidv5('setState', parentId),
         setState,
-        valueType
+        valueType,
       );
     } else if (isTrigger(element)) {
-      const { state, ...rest } = element.props;
+      const { setState, ...rest } = element.props;
       const { valueType } = rest;
       props = rest;
 
-      result.state = this._registerCollector(
+      result.setState = this._registerCollector(
         uuidv5('state', parentId),
-        state,
-        valueType
+        setState,
+        valueType,
       );
     } else {
       props = element.props;
@@ -222,7 +230,8 @@ export class Serialization<T extends Element> {
       result[key] = targetProperty;
     }
 
-    return result;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return result as any;
   }
 
   inject([id, value]: InteractionUpdate): void {
