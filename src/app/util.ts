@@ -1,4 +1,4 @@
-import SunCalc from 'suncalc';
+import sunCalc from 'suncalc';
 
 export const LATITUDE = 53.547_47;
 export const LONGITUDE = 10.015_98;
@@ -9,7 +9,7 @@ export const radiansToDegrees = (input: number): number =>
   input * DEGREES_PER_RADIAN;
 
 export const sunElevation = (): number => {
-  const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
+  const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
   return radiansToDegrees(altitude);
 };
 

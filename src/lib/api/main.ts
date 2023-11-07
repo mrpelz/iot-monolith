@@ -4,7 +4,7 @@ import { Duplex } from 'node:stream';
 
 import { stripIndent } from 'proper-tags';
 import { v5 as uuidv5 } from 'uuid';
-import WebSocket, { WebSocketServer } from 'ws';
+import webSocket, { WebSocketServer } from 'ws';
 
 import { HttpServer, RouteHandle } from '../http-server.js';
 import { callstack, Input, Logger } from '../log.js';
@@ -68,7 +68,7 @@ export class WebApi {
     response.end(this._hierarchy);
   }
 
-  private _handleStream(ws: WebSocket) {
+  private _handleStream(ws: webSocket) {
     try {
       const { updates } = this._serialization;
 

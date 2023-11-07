@@ -1,1 +1,1 @@
-include node_modules/@mrpelz/boilerplate/config/Makefile
+include node_modules/@mrpelz/boilerplate-common/config/Makefile
