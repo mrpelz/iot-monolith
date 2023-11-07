@@ -1,1 +1,1 @@
-../node_modules/@mrpelz/boilerplate/config/dev.sh
+../node_modules/@mrpelz/boilerplate-common/config/dev.sh

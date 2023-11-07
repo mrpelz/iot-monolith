@@ -3,6 +3,6 @@
     "outDir": "dist",
     "skipLibCheck": true
   },
-  "extends": "@mrpelz/boilerplate/config/tsconfig.base.json",
+  "extends": "@mrpelz/boilerplate-common/config/tsconfig.base.json",
   "include": ["src/**/*"]
 }
