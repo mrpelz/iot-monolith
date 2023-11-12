@@ -266,7 +266,7 @@ export const scene = <T extends string>(
       new ProxyObservable<U, boolean>(
         observable,
         (value) => value === onValue,
-        (on) => (observable.value = on ? onValue : offValue),
+        (on) => (on ? onValue : offValue),
       ),
   );
 
