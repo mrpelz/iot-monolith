@@ -65,21 +65,21 @@ export type TElementSerialization =
 export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends Element
-  ? {
-      [K in keyof TElementProps<T> as ElementSerialization<
-        TElementProps<T>[K],
-        Prev[D]
-      > extends never
-        ? never
-        : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
-    }
-  : T extends object
-  ? T extends AnyReadOnlyObservable<unknown>
-    ? InteractionReference<string, InteractionType.EMIT>
-    : T extends AnyWritableObservable<unknown> | NullState<unknown>
-    ? InteractionReference<string, InteractionType.COLLECT>
-    : never
-  : T;
+    ? {
+        [K in keyof TElementProps<T> as ElementSerialization<
+          TElementProps<T>[K],
+          Prev[D]
+        > extends never
+          ? never
+          : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
+      }
+    : T extends object
+      ? T extends AnyReadOnlyObservable<unknown>
+        ? InteractionReference<string, InteractionType.EMIT>
+        : T extends AnyWritableObservable<unknown> | NullState<unknown>
+          ? InteractionReference<string, InteractionType.COLLECT>
+          : never
+      : T;
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,

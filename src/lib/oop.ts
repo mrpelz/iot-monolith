@@ -42,10 +42,10 @@ export type Prev = [
 export type Index<T, K extends string> = K extends keyof T
   ? T[K]
   : K extends `${number}`
-  ? number extends keyof T
-    ? T[number]
-    : never
-  : never;
+    ? number extends keyof T
+      ? T[number]
+      : never
+    : never;
 
 export type DeepIndex<T, K extends string> = T extends object
   ? K extends `${infer F}.${infer R}`
@@ -56,38 +56,38 @@ export type DeepIndex<T, K extends string> = T extends object
 export type DeepPaths<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
-  ? {
-      [K in keyof T]-?: K extends string | number
-        ? Join<K, DeepPaths<T[K], Prev[D]>>
-        : never;
-    }[keyof T]
-  : never;
+    ? {
+        [K in keyof T]-?: K extends string | number
+          ? Join<K, DeepPaths<T[K], Prev[D]>>
+          : never;
+      }[keyof T]
+    : never;
 
 export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
-  ? {
-      [K in keyof T]-?: K extends string | number
-        ? `${K}` | Join<K, DeepPathsInclusive<T[K], Prev[D]>>
-        : never;
-    }[keyof T]
-  : never;
+    ? {
+        [K in keyof T]-?: K extends string | number
+          ? `${K}` | Join<K, DeepPathsInclusive<T[K], Prev[D]>>
+          : never;
+      }[keyof T]
+    : never;
 
 export type DeepValues<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
-  ? {
-      [K in keyof T]-?: DeepValues<T[K], Prev[D]>;
-    }[keyof T]
-  : T;
+    ? {
+        [K in keyof T]-?: DeepValues<T[K], Prev[D]>;
+      }[keyof T]
+    : T;
 
 export type DeepValuesInclusive<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
-  ? {
-      [K in keyof T]-?: T[K] | DeepValues<T[K], Prev[D]>;
-    }[keyof T]
-  : T;
+    ? {
+        [K in keyof T]-?: T[K] | DeepValues<T[K], Prev[D]>;
+      }[keyof T]
+    : T;
 
 export type DeepClassStructureViaChildField<
   T,
@@ -97,12 +97,12 @@ export type DeepClassStructureViaChildField<
 > = [D] extends [never]
   ? never
   : T extends N
-  ? {
-      [K in keyof T[P]]-?:
-        | (T[P][K] extends N ? T[P][K] : never)
-        | DeepClassStructureViaChildField<T[P][K], N, P, Prev[D]>;
-    }[keyof T[P]]
-  : never;
+    ? {
+        [K in keyof T[P]]-?:
+          | (T[P][K] extends N ? T[P][K] : never)
+          | DeepClassStructureViaChildField<T[P][K], N, P, Prev[D]>;
+      }[keyof T[P]]
+    : never;
 
 export const classMethods = (
   classDefinition: Constructor<Record<string, unknown>>,
