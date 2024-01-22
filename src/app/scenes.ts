@@ -12,16 +12,6 @@ import { properties as livingRoomProperties } from './rooms/living-room.js';
 export const kitchenAdjacentChillax = scene(
   [
     new SceneMember(diningRoomProperties.ceilingLight._set, false),
-    new SceneMember(diningRoomProperties.kallaxLedRGB.b._set, false),
-    new SceneMember(diningRoomProperties.kallaxLedRGB.g._set, false),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.r.brightness._set,
-      0.5,
-      0
-    ),
-    new SceneMember(diningRoomProperties.kallaxLedSide.brightness._set, 0.5, 0),
-    new SceneMember(diningRoomProperties.kallaxLedW._set, false),
-    new SceneMember(diningRoomProperties.tableLight._set, false),
     new SceneMember(hallwayProperties.ceilingLightBack._set, false),
     new SceneMember(hallwayProperties.ceilingLightFront._set, false),
     new SceneMember(kitchenProperties.ledLeftCWhite._set, false),
@@ -31,7 +21,7 @@ export const kitchenAdjacentChillax = scene(
     new SceneMember(kitchenProperties.ledRightFloodlight._set, false),
     new SceneMember(kitchenProperties.ledRightWWhite.brightness._set, 0.5, 0),
     new SceneMember(livingRoomProperties.ceilingLight._set, false),
-    new SceneMember(livingRoomProperties.standingLamp._set, true, false),
+    new SceneMember(livingRoomProperties.standingLamp._set, false),
   ],
   'lighting'
 );

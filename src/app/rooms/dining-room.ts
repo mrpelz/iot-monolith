@@ -11,6 +11,8 @@ import {
 } from '../../lib/tree/properties/actuators.js';
 import { ev1527Transport } from '../bridges.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
+import { groups as hallwayGroups } from './hallway.js';
+import { properties as livingRoomProperties } from './living-room.js';
 import { logger } from '../logging.js';
 import { persistence } from '../persistence.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -121,7 +123,7 @@ export const groups = {
     properties.kallaxLedW._set.flip()
   );
 
-  instances.wallswitchBottom.up(() => properties.tableLight._set.flip());
+  instances.wallswitchBottom.up(() => livingRoomProperties.standingLamp._set.flip());
   instances.wallswitchBottom.longPress(() => {
     if (kitchenAdjacentLights._set.value) {
       kitchenAdjacentLights._set.value = false;
@@ -131,7 +133,7 @@ export const groups = {
     kitchenAdjacentChillax._set.value = true;
   });
 
-  instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchTop.up(() => hallwayGroups.ceilingLight._set.flip());
   instances.wallswitchTop.longPress(() => {
     if (kitchenAdjacentLights._set.value) {
       kitchenAdjacentLights._set.value = false;
