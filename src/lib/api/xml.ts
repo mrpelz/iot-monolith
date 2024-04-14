@@ -38,7 +38,7 @@ import {
   Serialization,
   TElementSerialization,
 } from '../tree/operations/serialization.js';
-import { WEB_API_UUID_NAMESPACE } from './main.js';
+import { WEB_API_UUID } from './main.js';
 
 enum HierarchyMode {
   REFERENCE,
@@ -72,7 +72,7 @@ const stringValueType = {
   [ValueType.STRING]: 'STRING',
 } as const;
 
-const websocketMarcopoloPayload = uuidv5('marcopolo', WEB_API_UUID_NAMESPACE);
+const websocketMarcopoloPayload = uuidv5('marcopolo', WEB_API_UUID);
 
 const dom = new DOMImplementation();
 const xmlSerializer = new XMLSerializer();

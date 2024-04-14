@@ -3,7 +3,6 @@ import { Socket } from 'node:net';
 import { Duplex } from 'node:stream';
 
 import { stripIndent } from 'proper-tags';
-import { v5 as uuidv5 } from 'uuid';
 import webSocket, { WebSocketServer } from 'ws';
 
 import { HttpServer, RouteHandle } from '../http-server.js';
@@ -16,15 +15,13 @@ import {
   Serialization,
 } from '../tree/operations/serialization.js';
 
-export const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b';
+export const WEB_API_UUID = 'c4218bec-e940-4d68-8807-5c43b2aee27b';
 
 const PATH_HIERARCHY = '/api/hierarchy';
 const PATH_STREAM = '/api/stream';
 const PATH_VALUES = '/api/values';
 
 const WEBSOCKET_PING_INTERVAL = 5000;
-
-const websocketMarcopoloPayload = uuidv5('marcopolo', WEB_API_UUID_NAMESPACE);
 
 export class WebApi {
   private readonly _hierarchy: string;
@@ -73,7 +70,7 @@ export class WebApi {
       const { updates } = this._serialization;
 
       const streamCountObserver = this._streamCount.observe((value) => {
-        ws.send(JSON.stringify([-1, value]));
+        ws.send(JSON.stringify([WEB_API_UUID, value]));
       });
 
       const observer = updates.observe((entry) => {
@@ -88,8 +85,8 @@ export class WebApi {
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
 
       ws.on('message', (data) => {
-        if (data.toString() === websocketMarcopoloPayload) {
-          ws.send(websocketMarcopoloPayload);
+        if (data.toString() === WEB_API_UUID) {
+          ws.send(WEB_API_UUID);
 
           return;
         }
@@ -179,13 +176,14 @@ export class WebApi {
 
     response.setHeader('Content-Type', 'application/json');
     response.end(
-      JSON.stringify(
-        Object.fromEntries(
+      JSON.stringify({
+        [WEB_API_UUID]: this._streamCount.value,
+        ...Object.fromEntries(
           Array.from(this._serialization.interactions).map(
             ([key, interaction]) => [key, interaction.state.value] as const,
           ),
         ),
-      ),
+      }),
     );
   }
 }

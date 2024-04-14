@@ -72,6 +72,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.props.internal.relay,
   fan: devices.fan.props.internal.relay,
   kallaxLedRGB: new Element({
+    $: 'rgb' as const,
     b: devices.kallaxLeds.props.internal.ledB,
     g: devices.kallaxLeds.props.internal.ledG,
     level: Level.NONE as const,

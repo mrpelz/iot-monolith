@@ -365,7 +365,11 @@ export const scenes = {
 
 export const tsiaBathroom = new Element({
   $: 'tsiaBathroom' as const,
-  scenes: new Element({ ...scenes, level: Level.NONE as const }),
+  scenes: new Element({
+    $: 'scenes' as const,
+    ...scenes,
+    level: Level.NONE as const,
+  }),
   ...deviceMap(devices),
   ...groups,
   ...properties,

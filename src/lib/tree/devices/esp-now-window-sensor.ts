@@ -63,6 +63,7 @@ export const espNowWindowSensor = (
   })();
 
   return new Element({
+    $: 'espNowWindowSensor' as const,
     ...espNow,
     ...wifi,
     level: Level.DEVICE as const,

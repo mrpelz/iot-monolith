@@ -60,5 +60,9 @@ export const ipDevice = (
 });
 
 export const deviceMap = <T extends Record<string, Element>>(devices: T) => ({
-  devices: new Element({ ...devices, level: Level.NONE as const }),
+  devices: new Element({
+    $: 'deviceMap' as const,
+    ...devices,
+    level: Level.NONE as const,
+  }),
 });

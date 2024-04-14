@@ -73,6 +73,18 @@ export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
       }[keyof T]
     : never;
 
+export type DeepRemap<T extends object, S, R, D extends number = 20> = [
+  D,
+] extends [never]
+  ? never
+  : {
+      [K in keyof T]: T[K] extends S
+        ? R
+        : T[K] extends object
+          ? DeepRemap<T[K], S, R, Prev[D]>
+          : T[K];
+    };
+
 export type DeepValues<T, D extends number = 20> = [D] extends [never]
   ? never
   : T extends object
