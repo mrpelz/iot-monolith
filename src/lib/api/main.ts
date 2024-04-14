@@ -16,7 +16,7 @@ import {
   Serialization,
 } from '../tree/operations/serialization.js';
 
-const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
+export const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b';
 
 const PATH_HIERARCHY = '/api/hierarchy';
 const PATH_STREAM = '/api/stream';
@@ -181,7 +181,7 @@ export class WebApi {
     response.end(
       JSON.stringify(
         Object.fromEntries(
-          Array.from(this._serialization.interactions.entries()).map(
+          Array.from(this._serialization.interactions).map(
             ([key, interaction]) => [key, interaction.state.value] as const,
           ),
         ),

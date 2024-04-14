@@ -15,10 +15,11 @@ import { stripIndent } from 'proper-tags';
 import { v5 as uuidv5 } from 'uuid';
 import webSocket, { WebSocketServer } from 'ws';
 
+import { jsonParseGuarded } from '../data.js';
 import { HttpServer, RouteHandle } from '../http-server.js';
 import { callstack, Input, Logger } from '../log.js';
 import { Observable } from '../observable.js';
-import { objectKeys } from '../oop.js';
+import { EmptyObject, objectKeys } from '../oop.js';
 import { Timer } from '../timer.js';
 import {
   descriptionValueType,
@@ -37,13 +38,12 @@ import {
   Serialization,
   TElementSerialization,
 } from '../tree/operations/serialization.js';
+import { WEB_API_UUID_NAMESPACE } from './main.js';
 
 enum HierarchyMode {
   REFERENCE,
   VALUE,
 }
-
-const WEB_API_UUID_NAMESPACE = 'c4218bec-e940-4d68-8807-5c43b2aee27b' as const;
 
 const PATH_HIERARCHY = '/api/xml/hierarchy';
 const PATH_STREAM = '/api/xml/stream';
@@ -109,15 +109,11 @@ export class WebApiXML {
     const parsedContent =
       type === 'string'
         ? textContent
-        : (() => {
-            try {
-              return JSON.parse(textContent);
-            } catch {
-              return undefined;
-            }
-          })();
+        : jsonParseGuarded<EmptyObject>(textContent);
 
-    if (parsedContent === undefined) return undefined;
+    if (parsedContent === undefined || parsedContent instanceof Error) {
+      return undefined;
+    }
 
     if (
       !isValueType(parsedContent, expectedType ?? descriptionValueType[type])
@@ -193,7 +189,7 @@ export class WebApiXML {
     parent: XMLElement,
     { reference }: InteractionReference,
   ) {
-    const { state } = this._serialization.interactions.get(reference) ?? {};
+    const { state } = this._serialization.interaction(reference) ?? {};
     if (!state) return;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -502,10 +498,7 @@ export class WebApiXML {
     try {
       const parent = this._documentValue.createElement('values');
 
-      for (const [
-        key,
-        interaction,
-      ] of this._serialization.interactions.entries()) {
+      for (const [key, interaction] of this._serialization.interactions) {
         const {
           state: { value },
         } = interaction;

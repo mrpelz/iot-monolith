@@ -1,7 +1,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import nodePath from 'node:path';
 
+const { dirname } = nodePath;
+
+import { jsonParseGuarded } from './data.js';
 import { callstack, Input, Logger } from './log.js';
 import { AnyWritableObservable, Observer } from './observable.js';
 
@@ -100,18 +103,13 @@ export class Persistence {
     })();
     if (!restorePayload) return;
 
-    const restoreValues = (() => {
-      try {
-        return JSON.parse(restorePayload) as Record<string, unknown>;
-      } catch (_error) {
-        const error = new Error('cannot JSON-parse values', { cause: _error });
+    const restoreValues =
+      jsonParseGuarded<Record<string, unknown>>(restorePayload);
+    if (restoreValues instanceof Error) {
+      this._log.error(() => restoreValues.message, callstack(restoreValues));
 
-        this._log.error(() => error.message, callstack(error));
-
-        return null;
-      }
-    })();
-    if (!restoreValues) return;
+      return;
+    }
 
     for (const [identifier, value] of Object.entries(restoreValues)) {
       const observable = this._observables.get(identifier);

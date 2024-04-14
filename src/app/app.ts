@@ -1,7 +1,6 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 
 import { WebApi } from '../lib/api/main.js';
-import { WebApiXML } from '../lib/api/xml.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
@@ -21,7 +20,7 @@ export const app = async (): Promise<void> => {
   const paths = new Paths(system);
   init(system);
 
-  const serialization = new Serialization(system);
+  const serialization = new Serialization(system, paths);
 
   setupMetrics(logger, system, paths);
 
@@ -31,7 +30,7 @@ export const app = async (): Promise<void> => {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(serialization.tree, undefined, 2));
 
-  serialization.inject(['6d0e71c7-9f87-5b45-8060-71eae53e2ac2', null]);
+  serialization.inject(['4fd1241a-2b6e-5dc6-8636-0a2875ffe37e', null]);
 
   // const lightingOn = system
   //   .matchChildrenDeep({ topic: 'lighting' as const })
@@ -40,15 +39,12 @@ export const app = async (): Promise<void> => {
   const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
 
   // eslint-disable-next-line no-console
-  console.log(paths.getPath(test));
+  console.log(paths.getByElement(test)?.path);
 
   const httpServer = new HttpServer(logger, 1337);
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
-
-  // eslint-disable-next-line no-new
-  new WebApiXML(logger, httpServer, serialization);
 
   httpHooks(logger, httpServer, serialization);
 

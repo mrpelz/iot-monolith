@@ -4,6 +4,26 @@ export const emptyBuffer = Buffer.from([]);
 export const falseBuffer = Buffer.of(0);
 export const trueBuffer = Buffer.of(1);
 
+export const arrayCompare = <
+  A extends Array<unknown>,
+  B extends Array<unknown>,
+>(
+  a: A,
+  b: B,
+): b is B => {
+  if (a.length !== b.length) return false;
+
+  // eslint-disable-next-line unicorn/no-for-loop
+  for (let index = 0; index < a.length; index += 1) {
+    const valueA = a[index];
+    const valueB = b[index];
+
+    if (valueA !== valueB) return false;
+  }
+
+  return true;
+};
+
 export const arrayPadLeft = <T>(
   input: T[],
   length: number,
@@ -65,6 +85,16 @@ export const humanPayload = (input: Buffer): string => {
       })
       .join(' | '),
   ].join('\n');
+};
+
+export const jsonParseGuarded = <T>(input: unknown): T | Error => {
+  if (typeof input !== 'string') return new Error('input is not a string');
+
+  try {
+    return JSON.parse(input) as T;
+  } catch (error_) {
+    return new Error('cannot JSON-parse input', { cause: error_ });
+  }
 };
 
 export const numberToDigits = (

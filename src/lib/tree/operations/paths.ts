@@ -1,7 +1,18 @@
+import { v5 as uuidv5 } from 'uuid';
+
+import { arrayCompare } from '../../data.js';
 import { objectKeys } from '../../oop.js';
 import { Element } from '../main.js';
 
 export type Path = (string | number | symbol)[];
+
+export type PathRecord = {
+  element: Element;
+  id: string;
+  path: Path;
+};
+
+export const PATH_UUID_NAMESPACE = 'f0f4da2a-7955-43b0-9fe9-02430afad7ef';
 
 export const getPathFromElement = (
   source: unknown,
@@ -41,24 +52,51 @@ export const getElementFromPath = (
 };
 
 export class Paths<T extends Element = Element> {
-  private readonly _elements = new Map<Path, Element>();
-  private readonly _paths = new Map<Element, Path>();
+  private readonly _paths = new Set<PathRecord>();
 
   constructor(root: T) {
     for (const element of root.matchChildrenDeep({})) {
       const path = getPathFromElement(root, element);
       if (!path) continue;
 
-      this._elements.set(path, element);
-      this._paths.set(element, path);
+      this._paths.add({
+        element,
+        id:
+          element === root
+            ? PATH_UUID_NAMESPACE
+            : uuidv5(path.join('.'), PATH_UUID_NAMESPACE),
+        path,
+      });
     }
   }
 
-  getElement(path: Path): Element | null {
-    return this._elements.get(path) ?? null;
+  getByElement(target: Element): PathRecord | null {
+    for (const pathRecord of this._paths.values()) {
+      if (target !== pathRecord.element) continue;
+
+      return pathRecord;
+    }
+
+    return null;
   }
 
-  getPath(target: Element): Path | null {
-    return this._paths.get(target) ?? null;
+  getById(id: string): PathRecord | null {
+    for (const pathRecord of this._paths.values()) {
+      if (id !== pathRecord.id) continue;
+
+      return pathRecord;
+    }
+
+    return null;
+  }
+
+  getByPath(path: Path): PathRecord | null {
+    for (const pathRecord of this._paths.values()) {
+      if (!arrayCompare(path, pathRecord.path)) continue;
+
+      return pathRecord;
+    }
+
+    return null;
   }
 }

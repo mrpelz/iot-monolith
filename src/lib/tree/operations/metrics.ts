@@ -34,7 +34,7 @@ export const addMetric = <
 >(
   metricName: N,
   metricValue: T,
-  metricLabels: L = {} as L,
+  metricLabels = {} as L,
   metricHelp = 'help',
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 ) => ({
@@ -58,7 +58,7 @@ export const setupMetrics = <T extends Element>(
     metric: true as const,
   })) {
     try {
-      const path = paths.getPath(element);
+      const { path } = paths.getByElement(element) ?? {};
       if (!path) continue;
 
       const {
