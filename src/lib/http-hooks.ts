@@ -1,5 +1,6 @@
 import { stripIndent } from 'proper-tags';
 
+import { jsonParseGuarded } from './data.js';
 import { HttpServer } from './http-server.js';
 import { callstack, Logger } from './log.js';
 import { AnyWritableObservable } from './observable.js';
@@ -18,8 +19,6 @@ export const httpHooks = (
   serialization: Serialization<Element>,
 ): void => {
   const log = logger.getInput({ head: 'httpHooks' });
-
-  const { interactions } = serialization;
 
   httpServer.route(PATH_HOOKS, async ({ request, response, url, utils }) => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');
@@ -50,7 +49,7 @@ export const httpHooks = (
       return;
     }
 
-    const interaction = interactions.get(id);
+    const interaction = serialization.interaction(id);
     if (!interaction) {
       log.info(() => `interaction "${id}" not found`);
 
@@ -96,35 +95,33 @@ export const httpHooks = (
         return;
       }
 
-      let value;
+      const result = jsonParseGuarded(requestBody.toString());
 
-      try {
-        value = JSON.parse(requestBody.toString());
-      } catch (error) {
+      if (result instanceof Error) {
         log.error(
           () => `write to interaction "${id}": provided value non-parsable`,
-          callstack(error),
+          callstack(result),
         );
 
         utils.badRequest(
           stripIndent`
             error parsing given request body:
 
-            ${error.message}
+            ${result.message}
           `,
         );
 
         return;
       }
 
-      if (!isValueType(value, valueType)) {
+      if (!isValueType(result, valueType)) {
         log.info(() => `write to interaction "${id}": wrong value type`);
 
         utils.badRequest(
           stripIndent`
             value provided in request body has wrong type
 
-            provided value is of type "${typeof value}"
+            provided value is of type "${typeof result}"
             required type for interaction is ${valueTypeDescription[valueType]}
           `,
         );
@@ -133,7 +130,7 @@ export const httpHooks = (
       }
 
       (state as AnyWritableObservable<unknown> | NullState<unknown>).value =
-        value;
+        result;
     }
 
     response.write(`${JSON.stringify(state.value)}\n`);

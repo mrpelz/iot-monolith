@@ -17,6 +17,7 @@ import {
   TValueType,
   ValueType,
 } from '../main.js';
+import { Paths } from './paths.js';
 
 export enum InteractionType {
   EMIT,
@@ -40,8 +41,7 @@ export type Values = Record<
   AnyObservable<unknown> | NullState<unknown>
 >;
 
-const INTERACTION_UUID_NAMESPACE =
-  'cfe7d23c-1bdd-401b-bfb4-f1210694ab83' as const;
+const INTERACTION_UUID_NAMESPACE = 'cfe7d23c-1bdd-401b-bfb4-f1210694ab83';
 
 export type InteractionReference<
   R extends string = string,
@@ -109,19 +109,27 @@ export const isInteractionReference = (
 };
 
 export class Serialization<T extends Element> {
-  private readonly _updates = new NullState<InteractionUpdate>();
+  private readonly _interactions = new Map<string, Interaction>();
 
-  readonly interactions = new Map<string, Interaction>();
+  private readonly _serializations = new WeakMap<
+    Element,
+    ElementSerialization<Element>
+  >();
+
+  private readonly _updates = new NullState<InteractionUpdate>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly tree: ElementSerialization<T>;
 
   readonly updates: ReadOnlyNullState<InteractionUpdate>;
 
-  constructor(root: T) {
+  constructor(
+    root: T,
+    private readonly _paths: Paths,
+  ) {
     this.updates = new ReadOnlyNullState(this._updates);
 
-    this.tree = this._serializeElement(root, INTERACTION_UUID_NAMESPACE);
+    this.tree = this._serializeElement(root);
     Object.freeze(this.tree);
   }
 
@@ -132,7 +140,7 @@ export class Serialization<T extends Element> {
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
-    this.interactions.set(
+    this._interactions.set(
       id,
       Object.freeze({
         state,
@@ -151,7 +159,7 @@ export class Serialization<T extends Element> {
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
 
-    this.interactions.set(
+    this._interactions.set(
       id,
       Object.freeze({
         state,
@@ -163,7 +171,10 @@ export class Serialization<T extends Element> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends Element>(element: E, parentId: string) {
+  private _serializeElement<E extends Element>(element: E) {
+    const { id } = this._paths.getByElement(element) ?? {};
+    if (!id) return null;
+
     const result = {} as Record<string, TElementSerialization>;
 
     let props: EmptyObject;
@@ -174,7 +185,7 @@ export class Serialization<T extends Element> {
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', parentId),
+        uuidv5('state', id),
         state,
         valueType,
       );
@@ -184,13 +195,13 @@ export class Serialization<T extends Element> {
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', parentId),
+        uuidv5('state', id),
         state,
         valueType,
       );
 
       result.setState = this._registerCollector(
-        uuidv5('setState', parentId),
+        uuidv5('setState', id),
         setState,
         valueType,
       );
@@ -200,7 +211,7 @@ export class Serialization<T extends Element> {
       props = rest;
 
       result.setState = this._registerCollector(
-        uuidv5('state', parentId),
+        uuidv5('setState', id),
         setState,
         valueType,
       );
@@ -215,7 +226,7 @@ export class Serialization<T extends Element> {
 
       const targetProperty = (() => {
         if (sourceProperty instanceof Element) {
-          return this._serializeElement(sourceProperty, uuidv5(key, parentId));
+          return this._serializeElement(sourceProperty);
         }
 
         if (['object', 'function'].includes(typeof sourceProperty)) {
@@ -230,12 +241,22 @@ export class Serialization<T extends Element> {
       result[key] = targetProperty;
     }
 
+    this._serializations.set(element, result);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return result as any;
   }
 
+  get interactions(): IterableIterator<[string, Interaction]> {
+    return this._interactions.entries();
+  }
+
+  getTreePart<E extends Element>(element: E): ElementSerialization<E> {
+    return this._serializations.get(element) as ElementSerialization<E>;
+  }
+
   inject([id, value]: InteractionUpdate): void {
-    const interaction = this.interactions.get(id);
+    const interaction = this._interactions.get(id);
     if (!interaction) throw new Error('interaction not found');
 
     const { state, type, valueType } = interaction;
@@ -249,5 +270,9 @@ export class Serialization<T extends Element> {
     }
 
     state.value = value;
+  }
+
+  interaction(reference: string): Interaction | undefined {
+    return this._interactions.get(reference);
   }
 }
