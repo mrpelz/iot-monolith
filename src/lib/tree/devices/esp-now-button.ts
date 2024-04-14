@@ -60,6 +60,7 @@ export const espNowButton = (
   })();
 
   return new Element({
+    $: 'espNowButton' as const,
     ...espNow,
     ...wifi,
     level: Level.DEVICE as const,

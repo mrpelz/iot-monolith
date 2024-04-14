@@ -57,6 +57,7 @@ export const testDevice = (
   );
 
   const temperature = new Element({
+    $: 'temperature' as const,
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,

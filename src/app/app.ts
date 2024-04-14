@@ -1,6 +1,7 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 
 import { WebApi } from '../lib/api/main.js';
+import { WebApiXML } from '../lib/api/xml.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
@@ -45,6 +46,9 @@ export const app = async (): Promise<void> => {
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
+
+  // eslint-disable-next-line no-new
+  new WebApiXML(logger, httpServer, serialization);
 
   httpHooks(logger, httpServer, serialization);
 

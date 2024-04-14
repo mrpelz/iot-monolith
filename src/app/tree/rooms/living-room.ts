@@ -188,7 +188,11 @@ export const scenes = {
 
 export const livingRoom = new Element({
   $: 'livingRoom' as const,
-  scenes: new Element({ ...scenes, level: Level.NONE as const }),
+  scenes: new Element({
+    $: 'scenes' as const,
+    ...scenes,
+    level: Level.NONE as const,
+  }),
   ...deviceMap(devices),
   ...groups,
   ...properties,
