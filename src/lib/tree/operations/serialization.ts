@@ -62,7 +62,7 @@ export type TElementSerialization =
   | InteractionReference
   | { [key: string]: TElementSerialization };
 
-export type ElementSerialization<T, D extends number = 20> = [D] extends [never]
+export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends Element
     ? {
@@ -129,6 +129,8 @@ export class Serialization<T extends Element> {
   ) {
     this.updates = new ReadOnlyNullState(this._updates);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     this.tree = this._serializeElement(root);
     Object.freeze(this.tree);
   }

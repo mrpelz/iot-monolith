@@ -4,6 +4,7 @@ import { WebApi } from '../lib/api/main.js';
 import { WebApiXML } from '../lib/api/xml.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
+import { Level } from '../lib/tree/main.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
 import { Paths } from '../lib/tree/operations/paths.js';
@@ -36,6 +37,18 @@ export const app = async (): Promise<void> => {
   // const lightingOn = system
   //   .matchChildrenDeep({ topic: 'lighting' as const })
   //   .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
+
+  const roomDevices = system
+    .matchChildrenDeep({
+      $: 'testRoom' as const,
+      level: Level.ROOM as const,
+    })
+    .flatMap((child) =>
+      child.matchChildrenDeep({ level: Level.DEVICE as const }),
+    );
+
+  // eslint-disable-next-line no-console
+  console.log(roomDevices.map((device) => device.props.$));
 
   const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
 

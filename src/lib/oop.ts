@@ -35,6 +35,36 @@ export type Prev = [
   18,
   19,
   20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  48,
+  49,
+  50,
   ...0[],
 ];
 
@@ -53,7 +83,7 @@ export type DeepIndex<T, K extends string> = T extends object
     : Index<T, K>
   : never;
 
-export type DeepPaths<T, D extends number = 20> = [D] extends [never]
+export type DeepPaths<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends object
     ? {
@@ -63,7 +93,7 @@ export type DeepPaths<T, D extends number = 20> = [D] extends [never]
       }[keyof T]
     : never;
 
-export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
+export type DeepPathsInclusive<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends object
     ? {
@@ -73,7 +103,7 @@ export type DeepPathsInclusive<T, D extends number = 20> = [D] extends [never]
       }[keyof T]
     : never;
 
-export type DeepRemap<T extends object, S, R, D extends number = 20> = [
+export type DeepRemap<T extends object, S, R, D extends number = 50> = [
   D,
 ] extends [never]
   ? never
@@ -85,7 +115,7 @@ export type DeepRemap<T extends object, S, R, D extends number = 20> = [
           : T[K];
     };
 
-export type DeepValues<T, D extends number = 20> = [D] extends [never]
+export type DeepValues<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends object
     ? {
@@ -93,7 +123,7 @@ export type DeepValues<T, D extends number = 20> = [D] extends [never]
       }[keyof T]
     : T;
 
-export type DeepValuesInclusive<T, D extends number = 20> = [D] extends [never]
+export type DeepValuesInclusive<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends object
     ? {
@@ -105,7 +135,7 @@ export type DeepClassStructureViaChildField<
   T,
   N extends object,
   P extends keyof N,
-  D extends number = 20,
+  D extends number = 50,
 > = [D] extends [never]
   ? never
   : T extends N
