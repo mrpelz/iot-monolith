@@ -58,6 +58,8 @@ export const setupMetrics = <T extends Element>(
     metric: true as const,
   })) {
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const { path } = paths.getByElement(element) ?? {};
       if (!path) continue;
 

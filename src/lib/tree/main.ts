@@ -91,6 +91,8 @@ export type TElementChildren<T extends TElementAbstract> = Element<
   TElementProps<Extract<TElementPropValues<T>, TElementAbstract>>
 >;
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type TElementChildrenDeep<T extends TElementAbstract> = Element<
   TElementProps<DeepClassStructureViaChildField<T, TElementAbstract, 'props'>>
 >;
@@ -128,6 +130,8 @@ export class Element<T extends EmptyObject = EmptyObject> {
     match: M,
   ): Element<Extract<TElementProps<TElementChildren<this>>, M>>[] {
     return Array.from(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       new Set(this.children.filter((child) => child.match(match))),
     );
   }
