@@ -65,6 +65,8 @@ export const groups = {};
 
 export const testRoom = new Element({
   $: 'testRoom' as const,
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   ...deviceMap(devices),
   ...groups,
   ...properties,
