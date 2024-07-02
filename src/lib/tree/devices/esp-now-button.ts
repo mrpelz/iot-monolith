@@ -41,7 +41,7 @@ export const espNowButton = (
       espNow: new Element({
         ...children(device),
         ...espNowDevice(device),
-        isSubDevice: true,
+        isSubDevice: true as const,
       }),
     };
   })();
@@ -54,7 +54,7 @@ export const espNowButton = (
       wifi: new Element({
         ...children(device),
         ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
-        isSubDevice: true,
+        isSubDevice: true as const,
       }),
     };
   })();
