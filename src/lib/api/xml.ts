@@ -35,6 +35,8 @@ import {
   InteractionType,
   InteractionUpdate,
   isInteractionReference,
+  isReference,
+  Reference,
   Serialization,
   TElementSerialization,
 } from '../tree/operations/serialization.js';
@@ -255,7 +257,7 @@ export class WebApiXML {
       return;
     }
 
-    const element = document.createElement(key === '$' ? '_' : key);
+    const element = document.createElement(key.replaceAll('$', '_'));
 
     this._createHierarchyElement(mode, document, element, value);
     parent.append(element);
@@ -301,6 +303,14 @@ export class WebApiXML {
     parent.append(document.createTextNode(text));
   }
 
+  private _appendHierarchyReference(
+    parent: XMLElement,
+    { id, path }: Reference,
+  ) {
+    parent.setAttribute('id', id);
+    if (path.length > 0) parent.setAttribute('path', path.join('.'));
+  }
+
   private _createHierarchyElement(
     mode: HierarchyMode,
     document: XMLDocument,
@@ -309,6 +319,12 @@ export class WebApiXML {
   ) {
     if (element === null || typeof element !== 'object') {
       this._appendHierarchyPrimitive(document, parent, element);
+
+      return;
+    }
+
+    if (isReference(element)) {
+      this._appendHierarchyReference(parent, element);
 
       return;
     }
