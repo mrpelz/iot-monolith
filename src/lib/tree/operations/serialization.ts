@@ -17,7 +17,7 @@ import {
   TValueType,
   ValueType,
 } from '../main.js';
-import { Paths } from './paths.js';
+import { PathRecord, Paths } from './paths.js';
 
 export enum InteractionType {
   EMIT,
@@ -41,6 +41,14 @@ export type Values = Record<
   AnyObservable<unknown> | NullState<unknown>
 >;
 
+const REFERENCE_UUID_NAMESPACE = 'fa18a966-3d78-463a-9a7c-4c8d0d07a948';
+
+export type Reference = {
+  $: typeof REFERENCE_UUID_NAMESPACE;
+  id: string;
+  path: string[];
+};
+
 const INTERACTION_UUID_NAMESPACE = 'cfe7d23c-1bdd-401b-bfb4-f1210694ab83';
 
 export type InteractionReference<
@@ -60,7 +68,7 @@ export type TElementSerialization =
   | number
   | string
   | InteractionReference
-  | { [key: string]: TElementSerialization };
+  | ({ [key: string]: TElementSerialization } & { $ref: Reference });
 
 export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
   ? never
@@ -72,7 +80,7 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
         > extends never
           ? never
           : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
-      }
+      } & { $ref: Reference }
     : T extends object
       ? T extends AnyReadOnlyObservable<unknown>
         ? InteractionReference<string, InteractionType.EMIT>
@@ -80,6 +88,12 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
           ? InteractionReference<string, InteractionType.COLLECT>
           : never
       : T;
+
+const makeReference = ({ id, path }: PathRecord): Reference => ({
+  $: REFERENCE_UUID_NAMESPACE,
+  id,
+  path: path.map((pathElement) => pathElement.toString()),
+});
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,
@@ -89,6 +103,26 @@ const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference,
   type,
 });
+
+export const isReference = (input: unknown): input is Reference => {
+  if (typeof input !== 'object') return false;
+  if (input === null) return false;
+
+  if (!('$' in input)) return false;
+  if (input.$ !== REFERENCE_UUID_NAMESPACE) return false;
+
+  if (!('id' in input)) return false;
+  if (typeof input.id !== 'string') return false;
+
+  if (!('path' in input)) return false;
+  if (!Array.isArray(input.path)) return false;
+
+  for (const element of input.path) {
+    if (typeof element !== 'string') return false;
+  }
+
+  return true;
+};
 
 export const isInteractionReference = (
   input: unknown,
@@ -174,10 +208,14 @@ export class Serialization<T extends Element> {
   }
 
   private _serializeElement<E extends Element>(element: E) {
-    const { id } = this._paths.getByElement(element) ?? {};
-    if (!id) return null;
+    const pathRecord = this._paths.getByElement(element);
+    if (!pathRecord) return null;
 
-    const result = {} as Record<string, TElementSerialization>;
+    const { id } = pathRecord;
+
+    const result = {
+      $ref: makeReference(pathRecord),
+    } as Record<string, TElementSerialization> & { $ref: Reference };
 
     let props: EmptyObject;
 
@@ -223,6 +261,7 @@ export class Serialization<T extends Element> {
 
     for (const key of objectKeys(props)) {
       if (typeof key === 'symbol') continue;
+      if (key === '$ref') continue;
 
       const { [key]: sourceProperty } = props;
 
