@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "skipLibCheck": true
+    "outDir": "dist"
   },
   "extends": "@mrpelz/boilerplate-node/tsconfig.json",
   "include": ["src/**/*"]

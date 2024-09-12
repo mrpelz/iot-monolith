@@ -51,10 +51,12 @@ export const getElementFromPath = (
   return getElementFromPath(property, rest);
 };
 
-export class Paths<T extends Element = Element> {
+export class Paths {
   private readonly _paths = new Set<PathRecord>();
 
-  constructor(root: T) {
+  constructor(root: Element) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     for (const element of root.matchChildrenDeep({})) {
       const path = getPathFromElement(root, element);
       if (!path) continue;
