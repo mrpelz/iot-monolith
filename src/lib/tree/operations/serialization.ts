@@ -62,11 +62,11 @@ export type InteractionReference<
 
 export type InteractionUpdate = [string, unknown];
 
+export type TElementSerializationPrimitive = boolean | null | number | string;
+
 export type TElementSerialization =
-  | boolean
-  | null
-  | number
-  | string
+  | TElementSerializationPrimitive
+  | TElementSerializationPrimitive[]
   | InteractionReference
   | ({ [key: string]: TElementSerialization } & { $ref: Reference });
 
@@ -82,11 +82,13 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
           : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
       } & { $ref: Reference }
     : T extends object
-      ? T extends AnyReadOnlyObservable<unknown>
-        ? InteractionReference<string, InteractionType.EMIT>
-        : T extends AnyWritableObservable<unknown> | NullState<unknown>
-          ? InteractionReference<string, InteractionType.COLLECT>
-          : never
+      ? T extends Array<TElementSerializationPrimitive>
+        ? T
+        : T extends AnyReadOnlyObservable<unknown>
+          ? InteractionReference<string, InteractionType.EMIT>
+          : T extends AnyWritableObservable<unknown> | NullState<unknown>
+            ? InteractionReference<string, InteractionType.COLLECT>
+            : never
       : T;
 
 const makeReference = ({ id, path }: PathRecord): Reference => ({
@@ -141,6 +143,8 @@ export const isInteractionReference = (
 
   return true;
 };
+
+const invalidValueTypes = ['object', 'function'];
 
 export class Serialization<T extends Element> {
   private readonly _interactions = new Map<string, Interaction>();
@@ -270,7 +274,16 @@ export class Serialization<T extends Element> {
           return this._serializeElement(sourceProperty);
         }
 
-        if (['object', 'function'].includes(typeof sourceProperty)) {
+        if (
+          Array.isArray(sourceProperty) &&
+          sourceProperty.every(
+            (value) => !invalidValueTypes.includes(typeof value),
+          )
+        ) {
+          return sourceProperty;
+        }
+
+        if (invalidValueTypes.includes(typeof sourceProperty)) {
           return undefined;
         }
 

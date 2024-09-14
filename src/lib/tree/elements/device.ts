@@ -22,7 +22,7 @@ import {
 } from '../properties/sensors.js';
 
 const deviceMeta = (device: Device) => ({
-  identifier: device.identifier ? [...device.identifier] : undefined,
+  ...(device.identifier ? { identifier: [...device.identifier.values()] } : {}),
   level: Level.DEVICE as const,
   transportType: device.transport.constructor.name,
   type: device.constructor.name,
