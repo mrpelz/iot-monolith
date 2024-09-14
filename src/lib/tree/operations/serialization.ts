@@ -67,6 +67,7 @@ export type TElementSerialization =
   | null
   | number
   | string
+  | (boolean | null | number | string)[]
   | InteractionReference
   | ({ [key: string]: TElementSerialization } & { $ref: Reference });
 
@@ -141,6 +142,8 @@ export const isInteractionReference = (
 
   return true;
 };
+
+const invalidValueTypes = ['object', 'function'];
 
 export class Serialization<T extends Element> {
   private readonly _interactions = new Map<string, Interaction>();
@@ -270,7 +273,16 @@ export class Serialization<T extends Element> {
           return this._serializeElement(sourceProperty);
         }
 
-        if (['object', 'function'].includes(typeof sourceProperty)) {
+        if (
+          Array.isArray(sourceProperty) &&
+          sourceProperty.every(
+            (value) => !invalidValueTypes.includes(typeof value),
+          )
+        ) {
+          return sourceProperty;
+        }
+
+        if (invalidValueTypes.includes(typeof sourceProperty)) {
           return undefined;
         }
 
