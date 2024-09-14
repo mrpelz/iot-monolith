@@ -323,6 +323,16 @@ export class WebApiXML {
       return;
     }
 
+    if (Array.isArray(element)) {
+      for (const value of element) {
+        if (value === null) continue;
+
+        this._appendHierarchyPrimitive(document, parent, value);
+      }
+
+      return;
+    }
+
     if (isReference(element)) {
       this._appendHierarchyReference(parent, element);
 
