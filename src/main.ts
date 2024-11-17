@@ -6,6 +6,8 @@ import type { ElementSerialization } from './lib/tree/operations/serialization.j
 
 export type TSystem = TSystem_;
 export type TSerialization = ElementSerialization<TSystem>;
+export type { Level, ValueType, TValueType } from './lib/tree/main.js';
+export type * from './lib/oop.js';
 
 const logger = globalLogger.getInput({
   head: 'root',
