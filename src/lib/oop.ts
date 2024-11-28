@@ -127,7 +127,7 @@ export type DeepValuesInclusive<T, D extends number = 50> = [D] extends [never]
   ? never
   : T extends object
     ? {
-        [K in keyof T]-?: T[K] | DeepValues<T[K], Prev[D]>;
+        [K in keyof T]-?: T[K] | DeepValuesInclusive<T[K], Prev[D]>;
       }[keyof T]
     : T;
 
