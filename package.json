@@ -9,6 +9,32 @@
   "license": "UNLICENSED",
   "author": "Lennart Pelz <mail@mrpelz.de>",
   "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/main.js",
+      "types": "./dist/main.d.ts"
+    },
+    "./tree": {
+      "default": "./dist/lib/tree/main.js",
+      "types": "./dist/lib/tree/main.d.ts"
+    },
+    "./tree-serialization": {
+      "default": "./dist/lib/tree/operations/serialization.js",
+      "types": "./dist/lib/tree/operations/serialization.d.ts"
+    },
+    "./observable": {
+      "default": "./dist/lib/observable.js",
+      "types": "./dist/lib/observable.d.ts"
+    },
+    "./state": {
+      "default": "./dist/lib/state.js",
+      "types": "./dist/lib/state.d.ts"
+    },
+    "./oop": {
+      "default": "./dist/lib/oop.js",
+      "types": "./dist/lib/oop.d.ts"
+    }
+  },
   "main": "dist/main.js",
   "module": "dist/main.js",
   "types": "dist/main.d.ts",

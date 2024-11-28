@@ -2,12 +2,8 @@ import { app } from './app/app.js';
 import { logger as globalLogger } from './app/logging.js';
 import type { TSystem as TSystem_ } from './app/tree/system.js';
 import { callstack } from './lib/log.js';
-import type { ElementSerialization } from './lib/tree/operations/serialization.js';
 
 export type TSystem = TSystem_;
-export type TSerialization = ElementSerialization<TSystem>;
-export * from './lib/tree/main.js';
-export * from './lib/oop.js';
 
 const logger = globalLogger.getInput({
   head: 'root',
