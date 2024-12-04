@@ -41,7 +41,7 @@ export type Values = Record<
   AnyObservable<unknown> | NullState<unknown>
 >;
 
-const REFERENCE_UUID_NAMESPACE = 'fa18a966-3d78-463a-9a7c-4c8d0d07a948';
+export const REFERENCE_UUID_NAMESPACE = 'fa18a966-3d78-463a-9a7c-4c8d0d07a948';
 
 export type Reference = {
   $: typeof REFERENCE_UUID_NAMESPACE;
@@ -49,7 +49,8 @@ export type Reference = {
   path: string[];
 };
 
-const INTERACTION_UUID_NAMESPACE = 'cfe7d23c-1bdd-401b-bfb4-f1210694ab83';
+export const INTERACTION_UUID_NAMESPACE =
+  'cfe7d23c-1bdd-401b-bfb4-f1210694ab83';
 
 export type InteractionReference<
   R extends string = string,
