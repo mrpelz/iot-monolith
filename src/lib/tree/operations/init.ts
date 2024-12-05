@@ -1,13 +1,10 @@
-import { Element, TElementCallback } from '../main.js';
+import { anyFunction, match } from '../main.js';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const initCallback = (callback: TElementCallback) => ({
-  init: true as const,
-  initCallback: callback,
-});
+export type InitFunction = (object: object) => void;
 
-export const init = <T extends Element>(root: T): void => {
-  for (const element of root.matchChildrenDeep({ init: true as const })) {
-    element.props.initCallback(element);
+export const init = <T extends object>(root: T): void => {
+  for (const object of new Set(match({ $init: anyFunction }, root, 50))) {
+    const fn = object.$init as InitFunction;
+    fn(object);
   }
 };

@@ -6,7 +6,7 @@ import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import { Persistence } from '../../persistence.js';
 import { ipDevice } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
-import { Element, Level, ValueType } from '../main.js';
+import { Level, ValueType } from '../main.js';
 import {
   bme280,
   // input,
@@ -48,22 +48,22 @@ export const roomSensor = (
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.props.main.props.state,
-      bme280Temperature.props.main.props.state,
+      mcp9808Temperature.main.state,
+      bme280Temperature.main.state,
     ]),
   );
 
-  const temperature = new Element({
+  const temperature = {
     $: 'temperature' as const,
     ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
-  });
+  };
 
   const sgp30MeasurementInputGetter = () => {
-    const _humidity = humidity.props.main.props.state.value;
+    const _humidity = humidity.main.state.value;
     const _temperature = temperatureState.value;
 
     if (_humidity === null || _temperature === null) return null;
@@ -74,7 +74,7 @@ export const roomSensor = (
     };
   };
 
-  return new Element({
+  return {
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     internal: {
       // ...mhz19(device, timings.slow || timings.default),
@@ -90,5 +90,5 @@ export const roomSensor = (
       pressure,
       temperature,
     },
-  });
+  };
 };

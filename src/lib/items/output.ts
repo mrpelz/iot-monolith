@@ -8,6 +8,8 @@ export class Output {
   private readonly _indicator?: Indicator;
   private readonly _service: OutputService;
 
+  readonly $exclude = true as const;
+
   readonly actualState: ReadOnlyObservable<boolean | null>;
   readonly setState: BooleanState;
 

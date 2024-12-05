@@ -13,6 +13,8 @@ export class SingleValueSensor<T = unknown, S = void> {
   private readonly _service: Service<T, S>;
   private readonly _state = new Observable<T | null>(null);
 
+  readonly $exclude = true as const;
+
   readonly state: ReadOnlyObservable<T | null>;
 
   constructor(service: Service<T, void>, schedule: Schedule);
@@ -96,6 +98,8 @@ export class MultiValueSensor<
   private readonly _properties: readonly K[];
   private readonly _service: Service<T, S>;
   private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
+
+  readonly $exclude = true as const;
 
   readonly state = {} as {
     [P in K]: ReadOnlyObservable<T[P] | null>;

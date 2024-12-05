@@ -7,7 +7,7 @@ import { TCPDevice } from '../../device/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
 import { Persistence } from '../../persistence.js';
 import { Indicator } from '../../services/indicator.js';
-import { Element, Level } from '../main.js';
+import { Level } from '../main.js';
 import {
   identifyDevice,
   resetDevice,
@@ -59,10 +59,10 @@ export const ipDevice = (
   port: device.transport.port,
 });
 
-export const deviceMap = <T extends Record<string, Element>>(devices: T) => ({
-  devices: new Element({
+export const deviceMap = <T extends object>(devices: T) => ({
+  devices: {
     $: 'deviceMap' as const,
     ...devices,
     level: Level.NONE as const,
-  }),
+  },
 });

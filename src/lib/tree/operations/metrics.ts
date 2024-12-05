@@ -3,7 +3,7 @@ import { Gauge } from 'prom-client';
 import { Logger } from '../../log.js';
 import { AnyReadOnlyObservable } from '../../observable.js';
 import { objectKeys } from '../../oop.js';
-import { Element } from '../main.js';
+import { match } from '../main.js';
 import { Paths } from './paths.js';
 
 const METRIC_NAME_PREFIX = 'iot_';
@@ -24,7 +24,7 @@ const cleanLabelValue = (value: string | number | boolean) => {
   return value;
 };
 
-export const addMetric = <
+export const metric = <
   N extends string,
   T extends AnyReadOnlyObservable<number | boolean | null>,
   L extends Record<
@@ -38,14 +38,17 @@ export const addMetric = <
   metricHelp = 'help',
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 ) => ({
-  metric: true as const,
-  metricHelp,
-  metricLabels,
-  metricName,
-  metricValue,
+  $metric: true as const,
+  metric: {
+    $exclude: true as const,
+    metricHelp,
+    metricLabels,
+    metricName,
+    metricValue,
+  },
 });
 
-export const setupMetrics = <T extends Element>(
+export const setupMetrics = <T extends object>(
   logger: Logger,
   root: T,
   paths: Paths,
@@ -54,18 +57,22 @@ export const setupMetrics = <T extends Element>(
     head: 'setupMetrics',
   });
 
-  for (const element of root.matchChildrenDeep({
-    metric: true as const,
-  })) {
+  for (const object of match(
+    {
+      $metric: true as const,
+    },
+    root,
+    50,
+  )) {
     try {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const { path } = paths.getByElement(element) ?? {};
+      const { path } = paths.getByObject(object) ?? {};
       if (!path) continue;
 
       const {
-        props: { metricHelp, metricLabels, metricName, metricValue },
-      } = element as Element<ReturnType<typeof addMetric>>;
+        metric: { metricHelp, metricLabels, metricName, metricValue },
+      } = object as unknown as ReturnType<typeof metric>;
 
       const outputLabels = {
         path: path.join('.'),

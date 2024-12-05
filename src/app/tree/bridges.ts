@@ -10,12 +10,8 @@ export const rfBridge = _rfBridge(
   'olimex-esp32-gateway.iot-ng.lan.wurstsalat.cloud',
 );
 
-const {
-  props: {
-    espNowTransport: _espNowTransport,
-    ev1527Transport: _ev1527Transport,
-  },
-} = rfBridge;
+const { espNowTransport: _espNowTransport, ev1527Transport: _ev1527Transport } =
+  rfBridge;
 
 export const espNowTransport = _espNowTransport;
 export const ev1527Transport = _ev1527Transport;

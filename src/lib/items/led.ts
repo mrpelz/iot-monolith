@@ -16,6 +16,8 @@ export class Led {
   private readonly _service: LedService;
   private readonly _setBrightness = new Observable(0);
 
+  readonly $exclude = true as const;
+
   readonly actualBrightness: ReadOnlyProxyObservable<number | null>;
   readonly actualOn: ReadOnlyProxyObservable<number | null, boolean | null>;
   readonly setBrightness: ProxyObservable<number>;

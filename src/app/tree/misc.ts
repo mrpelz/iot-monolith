@@ -3,8 +3,9 @@
 import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
-import { Element, Level, ValueType } from '../../lib/tree/main.js';
-import { addMetric } from '../../lib/tree/operations/metrics.js';
+import { Level, ValueType } from '../../lib/tree/main.js';
+import { metric } from '../../lib/tree/operations/metrics.js';
+import { persistence } from '../persistence.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
   isCivilTwilight as isCivilTwilightUtil,
@@ -62,11 +63,14 @@ export const sunElevation = (schedule: Schedule) => {
     isNight.value = state.isNight;
   });
 
+  persistence.observe('sunElevation', elevation);
+
   return {
-    sunElevation: new Element({
+    sunElevation: {
       $: 'sunElevation' as const,
-      ...addMetric(
-        'sunElevation' as const,
+      $exclude: false as const,
+      ...metric(
+        'sunElevation',
         readOnlyElevation,
         {
           isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
@@ -88,6 +92,6 @@ export const sunElevation = (schedule: Schedule) => {
       isNight: getter(ValueType.BOOLEAN, readOnlyIsNight),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, readOnlyElevation),
-    }),
+    },
   };
 };
