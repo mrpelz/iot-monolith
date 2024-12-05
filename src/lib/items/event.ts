@@ -6,6 +6,8 @@ export class SingleValueEvent<T = unknown> {
   private readonly _event: Event<T>;
   private readonly _state = new Observable<T | null>(null);
 
+  readonly $exclude = true as const;
+
   readonly state: ReadOnlyObservable<T | null>;
 
   constructor(event: Event<T>) {

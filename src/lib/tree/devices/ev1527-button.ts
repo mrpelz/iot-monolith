@@ -6,7 +6,6 @@ import { StatelessMultiValueEvent } from '../../items/event.js';
 import { Logger } from '../../log.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { ev1527Device } from '../elements/device.js';
-import { Element } from '../main.js';
 
 export const ev1527ButtonX4 = (
   transport: Ev1527Transport,
@@ -15,7 +14,7 @@ export const ev1527ButtonX4 = (
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
-  return new Element({
+  return {
     ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
@@ -23,7 +22,7 @@ export const ev1527ButtonX4 = (
       'topLeft',
       'topRight',
     ]).state,
-  });
+  };
 };
 
 export const ev1527ButtonX1 = (
@@ -33,10 +32,10 @@ export const ev1527ButtonX1 = (
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
-  return new Element({
+  return {
     ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
     ]).state.bottomLeft,
-  });
+  };
 };

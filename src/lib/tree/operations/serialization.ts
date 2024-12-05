@@ -5,19 +5,13 @@ import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
 } from '../../observable.js';
-import { EmptyObject, objectKeys, Prev } from '../../oop.js';
+import { EmptyObject, isPlainObject, objectKeys, Prev } from '../../oop.js';
 import { NullState, ReadOnlyNullState } from '../../state.js';
 import { isGetter } from '../elements/getter.js';
 import { isSetter } from '../elements/setter.js';
 import { isTrigger } from '../elements/trigger.js';
-import {
-  Element,
-  isValueType,
-  TElementProps,
-  TValueType,
-  ValueType,
-} from '../main.js';
-import { PathRecord, Paths } from './paths.js';
+import { isValueType, TExclude, TValueType, ValueType } from '../main.js';
+import { Paths } from './paths.js';
 
 export enum InteractionType {
   EMIT,
@@ -73,15 +67,8 @@ export type TElementSerialization =
 
 export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
   ? never
-  : T extends Element
-    ? {
-        [K in keyof TElementProps<T> as ElementSerialization<
-          TElementProps<T>[K],
-          Prev[D]
-        > extends never
-          ? never
-          : K]: ElementSerialization<TElementProps<T>[K], Prev[D]>;
-      } & { $ref: Reference }
+  : T extends TExclude
+    ? never
     : T extends object
       ? T extends Array<TElementSerializationPrimitive>
         ? T
@@ -89,14 +76,10 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
           ? InteractionReference<string, InteractionType.EMIT>
           : T extends AnyWritableObservable<unknown> | NullState<unknown>
             ? InteractionReference<string, InteractionType.COLLECT>
-            : never
+            : {
+                [K in keyof T]: ElementSerialization<T[K], Prev[D]>;
+              }
       : T;
-
-const makeReference = ({ id, path }: PathRecord): Reference => ({
-  $: REFERENCE_UUID_NAMESPACE,
-  id,
-  path: path.map((pathElement) => pathElement.toString()),
-});
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
   reference: R,
@@ -147,19 +130,17 @@ export const isInteractionReference = (
 
 const invalidValueTypes = ['object', 'function'];
 
-export class Serialization<T extends Element> {
+export class Serialization<T extends object> {
   private readonly _interactions = new Map<string, Interaction>();
 
   private readonly _serializations = new WeakMap<
-    Element,
-    ElementSerialization<Element>
+    object,
+    ElementSerialization<object>
   >();
 
   private readonly _updates = new NullState<InteractionUpdate>();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly tree: ElementSerialization<T>;
-
   readonly updates: ReadOnlyNullState<InteractionUpdate>;
 
   constructor(
@@ -168,8 +149,6 @@ export class Serialization<T extends Element> {
   ) {
     this.updates = new ReadOnlyNullState(this._updates);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     this.tree = this._serializeElement(root);
     Object.freeze(this.tree);
   }
@@ -212,20 +191,18 @@ export class Serialization<T extends Element> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends Element>(element: E) {
-    const pathRecord = this._paths.getByElement(element);
-    if (!pathRecord) return null;
+  private _serializeElement<E extends object>(element: E) {
+    const pathRecord = this._paths.getByObject(element);
+    if (!pathRecord) return undefined;
 
     const { id } = pathRecord;
 
-    const result = {
-      $ref: makeReference(pathRecord),
-    } as Record<string, TElementSerialization> & { $ref: Reference };
+    const result = {} as Record<string, TElementSerialization>;
 
     let props: EmptyObject;
 
     if (isGetter(element)) {
-      const { state, ...rest } = element.props;
+      const { state, ...rest } = element;
       const { valueType } = rest;
       props = rest;
 
@@ -235,7 +212,7 @@ export class Serialization<T extends Element> {
         valueType,
       );
     } else if (isSetter(element)) {
-      const { state, setState, ...rest } = element.props;
+      const { state, setState, ...rest } = element;
       const { valueType } = rest;
       props = rest;
 
@@ -251,7 +228,7 @@ export class Serialization<T extends Element> {
         valueType,
       );
     } else if (isTrigger(element)) {
-      const { setState, ...rest } = element.props;
+      const { setState, ...rest } = element;
       const { valueType } = rest;
       props = rest;
 
@@ -261,7 +238,7 @@ export class Serialization<T extends Element> {
         valueType,
       );
     } else {
-      props = element.props;
+      props = element;
     }
 
     for (const key of objectKeys(props)) {
@@ -271,7 +248,7 @@ export class Serialization<T extends Element> {
       const { [key]: sourceProperty } = props;
 
       const targetProperty = (() => {
-        if (sourceProperty instanceof Element) {
+        if (isPlainObject(sourceProperty)) {
           return this._serializeElement(sourceProperty);
         }
 
@@ -306,7 +283,7 @@ export class Serialization<T extends Element> {
     return this._interactions.entries();
   }
 
-  getTreePart<E extends Element>(element: E): ElementSerialization<E> {
+  getTreePart<E extends object>(element: E): ElementSerialization<E> {
     return this._serializations.get(element) as ElementSerialization<E>;
   }
 

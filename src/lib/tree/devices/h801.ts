@@ -5,7 +5,6 @@ import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { Indicator } from '../../services/indicator.js';
 import { ipDevice } from '../elements/device.js';
-import { Element } from '../main.js';
 import { led } from '../properties/actuators.js';
 import { Timings } from '../properties/sensors.js';
 
@@ -21,7 +20,7 @@ export const h801 = (
 
   const indicator = device.addService(new Indicator(0));
 
-  return new Element({
+  return {
     ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
     indicator,
     internal: {
@@ -31,5 +30,5 @@ export const h801 = (
       ledW1: led(device, 3, undefined, persistence),
       ledW2: led(device, 4, undefined, persistence),
     },
-  });
+  };
 };

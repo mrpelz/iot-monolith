@@ -6,7 +6,7 @@ import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { Element, Level } from '../../../lib/tree/main.js';
+import { Level } from '../../../lib/tree/main.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
@@ -46,16 +46,16 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.props.button0.props.state,
-  wallswitchFrontLeft: devices.wallswitchFront.props.button0.props.state,
-  wallswitchFrontMiddle: devices.wallswitchFront.props.button1.props.state,
-  wallswitchFrontRight: devices.wallswitchFront.props.button2.props.state,
-  wallswitchMiddle: devices.wallswitchBack.props.button1.props.state,
+  wallswitchBack: devices.wallswitchBack.button0.state,
+  wallswitchFrontLeft: devices.wallswitchFront.button0.state,
+  wallswitchFrontMiddle: devices.wallswitchFront.button1.state,
+  wallswitchFrontRight: devices.wallswitchFront.button2.state,
+  wallswitchMiddle: devices.wallswitchBack.button1.state,
 };
 
 const partialProperties = {
-  ceilingLightBack: devices.ceilingLightBack.props.internal.relay,
-  ceilingLightFront: devices.ceilingLightFront.props.internal.relay,
+  ceilingLightBack: devices.ceilingLightBack.internal.relay,
+  ceilingLightFront: devices.ceilingLightFront.internal.relay,
   entryDoor: door(devices.doorSensor),
 };
 
@@ -82,54 +82,54 @@ export const properties = {
   const { all, allLights } = await import('../groups.js');
 
   instances.wallswitchBack.up(() =>
-    groups.ceilingLight.props.flip.props.setState.trigger(),
+    groups.ceilingLight.flip.setState.trigger(),
   );
 
   instances.wallswitchMiddle.up(() =>
-    groups.ceilingLight.props.flip.props.setState.trigger(),
+    groups.ceilingLight.flip.setState.trigger(),
   );
 
   instances.wallswitchFrontLeft.up(() =>
-    properties.ceilingLightFront.props.flip.props.setState.trigger(),
+    properties.ceilingLightFront.flip.setState.trigger(),
   );
   instances.wallswitchFrontMiddle.up(() =>
-    properties.ceilingLightBack.props.flip.props.setState.trigger(),
+    properties.ceilingLightBack.flip.setState.trigger(),
   );
   instances.wallswitchFrontRight.up(async () => {
     const all_ = await all;
-    all_.props.main.props.setState.value = false;
+    all_.main.setState.value = false;
   });
   instances.wallswitchFrontRight.longPress(async () => {
     const allLights_ = await allLights;
-    allLights_.props.flip.props.setState.trigger();
+    allLights_.flip.setState.trigger();
   });
 
-  properties.entryDoor.props.open.props.main.props.state.observe((value) => {
+  properties.entryDoor.open.main.state.observe((value) => {
     if (!value) {
-      if (!groups.ceilingLight.props.main.props.state.value) return;
+      if (!groups.ceilingLight.main.state.value) return;
 
-      properties.entryDoorTimer.props.active.props.state.value = true;
+      properties.entryDoorTimer.active.state.value = true;
 
       return;
     }
 
-    properties.ceilingLightFront.props.main.props.setState.value = true;
+    properties.ceilingLightFront.main.setState.value = true;
   });
 
-  groups.ceilingLight.props.main.props.setState.observe(
-    () => (properties.entryDoorTimer.props.active.props.state.value = false),
+  groups.ceilingLight.main.setState.observe(
+    () => (properties.entryDoorTimer.active.state.value = false),
     true,
   );
 
-  properties.entryDoorTimer.props.state.observe(() => {
-    groups.ceilingLight.props.main.props.setState.value = false;
+  properties.entryDoorTimer.state.observe(() => {
+    groups.ceilingLight.main.setState.value = false;
   });
 })();
 
-export const hallway = new Element({
+export const hallway = {
   $: 'hallway' as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,
-});
+};

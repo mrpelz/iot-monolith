@@ -1,10 +1,9 @@
 import { collectDefaultMetrics, register } from 'prom-client';
 
 import { WebApi } from '../lib/api/main.js';
-import { WebApiXML } from '../lib/api/xml.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
-import { Level } from '../lib/tree/main.js';
+import { anyBoolean, Level, match } from '../lib/tree/main.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
 import { Paths } from '../lib/tree/operations/paths.js';
@@ -14,7 +13,7 @@ export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
   const { logger } = await import('./logging.js');
-  // const { persistence } = await import('./persistence.js');
+  const { persistence } = await import('./persistence.js');
   const { system: _system } = await import('./tree/system.js');
 
   const system = await _system;
@@ -32,43 +31,55 @@ export const app = async (): Promise<void> => {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(serialization.tree, undefined, 2));
 
-  serialization.inject(['4fd1241a-2b6e-5dc6-8636-0a2875ffe37e', null]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const lightingOn = match({ topic: 'lighting' as const }, system).flatMap(
+    (child) => match({ name: 'on' as const }, child),
+  );
 
-  // const lightingOn = system
-  //   .matchChildrenDeep({ topic: 'lighting' as const })
-  //   .flatMap((child) => child.matchChildrenDeep({ name: 'on' as const }));
-
-  const roomDevices = system
-    .matchChildrenDeep({
+  const roomDevices = match(
+    {
       $: 'testRoom' as const,
       level: Level.ROOM as const,
-    })
-    .flatMap((child) =>
-      child.matchChildrenDeep({ level: Level.DEVICE as const }),
-    );
+    },
+    system,
+  ).flatMap((child) => match({ level: Level.DEVICE as const }, child));
 
   // eslint-disable-next-line no-console
-  console.log(roomDevices.map((device) => device.props.$));
+  console.log(roomDevices.map((device) => device.$));
 
-  const test = system.matchChildrenDeep({ $: 'sunElevation' as const })[0];
+  const [testRoom] = match({ $: 'testRoom' as const }, system);
+  const [lol] = match({ lol: anyBoolean }, testRoom);
+  // eslint-disable-next-line no-console
+  console.log(lol);
+
+  const [sunElevation] = match({ $: 'sunElevation' as const }, system);
 
   // eslint-disable-next-line no-console
-  console.log(paths.getByElement(test)?.path);
+  console.log(
+    paths.getByObject(sunElevation)?.id,
+    paths.getParent(sunElevation.isDay)?.id,
+  );
+
+  // eslint-disable-next-line no-console
+  console.log(
+    system.wurstHome.sonninstraße16.firstFloor.testRoom.temperature.main.unit,
+    serialization.tree.wurstHome.sonninstraße16.firstFloor.testRoom.temperature
+      .main.unit,
+  );
+
+  serialization.inject(['fc604c87-a64c-5b70-8595-ae9a407cfe84', null]);
 
   const httpServer = new HttpServer(logger, 1337);
 
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
 
-  // eslint-disable-next-line no-new
-  new WebApiXML(logger, httpServer, serialization);
-
   httpHooks(logger, httpServer, serialization);
 
   httpServer.listen();
 
-  // process.on('exit', () => persistence.persist());
-  // await persistence.restore();
+  process.on('exit', () => persistence.persist());
+  await persistence.restore();
 
   httpServer.route('/metrics', async ({ response }) => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');

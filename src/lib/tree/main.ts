@@ -1,10 +1,36 @@
 import {
-  DeepClassStructureViaChildField,
-  EmptyObject,
+  DeepValuesInclusive,
+  isObject,
+  isPlainObject,
   objectKeys,
-  ObjectValues,
   objectValues,
+  Prev,
+  Primitive,
 } from '../oop.js';
+
+export const DEFAULT_MATCH_DEPTH = 6;
+
+export type TExclude = { $exclude: true };
+
+export type SymbolizedAny = unknown;
+export const any = Symbol('any') as SymbolizedAny;
+export type SymbolizedBigint = bigint;
+export const anyBigint = Symbol('bigint') as unknown as SymbolizedBigint;
+export type SymbolizedBoolean = boolean;
+export const anyBoolean = Symbol('boolean') as unknown as SymbolizedBoolean;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export type SymbolizedFunction = Function;
+export const anyFunction = Symbol('function') as unknown as SymbolizedFunction;
+export type SymbolizedNumber = number;
+export const anyNumber = Symbol('number') as unknown as SymbolizedNumber;
+export type SymbolizedString = string;
+export const anyString = Symbol('string') as unknown as SymbolizedString;
+
+export type Match<
+  M extends object,
+  R extends object,
+  D extends number = typeof DEFAULT_MATCH_DEPTH,
+> = Extract<DeepValuesInclusive<R, TExclude | Primitive, D>, M>;
 
 export enum Level {
   NONE,
@@ -77,74 +103,60 @@ export const isValueType = <T extends ValueType>(
   }
 };
 
-const $ = Symbol('element');
+export const isLocalMatch = <P extends object, R extends object>(
+  pattern: P,
+  root: R,
+): root is R & P => {
+  for (const key of objectKeys(pattern)) {
+    const b = pattern[key];
+    if (b === any && key in root) continue;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TElementAbstract = { [$]: null; props: any };
+    const a = root[key as unknown as keyof R] as unknown;
+    if (b === anyBigint && typeof a === 'bigint') continue;
+    if (b === anyBoolean && typeof a === 'boolean') continue;
+    if (b === anyFunction && typeof a === 'function') continue;
+    if (b === anyNumber && typeof a === 'number') continue;
+    if (b === anyString && typeof a === 'string') continue;
 
-export type TElementProps<T extends TElementAbstract> = T['props'];
-export type TElementPropValues<T extends TElementAbstract> = ObjectValues<
-  TElementProps<T>
->;
+    if (a === b) continue;
 
-export type TElementChildren<T extends TElementAbstract> = Element<
-  TElementProps<Extract<TElementPropValues<T>, TElementAbstract>>
->;
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export type TElementChildrenDeep<T extends TElementAbstract> = Element<
-  TElementProps<DeepClassStructureViaChildField<T, TElementAbstract, 'props'>>
->;
-
-export type TElementCallback = (element: Element) => void;
-export type TElementClass = typeof Element;
-
-export class Element<T extends EmptyObject = EmptyObject> {
-  readonly [$] = null;
-
-  constructor(public readonly props: T) {
-    Object.freeze(props);
+    return false;
   }
 
-  get children(): TElementChildren<this>[] {
-    return objectValues(this.props).filter(
-      (prop) => (prop as unknown) instanceof Element,
-    );
-  }
+  return true;
+};
 
-  match<M extends EmptyObject>(match: M): this is this & Element<M> {
-    for (const key of objectKeys(match)) {
-      const a = this.props[key as keyof T] as unknown;
-      const b = match[key];
+export const match = <
+  P extends object,
+  R,
+  D extends number = typeof DEFAULT_MATCH_DEPTH,
+>(
+  pattern: P,
+  root: R,
+  depth = DEFAULT_MATCH_DEPTH as D,
+  limitToPlainObjects = true,
+): Match<P, Extract<R, object>, D>[] => {
+  if (depth < 0) return [];
 
-      if (a === b) continue;
+  const root_ = (limitToPlainObjects ? isPlainObject : isObject)(root)
+    ? root
+    : undefined;
 
-      return false;
-    }
+  if (!root_) return [];
+  if ('$exclude' in root_ && root_.$exclude === true) return [];
 
-    return true;
-  }
+  const localMatch = isLocalMatch(pattern, root_) ? [root] : [];
 
-  matchChildren<M extends EmptyObject>(
-    match: M,
-  ): Element<Extract<TElementProps<TElementChildren<this>>, M>>[] {
-    return Array.from(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      new Set(this.children.filter((child) => child.match(match))),
-    );
-  }
+  const nextDepth = (depth - 1) as Prev[D];
+  const childMatch = objectValues(root_).flatMap((child) =>
+    match(pattern, child, nextDepth),
+  );
 
-  matchChildrenDeep<M extends EmptyObject>(
-    match: M,
-  ): Element<Extract<T | TElementProps<TElementChildrenDeep<this>>, M>>[] {
-    const selfMatch = this.match(match) ? [this] : [];
-    const directMatch = this.matchChildren(match);
-    const deepMatch = this.children.flatMap((child) =>
-      child.matchChildrenDeep(match),
-    );
+  return [localMatch, childMatch].flat(1) as Match<P, Extract<R, object>, D>[];
+};
 
-    return Array.from(new Set([selfMatch, directMatch, deepMatch].flat(1)));
-  }
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const roomDevices = match(
+  {} as const,
+  { foo: 'bar', zaz: { $exclude: true, boo: 'bah' } } as const,
+);
