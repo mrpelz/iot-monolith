@@ -4,7 +4,7 @@ import { epochs } from '../../../lib/epochs.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { Element, Level } from '../../../lib/tree/main.js';
+import { Level } from '../../../lib/tree/main.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
@@ -27,11 +27,11 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitch: devices.ceilingLight.props.button.props.state,
+  wallswitch: devices.ceilingLight.button.state,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.props.internal.relay,
+  ceilingLight: devices.ceilingLight.internal.relay,
   door: door(devices.doorSensor),
   lightTimer: offTimer(epochs.minute * 5, undefined, [
     'storageRoom/lightTimer',
@@ -47,44 +47,44 @@ export const groups = {
   let indicatorInProgress = false;
 
   instances.wallswitch.up(() =>
-    properties.ceilingLight.props.flip.props.setState.trigger(),
+    properties.ceilingLight.flip.setState.trigger(),
   );
 
   instances.wallswitch.longPress(async () => {
-    if (!properties.lightTimer.props.main.props.state.value) return;
+    if (!properties.lightTimer.main.state.value) return;
 
     indicatorInProgress = true;
 
-    await (properties.ceilingLight.props.main.props.setState.value
-      ? ackBlinkFromOn(properties.ceilingLight.props.main.props.setState)
-      : ackBlinkFromOff(properties.ceilingLight.props.main.props.setState));
+    await (properties.ceilingLight.main.setState.value
+      ? ackBlinkFromOn(properties.ceilingLight.main.setState)
+      : ackBlinkFromOff(properties.ceilingLight.main.setState));
 
     indicatorInProgress = false;
 
     // eslint-disable-next-line require-atomic-updates
-    properties.lightTimer.props.active.props.state.value = false;
+    properties.lightTimer.active.state.value = false;
   });
 
-  properties.door.props.open.props.main.props.state.observe((value) => {
+  properties.door.open.main.state.observe((value) => {
     if (!value) return;
-    properties.ceilingLight.props.main.props.setState.value = true;
+    properties.ceilingLight.main.setState.value = true;
   });
 
-  properties.ceilingLight.props.main.props.setState.observe((value) => {
+  properties.ceilingLight.main.setState.observe((value) => {
     if (indicatorInProgress) return;
 
-    properties.lightTimer.props.active.props.state.value = value;
+    properties.lightTimer.active.state.value = value;
   }, true);
 
-  properties.lightTimer.props.state.observe(() => {
-    properties.ceilingLight.props.main.props.setState.value = false;
+  properties.lightTimer.state.observe(() => {
+    properties.ceilingLight.main.setState.value = false;
   });
 })();
 
-export const storageRoom = new Element({
+export const storageRoom = {
   $: 'storageRoom' as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
   level: Level.ROOM as const,
-});
+};

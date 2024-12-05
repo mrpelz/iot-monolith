@@ -4,7 +4,6 @@ import { UDPDevice } from '../../device/udp.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { ipDevice } from '../elements/device.js';
-import { Element } from '../main.js';
 import { output } from '../properties/actuators.js';
 import { button, Timings } from '../properties/sensors.js';
 
@@ -19,11 +18,11 @@ export const shelly1 = <T extends string>(
 ) => {
   const device = new UDPDevice(logger, host, port);
 
-  return new Element({
+  return {
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     button: button(device, 0),
     internal: {
       relay: output(device, 0, topic, undefined, persistence),
     },
-  });
+  };
 };

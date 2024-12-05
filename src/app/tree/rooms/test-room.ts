@@ -4,7 +4,7 @@ import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { Element, Level } from '../../../lib/tree/main.js';
+import { Level } from '../../../lib/tree/main.js';
 import { logger } from '../../logging.js';
 import { persistence } from '../../persistence.js';
 import { timings } from '../../timings.js';
@@ -35,26 +35,23 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.props.espNow.props.button0.props.state,
-  espNowButton1: devices.espNowButton.props.espNow.props.button1.props.state,
+  espNowButton0: devices.espNowButton.espNow.button0.state,
+  espNowButton1: devices.espNowButton.espNow.button1.state,
 };
 
 export const properties = {
-  brightness: devices.testDevice.props.internal.brightness,
-  co2: devices.testDevice.props.internal.co2,
-  espNowWindowSensor0:
-    devices.espNowWindowSensor.props.espNow.props.internal.input0,
-  espNowWindowSensor1:
-    devices.espNowWindowSensor.props.espNow.props.internal.input1,
-  espNowWindowSensor2:
-    devices.espNowWindowSensor.props.espNow.props.internal.input2,
-  humidity: devices.testDevice.props.internal.humidity,
-  motion: devices.testDevice.props.internal.motion,
-  pm025: devices.testDevice.props.internal.pm025,
-  pm10: devices.testDevice.props.internal.pm10,
-  pressure: devices.testDevice.props.internal.pressure,
-  temperature: devices.testDevice.props.internal.temperature,
-  uvIndex: devices.testDevice.props.internal.uvIndex,
+  brightness: devices.testDevice.internal.brightness,
+  co2: devices.testDevice.internal.co2,
+  espNowWindowSensor0: devices.espNowWindowSensor.espNow.internal.input0,
+  espNowWindowSensor1: devices.espNowWindowSensor.espNow.internal.input1,
+  espNowWindowSensor2: devices.espNowWindowSensor.espNow.internal.input2,
+  humidity: devices.testDevice.internal.humidity,
+  motion: devices.testDevice.internal.motion,
+  pm025: devices.testDevice.internal.pm025,
+  pm10: devices.testDevice.internal.pm10,
+  pressure: devices.testDevice.internal.pressure,
+  temperature: devices.testDevice.internal.temperature,
+  uvIndex: devices.testDevice.internal.uvIndex,
 };
 
 export const groups = {};
@@ -63,7 +60,7 @@ export const groups = {};
   // noop
 })();
 
-export const testRoom = new Element({
+export const testRoom = {
   $: 'testRoom' as const,
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -71,4 +68,4 @@ export const testRoom = new Element({
   ...groups,
   ...properties,
   level: Level.ROOM as const,
-});
+};

@@ -7,6 +7,8 @@ type Callback = () => void;
 export class Button {
   private readonly _event: ButtonEvent;
 
+  readonly $exclude = true as const;
+
   constructor(event: ButtonEvent) {
     this._event = event;
   }

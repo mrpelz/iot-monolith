@@ -5,7 +5,7 @@ import { HttpServer } from './http-server.js';
 import { callstack, Logger } from './log.js';
 import { AnyWritableObservable } from './observable.js';
 import { NullState } from './state.js';
-import { Element, isValueType, valueTypeDescription } from './tree/main.js';
+import { isValueType, valueTypeDescription } from './tree/main.js';
 import {
   InteractionType,
   Serialization,
@@ -16,7 +16,7 @@ const PATH_HOOKS = '/hooks' as const;
 export const httpHooks = (
   logger: Logger,
   httpServer: HttpServer,
-  serialization: Serialization<Element>,
+  serialization: Serialization<object>,
 ): void => {
   const log = logger.getInput({ head: 'httpHooks' });
 

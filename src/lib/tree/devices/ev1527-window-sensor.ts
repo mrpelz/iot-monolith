@@ -9,7 +9,7 @@ import { Persistence } from '../../persistence.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
-import { Element, Level, ValueType } from '../main.js';
+import { Level, ValueType } from '../main.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
@@ -61,19 +61,19 @@ export const ev1527WindowSensor = (
     (input) => input !== null,
   );
 
-  return new Element({
+  return {
     ...ev1527Device(device),
     internal: {
-      open: new Element({
+      open: {
         ...lastChange(receivedOpen),
         isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
         level: Level.PROPERTY as const,
         main: getter(ValueType.BOOLEAN, isOpen),
-        tamperSwitch: new Element({
+        tamperSwitch: {
           ...lastChange(receivedTamperSwitch),
           main: getter(ValueType.BOOLEAN, tamperSwitch),
-        }),
-      }),
+        },
+      },
     },
-  });
+  };
 };

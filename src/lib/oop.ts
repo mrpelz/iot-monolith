@@ -5,6 +5,15 @@ export type Constructor<T> = { new (...args: any[]): T };
 export type EmptyObject = Record<string | symbol, any>;
 export type ObjectValues<T extends EmptyObject> = T[keyof T];
 
+export type Primitive =
+  | bigint
+  | boolean
+  | null
+  | number
+  | string
+  | symbol
+  | undefined;
+
 // https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
 export type Join<K, P> = K extends string | number
   ? P extends string | number
@@ -115,21 +124,31 @@ export type DeepRemap<T extends object, S, R, D extends number = 50> = [
           : T[K];
     };
 
-export type DeepValues<T, D extends number = 50> = [D] extends [never]
+export type DeepValues<T, E = never, D extends number = 50> = [D] extends [
+  never,
+]
   ? never
-  : T extends object
-    ? {
-        [K in keyof T]-?: DeepValues<T[K], Prev[D]>;
-      }[keyof T]
-    : T;
+  : T extends E
+    ? never
+    : T extends object
+      ? {
+          [K in keyof T]-?: DeepValues<T[K], E, Prev[D]>;
+        }[keyof T]
+      : T;
 
-export type DeepValuesInclusive<T, D extends number = 50> = [D] extends [never]
+export type DeepValuesInclusive<T, E = never, D extends number = 50> = [
+  D,
+] extends [never]
   ? never
-  : T extends object
-    ? {
-        [K in keyof T]-?: T[K] | DeepValuesInclusive<T[K], Prev[D]>;
-      }[keyof T]
-    : T;
+  : T extends E
+    ? never
+    : T extends object
+      ?
+          | {
+              [K in keyof T]-?: DeepValuesInclusive<T[K], E, Prev[D]>;
+            }[keyof T]
+          | T
+      : T;
 
 export type DeepClassStructureViaChildField<
   T,
@@ -157,6 +176,20 @@ export const instanceMethods = (instance: Record<string, unknown>): string[] =>
   Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
     (name) => name !== 'constructor' && name[0] !== '_',
   );
+
+export const isObject = (input: unknown): input is object => {
+  if (typeof input !== 'object') return false;
+  if (!input) return false;
+
+  return true;
+};
+
+export const isPlainObject = (input: unknown): input is object => {
+  if (!isObject(input)) return false;
+  if (input.constructor.toString().startsWith('class')) return false;
+
+  return true;
+};
 
 export const objectKeys = <T extends EmptyObject>(input: T): (keyof T)[] => [
   ...Object.getOwnPropertySymbols(input),

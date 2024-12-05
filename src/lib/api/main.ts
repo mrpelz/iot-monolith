@@ -9,7 +9,6 @@ import { HttpServer, RouteHandle } from '../http-server.js';
 import { callstack, Input, Logger } from '../log.js';
 import { Observable } from '../observable.js';
 import { Timer } from '../timer.js';
-import { Element } from '../tree/main.js';
 import {
   InteractionUpdate,
   Serialization,
@@ -32,7 +31,7 @@ export class WebApi {
   constructor(
     logger: Logger,
     private readonly _httpServer: HttpServer,
-    private readonly _serialization: Serialization<Element>,
+    private readonly _serialization: Serialization<object>,
   ) {
     this._log = logger.getInput({ head: this.constructor.name });
     this._wss = new WebSocketServer({ noServer: true });
