@@ -7,7 +7,7 @@ import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { espNowDevice, ipDevice } from '../elements/device.js';
-import { Element, Level } from '../main.js';
+import { Level } from '../main.js';
 import { input, Timings } from '../properties/sensors.js';
 
 export type EspNowWindowSensorOptions = {
@@ -27,6 +27,7 @@ const children = (device: Device) => ({
     input0: input(device, 0, 'input0'),
     input1: input(device, 1, 'input1'),
     input2: input(device, 2, 'input2'),
+    lol: true as const,
   },
 });
 
@@ -41,11 +42,11 @@ export const espNowWindowSensor = (
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
-      espNow: new Element({
+      espNow: {
         ...children(device),
         ...espNowDevice(device),
         isSubDevice: true,
-      }),
+      },
     };
   })();
 
@@ -54,18 +55,18 @@ export const espNowWindowSensor = (
     const device = new UDPDevice(logger, host, port);
 
     return {
-      wifi: new Element({
+      wifi: {
         ...children(device),
         ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
         isSubDevice: true,
-      }),
+      },
     };
   })();
 
-  return new Element({
+  return {
     $: 'espNowWindowSensor' as const,
     ...espNow,
     ...wifi,
     level: Level.DEVICE as const,
-  });
+  };
 };

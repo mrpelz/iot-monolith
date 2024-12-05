@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { epochs } from '../../lib/epochs.js';
-import { Element, Level } from '../../lib/tree/main.js';
-import { initCallback } from '../../lib/tree/operations/init.js';
+import { Level } from '../../lib/tree/main.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { persistence } from '../persistence.js';
 import { every5Seconds } from '../timings.js';
@@ -25,7 +24,7 @@ import {
   kitchenAdjacentChillax,
 } from './scenes.js';
 
-const firstFloor = new Element({
+const firstFloor = {
   $: 'firstFloor' as const,
   diningRoom,
   hallway,
@@ -41,30 +40,39 @@ const firstFloor = new Element({
   testRoom,
   tsiaBathroom,
   tsiaBedroom,
-});
+};
 
-const sonninstraße16 = new Element({
+const sonninstraße16 = {
   $: 'sonninstraße16' as const,
   ...sunElevation(every5Seconds),
   firstFloor,
   // eslint-disable-next-line sort-keys
   entryDoor: hallwayProperties.entryDoor,
   level: Level.BUILDING as const,
-});
+};
 
-export const wurstHome = new Element({
+export const wurstHome = {
   $: 'wurstHome' as const,
   level: Level.HOME as const,
   sonninstraße16,
-});
+};
 
 export const system = (async () => {
   const all = await _all;
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
-  return new Element({
+  return {
     $: 'system' as const,
+    $init: () => {
+      all.main.setState.observe((value) => {
+        allTimer.active.state.value = value;
+      }, true);
+
+      allTimer.state.observe(() => {
+        all.main.setState.value = false;
+      });
+    },
     all,
     allLights,
     allLightsOff,
@@ -72,16 +80,7 @@ export const system = (async () => {
     allTimer,
     level: Level.SYSTEM as const,
     wurstHome,
-    ...initCallback(() => {
-      all.props.main.props.setState.observe((value) => {
-        allTimer.props.active.props.state.value = value;
-      }, true);
-
-      allTimer.props.state.observe(() => {
-        all.props.main.props.setState.value = false;
-      });
-    }),
-  });
+  };
 })();
 
 export type TSystem = Awaited<typeof system>;

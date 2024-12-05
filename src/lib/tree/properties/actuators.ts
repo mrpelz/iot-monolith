@@ -25,8 +25,7 @@ import {
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
-import { Element, Level, ValueType as ValueTypeNg } from '../main.js';
-import { initCallback } from '../operations/init.js';
+import { Level, ValueType as ValueTypeNg } from '../main.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -37,8 +36,21 @@ const actuatorStaleness = <T>(
   const loading = new BooleanState(true);
 
   return {
-    actuatorStaleness: new Element({
+    actuatorStaleness: {
       $: 'actuatorStaleness' as const,
+      $init: () => {
+        state.observe((value) => {
+          if (setState.value === value) return;
+          loading.value = true;
+        }, true);
+
+        state.observe((value) => {
+          stale.value = value === null;
+
+          if (value !== null && setState.value !== value) return;
+          loading.value = false;
+        }, true);
+      },
       level: Level.PROPERTY as const,
       loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
       stale: getter(
@@ -51,20 +63,7 @@ const actuatorStaleness = <T>(
           ]),
         ),
       ),
-      ...initCallback(() => {
-        state.observe((value) => {
-          if (setState.value === value) return;
-          loading.value = true;
-        }, true);
-
-        state.observe((value) => {
-          stale.value = value === null;
-
-          if (value !== null && setState.value !== value) return;
-          loading.value = false;
-        }, true);
-      }),
-    }),
+    },
   };
 };
 
@@ -89,17 +88,17 @@ export const led = (
     topic: 'lighting' as const,
   };
 
-  return new Element({
+  return {
     ...props,
-    ...initCallback(() => {
+    $init: () => {
       if (persistence) {
         persistence.observe(
           `led/${device.transport.host}:${device.transport.port}/${index}`,
           setBrightness,
         );
       }
-    }),
-  });
+    },
+  };
 };
 
 export const output = <T extends string>(
@@ -123,24 +122,24 @@ export const output = <T extends string>(
     topic,
   };
 
-  return new Element({
+  return {
     ...props,
-    ...initCallback(() => {
+    $init: () => {
       if (persistence) {
         persistence.observe(
           `output/${device.transport.host}:${device.transport.port}/${index}`,
           setState,
         );
       }
-    }),
-  });
+    },
+  };
 };
 
 export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.props.main.props.state),
+      lights.map((light) => light.main.state),
     ),
   );
 
@@ -153,9 +152,8 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       0,
       lights.map(
         (light) =>
-          new ReadOnlyProxyObservable(
-            light.props.brightness.props.state,
-            (value) => (value === null ? 0 : value),
+          new ReadOnlyProxyObservable(light.brightness.state, (value) =>
+            value === null ? 0 : value,
           ),
       ),
     ),
@@ -163,7 +161,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light.props.main.props.setState),
+    lights.map((light) => light.main.setState),
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -172,17 +170,17 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     }
   })(
     0,
-    lights.map((light) => light.props.brightness.props.setState),
+    lights.map((light) => light.brightness.setState),
   );
 
-  return new Element({
+  return {
     $: 'ledGrouping' as const,
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting',
-  });
+  };
 };
 
 export const outputGrouping = <T extends string>(
@@ -192,34 +190,34 @@ export const outputGrouping = <T extends string>(
   const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      outputs.map((outputElement) => outputElement.props.main.props.state),
+      outputs.map((outputElement) => outputElement.main.state),
     ),
   );
 
   const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    outputs.map((outputElement) => outputElement.props.main.props.setState),
+    outputs.map((outputElement) => outputElement.main.setState),
   );
 
-  return new Element({
+  return {
     $: 'outputGrouping' as const,
     flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
     topic,
-  });
+  };
 };
 
 export const resetDevice = (device: Device) => ({
-  resetDevice: new Element({
+  resetDevice: {
     $: 'resetDevice' as const,
     level: Level.PROPERTY as const,
     main: trigger(ValueTypeNg.NULL, new NullState(() => device.triggerReset())),
-  }),
+  },
 });
 
 export const identifyDevice = (indicator: Indicator) => ({
-  identifyDevice: new Element({
+  identifyDevice: {
     $: 'identifyDevice' as const,
     level: Level.PROPERTY as const,
     main: trigger(
@@ -235,19 +233,18 @@ export const identifyDevice = (indicator: Indicator) => ({
           }),
       ),
     ),
-  }),
+  },
 });
 
 export const triggerElement = <T extends string>(
   handler: () => void,
   topic: T,
-) =>
-  new Element({
-    $: 'triggerElement' as const,
-    level: Level.PROPERTY as const,
-    main: trigger(ValueTypeNg.NULL, new NullState(handler), 'trigger'),
-    topic,
-  });
+) => ({
+  $: 'triggerElement' as const,
+  level: Level.PROPERTY as const,
+  main: trigger(ValueTypeNg.NULL, new NullState(handler), 'trigger'),
+  topic,
+});
 
 export class SceneMember<T> {
   constructor(
@@ -275,13 +272,13 @@ export const scene = <T extends string>(
     proxyObservables,
   );
 
-  return new Element({
+  return {
     $: 'scene' as const,
     flip: trigger(ValueTypeNg.NULL, new NullState(() => set.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene'),
     topic,
-  });
+  };
 };
 
 export const setOnline = (
@@ -292,12 +289,9 @@ export const setOnline = (
   const state = new BooleanState(initiallyOnline);
 
   return {
-    setOnline: new Element({
+    setOnline: {
       $: 'setOnline' as const,
-      flip: trigger(ValueTypeNg.NULL, new NullState(() => state.flip())),
-      level: Level.PROPERTY as const,
-      main: setter(ValueTypeNg.BOOLEAN, state),
-      ...initCallback(() => {
+      $init: () => {
         if (initiallyOnline) {
           device.transport.connect();
         }
@@ -316,7 +310,10 @@ export const setOnline = (
         //   `setOnline/${device.transport.host}:${device.transport.port}`,
         //   state
         // );
-      }),
-    }),
+      },
+      flip: trigger(ValueTypeNg.NULL, new NullState(() => state.flip())),
+      level: Level.PROPERTY as const,
+      main: setter(ValueTypeNg.BOOLEAN, state),
+    },
   };
 };

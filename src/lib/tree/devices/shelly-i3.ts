@@ -4,7 +4,6 @@ import { UDPDevice } from '../../device/udp.js';
 import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { ipDevice } from '../elements/device.js';
-import { Element } from '../main.js';
 import { button, Timings } from '../properties/sensors.js';
 
 export const shellyi3 = (
@@ -17,10 +16,10 @@ export const shellyi3 = (
 ) => {
   const device = new UDPDevice(logger, host, port);
 
-  return new Element({
+  return {
     ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
     button0: button(device, 0),
     button1: button(device, 1),
     button2: button(device, 2),
-  });
+  };
 };

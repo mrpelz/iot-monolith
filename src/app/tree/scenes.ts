@@ -11,76 +11,40 @@ import { properties as livingRoomProperties } from './rooms/living-room.js';
 
 export const kitchenAdjacentChillax = scene(
   [
+    new SceneMember(diningRoomProperties.ceilingLight.main.setState, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.b.main.setState, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.g.main.setState, false),
     new SceneMember(
-      diningRoomProperties.ceilingLight.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.b.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.g.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.r.props.brightness.props.setState,
+      diningRoomProperties.kallaxLedRGB.r.brightness.setState,
       0.5,
       0,
     ),
     new SceneMember(
-      diningRoomProperties.kallaxLedSide.props.brightness.props.setState,
+      diningRoomProperties.kallaxLedSide.brightness.setState,
       0.5,
       0,
     ),
+    new SceneMember(diningRoomProperties.kallaxLedW.main.setState, false),
+    new SceneMember(diningRoomProperties.tableLight.main.setState, false),
+    new SceneMember(hallwayProperties.ceilingLightBack.main.setState, false),
+    new SceneMember(hallwayProperties.ceilingLightFront.main.setState, false),
+    new SceneMember(kitchenProperties.ledLeftCWhite.main.setState, false),
+    new SceneMember(kitchenProperties.ledLeftFloodlight.main.setState, false),
     new SceneMember(
-      diningRoomProperties.kallaxLedW.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.tableLight.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      hallwayProperties.ceilingLightBack.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      hallwayProperties.ceilingLightFront.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftCWhite.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftFloodlight.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftWWhite.props.brightness.props.setState,
+      kitchenProperties.ledLeftWWhite.brightness.setState,
       0.5,
       0,
     ),
+    new SceneMember(kitchenProperties.ledRightCWhite.main.setState, false),
+    new SceneMember(kitchenProperties.ledRightFloodlight.main.setState, false),
     new SceneMember(
-      kitchenProperties.ledRightCWhite.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledRightFloodlight.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledRightWWhite.props.brightness.props.setState,
+      kitchenProperties.ledRightWWhite.brightness.setState,
       0.5,
       0,
     ),
+    new SceneMember(livingRoomProperties.ceilingLight.main.setState, false),
     new SceneMember(
-      livingRoomProperties.ceilingLight.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      livingRoomProperties.standingLamp.props.main.props.setState,
+      livingRoomProperties.standingLamp.main.setState,
       true,
       false,
     ),
@@ -91,74 +55,41 @@ export const kitchenAdjacentChillax = scene(
 export const kitchenAdjacentBright = scene(
   [
     new SceneMember(
-      diningRoomProperties.ceilingLight.props.main.props.setState,
+      diningRoomProperties.ceilingLight.main.setState,
+      true,
+      false,
+    ),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.b.main.setState, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.g.main.setState, false),
+    new SceneMember(diningRoomProperties.kallaxLedRGB.r.main.setState, false),
+    new SceneMember(
+      diningRoomProperties.kallaxLedSide.brightness.setState,
+      1,
+      0,
+    ),
+    new SceneMember(diningRoomProperties.kallaxLedW.brightness.setState, 1, 0),
+    new SceneMember(diningRoomProperties.tableLight.main.setState, true, false),
+    new SceneMember(kitchenProperties.ledLeftCWhite.brightness.setState, 1, 0),
+    new SceneMember(
+      kitchenProperties.ledLeftFloodlight.brightness.setState,
+      1,
+      0,
+    ),
+    new SceneMember(kitchenProperties.ledLeftWWhite.brightness.setState, 1, 0),
+    new SceneMember(kitchenProperties.ledRightCWhite.brightness.setState, 1, 0),
+    new SceneMember(
+      kitchenProperties.ledRightFloodlight.brightness.setState,
+      1,
+      0,
+    ),
+    new SceneMember(kitchenProperties.ledRightWWhite.brightness.setState, 1, 0),
+    new SceneMember(
+      livingRoomProperties.ceilingLight.main.setState,
       true,
       false,
     ),
     new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.b.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.g.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedRGB.props.r.props.main.props.setState,
-      false,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedSide.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      diningRoomProperties.kallaxLedW.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      diningRoomProperties.tableLight.props.main.props.setState,
-      true,
-      false,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftCWhite.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftFloodlight.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      kitchenProperties.ledLeftWWhite.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      kitchenProperties.ledRightCWhite.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      kitchenProperties.ledRightFloodlight.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      kitchenProperties.ledRightWWhite.props.brightness.props.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      livingRoomProperties.ceilingLight.props.main.props.setState,
-      true,
-      false,
-    ),
-    new SceneMember(
-      livingRoomProperties.standingLamp.props.main.props.setState,
+      livingRoomProperties.standingLamp.main.setState,
       true,
       false,
     ),
@@ -168,10 +99,10 @@ export const kitchenAdjacentBright = scene(
 
 export const allLightsOff = triggerElement(async () => {
   const allLights_ = await allLights;
-  allLights_.props.main.props.setState.value = false;
+  allLights_.main.setState.value = false;
 }, 'lighting');
 
 export const allOff = triggerElement(async () => {
   const all_ = await all;
-  all_.props.main.props.setState.value = false;
+  all_.main.setState.value = false;
 }, 'scene');

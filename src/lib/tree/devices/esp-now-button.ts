@@ -7,7 +7,7 @@ import { Logger } from '../../log.js';
 import { Persistence } from '../../persistence.js';
 import { ESPNowTransport } from '../../transport/esp-now.js';
 import { espNowDevice, ipDevice } from '../elements/device.js';
-import { Element, Level } from '../main.js';
+import { Level } from '../main.js';
 import { button, Timings } from '../properties/sensors.js';
 
 export type EspNowButtonOptions = {
@@ -38,11 +38,11 @@ export const espNowButton = (
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
-      espNow: new Element({
+      espNow: {
         ...children(device),
         ...espNowDevice(device),
         isSubDevice: true as const,
-      }),
+      },
     };
   })();
 
@@ -51,18 +51,18 @@ export const espNowButton = (
     const device = new UDPDevice(logger, host, port);
 
     return {
-      wifi: new Element({
+      wifi: {
         ...children(device),
         ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
         isSubDevice: true as const,
-      }),
+      },
     };
   })();
 
-  return new Element({
+  return {
     $: 'espNowButton' as const,
     ...espNow,
     ...wifi,
     level: Level.DEVICE as const,
-  });
+  };
 };

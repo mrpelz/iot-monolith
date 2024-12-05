@@ -13,7 +13,7 @@ import { Timer } from '../../timer.js';
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
-import { Element, Level, ValueType } from '../main.js';
+import { Level, ValueType } from '../main.js';
 
 export const offTimer = (
   time: number,
@@ -66,17 +66,17 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  return new Element({
+  return {
     $: 'offTimer' as const,
-    active: new Element({
-      cancel: new Element({
+    active: {
+      cancel: {
         main: trigger(
           ValueType.NULL,
           new NullState(() => (active.value = false)),
         ),
-      }),
+      },
       main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
-      reset: new Element({
+      reset: {
         main: trigger(
           ValueType.NULL,
           new NullState(() => {
@@ -84,26 +84,26 @@ export const offTimer = (
             active.value = true;
           }),
         ),
-      }),
+      },
       state: active,
-    }),
-    flip: new Element({
+    },
+    flip: {
       main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
-    }),
+    },
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
-    runoutTime: new Element({
+    runoutTime: {
       main: getter(ValueType.NUMBER, runoutTime, 'date'),
-    }),
+    },
     state: timer,
-    triggerTime: new Element({
+    triggerTime: {
       main: getter(
         ValueType.NUMBER,
         new ReadOnlyObservable(triggerTime),
         'date',
       ),
-    }),
-  });
+    },
+  };
 };
 
 export const scheduledRamp = (
@@ -172,17 +172,17 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  return new Element({
+  return {
     $: 'scheduledRamp' as const,
-    cancel: new Element({
+    cancel: {
       main: trigger(ValueType.NULL, new NullState(() => cancel())),
-    }),
-    flip: new Element({
+    },
+    flip: {
       main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
-    }),
+    },
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
-    nextCompletion: new Element({
+    nextCompletion: {
       main: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
@@ -194,8 +194,8 @@ export const scheduledRamp = (
         ),
         'date',
       ),
-    }),
-    nextExecution: new Element({
+    },
+    nextExecution: {
       main: getter(
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
@@ -204,9 +204,9 @@ export const scheduledRamp = (
         ),
         'date',
       ),
-    }),
-    progress: new Element({
+    },
+    progress: {
       main: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
-    }),
-  });
+    },
+  };
 };

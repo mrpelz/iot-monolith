@@ -7,6 +7,7 @@ const { dirname } = nodePath;
 import { jsonParseGuarded } from './data.js';
 import { callstack, Input, Logger } from './log.js';
 import { AnyWritableObservable, Observer } from './observable.js';
+import { Schedule } from './schedule.js';
 
 export class Persistence {
   private readonly _log: Input;
@@ -17,12 +18,14 @@ export class Persistence {
 
   private readonly _path: string;
 
-  constructor(path: string, logger: Logger) {
+  constructor(path: string, schedule: Schedule, logger: Logger) {
     this._path = path;
 
     this._log = logger.getInput({
       head: `${this.constructor.name} "${path}"`,
     });
+
+    schedule.addTask(() => this.persist());
   }
 
   observe(
