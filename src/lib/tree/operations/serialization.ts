@@ -10,7 +10,13 @@ import { NullState, ReadOnlyNullState } from '../../state.js';
 import { isGetter } from '../elements/getter.js';
 import { isSetter } from '../elements/setter.js';
 import { isTrigger } from '../elements/trigger.js';
-import { isValueType, TExclude, TValueType, ValueType } from '../main.js';
+import {
+  isValueType,
+  Level,
+  TExclude,
+  TValueType,
+  ValueType,
+} from '../main.js';
 import { Paths } from './paths.js';
 
 export enum InteractionType {
@@ -104,6 +110,27 @@ export const isInteractionReference = (
 
   return true;
 };
+
+export const levelDescription = {
+  [Level.NONE]: 'NONE',
+  [Level.SYSTEM]: 'SYSTEM',
+  [Level.HOME]: 'HOME',
+  [Level.BUILDING]: 'BUILDING',
+  [Level.FLOOR]: 'FLOOR',
+  [Level.ROOM]: 'ROOM',
+  [Level.AREA]: 'AREA',
+  [Level.DEVICE]: 'DEVICE',
+  [Level.PROPERTY]: 'PROPERTY',
+  [Level.ELEMENT]: 'ELEMENT',
+} as const;
+
+export const valueTypeDescription = {
+  [ValueType.BOOLEAN]: 'boolean',
+  [ValueType.NULL]: 'null',
+  [ValueType.NUMBER]: 'number',
+  [ValueType.RAW]: 'unknown',
+  [ValueType.STRING]: 'string',
+} as const;
 
 const invalidValueTypes = ['object', 'function'];
 

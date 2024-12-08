@@ -61,20 +61,25 @@ export type TValueType = {
   [ValueType.STRING]: string;
 };
 
+export const levelObjectMatch = {
+  [Level.AREA]: { level: Level.AREA as const },
+  [Level.BUILDING]: { level: Level.BUILDING as const },
+  [Level.DEVICE]: { level: Level.DEVICE as const },
+  [Level.ELEMENT]: { level: Level.ELEMENT as const },
+  [Level.FLOOR]: { level: Level.FLOOR as const },
+  [Level.HOME]: { level: Level.HOME as const },
+  [Level.NONE]: { level: Level.NONE as const },
+  [Level.PROPERTY]: { level: Level.PROPERTY as const },
+  [Level.ROOM]: { level: Level.ROOM as const },
+  [Level.SYSTEM]: { level: Level.SYSTEM as const },
+} as const;
+
 export const descriptionValueType = {
   boolean: ValueType.BOOLEAN,
   null: ValueType.NULL,
   number: ValueType.NUMBER,
   string: ValueType.STRING,
   unknown: ValueType.RAW,
-} as const;
-
-export const valueTypeDescription = {
-  [ValueType.BOOLEAN]: 'boolean',
-  [ValueType.NULL]: 'null',
-  [ValueType.NUMBER]: 'number',
-  [ValueType.RAW]: 'unknown',
-  [ValueType.STRING]: 'string',
 } as const;
 
 export const isValueType = <T extends ValueType>(
