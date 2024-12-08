@@ -120,7 +120,7 @@ export class WebApi {
         streamCountObserver.remove();
         observer.remove();
 
-        this._streamCount.value -= 1;
+        this._streamCount.value -= Math.max(0, this._streamCount.value - 1);
 
         ws.close();
       };
