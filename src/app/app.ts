@@ -4,7 +4,12 @@ import { collectDefaultMetrics, register } from 'prom-client';
 import { WebApi } from '../lib/api/main.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
-import { anyBoolean, Level, match } from '../lib/tree/main.js';
+import {
+  anyBoolean,
+  Level,
+  levelObjectMatch,
+  match,
+} from '../lib/tree/main.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
 import { Paths } from '../lib/tree/operations/paths.js';
@@ -43,7 +48,7 @@ export const app = async (): Promise<void> => {
       level: Level.ROOM as const,
     },
     system,
-  ).flatMap((child) => match({ level: Level.DEVICE as const }, child));
+  ).flatMap((child) => match(levelObjectMatch[Level.DEVICE], child));
 
   // eslint-disable-next-line no-console
   console.log(roomDevices.map((device) => device.$));

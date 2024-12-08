@@ -5,10 +5,11 @@ import { HttpServer } from './http-server.js';
 import { callstack, Logger } from './log.js';
 import { AnyWritableObservable } from './observable.js';
 import { NullState } from './state.js';
-import { isValueType, valueTypeDescription } from './tree/main.js';
+import { isValueType } from './tree/main.js';
 import {
   InteractionType,
   Serialization,
+  valueTypeDescription,
 } from './tree/operations/serialization.js';
 
 const PATH_HOOKS = '/hooks' as const;
