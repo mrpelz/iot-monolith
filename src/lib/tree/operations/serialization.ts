@@ -93,9 +93,10 @@ const makeInteractionReference = <R extends string, T extends InteractionType>(
   type,
 });
 
-export const isInteractionReference = (
+export const isInteractionReference = <T extends InteractionType>(
   input: unknown,
-): input is InteractionReference => {
+  type?: T,
+): input is InteractionReference<string, T> => {
   if (typeof input !== 'object') return false;
   if (input === null) return false;
 
@@ -107,6 +108,7 @@ export const isInteractionReference = (
 
   if (!('type' in input)) return false;
   if (typeof input.type !== 'number') return false;
+  if (type !== undefined && input.type !== type) return false;
 
   return true;
 };
