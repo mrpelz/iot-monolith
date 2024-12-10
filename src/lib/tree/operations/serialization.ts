@@ -63,7 +63,7 @@ export type TElementSerialization =
   | TElementSerializationPrimitive
   | TElementSerializationPrimitive[]
   | InteractionReference
-  | { [key: string]: TElementSerialization };
+  | ({ [key: string]: TElementSerialization } & { $id: string });
 
 export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
   ? never
@@ -81,7 +81,7 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
                 [K in keyof T as ElementSerialization<T[K]> extends never
                   ? never
                   : K]: ElementSerialization<T[K], Prev[D]>;
-              }
+              } & { $id: string }
       : T;
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
@@ -197,18 +197,20 @@ export class Serialization<T extends object> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends object>(element: E) {
-    const pathRecord = this._paths.getByObject(element);
+  private _serializeElement<E extends object>(object: E) {
+    const pathRecord = this._paths.getByObject(object);
     if (!pathRecord) return undefined;
 
     const { id } = pathRecord;
 
-    const result = {} as Record<string, TElementSerialization>;
+    const result = {
+      $id: id,
+    } as Record<string, TElementSerialization> & { $id: string };
 
     let props: EmptyObject;
 
-    if (isGetter(element)) {
-      const { state, ...rest } = element;
+    if (isGetter(object)) {
+      const { state, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
@@ -217,8 +219,8 @@ export class Serialization<T extends object> {
         state,
         valueType,
       );
-    } else if (isSetter(element)) {
-      const { state, setState, ...rest } = element;
+    } else if (isSetter(object)) {
+      const { state, setState, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
@@ -233,8 +235,8 @@ export class Serialization<T extends object> {
         setState,
         valueType,
       );
-    } else if (isTrigger(element)) {
-      const { setState, ...rest } = element;
+    } else if (isTrigger(object)) {
+      const { setState, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
@@ -244,7 +246,7 @@ export class Serialization<T extends object> {
         valueType,
       );
     } else {
-      props = element;
+      props = object;
     }
 
     for (const key of objectKeys(props)) {
@@ -267,11 +269,11 @@ export class Serialization<T extends object> {
           return sourceProperty;
         }
 
-        if (invalidValueTypes.includes(typeof sourceProperty)) {
-          return undefined;
+        if (!invalidValueTypes.includes(typeof sourceProperty)) {
+          return sourceProperty;
         }
 
-        return sourceProperty;
+        return undefined;
       })();
 
       if (targetProperty === undefined) continue;
@@ -279,7 +281,7 @@ export class Serialization<T extends object> {
       result[key] = targetProperty;
     }
 
-    this._serializations.set(element, result);
+    this._serializations.set(object, result);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return result as any;
