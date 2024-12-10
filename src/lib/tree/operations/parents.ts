@@ -7,12 +7,12 @@ export class Parents {
   }
 
   private _addChildren(object: object, parent?: object) {
+    this._parents.set(object, parent);
+
     for (const child of objectValues(object)) {
       if (!isPlainObject(child)) continue;
       this._addChildren(child, object);
     }
-
-    this._parents.set(object, parent);
   }
 
   getParent(object: object): object | undefined {
