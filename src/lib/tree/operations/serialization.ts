@@ -57,13 +57,15 @@ export type InteractionReference<
 
 export type InteractionUpdate = [string, unknown];
 
+export type ObjectAmendments = { $id: string };
+
 export type TElementSerializationPrimitive = boolean | null | number | string;
 
 export type TElementSerialization =
   | TElementSerializationPrimitive
   | TElementSerializationPrimitive[]
   | InteractionReference
-  | { [key: string]: TElementSerialization };
+  | ({ [key: string]: TElementSerialization } & ObjectAmendments);
 
 export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
   ? never
@@ -81,7 +83,7 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
                 [K in keyof T as ElementSerialization<T[K]> extends never
                   ? never
                   : K]: ElementSerialization<T[K], Prev[D]>;
-              }
+              } & ObjectAmendments
       : T;
 
 const makeInteractionReference = <R extends string, T extends InteractionType>(
@@ -197,54 +199,54 @@ export class Serialization<T extends object> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends object>(element: E) {
-    const pathRecord = this._paths.getByObject(element);
+  private _serializeElement<E extends object>(object: E) {
+    const pathRecord = this._paths.getByObject(object);
     if (!pathRecord) return undefined;
 
-    const { id } = pathRecord;
-
-    const result = {} as Record<string, TElementSerialization>;
+    const result = {
+      $id: pathRecord.id,
+    } as Record<string, TElementSerialization> & ObjectAmendments;
 
     let props: EmptyObject;
 
-    if (isGetter(element)) {
-      const { state, ...rest } = element;
+    if (isGetter(object)) {
+      const { state, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', id),
+        uuidv5('state', pathRecord.id),
         state,
         valueType,
       );
-    } else if (isSetter(element)) {
-      const { state, setState, ...rest } = element;
+    } else if (isSetter(object)) {
+      const { state, setState, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', id),
+        uuidv5('state', pathRecord.id),
         state,
         valueType,
       );
 
       result.setState = this._registerCollector(
-        uuidv5('setState', id),
+        uuidv5('setState', pathRecord.id),
         setState,
         valueType,
       );
-    } else if (isTrigger(element)) {
-      const { setState, ...rest } = element;
+    } else if (isTrigger(object)) {
+      const { setState, ...rest } = object;
       const { valueType } = rest;
       props = rest;
 
       result.setState = this._registerCollector(
-        uuidv5('setState', id),
+        uuidv5('setState', pathRecord.id),
         setState,
         valueType,
       );
     } else {
-      props = element;
+      props = object;
     }
 
     for (const key of objectKeys(props)) {
@@ -267,11 +269,11 @@ export class Serialization<T extends object> {
           return sourceProperty;
         }
 
-        if (invalidValueTypes.includes(typeof sourceProperty)) {
-          return undefined;
+        if (!invalidValueTypes.includes(typeof sourceProperty)) {
+          return sourceProperty;
         }
 
-        return sourceProperty;
+        return undefined;
       })();
 
       if (targetProperty === undefined) continue;
@@ -279,7 +281,7 @@ export class Serialization<T extends object> {
       result[key] = targetProperty;
     }
 
-    this._serializations.set(element, result);
+    this._serializations.set(object, result);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return result as any;
