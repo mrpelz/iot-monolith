@@ -19,7 +19,14 @@ export const shelly1 = <T extends string>(
   const device = new UDPDevice(logger, host, port);
 
   return {
-    ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      undefined,
+      initiallyOnline,
+    ),
     button: button(device, 0),
     internal: {
       relay: output(device, 0, topic, undefined, persistence),

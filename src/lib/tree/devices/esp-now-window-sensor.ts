@@ -44,7 +44,7 @@ export const espNowWindowSensor = (
     return {
       espNow: {
         ...children(device),
-        ...espNowDevice(device),
+        ...espNowDevice(device, true),
         isSubDevice: true,
       },
     };
@@ -57,7 +57,14 @@ export const espNowWindowSensor = (
     return {
       wifi: {
         ...children(device),
-        ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
+        ...ipDevice(
+          device,
+          true,
+          persistence,
+          timings,
+          undefined,
+          initiallyOnline,
+        ),
         isSubDevice: true,
       },
     };
