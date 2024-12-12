@@ -66,7 +66,7 @@ export const testDevice = (
   };
 
   return {
-    ...ipDevice(device, persistence, timings),
+    ...ipDevice(device, false, persistence, timings),
     internal: {
       ...async(device, timings.slow || timings.default),
       ...mhz19(device, timings.slow || timings.default),

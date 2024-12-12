@@ -21,7 +21,14 @@ export const h801 = (
   const indicator = device.addService(new Indicator(0));
 
   return {
-    ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      indicator,
+      initiallyOnline,
+    ),
     indicator,
     internal: {
       ledR: led(device, 0, indicator, persistence),
