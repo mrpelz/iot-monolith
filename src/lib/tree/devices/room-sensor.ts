@@ -75,7 +75,14 @@ export const roomSensor = (
   };
 
   return {
-    ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      undefined,
+      initiallyOnline,
+    ),
     internal: {
       // ...mhz19(device, timings.slow || timings.default),
       // ...sds011(device, timings.slow || timings.default),

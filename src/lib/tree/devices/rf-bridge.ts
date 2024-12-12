@@ -24,7 +24,14 @@ export const rfBridge = (
   const rf433Event = device.addEvent(new Rf433());
 
   return {
-    ...ipDevice(device, persistence, timings, undefined, initiallyOnline),
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      undefined,
+      initiallyOnline,
+    ),
     ...rfReadout(espNowEvent, rf433Event),
     espNowTransport: new ESPNowTransport(logger, espNowEvent),
     ev1527Transport: new Ev1527Transport(logger, rf433Event),

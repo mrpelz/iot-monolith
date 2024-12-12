@@ -21,35 +21,40 @@ import {
   vcc,
 } from '../properties/sensors.js';
 
-const deviceMeta = (device: Device) => ({
+const deviceMeta = <S extends boolean>(device: Device, isSubDevice: S) => ({
   ...(device.identifier ? { identifier: [...device.identifier.values()] } : {}),
+  isSubDevice,
   level: Level.DEVICE as const,
   transportType: device.transport.constructor.name,
   type: device.constructor.name,
 });
 
-export const espNowDevice = (device: ESPNowDevice) => ({
+export const espNowDevice = <S extends boolean>(
+  device: ESPNowDevice,
+  isSubDevice: S,
+) => ({
   $: 'espNowDevice' as const,
-  ...deviceMeta(device),
+  ...deviceMeta(device, isSubDevice),
   ...lastSeen(device.seen),
   ...vcc(device),
 });
 
 export const ev1527Device = (device: Ev1527Device) => ({
   $: 'ev1527Device' as const,
-  ...deviceMeta(device),
+  ...deviceMeta(device, false),
   ...lastSeen(device.seen),
 });
 
-export const ipDevice = (
+export const ipDevice = <S extends boolean>(
   device: TCPDevice | UDPDevice,
+  isSubDevice: S,
   persistence: Persistence,
   timings: Timings,
   indicator?: Indicator,
   initiallyOnline = false,
 ) => ({
   $: 'ipDevice' as const,
-  ...deviceMeta(device),
+  ...deviceMeta(device, isSubDevice),
   ...hello(device, timings.moderate || timings.default),
   ...online(device),
   ...setOnline(device, persistence, initiallyOnline),

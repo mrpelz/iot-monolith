@@ -22,7 +22,14 @@ export const sonoffBasic = <T extends string>(
   const indicator = device.addService(new Indicator(0));
 
   return {
-    ...ipDevice(device, persistence, timings, indicator, initiallyOnline),
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      indicator,
+      initiallyOnline,
+    ),
     button: button(device, 0),
     indicator,
     internal: {
