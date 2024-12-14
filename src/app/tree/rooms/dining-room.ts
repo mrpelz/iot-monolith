@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,

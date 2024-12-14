@@ -60,11 +60,13 @@ export const app = async (): Promise<void> => {
 
   const [sunElevation] = match({ $: 'sunElevation' as const }, system);
 
-  // eslint-disable-next-line no-console
-  console.log(
-    paths.getByObject(sunElevation)?.id,
-    paths.getParent(sunElevation.isDay)?.id,
-  );
+  if (sunElevation) {
+    // eslint-disable-next-line no-console
+    console.log(
+      paths.getByObject(sunElevation)?.id,
+      paths.getParent(sunElevation.isDay)?.id,
+    );
+  }
 
   // eslint-disable-next-line no-console
   console.log(

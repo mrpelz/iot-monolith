@@ -65,7 +65,6 @@ export class Observable<T> {
     observerCallback: ObserverCallback<T>,
     forcedReport = false,
   ): Observer {
-    // eslint-disable-next-line prefer-const
     let observer: Observer;
 
     const metaObserverCallback = (value: T) => {
@@ -251,7 +250,6 @@ export const isReadOnlyObservable = (
   return false;
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 // export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) =>
 //   class extends aClass {
 //     addObservable(observable: AnyObservable<T>): Observer {

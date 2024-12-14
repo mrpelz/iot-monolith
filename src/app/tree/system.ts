@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
 import { epochs } from '../../lib/epochs.js';
 import { Level } from '../../lib/tree/main.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';

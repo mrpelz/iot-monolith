@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
 import { epochs } from '../../../lib/epochs.js';
 import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';

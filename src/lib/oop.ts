@@ -200,7 +200,6 @@ export const objectValues = <T extends EmptyObject>(
   input: T,
 ): ObjectValues<T>[] => objectKeys(input).map((property) => input[property]);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const rebind = (context: any, ...names: string[]): void => {
   for (const name of names) {
     const fn = context[name];

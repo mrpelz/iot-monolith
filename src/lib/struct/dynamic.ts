@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { DynamicStringEncodings, StringEncodings } from '../string.js';
 import {
   FixedBuffer,
@@ -200,6 +198,7 @@ export class DynamicStruct<T extends DynamicStructMembers> {
   set value(input: DynamicStructMemberValues<T>) {
     for (const [index, memberInput] of input.entries()) {
       const member = this._members[index];
+      if (!member) continue;
 
       if (isWrappedStaticStructMember(member)) {
         member.member.value = memberInput;
@@ -266,6 +265,7 @@ export class MappedDynamicStruct<T extends MappedDynamicStructMembers> {
   set value(input: MappedDynamicStructMemberValues<T>) {
     for (const [property, memberInput] of Object.entries(input)) {
       const member = this._members[property];
+      if (!member) continue;
 
       if (isWrappedStaticStructMember(member)) {
         member.member.value = memberInput;

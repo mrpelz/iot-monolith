@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { match } from '../../lib/tree/main.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { properties as diningRoomProperties } from './rooms/dining-room.js';

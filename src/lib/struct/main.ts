@@ -266,7 +266,6 @@ class IntegerStructMember<
     }
   }
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(bytes: T = 2 as T) {
     super(bytes);
   }
@@ -543,7 +542,8 @@ export class Struct<T extends StructMembers> {
 
   set value(input: StructMemberValues<T>) {
     for (const [index, memberInput] of input.entries()) {
-      this._members[index].value = memberInput;
+      const object = this._members[index];
+      if (object) object.value = memberInput;
     }
   }
 
@@ -662,7 +662,8 @@ export class MappedStruct<T extends MappedStructMembers> {
 
   set value(input: MappedStructMemberValues<T>) {
     for (const [property, memberInput] of Object.entries(input)) {
-      this._members[property].value = memberInput;
+      const object = this._members[property];
+      if (object) object.value = memberInput;
     }
   }
 

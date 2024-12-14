@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
 import { testDevice } from '../../../lib/tree/devices/test-device.js';

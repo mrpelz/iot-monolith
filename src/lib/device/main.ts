@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { emptyBuffer } from '../data.js';
 import { callstack, Input, Logger } from '../log.js';
 import { NUMBER_RANGES } from '../number.js';

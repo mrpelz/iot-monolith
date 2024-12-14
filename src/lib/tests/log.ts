@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { callstack, DevOutput, Logger } from '../log.js';
 
 const globalLogger = new Logger();
