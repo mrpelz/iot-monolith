@@ -159,7 +159,8 @@ export class EnumState<T = unknown> extends Observable<T> {
       throw new RangeError(`"${index}" is a not existing index`);
     }
 
-    this.value = this._enum[index];
+    const nextValue = this._enum[index];
+    if (nextValue) this.value = nextValue;
 
     return this;
   }
@@ -187,7 +188,6 @@ export class NullState<T = null> {
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {
-    // eslint-disable-next-line prefer-const
     let observer: Observer;
 
     const metaObserverCallback = (value: T) => {

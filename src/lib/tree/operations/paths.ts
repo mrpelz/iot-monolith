@@ -39,6 +39,7 @@ export const getObjectFromPath = <S extends object>(
   path: Path,
 ): object | undefined => {
   const [key, ...rest] = path;
+  if (!key) return undefined;
 
   if (!(key in source)) return undefined;
 

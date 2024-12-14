@@ -16,7 +16,7 @@ export class Ev1527Device extends Device<Ev1527Transport> {
     if (address > maxAddress) throw new RangeError('address too big');
 
     const deviceIdentifier = Buffer.alloc(byteLengthAddress);
-    // eslint-disable-next-line no-bitwise
+
     deviceIdentifier.writeUIntBE(address, 0, byteLengthAddress);
 
     super(logger, transport, deviceIdentifier, false);

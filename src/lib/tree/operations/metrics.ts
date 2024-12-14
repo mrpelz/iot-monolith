@@ -97,6 +97,7 @@ export const setupMetrics = <T extends object>(
 
       for (const key of keys) {
         const label = metricLabels[key];
+        if (!label) continue;
 
         const cleanKey = cleanLabel(key);
 

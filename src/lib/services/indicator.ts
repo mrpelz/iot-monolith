@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/member-ordering */
 /* eslint-disable sort-keys */
 
 import { Service } from '../device/main.js';
