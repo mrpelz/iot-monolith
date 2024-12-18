@@ -256,10 +256,6 @@ export class Serialization<T extends object> {
       const { [key]: sourceProperty } = props;
 
       const targetProperty = (() => {
-        if (isPlainObject(sourceProperty)) {
-          return this._serializeElement(sourceProperty);
-        }
-
         if (
           Array.isArray(sourceProperty) &&
           sourceProperty.every(
@@ -267,6 +263,10 @@ export class Serialization<T extends object> {
           )
         ) {
           return sourceProperty;
+        }
+
+        if (isPlainObject(sourceProperty)) {
+          return this._serializeElement(sourceProperty);
         }
 
         if (!invalidValueTypes.includes(typeof sourceProperty)) {
