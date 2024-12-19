@@ -178,6 +178,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
+    lights,
     main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting',
   };
@@ -204,6 +205,7 @@ export const outputGrouping = <T extends string>(
     flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
+    outputs,
     topic,
   };
 };
