@@ -157,7 +157,7 @@ export class Serialization<T extends object> {
   ) {
     this.updates = new ReadOnlyNullState(this._updates);
 
-    this.tree = this._serializeElement(root);
+    this.tree = this._serializeObject(root);
     Object.freeze(this.tree);
   }
 
@@ -199,7 +199,7 @@ export class Serialization<T extends object> {
     return makeInteractionReference(id, InteractionType.EMIT);
   }
 
-  private _serializeElement<E extends object>(object: E) {
+  private _serializeObject<E extends object>(object: E) {
     const pathRecord = this._paths.getByObject(object);
     if (!pathRecord) return undefined;
 
@@ -255,27 +255,7 @@ export class Serialization<T extends object> {
 
       const { [key]: sourceProperty } = props;
 
-      const targetProperty = (() => {
-        if (
-          Array.isArray(sourceProperty) &&
-          sourceProperty.every(
-            (value) => !invalidValueTypes.includes(typeof value),
-          )
-        ) {
-          return sourceProperty;
-        }
-
-        if (isPlainObject(sourceProperty)) {
-          return this._serializeElement(sourceProperty);
-        }
-
-        if (!invalidValueTypes.includes(typeof sourceProperty)) {
-          return sourceProperty;
-        }
-
-        return undefined;
-      })();
-
+      const targetProperty = this._serializeProperty(sourceProperty);
       if (targetProperty === undefined) continue;
 
       result[key] = targetProperty;
@@ -285,6 +265,23 @@ export class Serialization<T extends object> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return result as any;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private _serializeProperty(property: any): any {
+    if (Array.isArray(property)) {
+      return property.map((child) => this._serializeProperty(child));
+    }
+
+    if (isPlainObject(property)) {
+      return this._serializeObject(property);
+    }
+
+    if (!invalidValueTypes.includes(typeof property)) {
+      return property;
+    }
+
+    return undefined;
   }
 
   get interactions(): IterableIterator<[string, Interaction]> {

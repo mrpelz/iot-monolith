@@ -3,7 +3,11 @@ import { Level } from '../../lib/tree/main.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { persistence } from '../persistence.js';
 import { every5Seconds } from '../timings.js';
-import { all as _all, allLights, kitchenAdjacentLights } from './groups.js';
+import {
+  all as all_,
+  allLights as allLights_,
+  kitchenAdjacentLights,
+} from './groups.js';
 import { sunElevation } from './misc.js';
 import { diningRoom } from './rooms/dining-room.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
@@ -56,7 +60,8 @@ export const wurstHome = {
 };
 
 export const system = (async () => {
-  const all = await _all;
+  const all = await all_;
+  const allLights = await allLights_;
 
   const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
 
