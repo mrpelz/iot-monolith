@@ -84,17 +84,19 @@ export class WebApi {
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
 
       ws.on('message', (data) => {
-        if (data.toString() === WEB_API_UUID) {
+        const data_ = data.toString();
+
+        if (data_ === WEB_API_UUID) {
           ws.send(WEB_API_UUID);
 
           return;
         }
 
         const payload = (() => {
-          if (typeof data !== 'string') return null;
+          if (typeof data_ !== 'string') return null;
 
           try {
-            return JSON.parse(data);
+            return JSON.parse(data_);
           } catch {
             return null;
           }
