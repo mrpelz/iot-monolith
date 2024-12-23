@@ -43,7 +43,8 @@
   "module": "dist/main.js",
   "types": "dist/main.d.ts",
   "files": [
-    "dist/**/*.{js,map,ts}"
+    "dist/**/*.{js,map,ts}",
+    "Dockerfile"
   ],
   "scripts": {
     "build": "npm run --silent tsc",
@@ -78,7 +79,7 @@
     "ws": "latest"
   },
   "devDependencies": {
-    "@mrpelz/boilerplate-node": "latest",
+    "@mrpelz/boilerplate-node": "11.2.2-docker-build-036a3298.0",
     "@types/suncalc": "latest",
     "@types/uuid": "latest",
     "@types/ws": "latest",
