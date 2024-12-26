@@ -1,9 +1,9 @@
-import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
 import { properties as mrpelzBathroomProperties } from './rooms/mrpelz-bathroom.js';
 import { properties as mrpelzBedroomProperties } from './rooms/mrpelz-bedroom.js';
+import { properties as officeProperties } from './rooms/office.js';
 import { outputGrouping } from '../lib/tree/properties/actuators.js';
 import { properties as storageRoomProperties } from './rooms/storage-room.js';
 import { properties as tsiaBathroomProperties } from './rooms/tsia-bathroom.js';
@@ -11,13 +11,6 @@ import { properties as tsiaBedroomProperties } from './rooms/tsia-bedroom.js';
 
 export const all = outputGrouping(
   [
-    diningRoomProperties.ceilingLight,
-    diningRoomProperties.kallaxLedRGB.b,
-    diningRoomProperties.kallaxLedRGB.g,
-    diningRoomProperties.kallaxLedRGB.r,
-    diningRoomProperties.kallaxLedSide,
-    diningRoomProperties.kallaxLedW,
-    diningRoomProperties.tableLight,
     hallwayProperties.ceilingLightBack,
     hallwayProperties.ceilingLightFront,
     kitchenProperties.ledLeftCWhite,
@@ -26,8 +19,6 @@ export const all = outputGrouping(
     kitchenProperties.ledRightCWhite,
     kitchenProperties.ledRightFloodlight,
     kitchenProperties.ledRightWWhite,
-    livingRoomProperties.ceilingLight,
-    livingRoomProperties.fan,
     livingRoomProperties.standingLamp,
     mrpelzBathroomProperties.ceilingLight,
     mrpelzBathroomProperties.mirrorHeating,
@@ -35,8 +26,10 @@ export const all = outputGrouping(
     mrpelzBathroomProperties.mirrorLight,
     mrpelzBathroomProperties.nightLight,
     mrpelzBedroomProperties.ceilingLight,
-    mrpelzBedroomProperties.floodLight,
     mrpelzBedroomProperties.nightLight,
+    mrpelzBedroomProperties.standingLamp,
+    officeProperties.floodlight,
+    officeProperties.ceilingLight,
     storageRoomProperties.ceilingLight,
     tsiaBathroomProperties.ceilingLight,
     tsiaBathroomProperties.mirrorLed,
@@ -50,13 +43,8 @@ export const all = outputGrouping(
 );
 
 export const allLights = outputGrouping([
-  diningRoomProperties.ceilingLight,
-  diningRoomProperties.kallaxLedRGB.b,
-  diningRoomProperties.kallaxLedRGB.g,
-  diningRoomProperties.kallaxLedRGB.r,
-  diningRoomProperties.kallaxLedSide,
-  diningRoomProperties.kallaxLedW,
-  diningRoomProperties.tableLight,
+  officeProperties.ceilingLight,
+  officeProperties.floodlight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,
@@ -65,15 +53,14 @@ export const allLights = outputGrouping([
   kitchenProperties.ledRightCWhite,
   kitchenProperties.ledRightFloodlight,
   kitchenProperties.ledRightWWhite,
-  livingRoomProperties.ceilingLight,
   livingRoomProperties.standingLamp,
   mrpelzBathroomProperties.ceilingLight,
   mrpelzBathroomProperties.mirrorLed,
   mrpelzBathroomProperties.mirrorLight,
   mrpelzBathroomProperties.nightLight,
   mrpelzBedroomProperties.ceilingLight,
-  mrpelzBedroomProperties.floodLight,
   mrpelzBedroomProperties.nightLight,
+  mrpelzBedroomProperties.standingLamp,
   storageRoomProperties.ceilingLight,
   tsiaBathroomProperties.ceilingLight,
   tsiaBathroomProperties.mirrorLed,
@@ -84,13 +71,8 @@ export const allLights = outputGrouping([
 ]);
 
 export const kitchenAdjacentLights = outputGrouping([
-  diningRoomProperties.ceilingLight,
-  diningRoomProperties.kallaxLedRGB.b,
-  diningRoomProperties.kallaxLedRGB.g,
-  diningRoomProperties.kallaxLedRGB.r,
-  diningRoomProperties.kallaxLedSide,
-  diningRoomProperties.kallaxLedW,
-  diningRoomProperties.tableLight,
+  officeProperties.floodlight,
+  officeProperties.ceilingLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,
@@ -99,6 +81,5 @@ export const kitchenAdjacentLights = outputGrouping([
   kitchenProperties.ledRightCWhite,
   kitchenProperties.ledRightFloodlight,
   kitchenProperties.ledRightWWhite,
-  livingRoomProperties.ceilingLight,
   livingRoomProperties.standingLamp,
 ]);

@@ -5,13 +5,11 @@ import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../lib/tree/devices/ev1527-button.js';
-import { epochs } from '../../lib/epochs.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { offTimer } from '../../lib/tree/properties/logic.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
 import { roomSensor } from '../../lib/tree/devices/room-sensor.js';
@@ -30,13 +28,6 @@ export const devices = {
     'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
-  floodLight: obiPlug(
-    logger,
-    persistence,
-    timings,
-    'lighting',
-    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud'
-  ),
   multiButton: ev1527ButtonX4(ev1527Transport, 831834, logger),
   nightLight: sonoffBasic(
     logger,
@@ -50,6 +41,13 @@ export const devices = {
     persistence,
     timings,
     'test-room-sensor.lan.wurstsalat.cloud'
+  ),
+  standingLamp: obiPlug(
+    logger,
+    persistence,
+    timings,
+    'lighting',
+    'livingroom-fan.lan.wurstsalat.cloud'
   ),
   wallswitchDoor: shellyi3(
     logger,
@@ -67,9 +65,9 @@ export const devices = {
 
 export const instances = {
   button: devices.button.$,
-  floodlightButton: devices.floodLight.button.$,
   multiButton: devices.multiButton.$,
   nightLightButton: devices.nightLight.button.$,
+  standingLampButton: devices.standingLamp.button.$,
   wallswitchBed: devices.ceilingLight.button.$,
   wallswitchDoorLeft: devices.wallswitchDoor.button0.$,
   wallswitchDoorMiddle: devices.wallswitchDoor.button1.$,
@@ -80,14 +78,10 @@ export const properties = {
   brightness: devices.roomSensor.brightness,
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
-  floodLight: devices.floodLight.relay,
-  floodLightTimer: offTimer(epochs.hour, undefined, [
-    'mrpelz-bedroom/floodLightTimer',
-    persistence,
-  ]),
   humidity: devices.roomSensor.humidity,
   nightLight: devices.nightLight.relay,
   pressure: devices.roomSensor.pressure,
+  standingLamp: devices.standingLamp.relay,
   temperature: devices.roomSensor.temperature,
   tvoc: devices.roomSensor.tvoc,
   windowLeft: addMeta(
@@ -99,8 +93,8 @@ export const properties = {
 export const groups = {
   allLights: outputGrouping([
     properties.ceilingLight,
-    properties.floodLight,
     properties.nightLight,
+    properties.standingLamp,
   ]),
   allWindows: inputGrouping(properties.windowLeft.open._get),
 };
@@ -115,24 +109,24 @@ export const groups = {
     properties.nightLight._set.value = true;
   });
 
-  instances.floodlightButton.up(() => properties.floodLight._set.flip());
-  instances.floodlightButton.longPress(
-    () => (groups.allLights._set.value = false)
-  );
-
   instances.multiButton.topLeft.observe(() =>
     properties.ceilingLight._set.flip()
   );
-  instances.multiButton.topRight.observe(() =>
-    properties.floodLight._set.flip()
-  );
+  instances.multiButton.topRight.observe(() => groups.allLights._set.flip());
   instances.multiButton.bottomLeft.observe(() =>
     properties.nightLight._set.flip()
   );
-  instances.multiButton.bottomRight.observe(() => groups.allLights._set.flip());
+  instances.multiButton.bottomRight.observe(() =>
+    properties.standingLamp._set.flip()
+  );
 
   instances.nightLightButton.up(() => properties.nightLight._set.flip());
   instances.nightLightButton.longPress(
+    () => (groups.allLights._set.value = false)
+  );
+
+  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
+  instances.standingLampButton.longPress(
     () => (groups.allLights._set.value = false)
   );
 
@@ -151,18 +145,10 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchDoorRight.up(() => properties.floodLight._set.flip());
+  instances.wallswitchDoorRight.up(() => (groups.allLights._set.value = false));
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
-
-  properties.floodLight._set.observe((value) => {
-    properties.floodLightTimer.active.$.value = value;
-  }, true);
-
-  properties.floodLightTimer.$.observe(() => {
-    properties.floodLight._set.value = false;
-  });
 })();
 
 export const mrpelzBedroom = addMeta(

@@ -80,7 +80,9 @@ export const properties = {
 };
 
 (async () => {
-  const { all, allLights, kitchenAdjacentLights } = await import('../groups.js');
+  const { all, allLights, kitchenAdjacentLights } = await import(
+    '../groups.js'
+  );
   const { kitchenAdjacentChillax } = await import('../scenes.js');
 
   instances.wallswitchBack.up(() => groups.ceilingLight._set.flip());
