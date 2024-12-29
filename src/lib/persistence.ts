@@ -93,7 +93,8 @@ export class Persistence {
   async restore(): Promise<void> {
     const restorePayload = await (async () => {
       try {
-        return readFile(this._path, { encoding: 'utf8' });
+        mkdirSync(dirname(this._path), { recursive: true });
+        return readFile(this._path, { encoding: 'utf8', flag: 'as+' });
       } catch (_error) {
         const error = new Error('cannot restore from file system', {
           cause: _error,
