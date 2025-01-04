@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: example  # irgendein name
+  annotations: {}
+  labels: {}
+  namespace: iot-test
+spec:
+  selector:
+    workload.user.cattle.io/workloadselector: apps.deployment-iot-test-example  # siehe label in deployment.yaml
+  ports:
+    - name: http  # irgendein name
+      port: 80
+      protocol: TCP
+      targetPort: 80  # hier könnte man auch auf den port namen aus deployment.yaml verweisen
+  sessionAffinity: None
+  type: ClusterIP

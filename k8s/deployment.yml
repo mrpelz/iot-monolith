@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  name: example # irgendein name
+  namespace: iot-test
+  labels:
+    workload.user.cattle.io/workloadselector: apps.deployment-iot-test-example # das hier kann irgendein key-value pair sein. muss aber mit denen unten übereinstimmen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-iot-test-example
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-iot-test-example
+      namespace: iot-test
+    spec:
+      containers:
+        - image: nginx:latest
+          imagePullPolicy: Always
+          name: nginx # irgendein name
+          ports:
+            - containerPort: 80
+              name: http # irgendein name
+              protocol: TCP
+      restartPolicy: Always
