@@ -3,3 +3,10 @@ include:
     ref: main
     file: "/gitlab/.gitlab-ci.yml"
     # file: "/gitlab/.monorepo.gitlab-ci.yml"
+
+publish:docker:
+  extends: .publish:docker
+  trigger:
+    strategy: depend
+    include:
+    - local: ".docker.gitlab-ci.yml"
