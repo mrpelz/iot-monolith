@@ -1,5 +1,8 @@
 FROM node:lts
 
+WORKDIR /home/node
+USER node
+
 ENV NODE_ENV="production"
 
 ARG PACKAGE_SPEC
