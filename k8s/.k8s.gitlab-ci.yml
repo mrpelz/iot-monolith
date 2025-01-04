@@ -1,0 +1,19 @@
+image:
+  name: bitnami/kubectl:latest
+  entrypoint: [""]
+
+stages:
+  - prepare
+  - deploy
+
+k8s:
+  stage: prepare
+  variables:
+    NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+  script:
+    - |
+      if $(kubectl get namespace "${NAMESPACE}" >/dev/null 2>&1); then
+        kubectl create namespace "${NAMESPACE}"
+        kubectl label namespace "{$NAMESPACE}" field.cattle.io/projectId="${RANCHER_PROJECT_ID}"
+        kubectl annotate namespace "${NAMESPACE}" field.cattle.io/projectId="local:${RANCHER_PROJECT_ID}"
+      fi
