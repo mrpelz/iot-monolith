@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations: {}
+  labels: {}
+  name: iot-monolith
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "{SUB_DOMAIN}.rancher.lan.wurstsalat.cloud"
+      http:
+        paths:
+          - backend:
+              service:
+                name: iot-monolith
+                port:
+                  name: http
+            path: /
+            pathType: Prefix

@@ -1,7 +1,7 @@
 include:
   - project: "mrpelz/boilerplate"
     ref: main
-    file: "/gitlab/.docker.gitlab-ci.yml"
+    file: "/gitlab/.container.gitlab-ci.yml"
 
 make images:
   rules:
@@ -27,10 +27,9 @@ make images (arm64):
   rules:
     - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
   variables:
+    ARCH: arm64
+    TAG: arm64
     VERSION_TAG: "latest"
-variables:
-  ARCH: arm64
-  TAG: arm64
 
 make multi-arch images:
   rules:
