@@ -2,11 +2,24 @@ include:
   - project: "mrpelz/boilerplate"
     ref: main
     file: "/gitlab/.gitlab-ci.yml"
-    # file: "/gitlab/.monorepo.gitlab-ci.yml"
 
-publish:docker:
-  extends: .publish:docker
+publish:container:
+  extends: .publish:container
   trigger:
     strategy: depend
     include:
-    - local: ".docker.gitlab-ci.yml"
+    - local: "/gitlab/.container.gitlab-ci.yml"
+
+deploy:k8s:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      variables:
+        VERSION_TAG: "latest"
+    - if: $CI_COMMIT_TAG
+      variables:
+        VERSION_TAG: "pre-${CI_COMMIT_TAG_MESSAGE}"
+  trigger:
+    strategy: depend
+    include:
+    - local: "/k8s/.k8s.gitlab-ci.yml"
