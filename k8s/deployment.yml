@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  name: iot-monolith
+  labels:
+    app: iot-monolith
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iot-monolith
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: iot-monolith
+    spec:
+      containers:
+        - image: {IMAGE}
+          imagePullPolicy: IfNotPresent
+          name: iot-monolith
+          ports:
+            - containerPort: 1337
+              name: http
+              protocol: TCP
+      imagePullSecrets:
+        - name: regcred
+      restartPolicy: Always

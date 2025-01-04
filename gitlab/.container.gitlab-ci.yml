@@ -1,0 +1,15 @@
+include:
+  - project: "mrpelz/boilerplate"
+    ref: main
+    file: "/gitlab/.container.gitlab-ci.yml"
+
+make images:
+  parallel:
+    matrix:
+      - ARCH: amd64
+        TAG: x86_64
+
+make multi-arch images:
+  variables:
+    VERSION_TAG: "pre-${CI_COMMIT_TAG_MESSAGE}"
+    PLATFORMS: "linux/amd64"
