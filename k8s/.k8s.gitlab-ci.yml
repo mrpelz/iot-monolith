@@ -1,0 +1,48 @@
+image:
+  name: bitnami/kubectl:latest
+  entrypoint: [""]
+
+stages:
+  - prepare
+  - deploy
+
+create namespace:
+  stage: prepare
+  variables:
+    GIT_STRATEGY: empty
+    NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+  script:
+    - |
+      if $(kubectl get namespace "${NAMESPACE}" >/dev/null 2>&1); then
+        echo "namespace \"${NAMESPACE}\" already exists"
+        exit 0
+      fi
+
+      kubectl create namespace "${NAMESPACE}"
+    - kubectl label --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="${RANCHER_PROJECT_ID}"
+    - kubectl annotate --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="local:${RANCHER_PROJECT_ID}"
+
+create deployment:
+  stage: deploy
+  variables:
+    NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+  script:
+    - |
+      sed -e "s#{IMAGE}#${CI_REGISTRY_IMAGE}/${PACKAGE_NAME}:${CI_COMMIT_TAG}#g" "k8s/deployment.yml" | \
+      kubectl apply -n "${NAMESPACE}" -f -
+
+create service:
+  stage: deploy
+  variables:
+    NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+  script:
+    - kubectl apply -n "${NAMESPACE}" -f "k8s/service.yml"
+
+create ingress:
+  stage: deploy
+  variables:
+    NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+  script:
+    - |
+      sed -e "s#{SUB_DOMAIN}#${NAMESPACE}#g" "k8s/ingress.yml" | \
+      kubectl apply -n "${NAMESPACE}" -f -
