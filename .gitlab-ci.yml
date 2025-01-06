@@ -3,13 +3,6 @@ include:
     ref: main
     file: "/gitlab/.gitlab-ci.yml"
 
-publish:container:
-  extends: .publish:container
-  trigger:
-    strategy: depend
-    include:
-    - local: "/gitlab/.container.gitlab-ci.yml"
-
 deploy:k8s:
   stage: deploy
   rules:
