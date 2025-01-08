@@ -83,6 +83,7 @@
     "ws": "latest"
   },
   "devDependencies": {
+    "@mrpelz/boilerplate-common": "latest",
     "@mrpelz/boilerplate-node": "latest",
     "@types/suncalc": "latest",
     "@types/uuid": "latest",
