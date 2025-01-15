@@ -91,7 +91,7 @@ export const instances = {
 };
 
 export const properties = {
-  bookshelfLedDown: devices.bookshelfLeds.ledG,
+  bookshelfLedDown: devices.bookshelfLeds.ledB,
   bookshelfLedUpRed: devices.bookshelfLeds.ledG,
   bookshelfLedUpWWhite: devices.bookshelfLeds.ledR,
   brightness: devices.roomSensor.brightness,
@@ -132,12 +132,12 @@ export const groups = {
     properties.bookshelfLedUpWWhite,
   ]),
   nightstandLedRed: ledGrouping([
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
-  nightstandLedWWhite: ledGrouping([
     properties.nightstandLeftLedRed,
     properties.nightstandRightLedRed,
+  ]),
+  nightstandLedWWhite: ledGrouping([
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedWWhite,
   ]),
 };
 
