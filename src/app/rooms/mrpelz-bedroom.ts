@@ -132,12 +132,12 @@ export const groups = {
     properties.bookshelfLedUpWWhite,
   ]),
   nightstandLedRed: ledGrouping([
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
-  nightstandLedWWhite: ledGrouping([
     properties.nightstandLeftLedRed,
     properties.nightstandRightLedRed,
+  ]),
+  nightstandLedWWhite: ledGrouping([
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedWWhite,
   ]),
 };
 
