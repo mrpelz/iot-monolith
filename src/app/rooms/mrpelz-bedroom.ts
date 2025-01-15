@@ -5,12 +5,16 @@ import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../lib/tree/devices/ev1527-button.js';
+import {
+  ledGrouping,
+  outputGrouping,
+} from '../../lib/tree/properties/actuators.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
+import { h801 } from '../../lib/tree/devices/h801.js';
 import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { logger } from '../logging.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { persistence } from '../persistence.js';
 import { roomSensor } from '../../lib/tree/devices/room-sensor.js';
 import { shelly1 } from '../../lib/tree/devices/shelly1.js';
@@ -19,6 +23,12 @@ import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
 import { timings } from '../timings.js';
 
 export const devices = {
+  bookshelfLeds: h801(
+    logger,
+    persistence,
+    timings,
+    'bedroom-bedrgbwleds.lan.wurstsalat.cloud'
+  ),
   button: ev1527ButtonX1(ev1527Transport, 74160, logger),
   ceilingLight: shelly1(
     logger,
@@ -35,6 +45,12 @@ export const devices = {
     timings,
     'lighting',
     'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
+  ),
+  nightstandLeds: h801(
+    logger,
+    persistence,
+    timings,
+    'bedroom-nightstandleds.lan.wurstsalat.cloud'
   ),
   roomSensor: roomSensor(
     logger,
@@ -75,11 +91,18 @@ export const instances = {
 };
 
 export const properties = {
+  bookshelfLedDown: devices.bookshelfLeds.ledG,
+  bookshelfLedUpRed: devices.bookshelfLeds.ledG,
+  bookshelfLedUpWWhite: devices.bookshelfLeds.ledR,
   brightness: devices.roomSensor.brightness,
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
   humidity: devices.roomSensor.humidity,
   nightLight: devices.nightLight.relay,
+  nightstandLeftLedRed: devices.nightstandLeds.ledG,
+  nightstandLeftLedWWhite: devices.nightstandLeds.ledR,
+  nightstandRightLedRed: devices.nightstandLeds.ledW2,
+  nightstandRightLedWWhite: devices.nightstandLeds.ledW1,
   pressure: devices.roomSensor.pressure,
   standingLamp: devices.standingLamp.relay,
   temperature: devices.roomSensor.temperature,
@@ -92,11 +115,30 @@ export const properties = {
 
 export const groups = {
   allLights: outputGrouping([
+    properties.bookshelfLedDown,
+    properties.bookshelfLedUpRed,
+    properties.bookshelfLedUpWWhite,
     properties.ceilingLight,
     properties.nightLight,
+    properties.nightstandLeftLedRed,
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedRed,
+    properties.nightstandRightLedWWhite,
     properties.standingLamp,
   ]),
   allWindows: inputGrouping(properties.windowLeft.open._get),
+  bookshelfLedWWhite: ledGrouping([
+    properties.bookshelfLedDown,
+    properties.bookshelfLedUpWWhite,
+  ]),
+  nightstandLedRed: ledGrouping([
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedWWhite,
+  ]),
+  nightstandLedWWhite: ledGrouping([
+    properties.nightstandLeftLedRed,
+    properties.nightstandRightLedRed,
+  ]),
 };
 
 (() => {
@@ -117,7 +159,7 @@ export const groups = {
     properties.nightLight._set.flip()
   );
   instances.multiButton.bottomRight.observe(() =>
-    properties.standingLamp._set.flip()
+    groups.bookshelfLedWWhite._set.flip()
   );
 
   instances.nightLightButton.up(() => properties.nightLight._set.flip());
@@ -145,7 +187,7 @@ export const groups = {
     () => (groups.allLights._set.value = false)
   );
 
-  instances.wallswitchDoorRight.up(() => (groups.allLights._set.value = false));
+  instances.wallswitchDoorRight.up(() => groups.allLights._set.flip());
   instances.wallswitchDoorRight.longPress(
     () => (groups.allLights._set.value = false)
   );
