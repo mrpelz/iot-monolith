@@ -46,7 +46,7 @@ export class Output {
 
   readonly levels: Level[];
 
-  constructor(logLevel: number, callback: Callback) {
+  constructor(logLevel: Level, callback: Callback) {
     this.levels = [
       Level.EMERGENCY,
       Level.ALERT,
@@ -91,7 +91,7 @@ export class DevOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor(logLevel = 7) {
+  constructor(logLevel = Level.DEBUG) {
     super(logLevel, DevOutput._callback);
   }
 }
@@ -116,7 +116,7 @@ export class JournaldOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor(logLevel = 7) {
+  constructor(logLevel = Level.DEBUG) {
     super(logLevel, JournaldOutput._callback);
   }
 }
