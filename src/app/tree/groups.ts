@@ -1,9 +1,9 @@
 import { match } from '../../lib/tree/main.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
-import { properties as diningRoomProperties } from './rooms/dining-room.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
+import { properties as officeProperties } from './rooms/office.js';
 
 export const all = (async () => {
   const { wurstHome } = await import('./system.js');
@@ -35,13 +35,8 @@ export const allLights = (async () => {
 })();
 
 export const kitchenAdjacentLights = outputGrouping([
-  diningRoomProperties.ceilingLight,
-  diningRoomProperties.kallaxLedRGB.b,
-  diningRoomProperties.kallaxLedRGB.g,
-  diningRoomProperties.kallaxLedRGB.r,
-  diningRoomProperties.kallaxLedSide,
-  diningRoomProperties.kallaxLedW,
-  diningRoomProperties.tableLight,
+  officeProperties.floodlight,
+  officeProperties.ceilingLight,
   hallwayProperties.ceilingLightBack,
   hallwayProperties.ceilingLightFront,
   kitchenProperties.ledLeftCWhite,

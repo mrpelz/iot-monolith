@@ -1,9 +1,7 @@
 import { promiseGuard } from '../../../lib/promise.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
-import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
 import {
@@ -11,46 +9,33 @@ import {
   outputGrouping,
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
-import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { ev1527Transport } from '../bridges.js';
+import { groups as hallwayGroups } from './hallway.js';
 
 export const devices = {
-  ceilingLight: sonoffBasic(
-    'lighting' as const,
-    'livingroom-ceilinglight.lan.wurstsalat.cloud',
-    context,
-  ),
   couchButton: ev1527ButtonX4(822_302, ev1527Transport, context),
-  fan: obiPlug('fan' as const, 'livingroom-fan.lan.wurstsalat.cloud', context),
   standingLamp: obiPlug(
     'lighting' as const,
     'livingroom-standinglamp.lan.wurstsalat.cloud',
     context,
   ),
-  wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
-  windowSensor: ev1527WindowSensor(670_496, ev1527Transport, context),
+  wallswitch: shellyi3('diningroom-wallswitch.lan.wurstsalat.cloud', context),
 };
 
 export const instances = {
   couchButton: devices.couchButton.state,
-  fanButton: devices.fan.button.state,
   standingLampButton: devices.standingLamp.button.state,
-  wallswitchBottom: devices.wallswitch.button2.state,
-  wallswitchMiddle: devices.wallswitch.button1.state,
+  wallswitchBottom: devices.wallswitch.button1.state,
   wallswitchTop: devices.wallswitch.button0.state,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.internal.relay,
-  fan: devices.fan.internal.relay,
   standingLamp: devices.standingLamp.internal.relay,
-  window: window(devices.windowSensor),
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight, properties.standingLamp]),
-  allWindows: inputGrouping(properties.window.open.main.state),
+  allLights: outputGrouping([properties.standingLamp]),
 };
 
 const isTerrariumLedsOverride = new BooleanState(false);
@@ -88,135 +73,55 @@ export const scenes = {
     '../../tree/scenes.js'
   );
 
-  instances.couchButton.topLeft.observe(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-      return;
-    }
-
-    kitchenAdjacentChillax.main.setState.value = true;
-  });
-  instances.couchButton.topRight.observe(() =>
-    properties.fan.flip.setState.trigger(),
-  );
-  instances.couchButton.bottomLeft.observe(() =>
-    scenes.mediaOnOrSwitch.main.setState.trigger(),
-  );
-  instances.couchButton.bottomRight.observe(() =>
-    scenes.mediaOff.main.setState.trigger(),
-  );
-
-  testRoomInstances.espNowButton0.up(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-      return;
-    }
-
-    kitchenAdjacentChillax.main.setState.value = true;
-  });
-
-  testRoomInstances.espNowButton1.up(() =>
-    scenes.mediaOnOrSwitch.main.setState.trigger(),
-  );
-  testRoomInstances.espNowButton1.longPress(() =>
-    scenes.mediaOff.main.setState.trigger(),
-  );
-
-  instances.fanButton.up(() => properties.fan.flip.setState.trigger());
-
-  instances.standingLampButton.up(() =>
-    properties.standingLamp.flip.setState.trigger(),
-  );
-  instances.standingLampButton.longPress(
-    () => (kitchenAdjacentLights.main.setState.value = false),
-  );
-
-  instances.wallswitchBottom.up(() => properties.fan.flip.setState.trigger());
-  instances.wallswitchBottom.longPress(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-      return;
-    }
-
-    kitchenAdjacentChillax.main.setState.value = true;
-  });
-
-  instances.wallswitchMiddle.up(() =>
-    properties.standingLamp.flip.setState.trigger(),
-  );
-  instances.wallswitchMiddle.longPress(() => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-      return;
-    }
-
-    kitchenAdjacentChillax.main.setState.value = true;
-  });
-
-  instances.wallswitchTop.up(() =>
-    properties.ceilingLight.flip.setState.trigger(),
-  );
-  instances.wallswitchTop.longPress(() => {
+  const kitchenAdjecentsLightsOffKitchenBrightOn = () => {
     if (kitchenAdjacentLights.main.setState.value) {
       kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
     kitchenAdjacentBright.main.setState.value = true;
-  });
-  instances.couchButton.bottomLeft.observe(() =>
-    scenes.mediaOnOrSwitch._set.trigger()
-  );
-  instances.couchButton.bottomRight.observe(() =>
-    scenes.mediaOff._set.trigger()
-  );
+  };
 
-  instances.standingLampButton.up(() => properties.standingLamp._set.flip());
-  instances.standingLampButton.longPress(() =>
-    kitchenAdjacentLights._set.flip()
-  );
-
-  instances.wallswitchBottom.up(() => properties.standingLamp._set.flip());
-  instances.wallswitchBottom.longPress(
-    kitchenAdjecentsLightsOffKitchenChillaxOn
-  );
-
-  instances.wallswitchTop.up(() => hallwayGroups.ceilingLight._set.flip());
-  instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
-
-  const handleTerrariumLedsAutomation = () => {
-    if (isTerrariumLedsOverride.value) {
+  const kitchenAdjecentsLightsOffKitchenChillaxOn = () => {
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    const relativeSunElevationDay = relativeSunElevationOfDay();
-    const brightnessDay = relativeSunElevationDay
-      ? maxmin(relativeSunElevationDay + 0.18)
-      : 0;
-    properties.terrariumLedTop.brightness._set.value = brightnessDay;
-
-    const relativeSunElevationNight = relativeSunElevationOfNight();
-    const brightnessNight = relativeSunElevationNight
-      ? maxmin(relativeSunElevationNight + 0.18)
-      : 0;
-    properties.terrariumLedRed.brightness._set.value = brightnessNight;
+    kitchenAdjacentChillax.main.setState.value = true;
   };
 
-  isTerrariumLedsOverride.observe((value) => {
-    properties.overrideTimer.active.$.value = value;
-
-    if (!value) return;
-
-    properties.terrariumLedRed._set.value = false;
-    properties.terrariumLedTop._set.value = false;
-  });
-
-  isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
-  every5Seconds.addTask(handleTerrariumLedsAutomation);
-
-  properties.overrideTimer.$.observe(
-    () => (isTerrariumLedsOverride.value = false)
+  instances.couchButton.topLeft.observe(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
   );
+  instances.couchButton.topRight.observe(
+    kitchenAdjecentsLightsOffKitchenBrightOn,
+  );
+  instances.couchButton.bottomLeft.observe(() =>
+    scenes.mediaOnOrSwitch.main.setState.trigger(),
+  );
+  instances.couchButton.bottomRight.observe(() =>
+    scenes.mediaOff.main.setState.trigger(),
+  );
+
+  instances.standingLampButton.up(() =>
+    properties.standingLamp.flip.setState.trigger(),
+  );
+  instances.standingLampButton.longPress(() =>
+    kitchenAdjacentLights.flip.setState.trigger(),
+  );
+
+  instances.wallswitchBottom.up(() =>
+    properties.standingLamp.flip.setState.trigger(),
+  );
+  instances.wallswitchBottom.longPress(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
+
+  instances.wallswitchTop.up(() =>
+    hallwayGroups.ceilingLight.flip.setState.trigger(),
+  );
+  instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
 })();
 
 export const livingRoom = {

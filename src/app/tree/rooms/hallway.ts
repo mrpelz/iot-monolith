@@ -68,14 +68,29 @@ export const properties = {
 };
 
 (async () => {
-  const { all, allLights, kitchenAdjacentLights } = await import(
-    '../groups.js'
-  );
+  const {
+    all: all_,
+    allLights: allLights_,
+    kitchenAdjacentLights,
+  } = await import('../groups.js');
   const { kitchenAdjacentChillax } = await import('../scenes.js');
+
+  const all = await all_;
+  const allLights = await allLights_;
+
+  const kitchenAdjecentsLightsOffKitchenChillaxOn = () => {
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
+      return;
+    }
+
+    kitchenAdjacentChillax.main.setState.value = true;
+  };
 
   instances.wallswitchBack.up(() =>
     groups.ceilingLight.flip.setState.trigger(),
   );
+  instances.wallswitchBack.longPress(kitchenAdjecentsLightsOffKitchenChillaxOn);
 
   instances.wallswitchMiddle.up(() =>
     groups.ceilingLight.flip.setState.trigger(),
@@ -84,25 +99,22 @@ export const properties = {
   instances.wallswitchFrontLeft.up(() =>
     properties.ceilingLightFront.flip.setState.trigger(),
   );
-  instances.wallswitchFrontLeft.longPress(() => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
-      return;
-    }
-
-    kitchenAdjacentChillax._set.value = true;
-  });
+  instances.wallswitchFrontLeft.longPress(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
 
   instances.wallswitchFrontMiddle.up(() =>
     properties.ceilingLightBack.flip.setState.trigger(),
   );
+  instances.wallswitchFrontMiddle.longPress(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
+
   instances.wallswitchFrontRight.up(async () => {
-    const all_ = await all;
-    all_.main.setState.value = false;
+    all.main.setState.value = false;
   });
   instances.wallswitchFrontRight.longPress(async () => {
-    const allLights_ = await allLights;
-    allLights_.flip.setState.trigger();
+    allLights.flip.setState.trigger();
   });
 
   properties.entryDoor.open.main.state.observe((value) => {

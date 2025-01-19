@@ -1,4 +1,3 @@
-import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -12,7 +11,6 @@ import { ev1527Transport } from '../bridges.js';
 export const devices = {
   ledsLeft: h801('kitchen-ledsleft.lan.wurstsalat.cloud', context),
   ledsRight: h801('kitchen-ledsright.lan.wurstsalat.cloud', context),
-  leftButton: ev1527ButtonX1(898_570, ev1527Transport, context),
   wallswitchBack: shellyi3(
     'kitchen-wallswitchback.lan.wurstsalat.cloud',
     context,
@@ -25,7 +23,6 @@ export const devices = {
 };
 
 export const instances = {
-  leftButton: devices.leftButton.state,
   wallswitchBack: devices.wallswitchBack.button0.state,
   wallswitchFrontBottomLeft: devices.wallswitchFront.button1.state,
   wallswitchFrontBottomRight: devices.wallswitchFront.button2.state,
@@ -80,8 +77,6 @@ export const groups = {
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../../tree/scenes.js'
   );
-
-  instances.leftButton.observe(() => groups.allLights.flip.setState.trigger());
 
   instances.wallswitchFrontTop.up(() =>
     groups.allLights.flip.setState.trigger(),

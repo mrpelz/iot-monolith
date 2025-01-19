@@ -1,69 +1,53 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-
-import { Levels, addMeta } from '../../lib/tree/main.js';
-import { epochs } from '../../lib/epochs.js';
+import { epochs } from '../../../lib/epochs.js';
+import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
+import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { Level } from '../../../lib/tree/main.js';
+import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
+import { context } from '../../context.js';
+import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
-import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
-import { inputGrouping } from '../../lib/tree/properties/sensors.js';
 import { properties as livingRoomProperties } from './living-room.js';
-import { logger } from '../logging.js';
-import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
-import { offTimer } from '../../lib/tree/properties/logic.js';
-import { outputGrouping } from '../../lib/tree/properties/actuators.js';
-import { persistence } from '../persistence.js';
-import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { sonoffBasic } from '../../lib/tree/devices/sonoff-basic.js';
-import { timings } from '../timings.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting',
-    'livingroom-ceilinglight.lan.wurstsalat.cloud'
+    'livingroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
   floodlight: obiPlug(
-    logger,
-    persistence,
-    timings,
     'lighting',
-    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud'
+    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud',
+    context,
   ),
-  wallswitch: shellyi3(
-    logger,
-    persistence,
-    timings,
-    'livingroom-wallswitch.lan.wurstsalat.cloud'
-  ),
-  windowSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    670496
-  ),
+  wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
+  windowSensor: ev1527WindowSensor(670_496, ev1527Transport, context),
 };
 
 export const instances = {
-  floodlightButton: devices.floodlight.button.$,
-  wallswitchBottom: devices.wallswitch.button2.$,
-  wallswitchMiddle: devices.wallswitch.button1.$,
-  wallswitchTop: devices.wallswitch.button0.$,
+  floodlightButton: devices.floodlight.button.state,
+  wallswitchBottom: devices.wallswitch.button2.state,
+  wallswitchMiddle: devices.wallswitch.button1.state,
+  wallswitchTop: devices.wallswitch.button0.state,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.relay,
-  floodlight: devices.floodlight.relay,
+  ceilingLight: devices.ceilingLight.internal.relay,
+  floodlight: devices.floodlight.internal.relay,
   floodlightTimer: offTimer(epochs.hour, undefined, [
     'office/floodlightTimer',
     persistence,
   ]),
-  window: addMeta({ open: devices.windowSensor.open }, { level: Levels.AREA }),
+  window: window(devices.windowSensor),
 };
 
 export const groups = {
   allLights: outputGrouping([properties.ceilingLight, properties.floodlight]),
-  allWindows: inputGrouping(properties.window.open._get),
+  allWindows: inputGrouping(properties.window.open.main.state),
 };
 
 (async () => {
@@ -73,61 +57,62 @@ export const groups = {
   );
 
   const kitchenAdjecentsLightsOffKitchenBrightOn = () => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentBright._set.value = true;
+    kitchenAdjacentBright.main.setState.value = true;
   };
 
   const kitchenAdjecentsLightsOffKitchenChillaxOn = () => {
-    if (kitchenAdjacentLights._set.value) {
-      kitchenAdjacentLights._set.value = false;
+    if (kitchenAdjacentLights.main.setState.value) {
+      kitchenAdjacentLights.main.setState.value = false;
       return;
     }
 
-    kitchenAdjacentChillax._set.value = true;
+    kitchenAdjacentChillax.main.setState.value = true;
   };
 
-  instances.floodlightButton.up(() => properties.floodlight._set.flip());
+  instances.floodlightButton.up(() =>
+    properties.floodlight.flip.setState.trigger(),
+  );
   instances.floodlightButton.longPress(
-    kitchenAdjecentsLightsOffKitchenChillaxOn
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
   );
 
   instances.wallswitchBottom.up(() =>
-    livingRoomProperties.standingLamp._set.flip()
+    livingRoomProperties.standingLamp.flip.setState.trigger(),
   );
   instances.wallswitchBottom.longPress(
-    kitchenAdjecentsLightsOffKitchenChillaxOn
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
   );
 
-  instances.wallswitchMiddle.up(() => properties.floodlight._set.flip());
+  instances.wallswitchMiddle.up(() =>
+    properties.floodlight.flip.setState.trigger(),
+  );
   instances.wallswitchMiddle.longPress(
-    kitchenAdjecentsLightsOffKitchenBrightOn
+    kitchenAdjecentsLightsOffKitchenBrightOn,
   );
 
-  instances.wallswitchTop.up(() => properties.ceilingLight._set.flip());
+  instances.wallswitchTop.up(() =>
+    properties.ceilingLight.flip.setState.trigger(),
+  );
   instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
 
-  properties.floodlight._set.observe((value) => {
-    properties.floodlightTimer.active.$.value = value;
+  properties.floodlight.main.setState.observe((value) => {
+    properties.floodlightTimer.active.state.value = value;
   }, true);
 
-  properties.floodlightTimer.$.observe(() => {
-    properties.floodlight._set.value = false;
+  properties.floodlightTimer.state.observe(() => {
+    properties.floodlight.main.setState.value = false;
   });
 })();
 
-export const office = addMeta(
-  {
-    devices,
-    ...groups,
-    ...properties,
-  },
-  {
-    isConnectingRoom: true,
-    level: Levels.ROOM,
-    name: 'office',
-  }
-);
+export const office = {
+  $: 'office' as const,
+  ...deviceMap(devices),
+  ...groups,
+  ...properties,
+  level: Level.ROOM as const,
+};
