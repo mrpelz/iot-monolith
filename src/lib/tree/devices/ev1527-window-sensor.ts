@@ -3,20 +3,18 @@
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { MultiValueEvent } from '../../items/event.js';
-import { Logger } from '../../log.js';
 import { Observable, ReadOnlyProxyObservable } from '../../observable.js';
-import { Persistence } from '../../persistence.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
-  logger: Logger,
-  persistence: Persistence,
-  transport: Ev1527Transport,
   address: number,
+  transport: Ev1527Transport,
+  { logger, persistence }: Context,
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 

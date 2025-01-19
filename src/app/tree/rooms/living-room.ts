@@ -12,52 +12,24 @@ import {
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
-import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
+import { context } from '../../context.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'livingroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  couchButton: ev1527ButtonX4(ev1527Transport, 822_302, logger),
-  fan: obiPlug(
-    logger,
-    persistence,
-    timings,
-    'fan' as const,
-    'livingroom-fan.lan.wurstsalat.cloud',
-  ),
+  couchButton: ev1527ButtonX4(822_302, ev1527Transport, context),
+  fan: obiPlug('fan' as const, 'livingroom-fan.lan.wurstsalat.cloud', context),
   standingLamp: obiPlug(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'livingroom-standinglamp.lan.wurstsalat.cloud',
+    context,
   ),
-  terrariumLeds: h801(
-    logger,
-    persistence,
-    timings,
-    'office-workbenchleds.lan.wurstsalat.cloud'
-  ),
-  wallswitch: shellyi3(
-    logger,
-    persistence,
-    timings,
-    'livingroom-wallswitch.lan.wurstsalat.cloud',
-  ),
-  windowSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    670_496,
-  ),
+  wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
+  windowSensor: ev1527WindowSensor(670_496, ev1527Transport, context),
 };
 
 export const instances = {

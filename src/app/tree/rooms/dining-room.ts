@@ -13,48 +13,26 @@ import {
   ledGrouping,
   outputGrouping,
 } from '../../../lib/tree/properties/actuators.js';
-import { logger } from '../../logging.js';
-import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
+import { context } from '../../context.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'diningroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  fan: obiPlug(
-    logger,
-    persistence,
-    timings,
-    'fan' as const,
-    'diningroom-fan.lan.wurstsalat.cloud',
-  ),
-  kallaxLeds: h801(
-    logger,
-    persistence,
-    timings,
-    'diningroom-kallaxleds.lan.wurstsalat.cloud',
-  ),
-  kallaxSideButton: ev1527ButtonX1(ev1527Transport, 992_584, logger),
-  tableButton: ev1527ButtonX1(ev1527Transport, 307_536, logger),
+  fan: obiPlug('fan' as const, 'diningroom-fan.lan.wurstsalat.cloud', context),
+  kallaxLeds: h801('diningroom-kallaxleds.lan.wurstsalat.cloud', context),
+  kallaxSideButton: ev1527ButtonX1(992_584, ev1527Transport, context),
+  tableButton: ev1527ButtonX1(307_536, ev1527Transport, context),
   tableLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'diningroom-tablelight.lan.wurstsalat.cloud',
+    context,
   ),
-  tableMultiButton: ev1527ButtonX4(ev1527Transport, 426_506, logger),
-  wallswitch: shellyi3(
-    logger,
-    persistence,
-    timings,
-    'diningroom-wallswitch.lan.wurstsalat.cloud',
-  ),
+  tableMultiButton: ev1527ButtonX4(426_506, ev1527Transport, context),
+  wallswitch: shellyi3('diningroom-wallswitch.lan.wurstsalat.cloud', context),
 };
 
 export const instances = {

@@ -3,3 +3,4 @@ dist
 node_modules
 secrets.txt
 tmp.json
+hap-storage

@@ -3,14 +3,14 @@
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527Button } from '../../events/ev1527-button.js';
 import { StatelessMultiValueEvent } from '../../items/event.js';
-import { Logger } from '../../log.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
+import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
 
 export const ev1527ButtonX4 = (
-  transport: Ev1527Transport,
   address: number,
-  logger: Logger,
+  transport: Ev1527Transport,
+  { logger }: Context,
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 
@@ -26,9 +26,9 @@ export const ev1527ButtonX4 = (
 };
 
 export const ev1527ButtonX1 = (
-  transport: Ev1527Transport,
   address: number,
-  logger: Logger,
+  transport: Ev1527Transport,
+  { logger }: Context,
 ) => {
   const device = new Ev1527Device(logger, transport, address);
 

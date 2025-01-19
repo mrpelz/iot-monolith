@@ -75,7 +75,8 @@
     "tsc:watch": "tsc --watch"
   },
   "dependencies": {
-    "@oozcitak/dom": "latest",
+    "comlink": "^4.4.2",
+    "hap-nodejs": "^0.12.3",
     "prom-client": "latest",
     "proper-tags": "latest",
     "suncalc": "latest",

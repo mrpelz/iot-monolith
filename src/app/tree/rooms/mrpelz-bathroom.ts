@@ -16,10 +16,8 @@ import {
 } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
+import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
 import {
   isAstronomicalTwilight,
   isCivilTwilight,
@@ -27,49 +25,35 @@ import {
   isNight,
   sunElevation,
 } from '../../util.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLight: shelly1(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbathroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 720_256),
-  leds: h801(
-    logger,
-    persistence,
-    timings,
-    'mrpelzbathroom-leds.lan.wurstsalat.cloud',
-  ),
+  doorSensor: ev1527WindowSensor(720_256, ev1527Transport, context),
+  leds: h801('mrpelzbathroom-leds.lan.wurstsalat.cloud', context),
   mirrorHeating: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'heating' as const,
     'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud',
+    context,
   ),
   mirrorLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud',
+    context,
   ),
   nightLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbathroom-nightlight.lan.wurstsalat.cloud',
+    context,
   ),
-  showerButton: ev1527ButtonX1(ev1527Transport, 628_217, logger),
+  showerButton: ev1527ButtonX1(628_217, ev1527Transport, context),
   wallswitchDoor: shellyi3(
-    logger,
-    persistence,
-    timings,
     'mrpelzbathroom-wallswitchdoor.lan.wurstsalat.cloud',
+    context,
   ),
 };
 

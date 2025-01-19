@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { UDPDevice } from '../../device/udp.js';
-import { Logger } from '../../log.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
-import { Persistence } from '../../persistence.js';
+import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
@@ -15,7 +14,6 @@ import {
   metricStaleness,
   mhz19,
   sds011,
-  Timings,
   tsl2561,
   uvIndex,
 } from '../properties/sensors.js';
@@ -30,11 +28,7 @@ class MergedObservableGroup extends ObservableGroup<number | null> {
   }
 }
 
-export const testDevice = (
-  logger: Logger,
-  persistence: Persistence,
-  timings: Timings,
-) => {
+export const testDevice = ({ logger, persistence, timings }: Context) => {
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
