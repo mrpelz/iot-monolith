@@ -6,21 +6,18 @@ import { Level } from '../../../lib/tree/main.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
+import { context } from '../../context.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
 import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 
 export const devices = {
   ceilingLight: shelly1(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'storage-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55_632),
+  doorSensor: ev1527WindowSensor(55_632, ev1527Transport, context),
   rfBridge,
 };
 

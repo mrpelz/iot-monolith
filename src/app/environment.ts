@@ -1,8 +1,16 @@
 import { parse } from '../lib/string.js';
 
-const { LOG_LEVEL, LOG_TELEGRAM, PROD_ENV, TELEGRAM_TOKEN, PERSISTENCE_PATH } =
-  process.env;
+const {
+  HAP_STORAGE_PATH,
+  LOG_LEVEL,
+  LOG_TELEGRAM,
+  PROD_ENV,
+  TELEGRAM_TOKEN,
+  PERSISTENCE_PATH,
+} = process.env;
 
+export const hapStoragePath =
+  HAP_STORAGE_PATH ?? '/var/opt/iot-monolith/hap-storage';
 export const isProd = PROD_ENV ? Boolean(parse(PROD_ENV)) : false;
 export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : 0;
 export const logTelegram = LOG_TELEGRAM ? Boolean(parse(LOG_TELEGRAM)) : false;

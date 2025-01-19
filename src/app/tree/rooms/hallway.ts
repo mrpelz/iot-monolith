@@ -8,38 +8,29 @@ import { Level } from '../../../lib/tree/main.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
+import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLightBack: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'hallway-ceilinglightback.lan.wurstsalat.cloud',
+    context,
   ),
   ceilingLightFront: shelly1(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'hallway-ceilinglightfront.lan.wurstsalat.cloud',
+    context,
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55_024),
+  doorSensor: ev1527WindowSensor(55_024, ev1527Transport, context),
   wallswitchBack: shellyi3(
-    logger,
-    persistence,
-    timings,
     'hallway-wallswitchback.lan.wurstsalat.cloud',
+    context,
   ),
   wallswitchFront: shellyi3(
-    logger,
-    persistence,
-    timings,
     'hallway-wallswitchfront.lan.wurstsalat.cloud',
+    context,
   ),
 };
 

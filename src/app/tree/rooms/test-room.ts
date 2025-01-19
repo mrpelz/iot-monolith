@@ -3,33 +3,37 @@ import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sen
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
-import { logger } from '../../logging.js';
-import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { espNowTransport } from '../../tree/bridges.js';
+import { context } from '../../context.js';
+import { espNowTransport } from '../bridges.js';
 
 export const devices = {
-  espNowButton: espNowButton(logger, persistence, timings, {
-    espNow: {
-      // prettier-ignore
-      macAddress: [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf],
-      transport: espNowTransport,
+  espNowButton: espNowButton(
+    {
+      espNow: {
+        // prettier-ignore
+        macAddress: [0x70, 0x3, 0x9f, 0x7, 0x83, 0xdf],
+        transport: espNowTransport,
+      },
+      wifi: {
+        host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
+      },
     },
-    wifi: {
-      host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
+    context,
+  ),
+  espNowWindowSensor: espNowWindowSensor(
+    {
+      espNow: {
+        // prettier-ignore
+        macAddress: [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0],
+        transport: espNowTransport,
+      },
+      wifi: {
+        host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
+      },
     },
-  }),
-  espNowWindowSensor: espNowWindowSensor(logger, persistence, timings, {
-    espNow: {
-      // prettier-ignore
-      macAddress: [0xdc, 0x4f, 0x22, 0x57, 0xe7, 0xf0],
-      transport: espNowTransport,
-    },
-    wifi: {
-      host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
-    },
-  }),
-  testDevice: testDevice(logger, persistence, timings),
+    context,
+  ),
+  testDevice: testDevice(context),
 };
 
 export const instances = {

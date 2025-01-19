@@ -6,43 +6,22 @@ import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
 import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
-import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
+import { context } from '../../context.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
-  ledsLeft: h801(
-    logger,
-    persistence,
-    timings,
-    'kitchen-ledsleft.lan.wurstsalat.cloud',
-  ),
-  ledsRight: h801(
-    logger,
-    persistence,
-    timings,
-    'kitchen-ledsright.lan.wurstsalat.cloud',
-  ),
-  leftButton: ev1527ButtonX1(ev1527Transport, 898_570, logger),
+  ledsLeft: h801('kitchen-ledsleft.lan.wurstsalat.cloud', context),
+  ledsRight: h801('kitchen-ledsright.lan.wurstsalat.cloud', context),
+  leftButton: ev1527ButtonX1(898_570, ev1527Transport, context),
   wallswitchBack: shellyi3(
-    logger,
-    persistence,
-    timings,
     'kitchen-wallswitchback.lan.wurstsalat.cloud',
+    context,
   ),
   wallswitchFront: shellyi3(
-    logger,
-    persistence,
-    timings,
     'kitchen-wallswitchfront.lan.wurstsalat.cloud',
+    context,
   ),
-  windowSensor: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    841_520,
-  ),
+  windowSensor: ev1527WindowSensor(841_520, ev1527Transport, context),
 };
 
 export const instances = {

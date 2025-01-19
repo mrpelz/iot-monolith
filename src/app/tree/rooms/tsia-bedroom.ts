@@ -10,39 +10,23 @@ import {
   inputGrouping,
   window,
 } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
-import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
+import { context } from '../../context.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'tsiabedroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 55_696),
+  doorSensor: ev1527WindowSensor(55_696, ev1527Transport, context),
   standingLamp: obiPlug(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'tsiabedroom-standinglamp.lan.wurstsalat.cloud',
+    context,
   ),
-  wallswitch: shellyi3(
-    logger,
-    persistence,
-    timings,
-    'tsiabedroom-wallswitch.lan.wurstsalat.cloud',
-  ),
-  windowSensorRight: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    839_280,
-  ),
+  wallswitch: shellyi3('tsiabedroom-wallswitch.lan.wurstsalat.cloud', context),
+  windowSensorRight: ev1527WindowSensor(839_280, ev1527Transport, context),
 };
 
 export const instances = {

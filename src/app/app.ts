@@ -20,6 +20,8 @@ export const app = async (): Promise<void> => {
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
+  const { hap } = await import('./hap.js');
+
   const { system: _system } = await import('./tree/system.js');
 
   const system = await _system;
@@ -34,8 +36,8 @@ export const app = async (): Promise<void> => {
   // eslint-disable-next-line no-console
   serialization.updates.observe((value) => console.log(value));
 
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(serialization.tree, undefined, 2));
+  // // eslint-disable-next-line no-console
+  // console.log(JSON.stringify(serialization.tree, undefined, 2));
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lightingOn = match({ topic: 'lighting' as const }, system).flatMap(
@@ -50,8 +52,8 @@ export const app = async (): Promise<void> => {
     system,
   ).flatMap((child) => match(levelObjectMatch[Level.DEVICE], child));
 
-  // eslint-disable-next-line no-console
-  console.log(roomDevices.map((device) => device.$));
+  // // eslint-disable-next-line no-console
+  // console.log(roomDevices.map((device) => device.$));
 
   const [testRoom] = match({ $: 'testRoom' as const }, system);
   const [lol] = match({ lol: anyBoolean }, testRoom);
@@ -94,4 +96,6 @@ export const app = async (): Promise<void> => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });
+
+  hap.publish();
 };

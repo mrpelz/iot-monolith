@@ -18,54 +18,35 @@ import {
   inputGrouping,
   window,
 } from '../../../lib/tree/properties/sensors.js';
-import { logger } from '../../logging.js';
+import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
-import { timings } from '../../timings.js';
-import { ev1527Transport } from '../../tree/bridges.js';
+import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
-  button: ev1527ButtonX1(ev1527Transport, 74_160, logger),
+  button: ev1527ButtonX1(74_160, ev1527Transport, context),
   ceilingLight: shelly1(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
   ),
-  doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724_720),
+  doorSensor: ev1527WindowSensor(724_720, ev1527Transport, context),
   floodLight: obiPlug(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbedroom-floodlight.lan.wurstsalat.cloud',
+    context,
   ),
-  multiButton: ev1527ButtonX4(ev1527Transport, 831_834, logger),
+  multiButton: ev1527ButtonX4(831_834, ev1527Transport, context),
   nightLight: sonoffBasic(
-    logger,
-    persistence,
-    timings,
     'lighting' as const,
     'mrpelzbedroom-nightlight.lan.wurstsalat.cloud',
+    context,
   ),
-  roomSensor: roomSensor(
-    logger,
-    persistence,
-    timings,
-    'test-room-sensor.lan.wurstsalat.cloud',
-  ),
+  roomSensor: roomSensor('test-room-sensor.lan.wurstsalat.cloud', context),
   wallswitchDoor: shellyi3(
-    logger,
-    persistence,
-    timings,
     'mrpelzbedroom-wallswitchdoor.lan.wurstsalat.cloud',
+    context,
   ),
-  windowSensorLeft: ev1527WindowSensor(
-    logger,
-    persistence,
-    ev1527Transport,
-    762_272,
-  ),
+  windowSensorLeft: ev1527WindowSensor(762_272, ev1527Transport, context),
 };
 
 export const instances = {
