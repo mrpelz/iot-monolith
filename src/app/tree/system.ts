@@ -9,12 +9,12 @@ import {
   kitchenAdjacentLights,
 } from './groups.js';
 import { sunElevation } from './misc.js';
-import { diningRoom } from './rooms/dining-room.js';
 import { hallway, properties as hallwayProperties } from './rooms/hallway.js';
 import { kitchen } from './rooms/kitchen.js';
 import { livingRoom } from './rooms/living-room.js';
 import { mrpelzBathroom } from './rooms/mrpelz-bathroom.js';
 import { mrpelzBedroom } from './rooms/mrpelz-bedroom.js';
+import { office } from './rooms/office.js';
 import { storageRoom } from './rooms/storage-room.js';
 import { testRoom } from './rooms/test-room.js';
 import { tsiaBathroom } from './rooms/tsia-bathroom.js';
@@ -28,7 +28,6 @@ import {
 
 const firstFloor = {
   $: 'firstFloor' as const,
-  diningRoom,
   hallway,
   kitchen,
   kitchenAdjacentBright,
@@ -38,6 +37,7 @@ const firstFloor = {
   livingRoom,
   mrpelzBathroom,
   mrpelzBedroom,
+  office,
   storageRoom,
   testRoom,
   tsiaBathroom,

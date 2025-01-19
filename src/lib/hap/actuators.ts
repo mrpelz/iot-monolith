@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { output as output_ } from '../tree/properties/actuators.js';
+import {
+  led as led_,
+  output as output_,
+  scene as scene_,
+} from '../tree/properties/actuators.js';
 import { TService } from './main.js';
 import { TServiceKey } from './types.js';
 
@@ -27,5 +31,49 @@ export const output = (
     },
   },
   service: mapping[topic] ?? mappingDefault,
+  subType: id,
+});
+
+export const led = (
+  id: string,
+  displayName: string,
+  { brightness, main }: ReturnType<typeof led_>,
+): TService => ({
+  characteristics: {
+    On: {
+      get: main.state,
+      set: main.setState,
+    },
+  },
+  optionalCharacteristics: {
+    Brightness: {
+      get: brightness.state,
+      set: brightness.setState,
+    },
+    Name: {
+      value: displayName,
+    },
+  },
+  service: 'Lightbulb',
+  subType: id,
+});
+
+export const scene = (
+  id: string,
+  displayName: string,
+  { main }: ReturnType<typeof scene_>,
+): TService => ({
+  characteristics: {
+    On: {
+      get: main.state,
+      set: main.setState,
+    },
+  },
+  optionalCharacteristics: {
+    Name: {
+      value: displayName,
+    },
+  },
+  service: 'Switch',
   subType: id,
 });
