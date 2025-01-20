@@ -32,7 +32,7 @@ const children = (device: Device) => ({
 
 export const espNowWindowSensor = (
   options: EspNowWindowSensorOptions,
-  { logger, persistence, timings }: Context,
+  { connect, logger, persistence, timings }: Context,
 ) => {
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
@@ -47,7 +47,7 @@ export const espNowWindowSensor = (
   })();
 
   const wifi = (() => {
-    const { host, initiallyOnline, port = 1337 } = options.wifi;
+    const { host, initiallyOnline = connect, port = 1337 } = options.wifi;
     const device = new UDPDevice(logger, host, port);
 
     return {

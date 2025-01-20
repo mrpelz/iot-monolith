@@ -28,9 +28,9 @@ class MergedObservableGroup extends ObservableGroup<number | null> {
 
 export const roomSensor = (
   host: string,
-  { logger, persistence, timings }: Context,
+  { connect, logger, persistence, timings }: Context,
   port = 1337,
-  initiallyOnline?: boolean,
+  initiallyOnline = connect,
 ) => {
   const device = new UDPDevice(logger, host, port);
 

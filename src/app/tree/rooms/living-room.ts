@@ -1,3 +1,4 @@
+import { output, trigger } from '../../../lib/hap/actuators.js';
 import { promiseGuard } from '../../../lib/promise.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
@@ -10,6 +11,7 @@ import {
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { ev1527Transport } from '../bridges.js';
 import { groups as hallwayGroups } from './hallway.js';
 
@@ -136,3 +138,21 @@ export const livingRoom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'Living Room Standing Lamp',
+    id: `${livingRoom.$}.standingLamp`,
+    services: [
+      output('standingLamp', 'Standing Lamp', properties.standingLamp),
+    ],
+  },
+  {
+    displayName: 'Living Room Media',
+    id: `${livingRoom.$}.media`,
+    services: [
+      trigger('mediaOnOrSwitch', 'Media OnSwitch', scenes.mediaOnOrSwitch),
+      trigger('mediaOff', 'Media Off', scenes.mediaOff),
+    ],
+  },
+);

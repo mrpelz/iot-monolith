@@ -10,15 +10,21 @@ import {
   uuid,
 } from 'hap-nodejs';
 
-import { hapStoragePath } from '../../app/environment.js';
+import {
+  hapStoragePath,
+  isProd,
+  prereleaseTag,
+  version,
+} from '../../app/environment.js';
 import { AnyObservable, AnyWritableObservable } from '../observable.js';
 import { objectKeys } from '../oop.js';
+import { NullState } from '../state.js';
 import { TCharacteristicKey, TServiceKey } from './types.js';
 
 export type TCharacteristic =
   | {
-      get: AnyObservable<CharacteristicValue | null>;
-      set?: AnyWritableObservable<CharacteristicValue | null>;
+      get: AnyObservable<CharacteristicValue | null> | NullState;
+      set?: AnyWritableObservable<CharacteristicValue | null> | NullState;
     }
   | {
       value: CharacteristicValue;
@@ -26,9 +32,7 @@ export type TCharacteristic =
 
 export type TService = {
   characteristics: Partial<Record<TCharacteristicKey, TCharacteristic>>;
-  optionalCharacteristics?: Partial<
-    Record<TCharacteristicKey, TCharacteristic>
-  >;
+  displayName: string;
   service: TServiceKey;
   subType?: string;
 };
@@ -41,7 +45,15 @@ export type TAccessory = {
 
 HAPStorage.setCustomStoragePath(hapStoragePath);
 
-const HAP_ROOT_ID = 'iot-monolith.wurstsalat';
+const idTag = (() => {
+  if (!isProd) return 'dev';
+
+  if (prereleaseTag) return `pre-${prereleaseTag}`;
+
+  return 'prod';
+})();
+
+const HAP_ROOT_ID = `iot-monolith.wurstsalat.${idTag}`;
 
 export class HAP {
   private static _addMeta(accessory: Accessory) {
@@ -49,17 +61,57 @@ export class HAP {
       .getService(Service.AccessoryInformation)
       ?.setCharacteristic(Characteristic.Manufacturer, '@mrpelz')
       .setCharacteristic(Characteristic.SerialNumber, '0000')
-      .setCharacteristic(Characteristic.Model, 'iot-monolith')
-      .setCharacteristic(Characteristic.FirmwareRevision, '0.0.0');
+      .setCharacteristic(Characteristic.Model, `iot-monolith @ ${idTag}`)
+      .setCharacteristic(Characteristic.FirmwareRevision, version ?? '0.0.0');
   }
 
   private readonly _bridge = new Bridge(
-    'iot-monolith Bridge',
+    'IoT Monolith Bridge',
     uuid.generate(HAP_ROOT_ID),
   );
 
   constructor() {
     HAP._addMeta(this._bridge);
+  }
+
+  private _addAccessory({
+    displayName: accessoryDisplayName,
+    id,
+    services,
+  }: TAccessory): void {
+    const accessory = new Accessory(
+      accessoryDisplayName,
+      uuid.generate(`${HAP_ROOT_ID}.${id}`),
+    );
+
+    HAP._addMeta(accessory);
+
+    for (const {
+      characteristics,
+      displayName: serviceDisplayName,
+      service: serviceKey,
+      subType,
+    } of services) {
+      const serviceClass = Service[serviceKey];
+      const service = new Service(
+        serviceDisplayName,
+        serviceClass.UUID,
+        subType,
+      );
+
+      for (const characteristicKey of objectKeys(characteristics)) {
+        const options = characteristics[characteristicKey];
+        if (!options) continue;
+
+        service.addCharacteristic(
+          this._setCharacteristic(characteristicKey, options),
+        );
+      }
+
+      accessory.addService(service);
+    }
+
+    this._bridge.addBridgedAccessory(accessory);
   }
 
   private _setCharacteristic(
@@ -82,7 +134,7 @@ export class HAP {
           if (value === null) return;
 
           characteristic.sendEventNotification(value);
-        });
+        }, true);
       }
 
       if (perms.includes(Perms.PAIRED_WRITE) && set) {
@@ -92,52 +144,16 @@ export class HAP {
       }
     } else if ('value' in options) {
       characteristic.value = options.value;
+      characteristic.sendEventNotification(options.value);
     }
 
     return characteristic;
   }
 
-  addAccessory({ displayName, id, services }: TAccessory): void {
-    const accessory = new Accessory(
-      displayName,
-      uuid.generate(`${HAP_ROOT_ID}.${id}`),
-    );
-
-    HAP._addMeta(accessory);
-
-    for (const {
-      characteristics,
-      optionalCharacteristics,
-      service: serviceKey,
-      subType,
-    } of services) {
-      const serviceClass = Service[serviceKey];
-      const service = new Service(undefined, serviceClass.UUID, subType);
-
-      for (const characteristicKey of objectKeys(characteristics)) {
-        const options = characteristics[characteristicKey];
-        if (!options) continue;
-
-        service.addCharacteristic(
-          this._setCharacteristic(characteristicKey, options),
-        );
-      }
-
-      if (optionalCharacteristics) {
-        for (const characteristicKey of objectKeys(optionalCharacteristics)) {
-          const options = characteristics[characteristicKey];
-          if (!options) continue;
-
-          service.addOptionalCharacteristic(
-            this._setCharacteristic(characteristicKey, options),
-          );
-        }
-      }
-
-      accessory.addService(service);
+  addAccessories(...accessories: TAccessory[]): void {
+    for (const accessory of accessories) {
+      this._addAccessory(accessory);
     }
-
-    this._bridge.addBridgedAccessory(accessory);
   }
 
   publish(): void {

@@ -1,4 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
+import { output } from '../../../lib/hap/actuators.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -9,6 +10,7 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 
@@ -146,3 +148,30 @@ export const hallway = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'Hallway All Ceiling Lights',
+    id: `${hallway.$}.allCeilingLights`,
+    services: [
+      output('allCeilingLights', 'All Ceiling Lights', groups.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'Hallway Ceiling Light',
+    id: `${hallway.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', groups.ceilingLight),
+      output(
+        'ceilingLightBack',
+        'Ceiling Light Back',
+        properties.ceilingLightBack,
+      ),
+      output(
+        'ceilingLightFront',
+        'Ceiling Light Front',
+        properties.ceilingLightFront,
+      ),
+    ],
+  },
+);

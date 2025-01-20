@@ -28,7 +28,12 @@ class MergedObservableGroup extends ObservableGroup<number | null> {
   }
 }
 
-export const testDevice = ({ logger, persistence, timings }: Context) => {
+export const testDevice = ({
+  connect,
+  logger,
+  persistence,
+  timings,
+}: Context) => {
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
@@ -60,7 +65,7 @@ export const testDevice = ({ logger, persistence, timings }: Context) => {
   };
 
   return {
-    ...ipDevice(device, false, persistence, timings),
+    ...ipDevice(device, false, persistence, timings, undefined, connect),
     internal: {
       ...async(device, timings.slow || timings.default),
       ...mhz19(device, timings.slow || timings.default),

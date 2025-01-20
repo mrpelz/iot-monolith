@@ -1,4 +1,6 @@
 import { epochs } from '../../../lib/epochs.js';
+import { led, output, trigger } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
@@ -17,6 +19,7 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { persistence } from '../../persistence.js';
 import {
   isAstronomicalTwilight,
@@ -366,3 +369,45 @@ export const mrpelzBathroom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'mrpelz’s Bathroom Ceiling Light',
+    id: `${mrpelzBathroom.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Mirror Heating',
+    id: `${mrpelzBathroom.$}.mirrorHeating`,
+    services: [
+      output('mirrorHeating', 'Mirror Heating', properties.mirrorHeating),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Mirror LED',
+    id: `${mrpelzBathroom.$}.mirrorLeds`,
+    services: [led('mirrorLeds', 'Mirror LED', properties.mirrorLed)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Mirror Light',
+    id: `${mrpelzBathroom.$}.mirrorLight`,
+    services: [output('mirrorLight', 'Mirror Light', properties.mirrorLight)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Night Light',
+    id: `${mrpelzBathroom.$}.nightLight`,
+    services: [output('nightLight', 'Night Light', properties.nightLight)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Auto-Light',
+    id: `${mrpelzBathroom.$}.autoLight`,
+    services: [trigger('autoLight', 'Auto-Light', scenes.autoLight)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Door',
+    id: `${mrpelzBathroom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
+  },
+);

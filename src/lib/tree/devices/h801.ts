@@ -8,9 +8,9 @@ import { led } from '../properties/actuators.js';
 
 export const h801 = (
   host: string,
-  { logger, persistence, timings }: Context,
+  { connect, logger, persistence, timings }: Context,
   port = 1337,
-  initiallyOnline?: boolean,
+  initiallyOnline = connect,
 ) => {
   const device = new UDPDevice(logger, host, port);
 
