@@ -208,3 +208,29 @@ export const rebind = (context: any, ...names: string[]): void => {
     context[name] = fn.bind(context);
   }
 };
+
+export type UnionToIntersection<U> = (
+  U extends any ? (x: U) => void : never
+) extends (x: infer I) => void
+  ? I
+  : never;
+
+export const ensureKeys = <
+  T extends object,
+  K extends keyof UnionToIntersection<T>,
+>(
+  object: T,
+  ...keys: K[]
+): Extract<T, Record<K, any>> => {
+  const keys_ = [keys, objectKeys(object)].flat();
+
+  const result = {} as Extract<T, Record<K, any>>;
+
+  for (const key of keys_) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    result[key] = object[key];
+  }
+
+  return result;
+};

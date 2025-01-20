@@ -1,3 +1,5 @@
+import { led, output } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,
@@ -21,6 +23,7 @@ import {
   window,
 } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -64,7 +67,7 @@ export const instances = {
 };
 
 export const properties = {
-  bookshelfLedDown: devices.bookshelfLeds.internal.ledG,
+  bookshelfLedDown: devices.bookshelfLeds.internal.ledB,
   bookshelfLedUpRed: devices.bookshelfLeds.internal.ledG,
   bookshelfLedUpWWhite: devices.bookshelfLeds.internal.ledR,
   brightness: devices.roomSensor.internal.brightness,
@@ -184,3 +187,71 @@ export const mrpelzBedroom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'mrpelz’s Bedroom Ceiling Light',
+    id: `${mrpelzBedroom.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Night Light',
+    id: `${mrpelzBedroom.$}.nightLight`,
+    services: [output('nightLight', 'Night Light', properties.nightLight)],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Standing Lamp',
+    id: `${mrpelzBedroom.$}.standingLamp`,
+    services: [
+      output('standingLamp', 'Standing Lamp', properties.standingLamp),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom All Lights',
+    id: `${mrpelzBedroom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Bookshelf LEDs Warm White',
+    id: `${mrpelzBedroom.$}.bookshelfLedWWhite`,
+    services: [
+      led(
+        'bookshelfLedWWhite',
+        'Bookshelf LEDs Warm White',
+        groups.bookshelfLedWWhite,
+      ),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Nightstand LEDs Red',
+    id: `${mrpelzBedroom.$}.nightstandLedRed`,
+    services: [
+      led('nightstandLedRed', 'Nightstand LEDs Red', groups.nightstandLedRed),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Nightstand LEDs Warm White',
+    id: `${mrpelzBedroom.$}.nightstandLedWWhite`,
+    services: [
+      led(
+        'nightstandLedWWhite',
+        'Nightstand LEDs Warm White',
+        groups.nightstandLedWWhite,
+      ),
+    ],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Door',
+    id: `${mrpelzBedroom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
+  },
+  {
+    displayName: 'mrpelz’s Bedroom Window Left',
+    id: `${mrpelzBedroom.$}.windowLeft`,
+    services: [
+      doorOrWindow('windowLeft', 'Window Left', properties.windowLeft),
+    ],
+  },
+);

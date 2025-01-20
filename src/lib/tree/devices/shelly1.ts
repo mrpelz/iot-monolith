@@ -9,9 +9,9 @@ import { button } from '../properties/sensors.js';
 export const shelly1 = <T extends string>(
   topic: T,
   host: string,
-  { logger, persistence, timings }: Context,
+  { connect, logger, persistence, timings }: Context,
   port = 1337,
-  initiallyOnline?: boolean,
+  initiallyOnline = connect,
 ) => {
   const device = new UDPDevice(logger, host, port);
 

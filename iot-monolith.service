@@ -6,7 +6,7 @@ Type=simple
 PIDFile=/run/iot-monolith/iot-monolith.pid
 Environment="LOG_LEVEL=6"
 Environment="LOG_TELEGRAM=0"
-Environment="PROD_ENV=1"
+Environment="NODE_ENV=production"
 # Environment="TELEGRAM_TOKEN=SECRET"
 WorkingDirectory=/opt/iot-monolith/
 ExecStart=/usr/bin/node --use_strict --experimental-modules --enable-source-maps --stack-trace-limit=100 dist/main.js

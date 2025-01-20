@@ -75,10 +75,10 @@
     "tsc:watch": "tsc --watch"
   },
   "dependencies": {
-    "comlink": "^4.4.2",
-    "hap-nodejs": "^0.12.3",
+    "hap-nodejs": "latest",
     "prom-client": "latest",
     "proper-tags": "latest",
+    "semver": "latest",
     "suncalc": "latest",
     "uuid": "latest",
     "ws": "latest"
@@ -86,6 +86,7 @@
   "devDependencies": {
     "@mrpelz/boilerplate-common": "latest",
     "@mrpelz/boilerplate-node": "latest",
+    "@types/semver": "latest",
     "@types/suncalc": "latest",
     "@types/uuid": "latest",
     "@types/ws": "latest",
