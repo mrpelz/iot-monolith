@@ -13,13 +13,13 @@ export const kitchenAdjacentChillax = scene(
   [
     new SceneMember(hallwayProperties.ceilingLightBack._set, false),
     new SceneMember(hallwayProperties.ceilingLightFront._set, false),
-    new SceneMember(kitchenProperties.ledLeftCWhite._set, false),
-    new SceneMember(kitchenProperties.ledLeftFloodlight._set, false),
+    new SceneMember(kitchenProperties.ledLeftCWhite.brightness._set, 0),
+    new SceneMember(kitchenProperties.ledLeftFloodlight.brightness._set, 0),
     new SceneMember(kitchenProperties.ledLeftWWhite.brightness._set, 0.5, 0),
-    new SceneMember(kitchenProperties.ledRightCWhite._set, false),
-    new SceneMember(kitchenProperties.ledRightFloodlight._set, false),
+    new SceneMember(kitchenProperties.ledRightCWhite.brightness._set, 0),
+    new SceneMember(kitchenProperties.ledRightFloodlight.brightness._set, 0),
     new SceneMember(kitchenProperties.ledRightWWhite.brightness._set, 0.5, 0),
-    new SceneMember(livingRoomProperties.standingLamp._set, true, false),
+    new SceneMember(livingRoomProperties.standingLamp._set, false),
     new SceneMember(officeProperties.ceilingLight._set, false),
     new SceneMember(officeProperties.floodlight._set, false),
   ],
@@ -28,6 +28,8 @@ export const kitchenAdjacentChillax = scene(
 
 export const kitchenAdjacentBright = scene(
   [
+    new SceneMember(hallwayProperties.ceilingLightBack._set, true, false),
+    new SceneMember(hallwayProperties.ceilingLightFront._set, true, false),
     new SceneMember(kitchenProperties.ledLeftCWhite.brightness._set, 1, 0),
     new SceneMember(kitchenProperties.ledLeftFloodlight.brightness._set, 1, 0),
     new SceneMember(kitchenProperties.ledLeftWWhite.brightness._set, 1, 0),

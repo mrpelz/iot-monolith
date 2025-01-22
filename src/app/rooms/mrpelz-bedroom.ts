@@ -2,13 +2,16 @@
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
 import {
+  SceneMember,
+  ledGrouping,
+  outputGrouping,
+  scene,
+} from '../../lib/tree/properties/actuators.js';
+import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../lib/tree/devices/ev1527-button.js';
-import {
-  ledGrouping,
-  outputGrouping,
-} from '../../lib/tree/properties/actuators.js';
+import { EnumState } from '../../lib/state.js';
 import { ev1527Transport } from '../bridges.js';
 import { ev1527WindowSensor } from '../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../lib/tree/devices/h801.js';
@@ -38,13 +41,27 @@ export const devices = {
     'mrpelzbedroom-ceilinglight.lan.wurstsalat.cloud'
   ),
   doorSensor: ev1527WindowSensor(logger, persistence, ev1527Transport, 724720),
+  heatLamp: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'heating',
+    'diningroom-ceilinglight.lan.wurstsalat.cloud'
+  ),
+  ionGenerator: sonoffBasic(
+    logger,
+    persistence,
+    timings,
+    'heating',
+    'diningroom-tablelight.lan.wurstsalat.cloud'
+  ),
   multiButton: ev1527ButtonX4(ev1527Transport, 831834, logger),
-  nightLight: sonoffBasic(
+  nightLight: obiPlug(
     logger,
     persistence,
     timings,
     'lighting',
-    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud'
+    'bedroom-stonelamp.lan.wurstsalat.cloud'
   ),
   nightstandLeds: h801(
     logger,
@@ -81,6 +98,8 @@ export const devices = {
 
 export const instances = {
   button: devices.button.$,
+  heatLampButton: devices.heatLamp.button.$,
+  ionGeneratorButton: devices.ionGenerator.button.$,
   multiButton: devices.multiButton.$,
   nightLightButton: devices.nightLight.button.$,
   standingLampButton: devices.standingLamp.button.$,
@@ -97,7 +116,9 @@ export const properties = {
   brightness: devices.roomSensor.brightness,
   ceilingLight: devices.ceilingLight.relay,
   door: addMeta({ open: devices.doorSensor.open }, { level: Levels.AREA }),
+  heatLamp: devices.heatLamp.relay,
   humidity: devices.roomSensor.humidity,
+  ionGenerator: devices.ionGenerator.relay,
   nightLight: devices.nightLight.relay,
   nightstandLeftLedRed: devices.nightstandLeds.ledG,
   nightstandLeftLedWWhite: devices.nightstandLeds.ledR,
@@ -114,11 +135,26 @@ export const properties = {
 };
 
 export const groups = {
+  all: outputGrouping([
+    properties.bookshelfLedDown,
+    properties.bookshelfLedUpRed,
+    properties.bookshelfLedUpWWhite,
+    properties.ceilingLight,
+    properties.heatLamp,
+    properties.ionGenerator,
+    properties.nightLight,
+    properties.nightstandLeftLedRed,
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedRed,
+    properties.nightstandRightLedWWhite,
+    properties.standingLamp,
+  ]),
   allLights: outputGrouping([
     properties.bookshelfLedDown,
     properties.bookshelfLedUpRed,
     properties.bookshelfLedUpWWhite,
     properties.ceilingLight,
+    properties.heatLamp,
     properties.nightLight,
     properties.nightstandLeftLedRed,
     properties.nightstandLeftLedWWhite,
@@ -139,58 +175,213 @@ export const groups = {
     properties.nightstandLeftLedWWhite,
     properties.nightstandRightLedWWhite,
   ]),
+  redLeds: ledGrouping([
+    properties.bookshelfLedUpRed,
+    properties.nightstandLeftLedRed,
+    properties.nightstandRightLedRed,
+  ]),
+  wWhiteLeds: ledGrouping([
+    properties.bookshelfLedDown,
+    properties.bookshelfLedUpWWhite,
+    properties.nightstandLeftLedWWhite,
+    properties.nightstandRightLedWWhite,
+  ]),
 };
 
+const scenes = {
+  allOff: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 0),
+      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 0),
+      new SceneMember(properties.standingLamp._set, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedWWhite.brightness._set, 0),
+      new SceneMember(properties.ceilingLight._set, false),
+    ],
+    'light'
+  ),
+  allRed: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 0),
+      new SceneMember(properties.standingLamp._set, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedWWhite.brightness._set, 0),
+      new SceneMember(properties.ceilingLight._set, false),
+    ],
+    'light'
+  ),
+  onlyNightLight: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 0),
+      new SceneMember(properties.nightLight._set, true, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 0),
+      new SceneMember(properties.standingLamp._set, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedWWhite.brightness._set, 0),
+      new SceneMember(properties.ceilingLight._set, false),
+    ],
+    'light'
+  ),
+  // eslint-disable-next-line sort-keys
+  moodLight: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 0),
+      new SceneMember(properties.nightLight._set, true, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 0.5, 0),
+      new SceneMember(properties.standingLamp._set, true, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedWWhite.brightness._set, 0),
+      new SceneMember(properties.ceilingLight._set, false),
+    ],
+    'light'
+  ),
+  // eslint-disable-next-line sort-keys
+  ceilingLightPlus: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 0),
+      new SceneMember(properties.nightLight._set, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 1, 0),
+      new SceneMember(properties.standingLamp._set, true, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 1, 0),
+      new SceneMember(
+        properties.nightstandRightLedWWhite.brightness._set,
+        1,
+        0
+      ),
+      new SceneMember(properties.ceilingLight._set, true, false),
+    ],
+    'light'
+  ),
+  everythingOn: scene(
+    [
+      new SceneMember(properties.bookshelfLedUpRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandLeftLedRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandRightLedRed.brightness._set, 1, 0),
+      new SceneMember(properties.nightLight._set, true, false),
+      new SceneMember(properties.bookshelfLedUpWWhite.brightness._set, 1, 0),
+      new SceneMember(properties.standingLamp._set, true, false),
+      new SceneMember(properties.bookshelfLedDown.brightness._set, 1, 0),
+      new SceneMember(properties.nightstandLeftLedWWhite.brightness._set, 1, 0),
+      new SceneMember(
+        properties.nightstandRightLedWWhite.brightness._set,
+        1,
+        0
+      ),
+      new SceneMember(properties.ceilingLight._set, true, false),
+    ],
+    'light'
+  ),
+};
+
+const sceneCycle = new EnumState(
+  [
+    scenes.allOff,
+    scenes.allRed,
+    scenes.onlyNightLight,
+    scenes.moodLight,
+    scenes.ceilingLightPlus,
+    scenes.everythingOn,
+  ] as const,
+  scenes.allOff
+);
+
 (() => {
-  instances.button.observe(() => {
+  const offOrElse = (fn: () => void) => () => {
     if (groups.allLights._set.value) {
       groups.allLights._set.value = false;
       return;
     }
 
-    properties.nightLight._set.value = true;
-  });
+    fn();
+  };
+  instances.button.observe(
+    offOrElse(() => (scenes.onlyNightLight._set.value = true))
+  );
 
-  instances.multiButton.topLeft.observe(() =>
-    properties.ceilingLight._set.flip()
+  instances.multiButton.topLeft.observe(
+    offOrElse(() => (scenes.moodLight._set.value = true))
   );
-  instances.multiButton.topRight.observe(() => groups.allLights._set.flip());
-  instances.multiButton.bottomLeft.observe(() =>
-    properties.nightLight._set.flip()
+  instances.multiButton.topRight.observe(
+    offOrElse(() => (scenes.ceilingLightPlus._set.value = true))
   );
-  instances.multiButton.bottomRight.observe(() =>
-    groups.bookshelfLedWWhite._set.flip()
-  );
+  instances.multiButton.bottomLeft.observe(() => sceneCycle.previous());
+  instances.multiButton.bottomRight.observe(() => sceneCycle.next());
+
+  instances.heatLampButton.up(() => properties.heatLamp._set.flip());
+  instances.heatLampButton.longPress(() => (groups.all._set.value = false));
+
+  instances.ionGeneratorButton.up(() => properties.ionGenerator._set.flip());
+  instances.ionGeneratorButton.longPress(() => (groups.all._set.value = false));
 
   instances.nightLightButton.up(() => properties.nightLight._set.flip());
-  instances.nightLightButton.longPress(
-    () => (groups.allLights._set.value = false)
-  );
+  instances.nightLightButton.longPress(() => (groups.all._set.value = false));
 
   instances.standingLampButton.up(() => properties.standingLamp._set.flip());
-  instances.standingLampButton.longPress(
-    () => (groups.allLights._set.value = false)
-  );
+  instances.standingLampButton.longPress(() => (groups.all._set.value = false));
 
   instances.wallswitchBed.up(() => properties.ceilingLight._set.flip());
-  instances.wallswitchBed.longPress(
-    () => (groups.allLights._set.value = false)
-  );
+  instances.wallswitchBed.longPress(() => (groups.all._set.value = false));
 
-  instances.wallswitchDoorLeft.up(() => properties.nightLight._set.flip());
-  instances.wallswitchDoorLeft.longPress(
-    () => (groups.allLights._set.value = false)
-  );
+  instances.wallswitchDoorLeft.up(() => {
+    if (!groups.allLights._set.value) {
+      scenes.onlyNightLight._set.value = true;
+      return;
+    }
 
-  instances.wallswitchDoorMiddle.up(() => properties.ceilingLight._set.flip());
+    sceneCycle.previous();
+  });
+  instances.wallswitchDoorLeft.longPress(() => (groups.all._set.value = false));
+
+  instances.wallswitchDoorMiddle.up(() => {
+    if (groups.allLights._set.value) {
+      groups.allLights._set.value = false;
+      return;
+    }
+
+    scenes.moodLight._set.value = true;
+  });
   instances.wallswitchDoorMiddle.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.all._set.value = false)
   );
 
-  instances.wallswitchDoorRight.up(() => groups.allLights._set.flip());
+  instances.wallswitchDoorRight.up(() => {
+    if (!groups.allLights._set.value) {
+      scenes.ceilingLightPlus._set.value = true;
+      return;
+    }
+
+    sceneCycle.next();
+  });
   instances.wallswitchDoorRight.longPress(
-    () => (groups.allLights._set.value = false)
+    () => (groups.all._set.value = false)
   );
+
+  sceneCycle.observe((value) => (value._set.value = true));
+
+  for (const aScene of Object.values(scenes)) {
+    aScene._get.observe((value) => {
+      if (!value) return;
+      sceneCycle.value = aScene;
+    });
+  }
 })();
 
 export const mrpelzBedroom = addMeta(
@@ -198,6 +389,7 @@ export const mrpelzBedroom = addMeta(
     devices,
     ...groups,
     ...properties,
+    ...scenes,
   },
   {
     isDaylit: true,
