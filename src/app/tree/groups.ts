@@ -48,6 +48,8 @@ export const kitchenAdjacentLights = outputGrouping([
   kitchenProperties.ledRightFloodlight,
   kitchenProperties.ledRightWWhite,
   livingRoomProperties.standingLamp,
+  livingRoomProperties.terrariumLedRed,
+  livingRoomProperties.terrariumLedTop,
 ]);
 
 (async () => {
