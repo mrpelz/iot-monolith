@@ -13,6 +13,49 @@ export const sunElevation = (): number => {
   return radiansToDegrees(altitude);
 };
 
+export const relativeSunElevationOfDay = (): number => {
+  const now = new Date();
+
+  const { solarNoon: solarNoonTime } = SunCalc.getTimes(
+    now,
+    LATITUDE,
+    LONGITUDE
+  );
+
+  const { altitude: solarNoon } = SunCalc.getPosition(
+    solarNoonTime,
+    LATITUDE,
+    LONGITUDE
+  );
+  const solarNoonAltitude = radiansToDegrees(solarNoon);
+
+  const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
+  const altitudeOnRange = Math.max(radiansToDegrees(altitude), 0);
+
+  return altitudeOnRange / solarNoonAltitude;
+};
+
+export const relativeSunElevationOfNight = (): number => {
+  const now = new Date();
+
+  const { nadir: nadirTime } = SunCalc.getTimes(now, LATITUDE, LONGITUDE);
+
+  const { altitude: nadir } = SunCalc.getPosition(
+    nadirTime,
+    LATITUDE,
+    LONGITUDE
+  );
+  const nadirAltitude = radiansToDegrees(nadir);
+
+  const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
+  const altitudeOnRange = Math.max(
+    radiansToDegrees(altitude) - nadirAltitude,
+    0
+  );
+
+  return altitudeOnRange / nadirAltitude + 1;
+};
+
 export const isTwilightPhase = (
   min = -Infinity,
   max = Infinity,

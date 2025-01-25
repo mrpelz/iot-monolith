@@ -2,19 +2,28 @@
 
 import { Levels, addMeta } from '../../lib/tree/main.js';
 import {
+  SceneMember,
   outputGrouping,
+  scene,
   trigger,
 } from '../../lib/tree/properties/actuators.js';
+import { every5Seconds, timings } from '../timings.js';
+import {
+  relativeSunElevationOfDay,
+  relativeSunElevationOfNight,
+} from '../util.js';
+import { BooleanState } from '../../lib/state.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import fetch from 'node-fetch';
+import { h801 } from '../../lib/tree/devices/h801.js';
 import { groups as hallwayGroups } from './hallway.js';
 import { logger } from '../logging.js';
+import { maxmin } from '../../lib/number.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
 import { persistence } from '../persistence.js';
 import { promiseGuard } from '../../lib/promise.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
-import { timings } from '../timings.js';
 
 export const devices = {
   couchButton: ev1527ButtonX4(ev1527Transport, 822302, logger),
@@ -24,6 +33,12 @@ export const devices = {
     timings,
     'lighting',
     'livingroom-standinglamp.lan.wurstsalat.cloud'
+  ),
+  terrariumLeds: h801(
+    logger,
+    persistence,
+    timings,
+    'office-workbenchleds.lan.wurstsalat.cloud'
   ),
   wallswitch: shellyi3(
     logger,
@@ -42,29 +57,45 @@ export const instances = {
 
 export const properties = {
   standingLamp: devices.standingLamp.relay,
+  terrariumLedRed: devices.terrariumLeds.ledB,
+  terrariumLedTop: devices.terrariumLeds.ledR,
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.standingLamp]),
+  allLights: outputGrouping([
+    properties.standingLamp,
+    properties.terrariumLedRed,
+    properties.terrariumLedTop,
+  ]),
 };
 
+const isTerrariumLedsOverride = new BooleanState(false);
+
 export const scenes = {
-  mediaOff: trigger(() => {
-    promiseGuard(
+  mediaOff: trigger(async () => {
+    await promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
         method: 'POST',
         timeout: 1000,
       })
     );
+
+    isTerrariumLedsOverride.value = false;
   }, 'media'),
-  mediaOnOrSwitch: trigger(() => {
-    promiseGuard(
+  mediaOnOrSwitch: trigger(async () => {
+    await promiseGuard(
       fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
         method: 'POST',
         timeout: 1000,
       })
     );
+
+    isTerrariumLedsOverride.value = true;
   }, 'media'),
+  terrariumLedsOverride: scene(
+    [new SceneMember(isTerrariumLedsOverride, true, false)],
+    'automation'
+  ),
 };
 
 (async () => {
@@ -121,6 +152,34 @@ export const scenes = {
 
   instances.wallswitchTop.up(() => hallwayGroups.ceilingLight._set.flip());
   instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
+
+  const handleTerrariumLedsAutomation = () => {
+    if (isTerrariumLedsOverride.value) {
+      return;
+    }
+
+    const relativeSunElevationDay = relativeSunElevationOfDay();
+    const brightnessDay = relativeSunElevationDay
+      ? maxmin(relativeSunElevationDay + 0.18)
+      : 0;
+    properties.terrariumLedTop.brightness._set.value = brightnessDay;
+
+    const relativeSunElevationNight = relativeSunElevationOfNight();
+    const brightnessNight = relativeSunElevationNight
+      ? maxmin(relativeSunElevationNight + 0.18)
+      : 0;
+    properties.terrariumLedRed.brightness._set.value = brightnessNight;
+  };
+
+  isTerrariumLedsOverride.observe((value) => {
+    if (!value) return;
+
+    properties.terrariumLedRed._set.value = false;
+    properties.terrariumLedTop._set.value = false;
+  });
+
+  isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
+  every5Seconds.addTask(handleTerrariumLedsAutomation);
 })();
 
 export const livingRoom = addMeta(

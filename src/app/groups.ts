@@ -29,6 +29,8 @@ export const all = outputGrouping(
     mrpelzBedroomProperties.bookshelfLedUpRed,
     mrpelzBedroomProperties.bookshelfLedUpWWhite,
     mrpelzBedroomProperties.ceilingLight,
+    mrpelzBedroomProperties.heatLamp,
+    mrpelzBedroomProperties.ionGenerator,
     mrpelzBedroomProperties.nightLight,
     mrpelzBedroomProperties.nightstandLeftLedRed,
     mrpelzBedroomProperties.nightstandLeftLedWWhite,
@@ -96,4 +98,6 @@ export const kitchenAdjacentLights = outputGrouping([
   kitchenProperties.ledRightFloodlight,
   kitchenProperties.ledRightWWhite,
   livingRoomProperties.standingLamp,
+  livingRoomProperties.terrariumLedRed,
+  livingRoomProperties.terrariumLedTop,
 ]);
