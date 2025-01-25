@@ -13,6 +13,7 @@ import {
   relativeSunElevationOfNight,
 } from '../util.js';
 import { BooleanState } from '../../lib/state.js';
+import { epochs } from '../../lib/epochs.js';
 import { ev1527ButtonX4 } from '../../lib/tree/devices/ev1527-button.js';
 import { ev1527Transport } from '../bridges.js';
 import fetch from 'node-fetch';
@@ -21,6 +22,7 @@ import { groups as hallwayGroups } from './hallway.js';
 import { logger } from '../logging.js';
 import { maxmin } from '../../lib/number.js';
 import { obiPlug } from '../../lib/tree/devices/obi-plug.js';
+import { offTimer } from '../../lib/tree/properties/logic.js';
 import { persistence } from '../persistence.js';
 import { promiseGuard } from '../../lib/promise.js';
 import { shellyi3 } from '../../lib/tree/devices/shelly-i3.js';
@@ -56,6 +58,10 @@ export const instances = {
 };
 
 export const properties = {
+  overrideTimer: offTimer(epochs.hour * 12, true, [
+    'livingRoom/terrariumLedsOverrideTimer',
+    persistence,
+  ]),
   standingLamp: devices.standingLamp.relay,
   terrariumLedRed: devices.terrariumLeds.ledB,
   terrariumLedTop: devices.terrariumLeds.ledR,
@@ -172,6 +178,8 @@ export const scenes = {
   };
 
   isTerrariumLedsOverride.observe((value) => {
+    properties.overrideTimer.active.$.value = value;
+
     if (!value) return;
 
     properties.terrariumLedRed._set.value = false;
@@ -180,6 +188,10 @@ export const scenes = {
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
   every5Seconds.addTask(handleTerrariumLedsAutomation);
+
+  properties.overrideTimer.$.observe(
+    () => (isTerrariumLedsOverride.value = false)
+  );
 })();
 
 export const livingRoom = addMeta(
