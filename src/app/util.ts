@@ -16,20 +16,20 @@ export const sunElevation = (): number => {
 export const relativeSunElevationOfDay = (): number => {
   const now = new Date();
 
-  const { solarNoon: solarNoonTime } = SunCalc.getTimes(
+  const { solarNoon: solarNoonTime } = sunCalc.getTimes(
     now,
     LATITUDE,
-    LONGITUDE
+    LONGITUDE,
   );
 
-  const { altitude: solarNoon } = SunCalc.getPosition(
+  const { altitude: solarNoon } = sunCalc.getPosition(
     solarNoonTime,
     LATITUDE,
-    LONGITUDE
+    LONGITUDE,
   );
   const solarNoonAltitude = radiansToDegrees(solarNoon);
 
-  const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
+  const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
   const altitudeOnRange = Math.max(radiansToDegrees(altitude), 0);
 
   return altitudeOnRange / solarNoonAltitude;
@@ -38,19 +38,19 @@ export const relativeSunElevationOfDay = (): number => {
 export const relativeSunElevationOfNight = (): number => {
   const now = new Date();
 
-  const { nadir: nadirTime } = SunCalc.getTimes(now, LATITUDE, LONGITUDE);
+  const { nadir: nadirTime } = sunCalc.getTimes(now, LATITUDE, LONGITUDE);
 
-  const { altitude: nadir } = SunCalc.getPosition(
+  const { altitude: nadir } = sunCalc.getPosition(
     nadirTime,
     LATITUDE,
-    LONGITUDE
+    LONGITUDE,
   );
   const nadirAltitude = radiansToDegrees(nadir);
 
-  const { altitude } = SunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
+  const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
   const altitudeOnRange = Math.max(
     radiansToDegrees(altitude) - nadirAltitude,
-    0
+    0,
   );
 
   return altitudeOnRange / nadirAltitude + 1;
