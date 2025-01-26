@@ -1,4 +1,6 @@
 import { epochs } from '../../../lib/epochs.js';
+import { output, scene } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
@@ -7,6 +9,7 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
 import { persistence } from '../../persistence.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
@@ -83,3 +86,28 @@ export const storageRoom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'Storage Room Ceiling Light',
+    id: `${storageRoom.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'Storage Room Door',
+    id: `${storageRoom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
+  },
+  {
+    displayName: 'Storage Room Light Timer',
+    id: `${storageRoom.$}.lightTimer`,
+    services: [scene('lightTimer', 'Light Timer', properties.lightTimer)],
+  },
+  {
+    displayName: 'Storage Room All Lights',
+    id: `${storageRoom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+);

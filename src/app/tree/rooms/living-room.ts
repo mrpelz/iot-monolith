@@ -1,5 +1,10 @@
 import { epochs } from '../../../lib/epochs.js';
-import { output, trigger } from '../../../lib/hap/actuators.js';
+import {
+  led,
+  output,
+  scene as hapScene,
+  trigger,
+} from '../../../lib/hap/actuators.js';
 import { maxmin } from '../../../lib/number.js';
 import { promiseGuard } from '../../../lib/promise.js';
 import { BooleanState } from '../../../lib/state.js';
@@ -204,6 +209,13 @@ export const livingRoom = {
 
 hap.addAccessories(
   {
+    displayName: 'Living Room Override Timer',
+    id: `${livingRoom.$}.overrideTimer`,
+    services: [
+      hapScene('overrideTimer', 'Override Timer', properties.overrideTimer),
+    ],
+  },
+  {
     displayName: 'Living Room Standing Lamp',
     id: `${livingRoom.$}.standingLamp`,
     services: [
@@ -211,11 +223,41 @@ hap.addAccessories(
     ],
   },
   {
+    displayName: 'Living Room Terrarium LED Red',
+    id: `${livingRoom.$}.terrariumLedRed`,
+    services: [
+      led('terrariumLedRed', 'Terrarium LED Red', properties.terrariumLedRed),
+    ],
+  },
+  {
+    displayName: 'Living Room Terrarium LED Top',
+    id: `${livingRoom.$}.terrariumLedTop`,
+    services: [
+      led('terrariumLedTop', 'Terrarium LED Top', properties.terrariumLedTop),
+    ],
+  },
+  {
+    displayName: 'Living Room All Lights',
+    id: `${livingRoom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+  {
     displayName: 'Living Room Media',
     id: `${livingRoom.$}.media`,
     services: [
       trigger('mediaOnOrSwitch', 'Media OnSwitch', scenes.mediaOnOrSwitch),
       trigger('mediaOff', 'Media Off', scenes.mediaOff),
+    ],
+  },
+  {
+    displayName: 'Living Room Terrarium LED Override',
+    id: `${livingRoom.$}.terrariumLedOverride`,
+    services: [
+      hapScene(
+        'terrariumLedOverride',
+        'Terrarium LED Override',
+        scenes.terrariumLedsOverride,
+      ),
     ],
   },
 );

@@ -1,4 +1,6 @@
 import { epochs } from '../../../lib/epochs.js';
+import { output, scene } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -9,6 +11,7 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 import { properties as livingRoomProperties } from './living-room.js';
@@ -116,3 +119,35 @@ export const office = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'Office Ceiling Light',
+    id: `${office.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'Office Floodlight',
+    id: `${office.$}.floodlight`,
+    services: [output('floodlight', 'Flood Light', properties.floodlight)],
+  },
+  {
+    displayName: 'Office Floodlight Timer',
+    id: `${office.$}.floodlightTimer`,
+    services: [
+      scene('floodlightTimer', 'Flood Light Timer', properties.floodlightTimer),
+    ],
+  },
+  {
+    displayName: 'Office Window',
+    id: `${office.$}.window`,
+    services: [doorOrWindow('window', 'Window', properties.window)],
+  },
+  {
+    displayName: 'Office All Lights',
+    id: `${office.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+);
