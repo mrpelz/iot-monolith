@@ -1,5 +1,6 @@
 import { epochs } from '../../../lib/epochs.js';
-import { output } from '../../../lib/hap/actuators.js';
+import { output, scene } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -50,23 +51,23 @@ const partialProperties = {
   entryDoor: door(devices.doorSensor),
 };
 
-export const groups = {
-  allLights: outputGrouping([
-    partialProperties.ceilingLightBack,
-    partialProperties.ceilingLightFront,
-  ]),
-  ceilingLight: outputGrouping(
-    [partialProperties.ceilingLightBack, partialProperties.ceilingLightFront],
-    'lighting',
-  ),
-};
-
 export const properties = {
   ...partialProperties,
   entryDoorTimer: offTimer(epochs.minute * 3, undefined, [
     'hallway/entryDoorTimer',
     persistence,
   ]),
+};
+
+export const groups = {
+  allLights: outputGrouping(
+    [properties.ceilingLightBack, properties.ceilingLightFront],
+    'lighting',
+  ),
+  ceilingLight: outputGrouping(
+    [properties.ceilingLightBack, properties.ceilingLightFront],
+    'lighting',
+  ),
 };
 
 (async () => {
@@ -151,27 +152,35 @@ export const hallway = {
 
 hap.addAccessories(
   {
-    displayName: 'Hallway All Ceiling Lights',
-    id: `${hallway.$}.allCeilingLights`,
+    displayName: 'Hallway Ceiling Lights',
+    id: `${hallway.$}.ceilingLights`,
     services: [
-      output('allCeilingLights', 'All Ceiling Lights', groups.ceilingLight),
+      output('ceilingLightBack', 'Back', properties.ceilingLightBack),
+      output('ceilingLightFront', 'Front', properties.ceilingLightFront),
     ],
+  },
+  {
+    displayName: 'Entry Door',
+    id: `${hallway.$}.entryDoor`,
+    services: [doorOrWindow('entryDoor', 'Entry Door', properties.entryDoor)],
+  },
+  {
+    displayName: 'Entry Door Timer',
+    id: `${hallway.$}.entryDoorTimer`,
+    services: [
+      scene('entryDoorTimer', 'Entry Door Timer', properties.entryDoorTimer),
+    ],
+  },
+  {
+    displayName: 'Hallway All Lights',
+    id: `${hallway.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
   },
   {
     displayName: 'Hallway Ceiling Light',
     id: `${hallway.$}.ceilingLight`,
     services: [
-      output('ceilingLight', 'Ceiling Light', groups.ceilingLight),
-      output(
-        'ceilingLightBack',
-        'Ceiling Light Back',
-        properties.ceilingLightBack,
-      ),
-      output(
-        'ceilingLightFront',
-        'Ceiling Light Front',
-        properties.ceilingLightFront,
-      ),
+      output('allCeilingLights', 'Ceiling Light', groups.ceilingLight),
     ],
   },
 );

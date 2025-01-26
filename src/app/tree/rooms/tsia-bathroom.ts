@@ -1,4 +1,11 @@
 import { epochs } from '../../../lib/epochs.js';
+import {
+  led,
+  output,
+  scene as hapScene,
+  trigger,
+} from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
@@ -17,6 +24,7 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { persistence } from '../../persistence.js';
 import {
   isAstronomicalTwilight,
@@ -321,3 +329,73 @@ export const tsiaBathroom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'tsia’s Bathroom All Lights Timer',
+    id: `${tsiaBathroom.$}.allLightsTimer`,
+    services: [
+      hapScene('allLightsTimer', 'All Lights Timer', properties.allLightsTimer),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bathroom Ceiling Light',
+    id: `${tsiaBathroom.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bathroom Door',
+    id: `${tsiaBathroom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
+  },
+  {
+    displayName: 'tsia’s Bathroom Mirror LED',
+    id: `${tsiaBathroom.$}.mirrorLed`,
+    services: [led('mirrorLed', 'Mirror LED', properties.mirrorLed)],
+  },
+  {
+    displayName: 'tsia’s Bathroom Mirror Light',
+    id: `${tsiaBathroom.$}.mirrorLight`,
+    services: [output('mirrorLight', 'Mirror Light', properties.mirrorLight)],
+  },
+  {
+    displayName: 'tsia’s Bathroom Night Light',
+    id: `${tsiaBathroom.$}.nightLight`,
+    services: [output('nightLight', 'Night Light', properties.nightLight)],
+  },
+  {
+    displayName: 'tsia’s Bathroom All Lights',
+    id: `${tsiaBathroom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+  {
+    displayName: 'tsia’s Bathroom Sun Elevation Lightings',
+    id: `${tsiaBathroom.$}.sunElevationLightings`,
+    services: [
+      hapScene(
+        'astronomicalTwilightLighting',
+        'Astronomical Twilight Lighting',
+        scenes.astronomicalTwilightLighting,
+      ),
+      hapScene(
+        'civilTwilightLighting',
+        'Civil Twilight Lighting',
+        scenes.civilTwilightLighting,
+      ),
+      hapScene('dayLighting', 'Day Lighting', scenes.dayLighting),
+      hapScene(
+        'nauticalTwilightLighting',
+        'Nautical Twilight Lighting',
+        scenes.nauticalTwilightLighting,
+      ),
+      hapScene('nightLighting', 'Night Lighting', scenes.nightLighting),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bathroom Auto-Light',
+    id: `${tsiaBathroom.$}.autoLight`,
+    services: [trigger('autoLight', 'Auto-Light', scenes.autoLight)],
+  },
+);
