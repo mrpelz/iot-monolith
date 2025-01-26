@@ -12,6 +12,7 @@ import {
   scene as scene_,
   triggerElement as triggerElement_,
 } from '../tree/properties/actuators.js';
+import { offTimer } from '../tree/properties/logic.js';
 import { TService } from './main.js';
 import { TServiceKey } from './types.js';
 
@@ -92,7 +93,7 @@ export const trigger = (
 export const scene = (
   id: string,
   displayName: string,
-  { main }: ReturnType<typeof scene_>,
+  { main }: ReturnType<typeof scene_ | typeof offTimer>,
 ): TService => ({
   characteristics: {
     ConfiguredName: {

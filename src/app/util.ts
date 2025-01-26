@@ -50,7 +50,7 @@ export const relativeSunElevationOfNight = (): number => {
   const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
   const altitudeOnRange = Math.max(
     radiansToDegrees(altitude) - nadirAltitude,
-    0,
+    nadirAltitude,
   );
 
   return altitudeOnRange / nadirAltitude + 1;

@@ -138,6 +138,11 @@ export const kitchen = {
 
 hap.addAccessories(
   {
+    displayName: 'Kitchen Door',
+    id: `${kitchen.$}.door`,
+    services: [doorOrWindow('window', 'Window', properties.window)],
+  },
+  {
     displayName: 'Kitchen All LEDs',
     id: `${kitchen.$}.allLeds`,
     services: [led('allLeds', 'All LEDs', groups.allLights)],
@@ -152,10 +157,5 @@ hap.addAccessories(
       led('worklight', 'Worklight', groups.worklight),
       led('worklightWWhite', 'Worklight Warm White', groups.worklightWWhite),
     ],
-  },
-  {
-    displayName: 'Kitchen Door',
-    id: `${kitchen.$}.door`,
-    services: [doorOrWindow('window', 'Window', properties.window)],
   },
 );

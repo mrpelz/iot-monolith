@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ReadOnlyProxyObservable } from '../observable.js';
-import { door, window } from '../tree/properties/sensors.js';
+import {
+  bme280,
+  door,
+  mcp9808,
+  tsl2561,
+  window,
+} from '../tree/properties/sensors.js';
 import { TService } from './main.js';
 
 export const doorOrWindow = (
@@ -25,5 +31,63 @@ export const doorOrWindow = (
   },
   displayName,
   service: 'ContactSensor',
+  subType: id,
+});
+
+export const brightness = (
+  id: string,
+  displayName: string,
+  { main }: ReturnType<typeof tsl2561>['brightness'],
+): TService => ({
+  characteristics: {
+    ConfiguredName: {
+      value: displayName,
+    },
+    CurrentAmbientLightLevel: {
+      get: main.state,
+    },
+  },
+  displayName,
+  service: 'LightSensor',
+  subType: id,
+});
+
+export const humidity = (
+  id: string,
+  displayName: string,
+  { main }: ReturnType<typeof bme280>['humidity'],
+): TService => ({
+  characteristics: {
+    ConfiguredName: {
+      value: displayName,
+    },
+    CurrentRelativeHumidity: {
+      get: main.state,
+    },
+  },
+  displayName,
+  service: 'HumiditySensor',
+  subType: id,
+});
+
+export const temperature = (
+  id: string,
+  displayName: string,
+  {
+    main,
+  }:
+    | ReturnType<typeof bme280>['temperature']
+    | ReturnType<typeof mcp9808>['temperature'],
+): TService => ({
+  characteristics: {
+    ConfiguredName: {
+      value: displayName,
+    },
+    CurrentTemperature: {
+      get: main.state,
+    },
+  },
+  displayName,
+  service: 'TemperatureSensor',
   subType: id,
 });

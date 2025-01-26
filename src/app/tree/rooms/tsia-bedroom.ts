@@ -1,3 +1,5 @@
+import { output } from '../../../lib/hap/actuators.js';
+import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -11,6 +13,7 @@ import {
   window,
 } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { hap } from '../../hap.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -85,3 +88,37 @@ export const tsiaBedroom = {
   ...properties,
   level: Level.ROOM as const,
 };
+
+hap.addAccessories(
+  {
+    displayName: 'tsia’s Bedroom Ceiling Light',
+    id: `${tsiaBedroom.$}.ceilingLight`,
+    services: [
+      output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bedroom Door',
+    id: `${tsiaBedroom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
+  },
+  {
+    displayName: 'tsia’s Bedroom Standing Lamp',
+    id: `${tsiaBedroom.$}.standingLamp`,
+    services: [
+      output('standingLamp', 'Standing Lamp', properties.standingLamp),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bedroom Window Right',
+    id: `${tsiaBedroom.$}.windowRight`,
+    services: [
+      doorOrWindow('windowRight', 'Window Right', properties.windowRight),
+    ],
+  },
+  {
+    displayName: 'tsia’s Bedroom All Lights',
+    id: `${tsiaBedroom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+);

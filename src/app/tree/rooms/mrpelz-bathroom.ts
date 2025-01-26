@@ -1,5 +1,10 @@
 import { epochs } from '../../../lib/epochs.js';
-import { led, output, trigger } from '../../../lib/hap/actuators.js';
+import {
+  led,
+  output,
+  scene as hapScene,
+  trigger,
+} from '../../../lib/hap/actuators.js';
 import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -372,11 +377,21 @@ export const mrpelzBathroom = {
 
 hap.addAccessories(
   {
+    displayName: 'mrpelz’s Bathroom All Timer',
+    id: `${mrpelzBathroom.$}.allTimer`,
+    services: [hapScene('allTimer', 'All Timer', properties.allTimer)],
+  },
+  {
     displayName: 'mrpelz’s Bathroom Ceiling Light',
     id: `${mrpelzBathroom.$}.ceilingLight`,
     services: [
       output('ceilingLight', 'Ceiling Light', properties.ceilingLight),
     ],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Door',
+    id: `${mrpelzBathroom.$}.door`,
+    services: [doorOrWindow('door', 'Door', properties.door)],
   },
   {
     displayName: 'mrpelz’s Bathroom Mirror Heating',
@@ -387,8 +402,8 @@ hap.addAccessories(
   },
   {
     displayName: 'mrpelz’s Bathroom Mirror LED',
-    id: `${mrpelzBathroom.$}.mirrorLeds`,
-    services: [led('mirrorLeds', 'Mirror LED', properties.mirrorLed)],
+    id: `${mrpelzBathroom.$}.mirrorLed`,
+    services: [led('mirrorLed', 'Mirror LED', properties.mirrorLed)],
   },
   {
     displayName: 'mrpelz’s Bathroom Mirror Light',
@@ -401,13 +416,41 @@ hap.addAccessories(
     services: [output('nightLight', 'Night Light', properties.nightLight)],
   },
   {
+    displayName: 'mrpelz’s Bathroom All',
+    id: `${mrpelzBathroom.$}.all`,
+    services: [output('all', 'All', groups.all)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom All Lights',
+    id: `${mrpelzBathroom.$}.allLights`,
+    services: [output('allLights', 'All Lights', groups.allLights)],
+  },
+  {
+    displayName: 'mrpelz’s Bathroom Sun Elevation Lightings',
+    id: `${mrpelzBathroom.$}.sunElevationLightings`,
+    services: [
+      hapScene(
+        'astronomicalTwilightLighting',
+        'Astronomical Twilight Lighting',
+        scenes.astronomicalTwilightLighting,
+      ),
+      hapScene(
+        'civilTwilightLighting',
+        'Civil Twilight Lighting',
+        scenes.civilTwilightLighting,
+      ),
+      hapScene('dayLighting', 'Day Lighting', scenes.dayLighting),
+      hapScene(
+        'nauticalTwilightLighting',
+        'Nautical Twilight Lighting',
+        scenes.nauticalTwilightLighting,
+      ),
+      hapScene('nightLighting', 'Night Lighting', scenes.nightLighting),
+    ],
+  },
+  {
     displayName: 'mrpelz’s Bathroom Auto-Light',
     id: `${mrpelzBathroom.$}.autoLight`,
     services: [trigger('autoLight', 'Auto-Light', scenes.autoLight)],
-  },
-  {
-    displayName: 'mrpelz’s Bathroom Door',
-    id: `${mrpelzBathroom.$}.door`,
-    services: [doorOrWindow('door', 'Door', properties.door)],
   },
 );
