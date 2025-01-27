@@ -97,5 +97,5 @@ export const app = async (): Promise<void> => {
     response.end(await register.metrics());
   });
 
-  hap.publish();
+  hap.publish(1338, '4468-8123');
 };
