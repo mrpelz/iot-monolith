@@ -4,9 +4,7 @@ WORKDIR /home/node
 USER node
 
 ENV \
-NODE_ENV="production" \
-HAP_STORAGE_PATH="/home/node/dist/hap-storage" \
-PERSISTENCE_PATH="/home/node/dist/persistence.json"
+NODE_ENV="production"
 
 ARG PACKAGE_SPEC
 
