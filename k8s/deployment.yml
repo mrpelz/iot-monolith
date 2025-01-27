@@ -24,6 +24,20 @@ spec:
             - containerPort: 1337
               name: http
               protocol: TCP
+            - containerPort: 1338
+              name: hap
+              protocol: TCP
+          volumeMounts:
+          - mountPath: "/var/opt/iot-monolith"
+            name: local-storage
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsUser: 1000
+      volumes:
+      - name: local-storage
+        persistentVolumeClaim:
+          claimName: iot-monolith
       imagePullSecrets:
         - name: regcred
       restartPolicy: Always

@@ -45,6 +45,8 @@ export type TAccessory = {
 
 HAPStorage.setCustomStoragePath(hapStoragePath);
 
+const MAC_IDENTIFIER = '02:9c:8f:43:d6:a9';
+
 const idTag = (() => {
   if (!isProd) return 'dev';
 
@@ -156,12 +158,13 @@ export class HAP {
     }
   }
 
-  publish(): void {
+  publish(port: number, pincode: string): void {
     this._bridge.publish({
+      addIdentifyingMaterial: false,
       category: Categories.BRIDGE,
-      pincode: '446-88-123',
-      port: 47_128,
-      username: '02-9c-8f-43-d6-a9',
+      pincode,
+      port,
+      username: MAC_IDENTIFIER,
     });
   }
 }
