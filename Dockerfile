@@ -4,7 +4,8 @@ WORKDIR /home/node
 USER node
 
 ENV \
-NODE_ENV="production"
+NODE_ENV="production" \
+PERSISTENCE_PATH="/var/opt/iot-monolith/persistence.json"
 
 ARG PACKAGE_SPEC
 

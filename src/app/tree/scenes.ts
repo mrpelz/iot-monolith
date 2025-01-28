@@ -1,10 +1,8 @@
-import { scene as hapScene, trigger } from '../../lib/hap/actuators.js';
 import {
   scene,
   SceneMember,
   triggerElement,
 } from '../../lib/tree/properties/actuators.js';
-import { hap } from '../hap.js';
 import { all, allLights } from './groups.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
@@ -104,30 +102,3 @@ export const allOff = triggerElement(async () => {
   const all_ = await all;
   all_.main.setState.value = false;
 }, 'scene');
-
-hap.addAccessories(
-  {
-    displayName: 'Kitchen Adjacent Chillax',
-    id: 'scenes.kitchenAdjacent.chillax',
-    services: [
-      hapScene('chillax', 'Kitchen Adjacent Chillax', kitchenAdjacentChillax),
-    ],
-  },
-  {
-    displayName: 'Kitchen Adjacent Bright',
-    id: 'scenes.kitchenAdjacent.bright',
-    services: [
-      hapScene('bright', 'Kitchen Adjacent Bright', kitchenAdjacentBright),
-    ],
-  },
-  {
-    displayName: 'All Lights Off',
-    id: 'scenes.all.lightsOff',
-    services: [trigger('lightsOff', 'All Lights Off', allLightsOff)],
-  },
-  {
-    displayName: 'All Off',
-    id: 'scenes.all.off',
-    services: [trigger('off', 'All Off', allOff)],
-  },
-);

@@ -19,7 +19,6 @@ export const prereleaseTag = version
 
 const {
   CONNECT,
-  HAP_STORAGE_PATH,
   LOG_LEVEL,
   LOG_TELEGRAM,
   NODE_ENV,
@@ -27,12 +26,16 @@ const {
   TELEGRAM_TOKEN,
 } = process.env;
 
+if (!PERSISTENCE_PATH) {
+  // eslint-disable-next-line no-console
+  console.error('required environment info not supplied, exiting.');
+  // eslint-disable-next-line unicorn/no-process-exit
+  process.exit(1);
+}
+
 export const connect = CONNECT ? Boolean(parse(CONNECT)) : false;
-export const hapStoragePath =
-  HAP_STORAGE_PATH ?? '/var/opt/iot-monolith/hap-storage';
 export const isProd = NODE_ENV === 'production';
 export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : 0;
 export const logTelegram = LOG_TELEGRAM ? Boolean(parse(LOG_TELEGRAM)) : false;
 export const telegramToken = TELEGRAM_TOKEN;
-export const peristencePath =
-  PERSISTENCE_PATH ?? '/var/opt/iot-monolith/persistence.json';
+export const peristencePath = PERSISTENCE_PATH;
