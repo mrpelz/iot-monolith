@@ -50,11 +50,6 @@ create service-http:
   script:
     - kubectl apply -n "${NAMESPACE}" -f "k8s/service-http.yml"
 
-create service-hap:
-  stage: deploy
-  script:
-    - kubectl apply -n "${NAMESPACE}" -f "k8s/service-hap.yml"
-
 create ingress:
   stage: deploy
   script:

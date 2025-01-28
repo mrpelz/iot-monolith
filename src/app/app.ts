@@ -20,7 +20,6 @@ export const app = async (): Promise<void> => {
 
   const { logger } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
-  const { hap } = await import('./hap.js');
 
   const { system: _system } = await import('./tree/system.js');
 
@@ -96,6 +95,4 @@ export const app = async (): Promise<void> => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });
-
-  hap.publish(1338, '4468-8123');
 };
