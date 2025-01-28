@@ -1,6 +1,4 @@
 import { epochs } from '../../../lib/epochs.js';
-import { output, scene } from '../../../lib/hap/actuators.js';
-import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -11,7 +9,6 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { hap } from '../../hap.js';
 import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 
@@ -149,38 +146,3 @@ export const hallway = {
   ...properties,
   level: Level.ROOM as const,
 };
-
-hap.addAccessories(
-  {
-    displayName: 'Hallway Ceiling Lights',
-    id: `${hallway.$}.ceilingLights`,
-    services: [
-      output('ceilingLightBack', 'Back', properties.ceilingLightBack),
-      output('ceilingLightFront', 'Front', properties.ceilingLightFront),
-    ],
-  },
-  {
-    displayName: 'Entry Door',
-    id: `${hallway.$}.entryDoor`,
-    services: [doorOrWindow('entryDoor', 'Entry Door', properties.entryDoor)],
-  },
-  {
-    displayName: 'Entry Door Timer',
-    id: `${hallway.$}.entryDoorTimer`,
-    services: [
-      scene('entryDoorTimer', 'Entry Door Timer', properties.entryDoorTimer),
-    ],
-  },
-  {
-    displayName: 'Hallway All Lights',
-    id: `${hallway.$}.allLights`,
-    services: [output('allLights', 'All Lights', groups.allLights)],
-  },
-  {
-    displayName: 'Hallway Ceiling Light',
-    id: `${hallway.$}.ceilingLight`,
-    services: [
-      output('allCeilingLights', 'Ceiling Light', groups.ceilingLight),
-    ],
-  },
-);

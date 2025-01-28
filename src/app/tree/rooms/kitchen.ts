@@ -1,5 +1,3 @@
-import { led } from '../../../lib/hap/actuators.js';
-import { doorOrWindow } from '../../../lib/hap/sensors.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -8,7 +6,6 @@ import { Level } from '../../../lib/tree/main.js';
 import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { hap } from '../../hap.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -135,27 +132,3 @@ export const kitchen = {
   ...properties,
   level: Level.ROOM as const,
 };
-
-hap.addAccessories(
-  {
-    displayName: 'Kitchen Door',
-    id: `${kitchen.$}.door`,
-    services: [doorOrWindow('window', 'Window', properties.window)],
-  },
-  {
-    displayName: 'Kitchen All LEDs',
-    id: `${kitchen.$}.allLeds`,
-    services: [led('allLeds', 'All LEDs', groups.allLights)],
-  },
-  {
-    displayName: 'Kitchen LEDs',
-    id: `${kitchen.$}.leds`,
-    services: [
-      led('cWhite', 'Cold White', groups.cWhite),
-      led('floodlight', 'Floodlight', groups.floodlight),
-      led('wWhite', 'Warm White', groups.wWhite),
-      led('worklight', 'Worklight', groups.worklight),
-      led('worklightWWhite', 'Worklight Warm White', groups.worklightWWhite),
-    ],
-  },
-);

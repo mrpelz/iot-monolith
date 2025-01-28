@@ -75,7 +75,6 @@
     "tsc:watch": "tsc --watch"
   },
   "dependencies": {
-    "hap-nodejs": "latest",
     "prom-client": "latest",
     "proper-tags": "latest",
     "semver": "latest",
