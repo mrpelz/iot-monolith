@@ -48,7 +48,7 @@ export const devices = {
   multiButton: ev1527ButtonX4(831_834, ev1527Transport, context),
   nightLight: sonoffBasic(
     'lighting',
-    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud',
+    'bedroom-stonelamp.lan.wurstsalat.cloud',
     context,
   ),
   nightstandLeds: h801('bedroom-nightstandleds.lan.wurstsalat.cloud', context),
