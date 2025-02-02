@@ -2,12 +2,12 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: iot-monolith
+  annotations:
+    volumeType: local
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
-  storageClassName: local-storage
-  volumeMode: Filesystem
-  volumeName: iot-monolith
+  storageClassName: local-path
