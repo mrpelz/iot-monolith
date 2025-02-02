@@ -26,13 +26,6 @@ create namespace:
     - kubectl label --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="${RANCHER_PROJECT_ID}"
     - kubectl annotate --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="local:${RANCHER_PROJECT_ID}"
 
-create persistent-volume:
-  stage: deploy
-  script:
-    - |
-      sed -e "s#{DIRECTORY}#${NAMESPACE}#g" "k8s/persistent-volume.yml" | \
-      kubectl apply -n "${NAMESPACE}" -f -
-
 create persistent-volume-claim:
   stage: deploy
   script:
