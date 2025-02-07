@@ -18,8 +18,9 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
-import { every5Seconds } from '../../timings.js';
+import { every2Minutes } from '../../timings.js';
 import {
+  overriddenLed,
   relativeSunElevationOfDay,
   relativeSunElevationOfNight,
 } from '../../util.js';
@@ -44,14 +45,22 @@ export const instances = {
   wallswitchTop: devices.wallswitch.button0.state,
 };
 
+const isTerrariumLedsOverride = new BooleanState(false);
+
 export const properties = {
   overrideTimer: offTimer(epochs.hour * 12, true, [
     'livingRoom/terrariumLedsOverrideTimer',
     persistence,
   ]),
   standingLamp: devices.standingLamp.internal.relay,
-  terrariumLedRed: devices.terrariumLeds.internal.ledB,
-  terrariumLedTop: devices.terrariumLeds.internal.ledR,
+  terrariumLedRed: overriddenLed(
+    devices.terrariumLeds.internal.ledB,
+    isTerrariumLedsOverride,
+  ),
+  terrariumLedTop: overriddenLed(
+    devices.terrariumLeds.internal.ledR,
+    isTerrariumLedsOverride,
+  ),
 };
 
 export const groups = {
@@ -61,8 +70,6 @@ export const groups = {
     properties.terrariumLedTop,
   ]),
 };
-
-const isTerrariumLedsOverride = new BooleanState(false);
 
 export const scenes = {
   mediaOff: triggerElement(async () => {
@@ -161,13 +168,15 @@ export const scenes = {
     const brightnessDay = relativeSunElevationDay
       ? maxmin(relativeSunElevationDay + 0.18)
       : 0;
-    properties.terrariumLedTop.brightness.setState.value = brightnessDay;
+    devices.terrariumLeds.internal.ledR.brightness.setState.value =
+      brightnessDay;
 
     const relativeSunElevationNight = relativeSunElevationOfNight();
     const brightnessNight = relativeSunElevationNight
       ? maxmin(relativeSunElevationNight + 0.18)
       : 0;
-    properties.terrariumLedRed.brightness.setState.value = brightnessNight;
+    devices.terrariumLeds.internal.ledB.brightness.setState.value =
+      brightnessNight;
   };
 
   isTerrariumLedsOverride.observe((value) => {
@@ -175,12 +184,17 @@ export const scenes = {
 
     if (!value) return;
 
-    properties.terrariumLedRed.main.setState.value = false;
-    properties.terrariumLedTop.main.setState.value = false;
+    devices.terrariumLeds.internal.ledR.main.setState.value = false;
+    devices.terrariumLeds.internal.ledB.main.setState.value = false;
   });
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
-  every5Seconds.addTask(handleTerrariumLedsAutomation);
+  every2Minutes.addTask(handleTerrariumLedsAutomation);
+  devices.terrariumLeds.online.main.state.observe((isOnline) => {
+    if (!isOnline) return;
+
+    handleTerrariumLedsAutomation();
+  });
 
   properties.overrideTimer.state.observe(
     () => (isTerrariumLedsOverride.value = false),

@@ -10,16 +10,10 @@ import { Indicator } from '../../services/indicator.js';
 import { Level } from '../main.js';
 import {
   identifyDevice,
-  resetDevice,
-  setOnline,
-} from '../properties/actuators.js';
-import {
-  hello,
-  lastSeen,
   online,
-  Timings,
-  vcc,
-} from '../properties/sensors.js';
+  resetDevice,
+} from '../properties/actuators.js';
+import { hello, lastSeen, Timings, vcc } from '../properties/sensors.js';
 
 const deviceMeta = <S extends boolean>(device: Device, isSubDevice: S) => ({
   ...(device.identifier ? { identifier: [...device.identifier.values()] } : {}),
@@ -54,12 +48,11 @@ export const ipDevice = <S extends boolean>(
   initiallyOnline = false,
 ) => ({
   $: 'ipDevice' as const,
+  ...(indicator ? identifyDevice(indicator) : {}),
   ...deviceMeta(device, isSubDevice),
   ...hello(device, timings.moderate || timings.default),
-  ...online(device),
-  ...setOnline(device, persistence, initiallyOnline),
+  ...online(device, persistence, initiallyOnline),
   ...resetDevice(device),
-  ...(indicator ? identifyDevice(indicator) : {}),
   host: device.transport.host,
   port: device.transport.port,
 });
