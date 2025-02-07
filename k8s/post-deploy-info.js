@@ -21,9 +21,18 @@ import {
       CI_COMMIT_TAG_MESSAGE: tagMessage,
       CI_COMMIT_TAG: version,
       CI_PROJECT_URL: projectUrl,
+      DOMAIN: domain,
       NAMESPACE: namespace,
+      RANCHER_CLUSTER: rancherCluster,
     } = process.env;
-    if (!namespace || !projectUrl || !tagMessage || !version) {
+    if (
+      !domain ||
+      !namespace ||
+      !projectUrl ||
+      !rancherCluster ||
+      !tagMessage ||
+      !version
+    ) {
       return;
     }
 
@@ -31,15 +40,17 @@ import {
       CI_COMMIT_TAG: version,
       CI_COMMIT_TAG_MESSAGE: tagMessage,
       CI_PROJECT_URL: projectUrl,
+      DOMAIN: domain,
       NAMESPACE: namespace,
+      RANCHER_CLUSTER: rancherCluster,
     });
 
     const [body, headline] = getProcessedBody(`
       ## Prerelease Deployed on k8s
 
-      Release based on [tag "${version}"](${projectUrl}/-/tags/${version}) has been deployed to [namespace "${namespace}"](https://rancher.lan.wurstsalat.cloud/dashboard/c/local/explorer/apps.deployment/${namespace}/iot-monolith).
+      Release based on [tag "${version}"](${projectUrl}/-/tags/${version}) has been deployed to [namespace "${namespace}"](https://rancher.lan.wurstsalat.cloud/dashboard/c/${rancherCluster}/explorer/apps.deployment/${namespace}/iot-monolith).
 
-      [visit live deployment](https://${namespace}.rancher.lan.wurstsalat.cloud)
+      [visit live deployment](https://${namespace}.${domain})
     `);
 
     const [projectMergeRequests, pipelineUsername] = await Promise.all([
