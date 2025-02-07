@@ -327,15 +327,6 @@ export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   };
 };
 
-export const online = (device: Device) => ({
-  online: {
-    $: 'online' as const,
-    ...lastChange(device.isOnline),
-    level: Level.PROPERTY as const,
-    main: getter(ValueType.BOOLEAN, device.isOnline),
-  },
-});
-
 export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const state = new Observable<any>({});

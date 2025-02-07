@@ -1,5 +1,18 @@
 import sunCalc from 'suncalc';
 
+import {
+  AnyObservable,
+  ObservableGroup,
+  ProxyObservable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../lib/observable.js';
+import { BooleanProxyState, NullState } from '../lib/state.js';
+import { setter } from '../lib/tree/elements/setter.js';
+import { trigger } from '../lib/tree/elements/trigger.js';
+import { ValueType } from '../lib/tree/main.js';
+import { led as led_ } from '../lib/tree/properties/actuators.js';
+
 export const LATITUDE = 53.547_47;
 export const LONGITUDE = 10.015_98;
 
@@ -76,3 +89,61 @@ export const isAstronomicalTwilight = (elevation?: number): boolean =>
 
 export const isNight = (elevation?: number): boolean =>
   isTwilightPhase(undefined, -18, elevation);
+
+class MergedBrightness extends ObservableGroup<number | null> {
+  protected _merge(): number | null {
+    const validValues = this.values.filter(
+      (value): value is number => typeof value === 'number',
+    );
+
+    return validValues.length > 0 ? Math.min(...validValues) : null;
+  }
+}
+
+export const overriddenLed = (
+  led: ReturnType<typeof led_>,
+  isOverridden: AnyObservable<boolean>,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+) => {
+  const { $, actuatorStaleness, brightness, level, topic } = led;
+
+  const actualBrightness = new ReadOnlyObservable(
+    new MergedBrightness(0, [
+      brightness.state,
+      new ReadOnlyProxyObservable(isOverridden, (value) => {
+        if (brightness.state.value === null) return null;
+
+        return value ? 1 : 0;
+      }),
+    ]),
+  );
+
+  const setBrightness = new ProxyObservable(
+    brightness.setState,
+    (value) => value,
+    (value) => (isOverridden.value ? value : ProxyObservable.doNotSet),
+  );
+
+  const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>
+    value === null ? value : Boolean(value),
+  );
+
+  const setOn = new BooleanProxyState(
+    setBrightness,
+    (value) => Boolean(value),
+    (value) => (value ? 1 : 0),
+  );
+
+  return {
+    $,
+    $init: () => {
+      // noop
+    },
+    actuatorStaleness,
+    brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
+    flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
+    level,
+    main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    topic,
+  };
+};
