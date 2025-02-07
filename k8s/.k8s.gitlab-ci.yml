@@ -2,8 +2,14 @@ image:
   name: bitnami/kubectl:latest
   entrypoint: [""]
 
-variables:
-  NAMESPACE: "${CI_PROJECT_PATH_SLUG}-${VERSION_TAG}"
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      variables:
+        NAMESPACE: "${CI_PROJECT_PATH_SLUG}-latest"
+    - if: $CI_COMMIT_TAG
+      variables:
+        NAMESPACE: "${CI_PROJECT_PATH_SLUG}-pre-${CI_COMMIT_TAG_MESSAGE}"
 
 stages:
   - prepare
@@ -47,7 +53,7 @@ create ingress:
   stage: deploy
   script:
     - |
-      sed -e "s#{SUB_DOMAIN}#${NAMESPACE}#g" "k8s/ingress.yml" | \
+      sed -e "s#{SUB_DOMAIN}#${NAMESPACE}#g" -e "s#{DOMAIN}#${DOMAIN}#g" "k8s/ingress.yml" | \
       kubectl apply -n "${NAMESPACE}" -f -
 
 comment deploy info:
