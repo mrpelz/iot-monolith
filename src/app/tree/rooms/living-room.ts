@@ -17,8 +17,9 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
-import { every5Seconds } from '../../timings.js';
+import { every2Minutes } from '../../timings.js';
 import {
+  overriddenLed,
   relativeSunElevationOfDay,
   relativeSunElevationOfNight,
 } from '../../util.js';
@@ -43,14 +44,22 @@ export const instances = {
   wallswitchTop: devices.wallswitch.button0.state,
 };
 
+const isTerrariumLedsOverride = new BooleanState(false);
+
 export const properties = {
   overrideTimer: offTimer(epochs.hour * 12, true, [
     'livingRoom/terrariumLedsOverrideTimer',
     persistence,
   ]),
   standingLamp: devices.standingLamp.internal.relay,
-  terrariumLedRed: devices.terrariumLeds.internal.ledB,
-  terrariumLedTop: devices.terrariumLeds.internal.ledR,
+  terrariumLedRed: overriddenLed(
+    devices.terrariumLeds.internal.ledB,
+    isTerrariumLedsOverride,
+  ),
+  terrariumLedTop: overriddenLed(
+    devices.terrariumLeds.internal.ledR,
+    isTerrariumLedsOverride,
+  ),
 };
 
 export const groups = {
@@ -60,8 +69,6 @@ export const groups = {
     properties.terrariumLedTop,
   ]),
 };
-
-const isTerrariumLedsOverride = new BooleanState(false);
 
 export const scenes = {
   mediaOff: triggerElement(async () => {
@@ -179,7 +186,7 @@ export const scenes = {
   });
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
-  every5Seconds.addTask(handleTerrariumLedsAutomation);
+  every2Minutes.addTask(handleTerrariumLedsAutomation);
 
   properties.overrideTimer.state.observe(
     () => (isTerrariumLedsOverride.value = false),

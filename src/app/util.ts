@@ -1,5 +1,15 @@
 import sunCalc from 'suncalc';
 
+import {
+  AnyObservable,
+  ObservableGroup,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../lib/observable.js';
+import { setter } from '../lib/tree/elements/setter.js';
+import { ValueType } from '../lib/tree/main.js';
+import { led as led_ } from '../lib/tree/properties/actuators.js';
+
 export const LATITUDE = 53.547_47;
 export const LONGITUDE = 10.015_98;
 
@@ -76,3 +86,49 @@ export const isAstronomicalTwilight = (elevation?: number): boolean =>
 
 export const isNight = (elevation?: number): boolean =>
   isTwilightPhase(undefined, -18, elevation);
+
+class MergedBrightness extends ObservableGroup<number | null> {
+  protected _merge(): number | null {
+    const validValues = this.values.filter(
+      (value): value is number => typeof value === 'number',
+    );
+
+    return validValues.length > 0 ? Math.min(...validValues) : null;
+  }
+}
+
+export const overriddenLed = (
+  led: ReturnType<typeof led_>,
+  isOverridden: AnyObservable<boolean>,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+) => {
+  const { $, actuatorStaleness, brightness, flip, level, main, topic } = led;
+
+  const actualBrightness = new ReadOnlyObservable(
+    new MergedBrightness(0, [
+      brightness.state,
+      new ReadOnlyProxyObservable(isOverridden, (value) => {
+        if (brightness.state.value === null) return null;
+
+        return value ? 1 : 0;
+      }),
+    ]),
+  );
+
+  const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>
+    value === null ? value : Boolean(value),
+  );
+
+  return {
+    $,
+    $init: () => {
+      // noop
+    },
+    actuatorStaleness,
+    brightness: setter(ValueType.NUMBER, brightness.setState, actualBrightness),
+    flip,
+    level,
+    main: setter(ValueType.BOOLEAN, main.setState, actualOn, 'on'),
+    topic,
+  };
+};

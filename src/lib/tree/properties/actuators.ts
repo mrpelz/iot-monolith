@@ -25,7 +25,8 @@ import {
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
-import { Level, ValueType as ValueTypeNg } from '../main.js';
+import { Level, ValueType } from '../main.js';
+import { lastChange } from './sensors.js';
 
 const actuatorStaleness = <T>(
   state: AnyReadOnlyObservable<T | null>,
@@ -52,9 +53,9 @@ const actuatorStaleness = <T>(
         }, true);
       },
       level: Level.PROPERTY as const,
-      loading: getter(ValueTypeNg.BOOLEAN, new ReadOnlyObservable(loading)),
+      loading: getter(ValueType.BOOLEAN, new ReadOnlyObservable(loading)),
       stale: getter(
-        ValueTypeNg.BOOLEAN,
+        ValueType.BOOLEAN,
         new ReadOnlyObservable(
           new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
             stale,
@@ -81,10 +82,10 @@ export const led = (
   const props = {
     $: 'led' as const,
     ...actuatorStaleness(actualBrightness, setBrightness, device),
-    brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
-    flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
+    brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
+    flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
-    main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
+    main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
   };
 
@@ -116,9 +117,9 @@ export const output = <T extends string>(
   const props = {
     $: 'output' as const,
     ...actuatorStaleness(actualState, setState, device),
-    flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
+    flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
-    main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
+    main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
     topic,
   };
 
@@ -175,11 +176,11 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   return {
     $: 'ledGrouping' as const,
-    brightness: setter(ValueTypeNg.NUMBER, setBrightness, actualBrightness),
-    flip: trigger(ValueTypeNg.NULL, new NullState(() => setOn.flip())),
+    brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
+    flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     lights,
-    main: setter(ValueTypeNg.BOOLEAN, setOn, actualOn, 'on'),
+    main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting',
   };
 };
@@ -202,11 +203,44 @@ export const outputGrouping = <T extends string>(
 
   return {
     $: 'outputGrouping' as const,
-    flip: trigger(ValueTypeNg.NULL, new NullState(() => setState.flip())),
+    flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
-    main: setter(ValueTypeNg.BOOLEAN, setState, actualState, 'on'),
+    main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
     outputs,
     topic,
+  };
+};
+
+export const online = (
+  device: IpDevice,
+  _: Persistence,
+  initiallyOnline: boolean,
+) => {
+  const state = new BooleanState(initiallyOnline);
+
+  return {
+    online: {
+      $: 'online' as const,
+      ...lastChange(device.isOnline),
+      $init: () => {
+        if (initiallyOnline) {
+          device.transport.connect();
+        }
+
+        state.observe((value) => {
+          if (value) {
+            device.transport.connect();
+
+            return;
+          }
+
+          device.transport.disconnect();
+        });
+      },
+      flip: trigger(ValueType.NULL, new NullState(() => state.flip())),
+      level: Level.PROPERTY as const,
+      main: setter(ValueType.BOOLEAN, state, device.isOnline),
+    },
   };
 };
 
@@ -214,7 +248,7 @@ export const resetDevice = (device: Device) => ({
   resetDevice: {
     $: 'resetDevice' as const,
     level: Level.PROPERTY as const,
-    main: trigger(ValueTypeNg.NULL, new NullState(() => device.triggerReset())),
+    main: trigger(ValueType.NULL, new NullState(() => device.triggerReset())),
   },
 });
 
@@ -223,7 +257,7 @@ export const identifyDevice = (indicator: Indicator) => ({
     $: 'identifyDevice' as const,
     level: Level.PROPERTY as const,
     main: trigger(
-      ValueTypeNg.NULL,
+      ValueType.NULL,
       new NullState(() =>
         indicator
           .request({
@@ -244,7 +278,7 @@ export const triggerElement = <T extends string>(
 ) => ({
   $: 'triggerElement' as const,
   level: Level.PROPERTY as const,
-  main: trigger(ValueTypeNg.NULL, new NullState(handler), 'trigger'),
+  main: trigger(ValueType.NULL, new NullState(handler), 'trigger'),
   topic,
 });
 
@@ -276,46 +310,9 @@ export const scene = <T extends string>(
 
   return {
     $: 'scene' as const,
-    flip: trigger(ValueTypeNg.NULL, new NullState(() => set.flip())),
+    flip: trigger(ValueType.NULL, new NullState(() => set.flip())),
     level: Level.PROPERTY as const,
-    main: setter(ValueTypeNg.BOOLEAN, set, undefined, 'scene'),
+    main: setter(ValueType.BOOLEAN, set, undefined, 'scene'),
     topic,
-  };
-};
-
-export const setOnline = (
-  device: IpDevice,
-  _: Persistence,
-  initiallyOnline: boolean,
-) => {
-  const state = new BooleanState(initiallyOnline);
-
-  return {
-    setOnline: {
-      $: 'setOnline' as const,
-      $init: () => {
-        if (initiallyOnline) {
-          device.transport.connect();
-        }
-
-        state.observe((value) => {
-          if (value) {
-            device.transport.connect();
-
-            return;
-          }
-
-          device.transport.disconnect();
-        });
-
-        // persistence.observe(
-        //   `setOnline/${device.transport.host}:${device.transport.port}`,
-        //   state
-        // );
-      },
-      flip: trigger(ValueTypeNg.NULL, new NullState(() => state.flip())),
-      level: Level.PROPERTY as const,
-      main: setter(ValueTypeNg.BOOLEAN, state),
-    },
   };
 };
