@@ -142,16 +142,18 @@ export const isWritableObservable = <T>(
 };
 
 export class ProxyObservable<T, S = T> {
+  static readonly doNotSet = Symbol('doNotSet');
+
   private readonly _get: ProxyFn<T, S>;
   private readonly _observable: AnyObservable<T>;
-  private readonly _set: ProxyFn<S, T>;
+  private readonly _set: ProxyFn<S, T | typeof ProxyObservable.doNotSet>;
 
   private _suspend = false;
 
   constructor(
     observable: AnyObservable<T>,
     get: ProxyFn<T, S>,
-    set: ProxyFn<S, T>,
+    set: ProxyFn<S, T | typeof ProxyObservable.doNotSet>,
   ) {
     this._observable = observable;
     this._get = get;
@@ -170,7 +172,12 @@ export class ProxyObservable<T, S = T> {
     if (!isWritableObservable(this._observable)) return;
 
     this._suspend = true;
-    this._observable.value = this._set(value);
+
+    const nextValue = this._set(value);
+    if (nextValue !== ProxyObservable.doNotSet) {
+      this._observable.value = nextValue;
+    }
+
     this._suspend = false;
   }
 
