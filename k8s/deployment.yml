@@ -10,6 +10,8 @@ spec:
   selector:
     matchLabels:
       app: iot-monolith
+  strategy:
+    type: Recreate
   template:
     metadata:
       creationTimestamp: null

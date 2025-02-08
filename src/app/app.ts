@@ -4,12 +4,6 @@ import { collectDefaultMetrics, register } from 'prom-client';
 import { WebApi } from '../lib/api/main.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
-import {
-  // anyBoolean,
-  // Level,
-  // levelObjectMatch,
-  match,
-} from '../lib/tree/main.js';
 import { init } from '../lib/tree/operations/init.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
 import { Paths } from '../lib/tree/operations/paths.js';
@@ -32,8 +26,8 @@ export const app = async (): Promise<void> => {
 
   setupMetrics(logger, system, paths);
 
-  // eslint-disable-next-line no-console
-  serialization.updates.observe((value) => console.log(value));
+  // // eslint-disable-next-line no-console
+  // serialization.updates.observe((value) => console.log(value));
 
   // // eslint-disable-next-line no-console
   // console.log(JSON.stringify(serialization.tree, undefined, 2));
@@ -59,28 +53,29 @@ export const app = async (): Promise<void> => {
   // // eslint-disable-next-line no-console
   // console.log(lol);
 
-  const [sunElevation] = match({ $: 'sunElevation' as const }, system);
+  // const [sunElevation] = match({ $: 'sunElevation' as const }, system);
 
-  if (sunElevation) {
-    // eslint-disable-next-line no-console
-    console.log(
-      paths.getByObject(sunElevation)?.id,
-      paths.getParent(sunElevation.isDay)?.id,
-    );
-  }
+  // if (sunElevation) {
+  //   // eslint-disable-next-line no-console
+  //   console.log(
+  //     paths.getByObject(sunElevation)?.id,
+  //     paths.getParent(sunElevation.isDay)?.id,
+  //   );
+  // }
 
-  // eslint-disable-next-line no-console
-  console.log(
-    system.wurstHome.sonninstraße16.firstFloor.testRoom.temperature.main.unit,
-    // @ts-ignore
-    serialization.tree.wurstHome.sonninstraße16.firstFloor.testRoom.temperature
-      .main.unit,
-  );
+  // // eslint-disable-next-line no-console
+  // console.log(
+  //   system.wurstHome.sonninstraße16.firstFloor.testRoom.temperature.main.unit,
+  //   // @ts-ignore
+  //   serialization.tree.wurstHome.sonninstraße16.firstFloor.testRoom.temperature
+  //     .main.unit,
+  // );
 
-  serialization.inject(['fc604c87-a64c-5b70-8595-ae9a407cfe84', null]);
+  // serialization.inject(['fc604c87-a64c-5b70-8595-ae9a407cfe84', null]);
 
   const httpServer = new HttpServer(logger, 1337);
 
+  // @ts-ignore
   // eslint-disable-next-line no-new
   new WebApi(logger, httpServer, serialization);
 
