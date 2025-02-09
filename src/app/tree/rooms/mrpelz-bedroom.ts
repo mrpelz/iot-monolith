@@ -1,11 +1,5 @@
 import { EnumState } from '../../../lib/state.js';
 import {
-  SceneMember,
-  ledGrouping,
-  outputGrouping,
-  scene,
-} from '../../lib/tree/properties/actuators.js';
-import {
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../../lib/tree/devices/ev1527-button.js';

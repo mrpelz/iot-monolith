@@ -9,7 +9,6 @@ import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
 import {
-  SceneMember,
   outputGrouping,
   scene,
   SceneMember,
