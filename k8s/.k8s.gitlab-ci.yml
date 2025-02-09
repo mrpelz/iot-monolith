@@ -1,0 +1,70 @@
+image:
+  name: bitnami/kubectl:latest
+  entrypoint: [""]
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      variables:
+        NAMESPACE: "${CI_PROJECT_PATH_SLUG}-latest"
+    - if: $CI_COMMIT_TAG
+      variables:
+        NAMESPACE: "${CI_PROJECT_PATH_SLUG}-pre-${CI_COMMIT_TAG_MESSAGE}"
+
+stages:
+  - prepare
+  - deploy
+  - post
+
+create namespace:
+  stage: prepare
+  variables:
+    GIT_STRATEGY: empty
+  script:
+    - |
+      if $(kubectl get namespace "${NAMESPACE}" >/dev/null 2>&1); then
+        echo "namespace \"${NAMESPACE}\" already exists"
+        exit 0
+      fi
+
+      kubectl create namespace "${NAMESPACE}"
+      kubectl create -n "${NAMESPACE}" secret docker-registry regcred --docker-server="${CI_REGISTRY}" --docker-username="${CI_DEPLOY_USER}" --docker-password="${CI_DEPLOY_PASSWORD}"
+    - kubectl label --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="${RANCHER_PROJECT_ID}"
+    - kubectl annotate --overwrite namespace "${NAMESPACE}" field.cattle.io/projectId="local:${RANCHER_PROJECT_ID}"
+
+create persistent-volume-claim:
+  stage: deploy
+  script:
+    - kubectl apply -n "${NAMESPACE}" -f "k8s/persistent-volume-claim.yml"
+
+create deployment:
+  stage: deploy
+  script:
+    - |
+      sed -e "s#{IMAGE}#${CI_REGISTRY_IMAGE}/iot-monolith:${CI_COMMIT_TAG}#g" "k8s/deployment.yml" | \
+      kubectl apply -n "${NAMESPACE}" -f -
+
+create service-http:
+  stage: deploy
+  script:
+    - kubectl apply -n "${NAMESPACE}" -f "k8s/service-http.yml"
+
+create ingress:
+  stage: deploy
+  script:
+    - |
+      sed -e "s#{SUB_DOMAIN}#${NAMESPACE}#g" -e "s#{DOMAIN}#${DOMAIN}#g" "k8s/ingress.yml" | \
+      kubectl apply -n "${NAMESPACE}" -f -
+
+comment deploy info:
+  stage: post
+  image: node:lts
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: never
+    - if: $CI_COMMIT_TAG
+      when: on_success
+  script:
+    - for NPM_CONFIG in $NPM_INSTALL_ADDITIONAL_CONFIG; do npm config set "${NPM_CONFIG}"; done
+    - npm ci --audit=false --fund=false
+    - k8s/post-deploy-info.js

@@ -1,4 +1,3 @@
-import { Constructor } from './oop.js';
 import { promiseGuard } from './promise.js';
 
 export type Observer = {
@@ -33,7 +32,7 @@ export class Observable<T> {
   constructor(
     initialValue: T,
     observerCallback?: MetaObserverCallback<T>,
-    forcedReport = true
+    forcedReport = true,
   ) {
     this._value = initialValue;
     this._observers = observerCallback
@@ -64,9 +63,8 @@ export class Observable<T> {
 
   observe(
     observerCallback: ObserverCallback<T>,
-    forcedReport = false
+    forcedReport = false,
   ): Observer {
-    // eslint-disable-next-line prefer-const
     let observer: Observer;
 
     const metaObserverCallback = (value: T) => {
@@ -100,7 +98,7 @@ export class ReadOnlyObservable<T> {
 
   observe(
     observerCallback: ObserverCallback<T>,
-    forcedReport = false
+    forcedReport = false,
   ): Observer {
     return this._observable.observe(observerCallback, forcedReport);
   }
@@ -125,17 +123,17 @@ export class ReadOnlyProxyObservable<T, S = T> {
 
   observe(
     observerCallback: ObserverCallback<S>,
-    forcedReport = false
+    forcedReport = false,
   ): Observer {
     return this._observable.observe(
       (value, observer) => observerCallback(this._get(value), observer),
-      forcedReport
+      forcedReport,
     );
   }
 }
 
 export const isWritableObservable = <T>(
-  input: AnyObservable<T>
+  input: AnyObservable<T>,
 ): input is AnyWritableObservable<T> => {
   if (input instanceof ReadOnlyObservable) return false;
   if (input instanceof ReadOnlyProxyObservable) return false;
@@ -144,16 +142,18 @@ export const isWritableObservable = <T>(
 };
 
 export class ProxyObservable<T, S = T> {
+  static readonly doNotSet = Symbol('doNotSet');
+
   private readonly _get: ProxyFn<T, S>;
   private readonly _observable: AnyObservable<T>;
-  private readonly _set: ProxyFn<S, T>;
+  private readonly _set: ProxyFn<S, T | typeof ProxyObservable.doNotSet>;
 
   private _suspend = false;
 
   constructor(
     observable: AnyObservable<T>,
     get: ProxyFn<T, S>,
-    set: ProxyFn<S, T>
+    set: ProxyFn<S, T | typeof ProxyObservable.doNotSet>,
   ) {
     this._observable = observable;
     this._get = get;
@@ -172,13 +172,18 @@ export class ProxyObservable<T, S = T> {
     if (!isWritableObservable(this._observable)) return;
 
     this._suspend = true;
-    this._observable.value = this._set(value);
+
+    const nextValue = this._set(value);
+    if (nextValue !== ProxyObservable.doNotSet) {
+      this._observable.value = nextValue;
+    }
+
     this._suspend = false;
   }
 
   observe(
     observerCallback: ObserverCallback<S>,
-    forcedReport = false
+    forcedReport = false,
   ): Observer {
     return this._observable.observe((value, observer) => {
       if (this._suspend) return;
@@ -230,23 +235,44 @@ export class ObservableGroup<T> extends Observable<T> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) =>
-  class extends aClass {
-    addObservable(observable: AnyObservable<T>): Observer {
-      this._observables.add(observable);
+export const isObservable = (
+  input: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): input is AnyObservable<any> => {
+  if (input instanceof Observable) return true;
+  if (input instanceof ReadOnlyObservable) return true;
+  if (input instanceof ProxyObservable) return true;
+  if (input instanceof ReadOnlyProxyObservable) return true;
 
-      try {
-        super.value = this.value;
-      } catch {
-        // noop
-      }
+  return false;
+};
 
-      return {
-        remove: () => this._observables.delete(observable),
-      };
-    }
-  };
+export const isReadOnlyObservable = (
+  input: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): input is AnyReadOnlyObservable<any> => {
+  if (input instanceof ReadOnlyObservable) return true;
+  if (input instanceof ReadOnlyProxyObservable) return true;
+
+  return false;
+};
+
+// export const makeExtendable = <T>(aClass: Constructor<ObservableGroup<T>>) =>
+//   class extends aClass {
+//     addObservable(observable: AnyObservable<T>): Observer {
+//       this._observables.add(observable);
+
+//       try {
+//         super.value = this.value;
+//       } catch {
+//         // noop
+//       }
+
+//       return {
+//         remove: () => this._observables.delete(observable),
+//       };
+//     }
+//   };
 
 export const observify = <T>(fn: ObservifyGetter<T>): ObservifyResult<T> => {
   const observable = new Observable<T | null>(null);

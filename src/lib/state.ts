@@ -32,7 +32,7 @@ export enum BooleanGroupStrategy {
 export class BooleanStateGroup extends ObservableGroup<boolean> {
   private static _getValue(
     strategy: BooleanGroupStrategy,
-    observables: AnyObservable<boolean>[]
+    observables: AnyObservable<boolean>[],
   ) {
     const values = observables.map(({ value }) => value);
 
@@ -45,7 +45,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 
   constructor(
     strategy: BooleanGroupStrategy,
-    states: AnyObservable<boolean>[] = []
+    states: AnyObservable<boolean>[] = [],
   ) {
     super(BooleanStateGroup._getValue(strategy, states), states);
 
@@ -59,14 +59,14 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
   get allOn(): boolean {
     return BooleanStateGroup._getValue(
       BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-      this.observables
+      this.observables,
     );
   }
 
   get someOn(): boolean {
     return BooleanStateGroup._getValue(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      this.observables
+      this.observables,
     );
   }
 
@@ -80,7 +80,7 @@ export class BooleanStateGroup extends ObservableGroup<boolean> {
 export class BooleanNullableStateGroup extends BooleanStateGroup {
   constructor(
     strategy: BooleanGroupStrategy,
-    observables: AnyObservable<boolean | null>[] = []
+    observables: AnyObservable<boolean | null>[] = [],
   ) {
     super(
       strategy,
@@ -89,9 +89,9 @@ export class BooleanNullableStateGroup extends BooleanStateGroup {
           new ProxyObservable(
             observable,
             (value) => Boolean(value),
-            (value) => value
-          )
-      )
+            (value) => value,
+          ),
+      ),
     );
   }
 }
@@ -159,7 +159,8 @@ export class EnumState<T = unknown> extends Observable<T> {
       throw new RangeError(`"${index}" is a not existing index`);
     }
 
-    this.value = this._enum[index];
+    const nextValue = this._enum[index];
+    if (nextValue) this.value = nextValue;
 
     return this;
   }
@@ -174,6 +175,10 @@ export class NullState<T = null> {
       : new Set();
   }
 
+  get listeners(): number {
+    return this._observers.size;
+  }
+
   get value(): T {
     return undefined as unknown as T;
   }
@@ -183,7 +188,6 @@ export class NullState<T = null> {
   }
 
   observe(observerCallback: ObserverCallback<T>): Observer {
-    // eslint-disable-next-line prefer-const
     let observer: Observer;
 
     const metaObserverCallback = (value: T) => {
@@ -213,7 +217,23 @@ export class ReadOnlyNullState<T = null> {
     this._nullState = nullState;
   }
 
+  get listeners(): number {
+    return this._nullState.listeners;
+  }
+
   observe(observerCallback: ObserverCallback<T>): Observer {
     return this._nullState.observe(observerCallback);
   }
 }
+
+export type AnyNullState<T> = NullState<T> | ReadOnlyNullState<T>;
+
+export const isNullState = (
+  input: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): input is AnyNullState<any> => {
+  if (input instanceof NullState) return true;
+  if (input instanceof ReadOnlyNullState) return true;
+
+  return false;
+};

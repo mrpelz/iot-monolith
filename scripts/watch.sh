@@ -1,3 +1,1 @@
-#!/bin/bash
-
-journalctl -u iot-monolith.service -fp notice
+../node_modules/@mrpelz/boilerplate-node/scripts/watch.sh

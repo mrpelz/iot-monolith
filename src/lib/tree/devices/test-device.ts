@@ -1,39 +1,43 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import {
-  Levels,
-  MetaPropertySensor,
-  ParentRelation,
-  ValueType,
-  addMeta,
-  addMetaExtension,
-} from '../main.js';
+import { UDPDevice } from '../../device/udp.js';
 import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
+import { Context } from '../context.js';
+import { ipDevice } from '../elements/device.js';
+import { getter } from '../elements/getter.js';
+import { Level, ValueType } from '../main.js';
 import {
-  Timings,
   async,
   bme280,
   input,
   mcp9808,
+  metricStaleness,
   mhz19,
   sds011,
   tsl2561,
   uvIndex,
 } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './util.js';
-import { Logger } from '../../log.js';
-import { Persistence } from '../../persistence.js';
-import { UDPDevice } from '../../device/udp.js';
 
-export const testDevice = (
-  logger: Logger,
-  persistence: Persistence,
-  timings: Timings
-) => {
+class MergedObservableGroup extends ObservableGroup<number | null> {
+  protected _merge(): number | null {
+    const validValues = this.values.filter(
+      (value): value is number => typeof value === 'number',
+    );
+
+    return validValues.length > 0 ? Math.min(...validValues) : null;
+  }
+}
+
+export const testDevice = ({
+  connect,
+  logger,
+  persistence,
+  timings,
+}: Context) => {
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
-    1337
+    1337,
   );
 
   const {
@@ -44,10 +48,26 @@ export const testDevice = (
 
   const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
 
-  return addMeta(
-    {
+  const temperatureState = new ReadOnlyObservable(
+    new MergedObservableGroup(null, [
+      mcp9808Temperature.main.state,
+      bme280Temperature.main.state,
+    ]),
+  );
+
+  const temperature = {
+    $: 'temperature' as const,
+    ...metricStaleness(temperatureState, timings.default[1]),
+    bme280: bme280Temperature,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
+    mcp9808: mcp9808Temperature,
+  };
+
+  return {
+    ...ipDevice(device, false, persistence, timings, undefined, connect),
+    internal: {
       ...async(device, timings.slow || timings.default),
-      ...defaultsIpDevice(device, persistence, timings),
       ...mhz19(device, timings.slow || timings.default),
       ...sds011(device, timings.slow || timings.default),
       ...tsl2561(device, timings.default),
@@ -55,50 +75,7 @@ export const testDevice = (
       humidity,
       motion: input(device, undefined, 'motion'),
       pressure,
-      temperature: (() => {
-        const _temperature = addMeta(
-          {
-            _get: new ReadOnlyObservable(
-              new (class extends ObservableGroup<number | null> {
-                protected _merge(): number | null {
-                  const validValues = this.values.filter(
-                    (value): value is number => typeof value === 'number'
-                  );
-
-                  return validValues.length ? Math.min(...validValues) : null;
-                }
-              })(null, [mcp9808Temperature._get, bme280Temperature._get])
-            ),
-            bme280: bme280Temperature,
-            mcp9808: mcp9808Temperature,
-          },
-          {
-            level: Levels.PROPERTY,
-            measured: 'temperature',
-            name: 'compoundTemperature',
-            type: 'sensor',
-            unit: 'deg-c',
-            valueType: ValueType.NUMBER,
-          }
-        );
-
-        addMetaExtension<MetaPropertySensor, typeof _temperature>(
-          _temperature,
-          {
-            bme280: {
-              parentRelation: ParentRelation.DATA_AGGREGATION_SOURCE,
-            },
-            mcp9808: {
-              parentRelation: ParentRelation.DATA_AGGREGATION_SOURCE,
-            },
-          }
-        );
-
-        return _temperature;
-      })(),
+      temperature,
     },
-    {
-      ...deviceMeta(device),
-    }
-  );
+  };
 };

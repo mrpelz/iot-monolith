@@ -1,25 +1,7 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "alwaysStrict": true,
-    "checkJs": false,
-    "esModuleInterop": true,
-    "incremental": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ],
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "outDir": "./dist",
-    "sourceMap": true,
-    "strictNullChecks": true,
-    "target": "esnext",
-    "useDefineForClassFields": true,
+    "outDir": "dist"
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "extends": "@mrpelz/boilerplate-node/tsconfig.json",
+  "include": ["src/**/*"]
 }

@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { DynamicStringEncodings, StringEncodings } from '../string.js';
 import {
   FixedBuffer,
@@ -13,7 +11,7 @@ export class DynamicStructMember<T = unknown> {
   private _buffer?: Buffer;
   readonly maxSize: number;
 
-  constructor(maxSize = Infinity) {
+  constructor(maxSize = Number.POSITIVE_INFINITY) {
     this.maxSize = maxSize;
   }
 
@@ -88,7 +86,7 @@ export class DynamicString extends DynamicStructMember<string> {
 
   constructor(
     encoding: StringEncodings | DynamicStringEncodings = 'ascii',
-    maxSize?: number
+    maxSize?: number,
   ) {
     super(maxSize);
 
@@ -107,9 +105,8 @@ export class DynamicString extends DynamicStructMember<string> {
 
 export class BufferWrappedStructMember<T extends TStructMember> {
   private _buffer: Buffer;
-  readonly member: T;
 
-  constructor(member: T) {
+  constructor(public readonly member: T) {
     this.member = member;
     this.reset();
   }
@@ -147,13 +144,13 @@ export type MappedDynamicStructMemberStore = Record<
   WrappedDynamicStructMember
 >;
 export type MappedDynamicStructMemberValues<
-  T extends MappedDynamicStructMembers
+  T extends MappedDynamicStructMembers,
 > = {
   [P in keyof T as T[P] extends FixedBuffer ? never : P]: T[P]['value'];
 };
 
 const isStaticStructMember = (
-  input: TDynamicStructMember
+  input: TDynamicStructMember,
 ): input is TStructMember => {
   if (
     input instanceof StructMember ||
@@ -167,7 +164,7 @@ const isStaticStructMember = (
 };
 
 const isWrappedStaticStructMember = <T>(
-  input: WrappedDynamicStructMember<T>
+  input: WrappedDynamicStructMember<T>,
 ): input is BufferWrappedStructMember<TStructMember<T>> =>
   input instanceof BufferWrappedStructMember;
 
@@ -194,21 +191,22 @@ export class DynamicStruct<T extends DynamicStructMembers> {
 
   get value(): DynamicStructMemberValues<T> {
     return this._members.map((member) =>
-      isWrappedStaticStructMember(member) ? member.member.value : member.value
+      isWrappedStaticStructMember(member) ? member.member.value : member.value,
     ) as DynamicStructMemberValues<T>;
   }
 
   set value(input: DynamicStructMemberValues<T>) {
-    input.forEach((memberInput, index) => {
+    for (const [index, memberInput] of input.entries()) {
       const member = this._members[index];
+      if (!member) continue;
 
       if (isWrappedStaticStructMember(member)) {
         member.member.value = memberInput;
-        return;
+        continue;
       }
 
       member.value = memberInput;
-    });
+    }
   }
 
   encode(input: DynamicStructMemberValues<T>): Buffer {
@@ -242,15 +240,15 @@ export class MappedDynamicStruct<T extends MappedDynamicStructMembers> {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         return [property, member];
-      })
+      }),
     );
   }
 
   get buffer(): Buffer {
     return Buffer.concat(
       Object.values(this._members).map(
-        (member: WrappedDynamicStructMember) => member.buffer
-      )
+        (member: WrappedDynamicStructMember) => member.buffer,
+      ),
     );
   }
 
@@ -259,22 +257,23 @@ export class MappedDynamicStruct<T extends MappedDynamicStructMembers> {
       Object.entries(this._members).map(([property, member]) =>
         isWrappedStaticStructMember(member)
           ? ([property, member.member.value] as const)
-          : [property, member.value]
-      )
+          : [property, member.value],
+      ),
     ) as MappedDynamicStructMemberValues<T>;
   }
 
   set value(input: MappedDynamicStructMemberValues<T>) {
-    Object.entries(input).forEach(([property, memberInput]) => {
+    for (const [property, memberInput] of Object.entries(input)) {
       const member = this._members[property];
+      if (!member) continue;
 
       if (isWrappedStaticStructMember(member)) {
         member.member.value = memberInput;
-        return;
+        continue;
       }
 
       member.value = memberInput;
-    });
+    }
   }
 
   encode(input: MappedDynamicStructMemberValues<T>): Buffer {
@@ -296,5 +295,5 @@ export class MappedDynamicStruct<T extends MappedDynamicStructMembers> {
 export type TDynamicStruct<
   T extends
     | DynamicStruct<DynamicStructMembers>
-    | MappedDynamicStruct<MappedDynamicStructMembers>
+    | MappedDynamicStruct<MappedDynamicStructMembers>,
 > = T['value'];

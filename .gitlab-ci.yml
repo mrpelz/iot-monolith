@@ -1,0 +1,36 @@
+include:
+  - project: "mrpelz/boilerplate"
+    ref: main
+    file: "/gitlab/.gitlab-ci.yml"
+
+deploy:k8s:donbot:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: on_success
+    - if: $CI_COMMIT_TAG
+      when: manual
+  variables:
+    DOMAIN: rancher-iot.lan.wurstsalat.cloud
+    KUBECONFIG: $KUBECONFIG_DONBOT
+    RANCHER_CLUSTER: c-m-bpsrsvjz
+  trigger:
+    strategy: depend
+    include:
+    - local: "/k8s/.k8s.gitlab-ci.yml"
+
+deploy:k8s:fanny:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+      when: never
+    - if: $CI_COMMIT_TAG
+      when: on_success
+  variables:
+    DOMAIN: rancher.lan.wurstsalat.cloud
+    KUBECONFIG: $KUBECONFIG_FANNY
+    RANCHER_CLUSTER: local
+  trigger:
+    strategy: depend
+    include:
+    - local: "/k8s/.k8s.gitlab-ci.yml"

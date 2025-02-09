@@ -1,7 +1,7 @@
-import { bitRange, bytesRequiredForBitLength } from '../number.js';
-import { Device } from './main.js';
-import { Ev1527Transport } from '../transport/ev1527.js';
 import { Logger } from '../log.js';
+import { bitRange, bytesRequiredForBitLength } from '../number.js';
+import { Ev1527Transport } from '../transport/ev1527.js';
+import { Device } from './main.js';
 
 export const bitLengthAddress = 20;
 export const bitLengthPayload = 4;
@@ -16,7 +16,7 @@ export class Ev1527Device extends Device<Ev1527Transport> {
     if (address > maxAddress) throw new RangeError('address too big');
 
     const deviceIdentifier = Buffer.alloc(byteLengthAddress);
-    // eslint-disable-next-line no-bitwise
+
     deviceIdentifier.writeUIntBE(address, 0, byteLengthAddress);
 
     super(logger, transport, deviceIdentifier, false);

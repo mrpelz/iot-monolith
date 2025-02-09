@@ -1,8 +1,8 @@
 /* eslint-disable sort-keys */
 
-import { Bool, MappedStruct, TStruct, UInt8, UIntLE } from '../struct/main.js';
-import { Event } from '../device/main.js';
 import { bufferChunks } from '../data.js';
+import { Event } from '../device/main.js';
+import { Bool, MappedStruct, TStruct, UInt8, UIntLE } from '../struct/main.js';
 
 const payload = new MappedStruct({
   down: new Bool(),
@@ -14,6 +14,8 @@ const payload = new MappedStruct({
 
 const pressedMapItem = new Bool();
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type ButtonPayload = TStruct<typeof payload> & {
   pressedMap: (typeof pressedMapItem.value)[];
 };
@@ -29,7 +31,7 @@ export class Button extends Event<ButtonPayload> {
       return {
         ...partialResult,
         pressedMap: bufferChunks(pressedMap, pressedMapItem.size).map((chunk) =>
-          pressedMapItem.decode(chunk)
+          pressedMapItem.decode(chunk),
         ),
       };
     } catch {

@@ -1,7 +1,7 @@
-import { Observable, ReadOnlyObservable } from '../observable.js';
-import { Schedule } from '../schedule.js';
 import { Service } from '../device/main.js';
+import { Observable, ReadOnlyObservable } from '../observable.js';
 import { promiseGuard } from '../promise.js';
+import { Schedule } from '../schedule.js';
 
 export type MeasurementInputGetter<T> = () => T | null | Promise<T | null>;
 
@@ -13,6 +13,8 @@ export class SingleValueSensor<T = unknown, S = void> {
   private readonly _service: Service<T, S>;
   private readonly _state = new Observable<T | null>(null);
 
+  readonly $exclude = true as const;
+
   readonly state: ReadOnlyObservable<T | null>;
 
   constructor(service: Service<T, void>, schedule: Schedule);
@@ -20,13 +22,13 @@ export class SingleValueSensor<T = unknown, S = void> {
   constructor(
     service: Service<T, S>,
     schedule: Schedule,
-    measurementInputGetter: MeasurementInputGetter<S>
+    measurementInputGetter: MeasurementInputGetter<S>,
   );
 
   constructor(
     service: Service<T, S>,
     schedule: Schedule,
-    measurementInputGetter?: MeasurementInputGetter<S>
+    measurementInputGetter?: MeasurementInputGetter<S>,
   ) {
     this._measurementInputGetter =
       measurementInputGetter as typeof this._measurementInputGetter;
@@ -87,7 +89,7 @@ export class SingleValueSensor<T = unknown, S = void> {
 export class MultiValueSensor<
   T extends Record<string, unknown>,
   K extends keyof T,
-  S = void
+  S = void,
 > {
   private readonly _measurementInputGetter: S extends void
     ? undefined
@@ -97,6 +99,8 @@ export class MultiValueSensor<
   private readonly _service: Service<T, S>;
   private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
 
+  readonly $exclude = true as const;
+
   readonly state = {} as {
     [P in K]: ReadOnlyObservable<T[P] | null>;
   };
@@ -104,21 +108,21 @@ export class MultiValueSensor<
   constructor(
     service: Service<T, void>,
     properties: readonly K[],
-    schedule: Schedule
+    schedule: Schedule,
   );
 
   constructor(
     service: Service<T, S>,
     properties: readonly K[],
     schedule: Schedule,
-    measurementInputGetter: MeasurementInputGetter<S>
+    measurementInputGetter: MeasurementInputGetter<S>,
   );
 
   constructor(
     service: Service<T, S>,
     properties: readonly K[],
     schedule: Schedule,
-    measurementInputGetter?: MeasurementInputGetter<S>
+    measurementInputGetter?: MeasurementInputGetter<S>,
   ) {
     this._measurementInputGetter =
       measurementInputGetter as typeof this._measurementInputGetter;

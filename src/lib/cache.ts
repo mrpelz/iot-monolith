@@ -68,9 +68,9 @@ export class CachePromise<T> {
     this.value = null;
     this.resultTime = null;
 
-    this._deferred.forEach(({ reject }) => {
+    for (const { reject } of this._deferred) {
       reject(error);
-    });
+    }
   }
 
   private _onResolve(value: T): void {
@@ -84,9 +84,9 @@ export class CachePromise<T> {
     this.value = value;
     this.resultTime = new Date();
 
-    this._deferred.forEach(({ resolve }) => {
+    for (const { resolve } of this._deferred) {
       resolve(value);
-    });
+    }
   }
 
   private _reTime(): void {
@@ -137,7 +137,7 @@ export class CachePromise<T> {
 
     promise
       .then((value) => this._onResolve(value))
-      .catch((value) => this._onReject(value));
+      .catch((error) => this._onReject(error));
 
     this._promised = promise;
 

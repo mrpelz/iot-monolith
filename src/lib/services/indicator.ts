@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/member-ordering */
 /* eslint-disable sort-keys */
 
-import { MappedStruct, TStruct, UInt8 } from '../struct/main.js';
 import { Service } from '../device/main.js';
+import { MappedStruct, TStruct, UInt8 } from '../struct/main.js';
 
 export enum IndicatorMode {
   OFF,
@@ -15,6 +14,8 @@ const request = new MappedStruct({
   blink: new UInt8(),
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type IndicatorRequest = TStruct<typeof request>;
 
 export class Indicator extends Service<null, IndicatorRequest> {

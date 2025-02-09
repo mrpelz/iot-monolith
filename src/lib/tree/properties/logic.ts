@@ -1,13 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { BooleanState, NullState } from '../../state.js';
-import {
-  Levels,
-  ParentRelation,
-  ValueType,
-  addMeta,
-  inherit,
-} from '../main.js';
+import { maxmin } from '../../number.js';
 import {
   Observable,
   ReadOnlyObservable,
@@ -15,13 +8,17 @@ import {
 } from '../../observable.js';
 import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
+import { BooleanState, NullState } from '../../state.js';
 import { Timer } from '../../timer.js';
-import { maxmin } from '../../number.js';
+import { getter } from '../elements/getter.js';
+import { setter } from '../elements/setter.js';
+import { trigger } from '../elements/trigger.js';
+import { Level, ValueType } from '../main.js';
 
 export const offTimer = (
   time: number,
   enableFromStart = true,
-  persistenceSet?: [string, Persistence]
+  persistenceSet?: [string, Persistence],
 ) => {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
@@ -69,101 +66,51 @@ export const offTimer = (
     persistence.observe(`offTimer/${name}`, enabled);
   }
 
-  return addMeta(
-    {
-      $: timer,
-      _get: new ReadOnlyObservable(enabled),
-      _set: enabled,
-      active: (() =>
-        addMeta(
-          {
-            $: active,
-            _get: new ReadOnlyObservable(active),
-            cancel: (() =>
-              addMeta(
-                { _set: new NullState(() => (active.value = false)) },
-                {
-                  actuated: inherit,
-                  level: Levels.PROPERTY,
-                  parentRelation: ParentRelation.CONTROL_TRIGGER,
-                  type: 'actuator',
-                  valueType: ValueType.NULL,
-                }
-              ))(),
-            reset: (() =>
-              addMeta(
-                {
-                  _set: new NullState(() => {
-                    if (!active.value) return;
-                    active.value = true;
-                  }),
-                },
-                {
-                  actuated: inherit,
-                  level: Levels.PROPERTY,
-                  parentRelation: ParentRelation.CONTROL_TRIGGER,
-                  type: 'actuator',
-                  valueType: ValueType.NULL,
-                }
-              ))(),
-          },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'actuator',
-            valueType: ValueType.BOOLEAN,
-          }
-        ))(),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => enabled.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-      runoutTime: (() =>
-        addMeta(
-          { _get: runoutTime },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      triggerTime: (() =>
-        addMeta(
-          { _get: new ReadOnlyObservable(triggerTime) },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
+  return {
+    $: 'offTimer' as const,
+    active: {
+      cancel: {
+        main: trigger(
+          ValueType.NULL,
+          new NullState(() => (active.value = false)),
+        ),
+      },
+      main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
+      reset: {
+        main: trigger(
+          ValueType.NULL,
+          new NullState(() => {
+            if (!active.value) return;
+            active.value = true;
+          }),
+        ),
+      },
+      state: active,
     },
-    {
-      actuated: 'offTimer',
-      level: Levels.PROPERTY,
-      parentRelation: ParentRelation.META_RELATION,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+    flip: {
+      main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
+    },
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    runoutTime: {
+      main: getter(ValueType.NUMBER, runoutTime, 'date'),
+    },
+    state: timer,
+    triggerTime: {
+      main: getter(
+        ValueType.NUMBER,
+        new ReadOnlyObservable(triggerTime),
+        'date',
+      ),
+    },
+  };
 };
 
 export const scheduledRamp = (
   [schedule, epoch]: ScheduleEpochPair,
   refresh: number,
   handler: (progress: number) => void,
-  persistenceSet?: [string, Persistence]
+  persistenceSet?: [string, Persistence],
 ) => {
   const enabled = new BooleanState(false);
   schedule[enabled.value ? 'start' : 'stop']();
@@ -225,86 +172,41 @@ export const scheduledRamp = (
     persistence.observe(`scheduledRamp/${name}`, enabled);
   }
 
-  return addMeta(
-    {
-      _get: new ReadOnlyObservable(enabled),
-      _set: enabled,
-      cancel: (() =>
-        addMeta(
-          { _set: new NullState(() => cancel()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-      flip: (() =>
-        addMeta(
-          { _set: new NullState(() => enabled.flip()) },
-          {
-            actuated: inherit,
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.CONTROL_TRIGGER,
-            type: 'actuator',
-            valueType: ValueType.NULL,
-          }
-        ))(),
-      nextCompletion: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyProxyObservable<Date | null, number>(
-              schedule.nextExecution,
-              (date) => {
-                if (!date) return 0;
-                return date.getTime() + epoch;
-              }
-            ),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      nextExecution: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyProxyObservable<Date | null, number>(
-              schedule.nextExecution,
-              (date) => date?.getTime() || 0
-            ),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            unit: 'date',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
-      progress: (() =>
-        addMeta(
-          {
-            _get: new ReadOnlyObservable(progress),
-          },
-          {
-            level: Levels.PROPERTY,
-            parentRelation: ParentRelation.META_RELATION,
-            type: 'sensor',
-            valueType: ValueType.NUMBER,
-          }
-        ))(),
+  return {
+    $: 'scheduledRamp' as const,
+    cancel: {
+      main: trigger(ValueType.NULL, new NullState(() => cancel())),
     },
-    {
-      actuated: 'scheduledRamp',
-      level: Levels.PROPERTY,
-      parentRelation: ParentRelation.META_RELATION,
-      type: 'actuator',
-      valueType: ValueType.BOOLEAN,
-    }
-  );
+    flip: {
+      main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
+    },
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    nextCompletion: {
+      main: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable<Date | null, number>(
+          schedule.nextExecution,
+          (date) => {
+            if (!date) return 0;
+            return date.getTime() + epoch;
+          },
+        ),
+        'date',
+      ),
+    },
+    nextExecution: {
+      main: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable<Date | null, number>(
+          schedule.nextExecution,
+          (date) => date?.getTime() || 0,
+        ),
+        'date',
+      ),
+    },
+    progress: {
+      main: getter(ValueType.NUMBER, new ReadOnlyObservable(progress)),
+    },
+  };
 };

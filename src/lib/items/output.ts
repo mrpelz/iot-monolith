@@ -1,12 +1,14 @@
-import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Observable, ReadOnlyObservable } from '../observable.js';
-import { BooleanState } from '../state.js';
+import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Output as OutputService } from '../services/output.js';
+import { BooleanState } from '../state.js';
 
 export class Output {
   private readonly _actualState = new Observable<boolean | null>(null);
   private readonly _indicator?: Indicator;
   private readonly _service: OutputService;
+
+  readonly $exclude = true as const;
 
   readonly actualState: ReadOnlyObservable<boolean | null>;
   readonly setState: BooleanState;

@@ -1,46 +1,36 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Timings, button } from '../properties/sensors.js';
-import { defaultsIpDevice, deviceMeta } from './util.js';
-import { Indicator } from '../../services/indicator.js';
-import { Logger } from '../../log.js';
-import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
-import { addMeta } from '../main.js';
+import { Indicator } from '../../services/indicator.js';
+import { Context } from '../context.js';
+import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
+import { button } from '../properties/sensors.js';
 
-export const obiPlug = (
-  logger: Logger,
-  persistence: Persistence,
-  timings: Timings,
-  actuated: string,
+export const obiPlug = <T extends string>(
+  topic: T,
   host: string,
+  { connect, logger, persistence, timings }: Context,
   port = 1337,
-  initiallyOnline?: boolean
+  initiallyOnline = connect,
 ) => {
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
 
-  const relay = output(device, 0, actuated, indicator, persistence);
-
-  return addMeta(
-    {
-      ...defaultsIpDevice(
-        device,
-        persistence,
-        timings,
-        indicator,
-        initiallyOnline
-      ),
-      button: button(device, 0),
-      indicator: {
-        $: indicator,
-      },
-      relay,
+  return {
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      indicator,
+      initiallyOnline,
+    ),
+    button: button(device, 0),
+    indicator,
+    internal: {
+      relay: output(device, 0, topic, indicator, persistence),
     },
-    {
-      ...deviceMeta(device),
-    }
-  );
+  };
 };

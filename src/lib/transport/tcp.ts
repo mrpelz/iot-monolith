@@ -1,12 +1,13 @@
-import { Input, Logger, callstack } from '../log.js';
+import { promises } from 'node:dns';
+import { Socket } from 'node:net';
+
 import { humanPayload, readNumber, writeNumber } from '../data.js';
-import { BooleanState } from '../state.js';
+import { callstack, Input, Logger } from '../log.js';
 import { ReadOnlyObservable } from '../observable.js';
-import { Socket } from 'net';
+import { rebind } from '../oop.js';
+import { BooleanState } from '../state.js';
 import { Timer } from '../timer.js';
 import { Transport } from './main.js';
-import { promises } from 'dns';
-import { rebind } from '../oop.js';
 
 const { lookup } = promises;
 
@@ -50,7 +51,7 @@ export class TCPTransport extends Transport {
     port: number,
     logger: Logger,
     lengthPreamble = 1,
-    keepAlive = 2000
+    keepAlive = 2000,
   ) {
     if (!lengthPreamble) {
       throw new Error('insufficient options provided');
@@ -83,8 +84,6 @@ export class TCPTransport extends Transport {
    * handle (dis)connection of socket
    */
   private _connect() {
-    this._log.debug(() => 'connection/disconnection handling');
-
     if (this._shouldBeConnected.value && !this._isConnected.value) {
       this._onDisconnection();
       this._setUpSocket();
@@ -182,7 +181,7 @@ export class TCPTransport extends Transport {
     if (this._currentLength > 5) {
       this._log.error(
         () => `unusual large message: ${this._currentLength} bytes`,
-        callstack()
+        callstack(),
       );
     }
 
@@ -232,7 +231,7 @@ export class TCPTransport extends Transport {
       this._log.error(
         () =>
           `error connecting socket (hostname "${this.host}", address: ${address}): ${error.message}`,
-        callstack(error)
+        callstack(error),
       );
       this._nukeSocket();
     });
@@ -283,7 +282,7 @@ export class TCPTransport extends Transport {
       Buffer.concat([
         writeNumber(payload.length, this._lengthPreamble),
         payload,
-      ])
+      ]),
     );
   }
 }

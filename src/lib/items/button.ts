@@ -7,6 +7,8 @@ type Callback = () => void;
 export class Button {
   private readonly _event: ButtonEvent;
 
+  readonly $exclude = true as const;
+
   constructor(event: ButtonEvent) {
     this._event = event;
   }
@@ -81,7 +83,7 @@ export class Button {
 
     return this.match(
       callback,
-      ({ down, repeat }) => !down && repeat === repeats
+      ({ down, repeat }) => !down && repeat === repeats,
     );
   }
 
@@ -97,14 +99,14 @@ export class Button {
     return this.match(
       callback,
       ({ down, downChanged, previousDuration }) =>
-        !down && downChanged && previousDuration < maxDuration
+        !down && downChanged && previousDuration < maxDuration,
     );
   }
 
   upAfter(callback: Callback, duration = 1500): Observer {
     return this.match(
       callback,
-      ({ down, previousDuration }) => !down && previousDuration >= duration
+      ({ down, previousDuration }) => !down && previousDuration >= duration,
     );
   }
 }

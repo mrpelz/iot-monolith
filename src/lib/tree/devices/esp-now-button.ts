@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { ESPNowDevice, MACAddress } from '../../device/esp-now.js';
-import { Levels, addMeta } from '../main.js';
-import { Timings, button } from '../properties/sensors.js';
-import { defaultsEspNow, defaultsIpDevice, deviceMeta } from './util.js';
 import { Device } from '../../device/main.js';
-import { ESPNowTransport } from '../../transport/esp-now.js';
-import { Logger } from '../../log.js';
-import { Persistence } from '../../persistence.js';
 import { UDPDevice } from '../../device/udp.js';
+import { ESPNowTransport } from '../../transport/esp-now.js';
+import { Context } from '../context.js';
+import { espNowDevice, ipDevice } from '../elements/device.js';
+import { Level } from '../main.js';
+import { button } from '../properties/sensors.js';
 
 export type EspNowButtonOptions = {
   espNow: {
@@ -22,67 +21,50 @@ export type EspNowButtonOptions = {
   };
 };
 
-export const espNowButton = (
-  logger: Logger,
-  persistence: Persistence,
-  timings: Timings,
-  options: EspNowButtonOptions
-) => {
-  const children = (device: Device) => ({
-    button0: button(device, 0),
-    button1: button(device, 1),
-  });
+const children = (device: Device) => ({
+  button0: button(device, 0),
+  button1: button(device, 1),
+});
 
+export const espNowButton = (
+  options: EspNowButtonOptions,
+  { connect, logger, persistence, timings }: Context,
+) => {
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
-      espNow: addMeta(
-        {
-          ...children(device),
-          ...defaultsEspNow(device),
-        },
-        {
-          isSubDevice: true,
-          ...deviceMeta(device),
-        }
-      ),
+      espNow: {
+        ...children(device),
+        ...espNowDevice(device, true),
+      },
     };
   })();
 
   const wifi = (() => {
-    const { host, initiallyOnline, port = 1337 } = options.wifi;
+    const { host, initiallyOnline = connect, port = 1337 } = options.wifi;
     const device = new UDPDevice(logger, host, port);
 
     return {
-      wifi: addMeta(
-        {
-          ...children(device),
-          ...defaultsIpDevice(
-            device,
-            persistence,
-            timings,
-            undefined,
-            initiallyOnline
-          ),
-        },
-        {
-          isSubDevice: true,
-          ...deviceMeta(device),
-        }
-      ),
+      wifi: {
+        ...children(device),
+        ...ipDevice(
+          device,
+          true,
+          persistence,
+          timings,
+          undefined,
+          initiallyOnline,
+        ),
+      },
     };
   })();
 
-  return (() =>
-    addMeta(
-      {
-        ...espNow,
-        ...wifi,
-      },
-      {
-        level: Levels.DEVICE,
-      }
-    ))();
+  return {
+    $: 'espNowButton' as const,
+    ...espNow,
+    ...wifi,
+    level: Level.DEVICE as const,
+  };
 };

@@ -1,8 +1,13 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import nodePath from 'node:path';
+
+const { dirname } = nodePath;
+
+import { jsonParseGuarded } from './data.js';
+import { callstack, Input, Logger } from './log.js';
 import { AnyWritableObservable, Observer } from './observable.js';
-import { Input, Logger, callstack } from './log.js';
-import { mkdirSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
-import { readFile } from 'fs/promises';
+import { Schedule } from './schedule.js';
 
 export class Persistence {
   private readonly _log: Input;
@@ -13,17 +18,19 @@ export class Persistence {
 
   private readonly _path: string;
 
-  constructor(path: string, logger: Logger) {
+  constructor(path: string, schedule: Schedule, logger: Logger) {
     this._path = path;
 
     this._log = logger.getInput({
       head: `${this.constructor.name} "${path}"`,
     });
+
+    schedule.addTask(() => this.persist());
   }
 
   observe(
     identifier: string,
-    observable: AnyWritableObservable<unknown>
+    observable: AnyWritableObservable<unknown>,
   ): Observer {
     if (this._observables.has(identifier)) {
       throw new Error(`identifier "${identifier}" already in use`);
@@ -86,7 +93,8 @@ export class Persistence {
   async restore(): Promise<void> {
     const restorePayload = await (async () => {
       try {
-        return readFile(this._path, { encoding: 'utf8' });
+        mkdirSync(dirname(this._path), { recursive: true });
+        return readFile(this._path, { encoding: 'utf8', flag: 'as+' });
       } catch (_error) {
         const error = new Error('cannot restore from file system', {
           cause: _error,
@@ -99,18 +107,13 @@ export class Persistence {
     })();
     if (!restorePayload) return;
 
-    const restoreValues = (() => {
-      try {
-        return JSON.parse(restorePayload) as Record<string, unknown>;
-      } catch (_error) {
-        const error = new Error('cannot JSON-parse values', { cause: _error });
+    const restoreValues =
+      jsonParseGuarded<Record<string, unknown>>(restorePayload);
+    if (restoreValues instanceof Error) {
+      this._log.error(() => restoreValues.message, callstack(restoreValues));
 
-        this._log.error(() => error.message, callstack(error));
-
-        return null;
-      }
-    })();
-    if (!restoreValues) return;
+      return;
+    }
 
     for (const [identifier, value] of Object.entries(restoreValues)) {
       const observable = this._observables.get(identifier);

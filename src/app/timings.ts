@@ -1,25 +1,25 @@
+import { epochs } from '../lib/epochs.js';
 import { ModifiableDate, Unit } from '../lib/modifiable-date.js';
 import { Schedule } from '../lib/schedule.js';
 import { Timings } from '../lib/tree/properties/sensors.js';
-import { epochs } from '../lib/epochs.js';
 import { logger } from './logging.js';
 
 export const every5Seconds = new Schedule(
   logger,
   () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
-  false
+  false,
 );
 
 export const every30Seconds = new Schedule(
   logger,
   () => new ModifiableDate().ceil(Unit.SECOND, 30).date,
-  false
+  false,
 );
 
 export const every2Minutes = new Schedule(
   logger,
   () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
-  false
+  false,
 );
 
 export const epoch5Seconds = epochs.second * 5;

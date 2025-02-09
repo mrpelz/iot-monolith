@@ -1,5 +1,8 @@
-/* eslint-disable sort-keys */
-
+import { emptyBuffer } from '../data.js';
+import { callstack, Input, Logger } from '../log.js';
+import { NUMBER_RANGES } from '../number.js';
+import { Observer, ReadOnlyObservable } from '../observable.js';
+import { RollingNumber } from '../rolling-number.js';
 import {
   BooleanGroupStrategy,
   BooleanState,
@@ -12,20 +15,15 @@ import {
   FixedBuffer,
   MappedStruct,
   StaticBuffer,
-  UInt8,
   staticValue,
+  UInt8,
 } from '../struct/main.js';
-import { Input, Logger, callstack } from '../log.js';
-import { Observer, ReadOnlyObservable } from '../observable.js';
-import { Transport, TransportDevice } from '../transport/main.js';
-import { NUMBER_RANGES } from '../number.js';
-import { RollingNumber } from '../rolling-number.js';
-import { TCPDevice } from './tcp.js';
-import { TCPTransport } from '../transport/tcp.js';
 import { Timer } from '../timer.js';
-import { UDPDevice } from './udp.js';
+import { Transport, TransportDevice } from '../transport/main.js';
+import { TCPTransport } from '../transport/tcp.js';
 import { UDPTransport } from '../transport/udp.js';
-import { emptyBuffer } from '../data.js';
+import { TCPDevice } from './tcp.js';
+import { UDPDevice } from './udp.js';
 
 export type IpDevice = TCPDevice | UDPDevice;
 
@@ -36,7 +34,7 @@ type Request<T = Buffer> = Promise<T>;
 
 type RequestResolver = <T extends boolean = boolean>(
   success: T,
-  result: T extends true ? Buffer : Error
+  result: T extends true ? Buffer : Error,
 ) => void;
 
 type DeviceIdentifier = Buffer | null;
@@ -69,12 +67,12 @@ export const EVENT_IDENTIFIER = 0x00;
 export class Property {
   static isValidPropertyIdentifier(
     properties: DeviceServices | DeviceEvents,
-    identifier: Buffer
+    identifier: Buffer,
   ): void {
     for (const previousProperty of properties) {
       if (previousProperty.identifier.equals(identifier)) {
         throw new Error(
-          `cannot use the same identifier for multiple properties (${identifier})`
+          `cannot use the same identifier for multiple properties (${identifier})`,
         );
       }
     }
@@ -82,9 +80,7 @@ export class Property {
 
   protected _device: Device | null;
 
-  readonly identifier: Buffer;
-
-  constructor(identifier: Buffer) {
+  constructor(public readonly identifier: Buffer) {
     this.identifier = identifier;
   }
 
@@ -125,7 +121,7 @@ export class Event<T = void> extends Property {
   }
 
   protected decode(input: Buffer): T | null {
-    if (!input.length) return null;
+    if (input.length === 0) return null;
     return input as unknown as T;
   }
 
@@ -183,7 +179,7 @@ export class Service<T = void, S = void> extends Property {
   request(
     data: S,
     suppressErrors = false,
-    ignoreOffline = false
+    ignoreOffline = false,
   ): Request<T | null> {
     if (!this._device) {
       throw new Error('no device is present on this property');
@@ -196,7 +192,7 @@ export class Service<T = void, S = void> extends Property {
         }),
         this._timeout,
         suppressErrors,
-        ignoreOffline
+        ignoreOffline,
       )
       .then((result) => this.decode(result));
   }
@@ -212,7 +208,7 @@ export class Device<T extends Transport = Transport> {
 
   private readonly _requestIdentifier = new RollingNumber(
     ...NUMBER_RANGES.uint[1],
-    [EVENT_IDENTIFIER]
+    [EVENT_IDENTIFIER],
   );
 
   private readonly _requests = new Map<number, RequestResolver>();
@@ -223,14 +219,13 @@ export class Device<T extends Transport = Transport> {
   readonly identifier: DeviceIdentifier;
   readonly isOnline: ReadOnlyObservable<boolean>;
   readonly seen: ReadOnlyNullState;
-  readonly transport: T;
 
   constructor(
     logger: Logger,
-    transport: T,
+    public readonly transport: T,
     identifier: DeviceIdentifier = null,
     keepalive = true,
-    keepaliveTolerateMissedPackets = KEEPALIVE_TOLERATE_MISSED_PACKETS
+    keepaliveTolerateMissedPackets = KEEPALIVE_TOLERATE_MISSED_PACKETS,
   ) {
     this.transport = transport;
     this.identifier = identifier;
@@ -255,7 +250,7 @@ export class Device<T extends Transport = Transport> {
       new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE, [
         transport.isConnected,
         this._isOnline,
-      ])
+      ]),
     );
 
     this.seen = new ReadOnlyNullState(this._seen);
@@ -272,7 +267,7 @@ export class Device<T extends Transport = Transport> {
     if (!keepalive) return;
 
     this._keepalive = this.addService(
-      new Service(Buffer.of(KEEPALIVE_COMMAND))
+      new Service(Buffer.of(KEEPALIVE_COMMAND)),
     );
 
     this._keepaliveTolerateMissedPackets = keepaliveTolerateMissedPackets;
@@ -317,7 +312,7 @@ export class Device<T extends Transport = Transport> {
       this._log.warning(
         () =>
           `missed more keepalive responses (${this._keepaliveMissedPackets}) than tolerated (${this._keepaliveTolerateMissedPackets})`,
-        callstack()
+        callstack(),
       );
 
       this._keepaliveMissedPackets = 0;
@@ -353,7 +348,7 @@ export class Device<T extends Transport = Transport> {
    * match incoming data to running requests on this device instance
    */
   matchDataToRequest(input: Buffer): void {
-    if (!input.length) return;
+    if (input.length === 0) return;
 
     this._seen.trigger();
 
@@ -386,7 +381,7 @@ export class Device<T extends Transport = Transport> {
     message: Buffer = emptyBuffer,
     timeout: number,
     suppressErrors: boolean,
-    ignoreOffline: boolean
+    ignoreOffline: boolean,
   ): Request {
     if (!this.isOnline.value && !ignoreOffline) {
       const error = new Error('device is not online');
@@ -414,7 +409,7 @@ export class Device<T extends Transport = Transport> {
 
     if (this._requests.has(id)) {
       const error = new Error(
-        `request id "${id}" rolled over to itself but is still running`
+        `request id "${id}" rolled over to itself but is still running`,
       );
 
       if (!suppressErrors) {
@@ -431,7 +426,7 @@ export class Device<T extends Transport = Transport> {
             requestIdentifier: id,
           },
           message,
-        })
+        }),
       );
 
       const timer = timeout ? new Timer(timeout) : null;
@@ -449,7 +444,7 @@ export class Device<T extends Transport = Transport> {
         }
 
         const error = new Error(
-          `could not complete request "${id}": "${(result as Error).message}"`
+          `could not complete request "${id}": "${(result as Error).message}"`,
         );
 
         if (!suppressErrors) {
@@ -460,7 +455,7 @@ export class Device<T extends Transport = Transport> {
       };
 
       observer = timer?.observe(() =>
-        resolver(false, new Error('request timed out'))
+        resolver(false, new Error('request timed out')),
       );
 
       this._requests.set(id, resolver);

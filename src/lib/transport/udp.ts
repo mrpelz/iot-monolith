@@ -1,14 +1,15 @@
-import { Input, Logger, callstack } from '../log.js';
-import { MappedStruct, UInt8 } from '../struct/main.js';
-import { RemoteInfo, Socket, createSocket } from 'dgram';
-import { BooleanState } from '../state.js';
+import { createSocket, RemoteInfo, Socket } from 'node:dgram';
+import { promises } from 'node:dns';
+
+import { humanPayload } from '../data.js';
+import { callstack, Input, Logger } from '../log.js';
 import { NUMBER_RANGES } from '../number.js';
 import { ReadOnlyObservable } from '../observable.js';
-import { RollingNumber } from '../rolling-number.js';
-import { Transport } from './main.js';
-import { humanPayload } from '../data.js';
-import { promises } from 'dns';
 import { rebind } from '../oop.js';
+import { RollingNumber } from '../rolling-number.js';
+import { BooleanState } from '../state.js';
+import { MappedStruct, UInt8 } from '../struct/main.js';
+import { Transport } from './main.js';
 
 const { lookup } = promises;
 
@@ -64,7 +65,7 @@ export class UDPTransport extends Transport {
   private _messageIncomingSequence = 0;
 
   private readonly _messageOutgoingSequence = new RollingNumber(
-    ...NUMBER_RANGES.uint[1]
+    ...NUMBER_RANGES.uint[1],
   );
 
   private readonly _repeat: number;
@@ -82,7 +83,7 @@ export class UDPTransport extends Transport {
     logger: Logger,
     keepAlive = 2000,
     sequenceHandling = false,
-    repeat = REPEAT
+    repeat = REPEAT,
   ) {
     super(logger);
 
@@ -126,8 +127,6 @@ export class UDPTransport extends Transport {
    * handle (dis)connection of socket
    */
   private _connect() {
-    this._log.debug(() => 'connection/disconnection handling');
-
     if (this._shouldBeConnected.value && !this._isConnected.value) {
       this._onDisconnection();
       this._setUpSocket();
@@ -140,7 +139,7 @@ export class UDPTransport extends Transport {
    * handle incoming messages
    */
   private _handleMessage(input: Buffer, remoteInfo: RemoteInfo) {
-    if (!remoteInfo.size) return;
+    if (remoteInfo.size === 0) return;
 
     let messagePayload: Buffer;
 
@@ -233,7 +232,7 @@ export class UDPTransport extends Transport {
       this._log.error(
         () =>
           `error connecting socket (hostname "${this.host}", address: ${address}): ${error.message}`,
-        callstack(error)
+        callstack(error),
       );
       this._nukeSocket();
     });
@@ -287,6 +286,7 @@ export class UDPTransport extends Transport {
           ])
         : payload;
 
+      // eslint-disable-next-line unicorn/consistent-function-scoping
       const send = () => this._socket?.send(data, this.port, this.host);
 
       if (index) {
