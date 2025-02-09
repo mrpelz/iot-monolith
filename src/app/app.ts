@@ -17,6 +17,8 @@ export const app = async (): Promise<void> => {
 
   const { system: _system } = await import('./tree/system.js');
 
+  const log = logger.getInput({ head: 'app' });
+
   const system = await _system;
 
   const paths = new Paths(system);
@@ -90,4 +92,6 @@ export const app = async (): Promise<void> => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });
+
+  log.info(() => 'started up successfully');
 };

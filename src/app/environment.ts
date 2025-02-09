@@ -35,7 +35,7 @@ if (!PERSISTENCE_PATH) {
 
 export const connect = CONNECT ? Boolean(parse(CONNECT)) : false;
 export const isProd = NODE_ENV === 'production';
-export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : 0;
+export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : undefined;
 export const logTelegram = LOG_TELEGRAM ? Boolean(parse(LOG_TELEGRAM)) : false;
 export const telegramToken = TELEGRAM_TOKEN;
 export const peristencePath = PERSISTENCE_PATH;

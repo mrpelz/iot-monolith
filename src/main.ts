@@ -15,7 +15,7 @@ logger.info(() => ({
   body: 'starting process',
 }));
 
-const quit = (code: number) => {
+const exit_ = (code: number) => {
   process.nextTick(() => {
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(code);
@@ -26,11 +26,9 @@ const exit = async (code = 0) => {
   process.removeListener('SIGINT', exit);
   process.removeListener('SIGTERM', exit);
 
-  await logger.info(() => ({
-    body: `stopping process with exit code "${code}"`,
-  }));
+  await logger.info(() => `stopping process with exit code "${code}"`);
 
-  quit(code);
+  exit_(code);
 };
 
 process.on('uncaughtException', async (cause) => {
@@ -66,9 +64,7 @@ process.on('unhandledRejection', async (cause) => {
 });
 
 const handleSignal = async (signal: string): Promise<void> => {
-  await logger.info(() => ({
-    body: `received signal "${signal}"`,
-  }));
+  await logger.info(() => `received signal "${signal}"`);
 
   exit();
 };
