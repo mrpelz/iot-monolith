@@ -38,3 +38,9 @@ export const gammaCorrect = (
   if (input === range) return range;
   return maxmin(Math.round((input / range) ** gamma * range), range);
 };
+
+export const round = (input: number, decimals = 0): number => {
+  const exponent = 10 ** decimals;
+
+  return Math.round(input * exponent) / exponent;
+};

@@ -26,47 +26,33 @@ export const sunElevation = (): number => {
   return radiansToDegrees(altitude);
 };
 
-export const relativeSunElevationOfDay = (): number => {
+export const sunlightLeds = (): { red: number; white: number } => {
   const now = new Date();
 
-  const { solarNoon: solarNoonTime } = sunCalc.getTimes(
-    now,
+  const { altitude: solarNoonAltitude_ } = sunCalc.getPosition(
+    sunCalc.getTimes(now, LATITUDE, LONGITUDE).solarNoon,
     LATITUDE,
     LONGITUDE,
   );
+  const solarNoonAltitude = radiansToDegrees(solarNoonAltitude_);
 
-  const { altitude: solarNoon } = sunCalc.getPosition(
-    solarNoonTime,
+  const { altitude: nadirAltitude_ } = sunCalc.getPosition(
+    sunCalc.getTimes(now, LATITUDE, LONGITUDE).nadir,
     LATITUDE,
     LONGITUDE,
   );
-  const solarNoonAltitude = radiansToDegrees(solarNoon);
+  const nadirAltitude = radiansToDegrees(nadirAltitude_);
 
-  const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
-  const altitudeOnRange = Math.max(radiansToDegrees(altitude), 0);
+  const { altitude: altitude_ } = sunCalc.getPosition(now, LATITUDE, LONGITUDE);
+  const altitude = radiansToDegrees(altitude_);
 
-  return altitudeOnRange / solarNoonAltitude;
-};
+  const normalizedTheta =
+    ((altitude - nadirAltitude) / (solarNoonAltitude - nadirAltitude)) * 2 - 1;
 
-export const relativeSunElevationOfNight = (): number => {
-  const now = new Date();
+  const red = Math.max(0, Math.cos((normalizedTheta * Math.PI) / 2));
+  const white = Math.max(0, Math.sin((normalizedTheta * Math.PI) / 2));
 
-  const { nadir: nadirTime } = sunCalc.getTimes(now, LATITUDE, LONGITUDE);
-
-  const { altitude: nadir } = sunCalc.getPosition(
-    nadirTime,
-    LATITUDE,
-    LONGITUDE,
-  );
-  const nadirAltitude = radiansToDegrees(nadir);
-
-  const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
-  const altitudeOnRange = Math.max(
-    radiansToDegrees(altitude) - nadirAltitude,
-    nadirAltitude,
-  );
-
-  return altitudeOnRange / nadirAltitude + 1;
+  return { red, white };
 };
 
 export const isTwilightPhase = (

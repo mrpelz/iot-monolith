@@ -1,5 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
-import { maxmin } from '../../../lib/number.js';
+import { maxmin, round } from '../../../lib/number.js';
 import { promiseGuard } from '../../../lib/promise.js';
 import { BooleanState } from '../../../lib/state.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -18,11 +18,7 @@ import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
 import { persistence } from '../../persistence.js';
 import { every2Minutes } from '../../timings.js';
-import {
-  overriddenLed,
-  relativeSunElevationOfDay,
-  relativeSunElevationOfNight,
-} from '../../util.js';
+import { overriddenLed, sunlightLeds } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 import { groups as hallwayGroups } from './hallway.js';
 
@@ -163,19 +159,20 @@ export const scenes = {
       return;
     }
 
-    const relativeSunElevationDay = relativeSunElevationOfDay();
-    const brightnessDay = relativeSunElevationDay
-      ? maxmin(relativeSunElevationDay + 0.18)
-      : 0;
-    devices.terrariumLeds.internal.ledR.brightness.setState.value =
-      brightnessDay;
+    const { terrariumLeds } = devices;
 
-    const relativeSunElevationNight = relativeSunElevationOfNight();
-    const brightnessNight = relativeSunElevationNight
-      ? maxmin(relativeSunElevationNight + 0.18)
-      : 0;
-    devices.terrariumLeds.internal.ledB.brightness.setState.value =
-      brightnessNight;
+    const { red: red_, white: white_ } = sunlightLeds();
+
+    const red = round(red_, 3);
+    const white = round(white_, 3);
+
+    const brightnessRed = red ? maxmin(red + 0.18) : 0;
+    const brightnessWhite = white ? maxmin(white + 0.18) : 0;
+
+    if (!terrariumLeds.online.main.state.value) return;
+
+    terrariumLeds.internal.ledB.brightness.setState.value = brightnessRed;
+    terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
   };
 
   isTerrariumLedsOverride.observe((value) => {
