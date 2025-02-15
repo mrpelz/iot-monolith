@@ -43,10 +43,7 @@ export const instances = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
-  overrideTimer: offTimer(epochs.hour * 12, true, [
-    'livingRoom/terrariumLedsOverrideTimer',
-    persistence,
-  ]),
+  overrideTimer: offTimer(epochs.hour * 12, true, persistence),
   standingLamp: devices.standingLamp.internal.relay,
   terrariumLedRed: overriddenLed(
     devices.terrariumLeds.internal.ledB,
@@ -199,13 +196,13 @@ export const scenes = {
 
 export const livingRoom = {
   $: 'livingRoom' as const,
+  level: Level.ROOM as const,
   scenes: {
     $: 'scenes' as const,
-    ...scenes,
     level: Level.NONE as const,
+    ...scenes,
   },
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

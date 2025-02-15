@@ -22,7 +22,7 @@ export const app = async (): Promise<void> => {
   const system = await _system;
 
   const introspection = new Introspection(system);
-  init(system);
+  init(system, introspection);
 
   const serialization = new Serialization(system, introspection);
 
@@ -85,13 +85,13 @@ export const app = async (): Promise<void> => {
 
   httpServer.listen();
 
-  process.on('exit', () => persistence.persist());
-  await persistence.restore();
-
   httpServer.route('/metrics', async ({ response }) => {
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });
+
+  process.on('exit', () => persistence.persist());
+  await persistence.restore();
 
   log.info(() => 'started up successfully');
 };

@@ -246,8 +246,8 @@ export class Logger {
     return Promise.allSettled(
       [...this._outputs].map((output) =>
         output.ingestLog({
-          ...log,
           level,
+          ...log,
         }),
       ),
     ).then(() => undefined);

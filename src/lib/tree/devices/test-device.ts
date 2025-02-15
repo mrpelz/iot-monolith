@@ -57,26 +57,26 @@ export const testDevice = ({
 
   const temperature = {
     $: 'temperature' as const,
-    ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
+    ...metricStaleness(temperatureState, timings.default[1]),
   };
 
   return {
-    ...ipDevice(device, false, persistence, timings, undefined, connect),
     internal: {
       $noMainReference: true as const,
+      humidity,
+      motion: input(device, undefined, 'motion'),
+      pressure,
+      temperature,
       ...async(device, timings.slow || timings.default),
       ...mhz19(device, timings.slow || timings.default),
       ...sds011(device, timings.slow || timings.default),
       ...tsl2561(device, timings.default),
       ...uvIndex(device, timings.default),
-      humidity,
-      motion: input(device, undefined, 'motion'),
-      pressure,
-      temperature,
     },
+    ...ipDevice(device, false, persistence, timings, undefined, connect),
   };
 };

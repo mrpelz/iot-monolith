@@ -20,8 +20,8 @@ export class ESPNow extends Event<ESPNowPayload> {
     try {
       const [partialResult, data] = payload.decodeOpenended(input);
       return {
-        ...partialResult,
         data,
+        ...partialResult,
       };
     } catch {
       return null;

@@ -4,6 +4,8 @@ import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
+import { InitFunction } from '../../lib/tree/operations/init.js';
+import { Introspection } from '../../lib/tree/operations/introspection.js';
 import { metric } from '../../lib/tree/operations/metrics.js';
 import { persistence } from '../persistence.js';
 import {
@@ -63,12 +65,31 @@ export const sunElevation = (schedule: Schedule) => {
     isNight.value = state.isNight;
   });
 
-  persistence.observe('sunElevation', elevation);
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      elevation,
+    );
+  };
 
   return {
     sunElevation: {
       $: 'sunElevation' as const,
       $exclude: false as const,
+      $init,
+      isAstronomicalTwilight: getter(
+        ValueType.BOOLEAN,
+        readOnlyIsAstronomicalTwilight,
+      ),
+      isCivilTwilight: getter(ValueType.BOOLEAN, readOnlyIsCivilTwilight),
+      isDay: getter(ValueType.BOOLEAN, readOnlyIsDay),
+      isNauticalTwilight: getter(ValueType.BOOLEAN, readOnlyIsNauticalTwilight),
+      isNight: getter(ValueType.BOOLEAN, readOnlyIsNight),
+      level: Level.PROPERTY as const,
+      main: getter(ValueType.NUMBER, readOnlyElevation),
       ...metric(
         'sunElevation',
         readOnlyElevation,
@@ -82,16 +103,6 @@ export const sunElevation = (schedule: Schedule) => {
         },
         'sun elevation angle in degrees',
       ),
-      isAstronomicalTwilight: getter(
-        ValueType.BOOLEAN,
-        readOnlyIsAstronomicalTwilight,
-      ),
-      isCivilTwilight: getter(ValueType.BOOLEAN, readOnlyIsCivilTwilight),
-      isDay: getter(ValueType.BOOLEAN, readOnlyIsDay),
-      isNauticalTwilight: getter(ValueType.BOOLEAN, readOnlyIsNauticalTwilight),
-      isNight: getter(ValueType.BOOLEAN, readOnlyIsNight),
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.NUMBER, readOnlyElevation),
     },
   };
 };

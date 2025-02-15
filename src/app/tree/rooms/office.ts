@@ -38,10 +38,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
   floodlight: devices.floodlight.internal.relay,
-  floodlightTimer: offTimer(epochs.hour, undefined, [
-    'office/floodlightTimer',
-    persistence,
-  ]),
+  floodlightTimer: offTimer(epochs.hour, undefined, persistence),
   window: window(devices.windowSensor),
 };
 
@@ -111,8 +108,8 @@ export const groups = {
 
 export const office = {
   $: 'office' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

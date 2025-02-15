@@ -64,10 +64,8 @@ export const groups = {};
 
 export const testRoom = {
   $: 'testRoom' as const,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

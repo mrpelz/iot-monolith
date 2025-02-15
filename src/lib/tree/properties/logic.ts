@@ -14,11 +14,13 @@ import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
+import { InitFunction } from '../operations/init.js';
+import { Introspection } from '../operations/introspection.js';
 
 export const offTimer = (
   time: number,
   enableFromStart = true,
-  persistenceSet?: [string, Persistence],
+  persistence?: Persistence,
 ) => {
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
@@ -61,13 +63,18 @@ export const offTimer = (
     active.value = false;
   });
 
-  if (persistenceSet) {
-    const [name, persistence] = persistenceSet;
-    persistence.observe(`offTimer/${name}`, enabled);
-  }
+  const $init: InitFunction = (self, introspection) => {
+    if (!persistence) return;
+
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(Introspection.pathString(mainReference.path), enabled);
+  };
 
   return {
     $: 'offTimer' as const,
+    $init,
     active: {
       cancel: {
         main: trigger(

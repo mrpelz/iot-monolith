@@ -63,8 +63,8 @@ export const espNowButton = (
 
   return {
     $: 'espNowButton' as const,
+    level: Level.DEVICE as const,
     ...espNow,
     ...wifi,
-    level: Level.DEVICE as const,
   };
 };

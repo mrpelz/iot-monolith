@@ -49,7 +49,14 @@ export class Persistence {
         const result = {} as Record<string, unknown>;
 
         for (const [identifier, observable] of this._observables.entries()) {
-          result[identifier] = observable.value;
+          const value = observable.value;
+
+          this._log.info(
+            () =>
+              `persisting "${identifier}" with value ${JSON.stringify(value)}`,
+          );
+
+          result[identifier] = value;
         }
 
         return result;
@@ -116,6 +123,10 @@ export class Persistence {
     }
 
     for (const [identifier, value] of Object.entries(restoreValues)) {
+      this._log.info(
+        () => `restoring "${identifier}" to value ${JSON.stringify(value)}`,
+      );
+
       const observable = this._observables.get(identifier);
       if (!observable) continue;
 

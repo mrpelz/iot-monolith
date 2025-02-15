@@ -46,11 +46,11 @@ const firstFloor = {
 
 const sonninstraße16 = {
   $: 'sonninstraße16' as const,
-  ...sunElevation(every5Seconds),
   firstFloor,
   // eslint-disable-next-line sort-keys
   entryDoor: hallwayProperties.entryDoor,
   level: Level.BUILDING as const,
+  ...sunElevation(every5Seconds),
 };
 
 export const wurstHome = {
@@ -63,7 +63,7 @@ export const system = (async () => {
   const all = await all_;
   const allLights = await allLights_;
 
-  const allTimer = offTimer(epochs.day, true, ['system/allTimer', persistence]);
+  const allTimer = offTimer(epochs.day, true, persistence);
 
   return {
     $: 'system' as const,

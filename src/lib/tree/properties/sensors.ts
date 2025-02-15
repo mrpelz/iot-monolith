@@ -95,7 +95,6 @@ export const metricStaleness = <T>(
   const stale = new BooleanState(true);
 
   return {
-    ...lastSeen(state),
     stale: {
       $: 'metricStaleness' as const,
       $init: () => {
@@ -112,6 +111,7 @@ export const metricStaleness = <T>(
       level: Level.PROPERTY as const,
       main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(stale)),
     },
+    ...lastSeen(state),
   };
 };
 
@@ -124,9 +124,9 @@ export const async = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   return {
     async: {
       $: 'async' as const,
-      ...metricStaleness(state, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.RAW, state),
+      ...metricStaleness(state, epoch),
     },
   };
 };
@@ -144,21 +144,21 @@ export const bme280 = (
   return {
     humidity: {
       $: 'humidity' as const,
-      ...metricStaleness(state.humidity, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
+      ...metricStaleness(state.humidity, epoch),
     },
     pressure: {
       $: 'pressure' as const,
-      ...metricStaleness(state.pressure, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pressure, 'pa'),
+      ...metricStaleness(state.pressure, epoch),
     },
     temperature: {
       $: 'temperature' as const,
-      ...metricStaleness(state.temperature, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
+      ...metricStaleness(state.temperature, epoch),
     },
   };
 };
@@ -180,20 +180,20 @@ export const ccs811 = (
   return {
     tvoc: {
       $: 'tvoc' as const,
-      ...metricStaleness(state.tvoc, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
       eco2: {
-        ...metricStaleness(state.eco2, epoch),
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
+        ...metricStaleness(state.eco2, epoch),
       },
       temperature: {
-        ...metricStaleness(state.temperature, epoch),
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
+        ...metricStaleness(state.temperature, epoch),
       },
+      ...metricStaleness(state.tvoc, epoch),
     },
   };
 };
@@ -203,9 +203,9 @@ export const button = (device: Device, index = 0) => {
 
   return {
     $: 'button' as const,
-    ...lastSeen(buttonEvent.observable),
     level: Level.PROPERTY as const,
     state: new Button(buttonEvent),
+    ...lastSeen(buttonEvent.observable),
   };
 };
 
@@ -228,9 +228,9 @@ export const hello = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   return {
     hello: {
       $: 'hello' as const,
-      ...metricStaleness(state, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.STRING, state),
+      ...metricStaleness(state, epoch),
     },
   };
 };
@@ -278,9 +278,9 @@ export const mcp9808 = (
   return {
     temperature: {
       $: 'temperature' as const,
-      ...metricStaleness(state, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'deg-c'),
+      ...metricStaleness(state, epoch),
     },
   };
 };
@@ -303,26 +303,26 @@ export const mhz19 = (device: Device, [schedule, epoch]: ScheduleEpochPair) => {
   return {
     co2: {
       $: 'co2' as const,
-      ...metricStaleness(state.co2, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.co2, 'ppm'),
       // eslint-disable-next-line sort-keys
       abc: {
-        ...metricStaleness(state.abc, epoch),
         main: getter(ValueType.BOOLEAN, state.abc),
+        ...metricStaleness(state.abc, epoch),
       },
       accuracy: {
-        ...metricStaleness(state.accuracy, epoch),
         main: getter(ValueType.NUMBER, state.accuracy, 'percent'),
+        ...metricStaleness(state.accuracy, epoch),
       },
       temperature: {
-        ...metricStaleness(state.temperature, epoch),
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
+        ...metricStaleness(state.temperature, epoch),
       },
       transmittance: {
-        ...metricStaleness(state.transmittance, epoch),
         main: getter(ValueType.NUMBER, state.transmittance, 'percent'),
+        ...metricStaleness(state.transmittance, epoch),
       },
+      ...metricStaleness(state.co2, epoch),
     },
   };
 };
@@ -333,20 +333,19 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
 
   espNowEvent.observable.observe(({ deviceIdentifier, data }) => {
     state.value = {
-      ...state.value,
       espNow: {
         data: [...data],
         macAddress: [...deviceIdentifier]
           .map((octet) => octet.toString(16).padStart(2, '0'))
           .join(':'),
       },
+      ...state.value,
     };
   });
 
   rf433Event.observable.observe(
     ({ data, deviceIdentifier, protocol, value }) => {
       state.value = {
-        ...state.value,
         rf433: {
           data: `0b${[...data]
             .reverse()
@@ -359,6 +358,7 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
             .map((byte) => byte.toString(2).padStart(8, '0'))
             .join('')}`,
         },
+        ...state.value,
       };
     },
   );
@@ -368,9 +368,9 @@ export const rfReadout = (espNowEvent: ESPNow, rf433Event: Rf433) => {
   return {
     rfReadout: {
       $: 'rfReadout' as const,
-      ...lastSeen(readOnlyState),
       level: Level.PROPERTY as const,
       main: getter(ValueType.RAW, readOnlyState),
+      ...lastSeen(readOnlyState),
     },
   };
 };
@@ -390,15 +390,15 @@ export const sds011 = (
   return {
     pm025: {
       $: 'pm025' as const,
-      ...metricStaleness(state.pm025, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
+      ...metricStaleness(state.pm025, epoch),
     },
     pm10: {
       $: 'pm10' as const,
-      ...metricStaleness(state.pm10, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pm10, 'micrograms/m3'),
+      ...metricStaleness(state.pm10, epoch),
     },
   };
 };
@@ -420,22 +420,22 @@ export const sgp30 = (
   return {
     tvoc: {
       $: 'tvoc' as const,
-      ...metricStaleness(state.tvoc, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
       eco2: {
-        ...metricStaleness(state.eco2, epoch),
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
+        ...metricStaleness(state.eco2, epoch),
       },
       ethanol: {
-        ...metricStaleness(state.ethanol, epoch),
         main: getter(ValueType.NUMBER, state.ethanol, 'ppm'),
+        ...metricStaleness(state.ethanol, epoch),
       },
       h2: {
-        ...metricStaleness(state.h2, epoch),
         main: getter(ValueType.NUMBER, state.h2, 'ppm'),
+        ...metricStaleness(state.h2, epoch),
       },
+      ...metricStaleness(state.tvoc, epoch),
     },
   };
 };
@@ -452,9 +452,9 @@ export const tsl2561 = (
   return {
     brightness: {
       $: 'brightness' as const,
-      ...metricStaleness(state, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'lux'),
+      ...metricStaleness(state, epoch),
     },
   };
 };
@@ -471,9 +471,9 @@ export const uvIndex = (
   return {
     uvIndex: {
       $: 'uvIndex' as const,
-      ...metricStaleness(state, epoch),
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state),
+      ...metricStaleness(state, epoch),
     },
   };
 };

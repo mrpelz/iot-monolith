@@ -9,6 +9,8 @@ import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
+import { InitFunction } from '../operations/init.js';
+import { Introspection } from '../operations/introspection.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
@@ -25,13 +27,26 @@ export const ev1527WindowSensor = (
     ]).state;
 
   const persistedOpen = new Observable<boolean | null>(null);
-  persistence.observe(`ev1527WindowSensor/${address}/open`, persistedOpen);
+  const $initOpen: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      persistedOpen,
+    );
+  };
 
   const persistedTamperSwitch = new Observable<boolean | null>(null);
-  persistence.observe(
-    `ev1527WindowSensor/${address}/tamperSwitch`,
-    persistedTamperSwitch,
-  );
+  const $initTamperSwitch: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      persistedTamperSwitch,
+    );
+  };
 
   receivedOpen.observe((value) => {
     if (value === null) return;
@@ -60,19 +75,21 @@ export const ev1527WindowSensor = (
   );
 
   return {
-    ...ev1527Device(device),
     internal: {
       $noMainReference: true as const,
       open: {
-        ...lastChange(receivedOpen),
+        $init: $initOpen,
         isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
         level: Level.PROPERTY as const,
         main: getter(ValueType.BOOLEAN, isOpen),
         tamperSwitch: {
-          ...lastChange(receivedTamperSwitch),
+          $init: $initTamperSwitch,
           main: getter(ValueType.BOOLEAN, tamperSwitch),
+          ...lastChange(receivedTamperSwitch),
         },
+        ...lastChange(receivedOpen),
       },
     },
+    ...ev1527Device(device),
   };
 };

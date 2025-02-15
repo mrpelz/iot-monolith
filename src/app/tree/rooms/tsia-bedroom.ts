@@ -107,8 +107,8 @@ export const groups = {
 
 export const tsiaBedroom = {
   $: 'tsiaBedroom' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

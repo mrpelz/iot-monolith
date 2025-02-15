@@ -434,8 +434,8 @@ const sceneCycle = new EnumState(
 
 export const mrpelzBedroom = {
   $: 'mrpelzBedroom' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

@@ -68,10 +68,7 @@ export const instances = {
 };
 
 export const properties = {
-  allTimer: offTimer(epochs.minute * 30, true, [
-    'mrpelzbathroom/allTimer',
-    persistence,
-  ]),
+  allTimer: offTimer(epochs.minute * 30, true, persistence),
   ceilingLight: devices.ceilingLight.internal.relay,
   door: door(devices.doorSensor),
   mirrorHeating: devices.mirrorHeating.internal.relay,
@@ -148,7 +145,6 @@ const scenesPartial = {
 };
 
 export const scenes = {
-  ...scenesPartial,
   autoLight: triggerElement(() => {
     let failover = false;
 
@@ -213,6 +209,7 @@ export const scenes = {
 
     groups.allLights.main.setState.value = true;
   }, 'light'),
+  ...scenesPartial,
 };
 
 (() => {
@@ -356,13 +353,13 @@ export const scenes = {
 
 export const mrpelzBathroom = {
   $: 'mrpelzBathroom' as const,
-  ...deviceMap(devices),
+  level: Level.ROOM as const,
   scenes: {
     $: 'scenes' as const,
-    ...scenes,
     level: Level.NONE as const,
+    ...scenes,
   },
+  ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

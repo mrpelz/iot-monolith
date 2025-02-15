@@ -8,7 +8,7 @@ export type ObjectReference = {
 };
 
 export type ObjectIntrospection = {
-  id?: string;
+  id: string;
   mainReference?: ObjectReference;
   references: Set<ObjectReference>;
 };
@@ -16,6 +16,23 @@ export type ObjectIntrospection = {
 export const PATH_UUID_NAMESPACE = 'f0f4da2a-7955-43b0-9fe9-02430afad7ef';
 
 export class Introspection {
+  static pathString(path: PropertyKey[]): string {
+    let result: string[] = [];
+
+    for (const key of path) {
+      if (typeof key === 'string') {
+        result.push(`${result.length > 0 ? '.' : ''}${key}`);
+        continue;
+      }
+
+      result.push(
+        `[${typeof key === 'symbol' ? key.description : key.toString()}]`,
+      );
+    }
+
+    return result.join('');
+  }
+
   private readonly _objects = new Map<object, ObjectIntrospection>();
 
   constructor(object: object) {
@@ -48,31 +65,25 @@ export class Introspection {
   ) {
     if (!isPlainObject(input)) return;
 
-    const introspection = this._objects.get(input) ?? {
-      id: parent ? undefined : PATH_UUID_NAMESPACE,
-      mainReference: undefined,
-      references: new Set(),
-    };
-
-    const { mainReference, references } = introspection;
-
-    const thisIsMainReference = allowMainReference && !mainReference;
+    const id = uuidv5(Introspection.pathString(path), PATH_UUID_NAMESPACE);
 
     const reference: ObjectReference = {
       parent,
       path,
     };
 
+    const introspection = this._objects.get(input) ?? {
+      id: parent ? id : PATH_UUID_NAMESPACE,
+      mainReference: undefined,
+      references: new Set(),
+    };
+
+    const { mainReference, references } = introspection;
     references.add(reference);
 
-    if (parent && thisIsMainReference) {
-      introspection.id = uuidv5(
-        path.map(String).join('.'),
-        PATH_UUID_NAMESPACE,
-      );
-
-      introspection.mainReference = reference;
-    }
+    const thisIsMainReference = allowMainReference && !mainReference;
+    if (thisIsMainReference) introspection.mainReference = reference;
+    if (parent && thisIsMainReference) introspection.id = id;
 
     this._objects.set(input, introspection);
 

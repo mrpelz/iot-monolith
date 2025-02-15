@@ -26,6 +26,8 @@ import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
+import { InitFunction } from '../operations/init.js';
+import { Introspection } from '../operations/introspection.js';
 import { lastChange } from './sensors.js';
 
 const actuatorStaleness = <T>(
@@ -79,26 +81,27 @@ export const led = (
     indicator,
   );
 
-  const props = {
+  const $init: InitFunction = (self, introspection) => {
+    if (!persistence) return;
+
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      setBrightness,
+    );
+  };
+
+  return {
     $: 'led' as const,
-    ...actuatorStaleness(actualBrightness, setBrightness, device),
+    $init,
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
-  };
-
-  return {
-    ...props,
-    $init: () => {
-      if (persistence) {
-        persistence.observe(
-          `led/${device.transport.host}:${device.transport.port}/${index}`,
-          setBrightness,
-        );
-      }
-    },
+    ...actuatorStaleness(actualBrightness, setBrightness, device),
   };
 };
 
@@ -114,25 +117,23 @@ export const output = <T extends string>(
     indicator,
   );
 
-  const props = {
+  const $init: InitFunction = (self, introspection) => {
+    if (!persistence) return;
+
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(Introspection.pathString(mainReference.path), setState);
+  };
+
+  return {
     $: 'output' as const,
-    ...actuatorStaleness(actualState, setState, device),
+    $init,
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
     topic,
-  };
-
-  return {
-    ...props,
-    $init: () => {
-      if (persistence) {
-        persistence.observe(
-          `output/${device.transport.host}:${device.transport.port}/${index}`,
-          setState,
-        );
-      }
-    },
+    ...actuatorStaleness(actualState, setState, device),
   };
 };
 
@@ -227,7 +228,6 @@ export const online = (
   return {
     online: {
       $: 'online' as const,
-      ...lastChange(device.isOnline),
       $init: () => {
         if (initiallyOnline) {
           device.transport.connect();
@@ -246,6 +246,7 @@ export const online = (
       flip: trigger(ValueType.NULL, new NullState(() => state.flip())),
       level: Level.PROPERTY as const,
       main: setter(ValueType.BOOLEAN, state, device.isOnline),
+      ...lastChange(device.isOnline),
     },
   };
 };

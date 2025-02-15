@@ -49,11 +49,8 @@ const partialProperties = {
 };
 
 export const properties = {
+  entryDoorTimer: offTimer(epochs.minute * 3, undefined, persistence),
   ...partialProperties,
-  entryDoorTimer: offTimer(epochs.minute * 3, undefined, [
-    'hallway/entryDoorTimer',
-    persistence,
-  ]),
 };
 
 export const groups = {
@@ -141,8 +138,8 @@ export const groups = {
 
 export const hallway = {
   $: 'hallway' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

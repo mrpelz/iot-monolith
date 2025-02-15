@@ -16,6 +16,11 @@ export const shelly1 = <T extends string>(
   const device = new UDPDevice(logger, host, port);
 
   return {
+    button: button(device, 0),
+    internal: {
+      $noMainReference: true as const,
+      relay: output(device, 0, topic, undefined, persistence),
+    },
     ...ipDevice(
       device,
       false,
@@ -24,10 +29,5 @@ export const shelly1 = <T extends string>(
       undefined,
       initiallyOnline,
     ),
-    button: button(device, 0),
-    internal: {
-      $noMainReference: true as const,
-      relay: output(device, 0, topic, undefined, persistence),
-    },
   };
 };

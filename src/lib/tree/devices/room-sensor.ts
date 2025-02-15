@@ -51,11 +51,11 @@ export const roomSensor = (
 
   const temperature = {
     $: 'temperature' as const,
-    ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
+    ...metricStaleness(temperatureState, timings.default[1]),
   };
 
   const sgp30MeasurementInputGetter = () => {
@@ -71,16 +71,12 @@ export const roomSensor = (
   };
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      undefined,
-      initiallyOnline,
-    ),
     internal: {
       $noMainReference: true as const,
+      humidity,
+      // motion: input(device, undefined, 'motion'),
+      pressure,
+      temperature,
       // ...mhz19(device, timings.slow || timings.default),
       // ...sds011(device, timings.slow || timings.default),
       ...sgp30(
@@ -89,10 +85,14 @@ export const roomSensor = (
         sgp30MeasurementInputGetter,
       ),
       ...tsl2561(device, timings.default),
-      humidity,
-      // motion: input(device, undefined, 'motion'),
-      pressure,
-      temperature,
     },
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      undefined,
+      initiallyOnline,
+    ),
   };
 };

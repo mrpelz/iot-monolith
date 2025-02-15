@@ -15,13 +15,13 @@ export const ev1527ButtonX4 = (
   const device = new Ev1527Device(logger, transport, address);
 
   return {
-    ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
       'bottomRight',
       'topLeft',
       'topRight',
     ]).state,
+    ...ev1527Device(device),
   };
 };
 
@@ -33,9 +33,9 @@ export const ev1527ButtonX1 = (
   const device = new Ev1527Device(logger, transport, address);
 
   return {
-    ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
     ]).state.bottomLeft,
+    ...ev1527Device(device),
   };
 };

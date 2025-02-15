@@ -65,15 +65,17 @@ export const setupMetrics = <T extends object>(
     50,
   )) {
     try {
-      const path = introspection.getObject(object)?.mainReference?.path;
-      if (!path) continue;
+      const { id, mainReference: { path } = {} } =
+        introspection.getObject(object) ?? {};
+      if (!id || !path) continue;
 
       const {
         metric: { metricHelp, metricLabels, metricName, metricValue },
       } = object as unknown as ReturnType<typeof metric>;
 
       const outputLabels = {
-        path: path.join('.'),
+        id,
+        path: Introspection.pathString(path),
       } as Record<string, string | number>;
       let outputValue = cleanValue(metricValue.value);
 
@@ -81,7 +83,7 @@ export const setupMetrics = <T extends object>(
 
       const gauge = new Gauge({
         help: metricHelp,
-        labelNames: ['path', ...keys.map((key) => cleanLabel(key))],
+        labelNames: ['id', 'path', ...keys.map((key) => cleanLabel(key))],
         name: `${METRIC_NAME_PREFIX}${cleanLabel(metricName)}`,
       });
 

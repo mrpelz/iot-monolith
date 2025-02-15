@@ -61,10 +61,7 @@ export const instances = {
 };
 
 export const properties = {
-  allLightsTimer: offTimer(epochs.minute * 30, true, [
-    'tsiabathroom/allLightsTimer',
-    persistence,
-  ]),
+  allLightsTimer: offTimer(epochs.minute * 30, true, persistence),
   ceilingLight: devices.ceilingLight.internal.relay,
   door: door(devices.doorSensor),
   mirrorLed: devices.leds.internal.ledR,
@@ -130,7 +127,6 @@ export const scenesPartial = {
 };
 
 export const scenes = {
-  ...scenesPartial,
   autoLight: triggerElement(() => {
     let failover = false;
 
@@ -195,6 +191,7 @@ export const scenes = {
 
     groups.allLights.main.setState.value = true;
   }, 'light'),
+  ...scenesPartial,
 };
 
 (() => {
@@ -311,13 +308,13 @@ export const scenes = {
 
 export const tsiaBathroom = {
   $: 'tsiaBathroom' as const,
+  level: Level.ROOM as const,
   scenes: {
     $: 'scenes' as const,
-    ...scenes,
     level: Level.NONE as const,
+    ...scenes,
   },
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

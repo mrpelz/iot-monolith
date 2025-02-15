@@ -28,10 +28,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
   door: door(devices.doorSensor),
-  lightTimer: offTimer(epochs.minute * 5, undefined, [
-    'storageRoom/lightTimer',
-    persistence,
-  ]),
+  lightTimer: offTimer(epochs.minute * 5, undefined, persistence),
 };
 
 export const groups = {
@@ -78,8 +75,8 @@ export const groups = {
 
 export const storageRoom = {
   $: 'storageRoom' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

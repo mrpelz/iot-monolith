@@ -14,6 +14,9 @@ export const shellyi3 = (
   const device = new UDPDevice(logger, host, port);
 
   return {
+    button0: button(device, 0),
+    button1: button(device, 1),
+    button2: button(device, 2),
     ...ipDevice(
       device,
       false,
@@ -22,8 +25,5 @@ export const shellyi3 = (
       undefined,
       initiallyOnline,
     ),
-    button0: button(device, 0),
-    button1: button(device, 1),
-    button2: button(device, 2),
   };
 };

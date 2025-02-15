@@ -17,14 +17,6 @@ export const h801 = (
   const indicator = device.addService(new Indicator(0));
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      indicator,
-      initiallyOnline,
-    ),
     indicator,
     internal: {
       $noMainReference: true as const,
@@ -34,5 +26,13 @@ export const h801 = (
       ledW1: led(device, 3, undefined, persistence),
       ledW2: led(device, 4, undefined, persistence),
     },
+    ...ipDevice(
+      device,
+      false,
+      persistence,
+      timings,
+      indicator,
+      initiallyOnline,
+    ),
   };
 };
