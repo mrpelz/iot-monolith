@@ -80,6 +80,7 @@ export const roomSensor = (
       initiallyOnline,
     ),
     internal: {
+      $noMainReference: true as const,
       // ...mhz19(device, timings.slow || timings.default),
       // ...sds011(device, timings.slow || timings.default),
       ...sgp30(

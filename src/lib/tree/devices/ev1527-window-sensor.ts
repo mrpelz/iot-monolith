@@ -62,6 +62,7 @@ export const ev1527WindowSensor = (
   return {
     ...ev1527Device(device),
     internal: {
+      $noMainReference: true as const,
       open: {
         ...lastChange(receivedOpen),
         isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),

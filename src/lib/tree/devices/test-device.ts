@@ -67,6 +67,7 @@ export const testDevice = ({
   return {
     ...ipDevice(device, false, persistence, timings, undefined, connect),
     internal: {
+      $noMainReference: true as const,
       ...async(device, timings.slow || timings.default),
       ...mhz19(device, timings.slow || timings.default),
       ...sds011(device, timings.slow || timings.default),

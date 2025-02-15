@@ -4,7 +4,7 @@ import { Logger } from '../../log.js';
 import { AnyReadOnlyObservable } from '../../observable.js';
 import { objectKeys } from '../../oop.js';
 import { match } from '../main.js';
-import { Paths } from './paths.js';
+import { Introspection } from './introspection.js';
 
 const METRIC_NAME_PREFIX = 'iot_';
 
@@ -51,7 +51,7 @@ export const metric = <
 export const setupMetrics = <T extends object>(
   logger: Logger,
   root: T,
-  paths: Paths,
+  introspection: Introspection,
 ): void => {
   const log = logger.getInput({
     head: 'setupMetrics',
@@ -65,9 +65,7 @@ export const setupMetrics = <T extends object>(
     50,
   )) {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { path } = paths.getByObject(object) ?? {};
+      const path = introspection.getObject(object)?.mainReference?.path;
       if (!path) continue;
 
       const {

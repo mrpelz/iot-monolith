@@ -30,6 +30,7 @@ export const sonoffBasic = <T extends string>(
     button: button(device, 0),
     indicator,
     internal: {
+      $noMainReference: true as const,
       relay: output(device, 0, topic, indicator, persistence),
     },
   };

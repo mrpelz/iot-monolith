@@ -137,10 +137,12 @@ export const output = <T extends string>(
 };
 
 export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
+  const lights_ = Array.from(new Set(lights));
+
   const actualOn = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      lights.map((light) => light.main.state),
+      lights_.map((light) => light.main.state),
     ),
   );
 
@@ -151,7 +153,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
       }
     })(
       0,
-      lights.map(
+      lights_.map(
         (light) =>
           new ReadOnlyProxyObservable(light.brightness.state, (value) =>
             value === null ? 0 : value,
@@ -162,7 +164,7 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
 
   const setOn = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    lights.map((light) => light.main.setState),
+    lights_.map((light) => light.main.setState),
   );
 
   const setBrightness = new (class extends ObservableGroup<number> {
@@ -171,15 +173,16 @@ export const ledGrouping = (lights: ReturnType<typeof led>[]) => {
     }
   })(
     0,
-    lights.map((light) => light.brightness.setState),
+    lights_.map((light) => light.brightness.setState),
   );
 
   return {
     $: 'ledGrouping' as const,
+    $noMainReference: true as const,
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
-    lights,
+    lights: lights_,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting',
   };
@@ -189,24 +192,27 @@ export const outputGrouping = <T extends string>(
   outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
   topic = 'lighting' as T,
 ) => {
+  const outputs_ = Array.from(new Set(outputs));
+
   const actualState = new ReadOnlyObservable(
     new BooleanNullableStateGroup(
       BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-      outputs.map((outputElement) => outputElement.main.state),
+      outputs_.map((outputElement) => outputElement.main.state),
     ),
   );
 
   const setState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    outputs.map((outputElement) => outputElement.main.setState),
+    outputs_.map((outputElement) => outputElement.main.setState),
   );
 
   return {
     $: 'outputGrouping' as const,
+    $noMainReference: true as const,
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
-    outputs,
+    outputs: outputs_,
     topic,
   };
 };

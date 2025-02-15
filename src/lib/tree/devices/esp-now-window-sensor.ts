@@ -23,6 +23,7 @@ export type EspNowWindowSensorOptions = {
 
 const children = (device: Device) => ({
   internal: {
+    $noMainReference: true as const,
     input0: input(device, 0, 'input0'),
     input1: input(device, 1, 'input1'),
     input2: input(device, 2, 'input2'),

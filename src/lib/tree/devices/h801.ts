@@ -27,6 +27,7 @@ export const h801 = (
     ),
     indicator,
     internal: {
+      $noMainReference: true as const,
       ledR: led(device, 0, indicator, persistence),
       ledG: led(device, 1, undefined, persistence),
       ledB: led(device, 2, undefined, persistence),

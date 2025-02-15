@@ -5,8 +5,8 @@ import { WebApi } from '../lib/api/main.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
+import { Introspection } from '../lib/tree/operations/introspection.js';
 import { setupMetrics } from '../lib/tree/operations/metrics.js';
-import { Paths } from '../lib/tree/operations/paths.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
 
 export const app = async (): Promise<void> => {
@@ -21,12 +21,12 @@ export const app = async (): Promise<void> => {
 
   const system = await _system;
 
-  const paths = new Paths(system);
+  const introspection = new Introspection(system);
   init(system);
 
-  const serialization = new Serialization(system, paths);
+  const serialization = new Serialization(system, introspection);
 
-  setupMetrics(logger, system, paths);
+  setupMetrics(logger, system, introspection);
 
   // // eslint-disable-next-line no-console
   // serialization.updates.observe((value) => console.log(value));
