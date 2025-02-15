@@ -1,4 +1,4 @@
-import { match } from '../../lib/tree/main.js';
+import { excludePattern, match } from '../../lib/tree/main.js';
 import { outputGrouping } from '../../lib/tree/properties/actuators.js';
 import { context } from '../context.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
@@ -12,8 +12,8 @@ export const all = (async () => {
   return outputGrouping(
     context,
     [
-      match({ $: 'output' as const }, wurstHome),
-      match({ $: 'led' as const }, wurstHome),
+      match({ $: 'output' as const }, excludePattern, wurstHome),
+      match({ $: 'led' as const }, excludePattern, wurstHome),
     ].flat(1),
     'group',
   );
@@ -30,9 +30,10 @@ export const allLights = (async () => {
           $: 'output' as const,
           topic: 'lighting' as const,
         },
+        excludePattern,
         wurstHome,
       ),
-      match({ $: 'led' as const }, wurstHome),
+      match({ $: 'led' as const }, excludePattern, wurstHome),
     ].flat(1),
   );
 })();

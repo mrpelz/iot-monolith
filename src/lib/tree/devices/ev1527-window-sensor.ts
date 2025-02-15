@@ -95,6 +95,7 @@ export const ev1527WindowSensor = (
 
   return {
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       open: {
         $init: $initOpen,

@@ -67,6 +67,7 @@ export const testDevice = (context: Context) => {
 
   return {
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       humidity,
       motion: input(context, device, undefined, 'motion'),

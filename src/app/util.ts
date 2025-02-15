@@ -8,9 +8,13 @@ import {
   ReadOnlyProxyObservable,
 } from '../lib/observable.js';
 import { BooleanProxyState, NullState } from '../lib/state.js';
+import { Context } from '../lib/tree/context.js';
 import { setter } from '../lib/tree/elements/setter.js';
 import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
+import { InitFunction } from '../lib/tree/operations/init.js';
+import { Introspection } from '../lib/tree/operations/introspection.js';
+import { Metrics } from '../lib/tree/operations/metrics.js';
 import { led as led_ } from '../lib/tree/properties/actuators.js';
 
 export const LATITUDE = 53.547_47;
@@ -87,6 +91,7 @@ class MergedBrightness extends ObservableGroup<number | null> {
 }
 
 export const overriddenLed = (
+  context: Context,
   led: ReturnType<typeof led_>,
   isOverridden: AnyObservable<boolean>,
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -120,12 +125,46 @@ export const overriddenLed = (
     (value) => (value ? 1 : 0),
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    context.persistence.observe(
+      Introspection.pathString(mainReference.path),
+      setBrightness,
+    );
+
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric(`${$}_actual`, 'actual state of led', actualOn, {
+      brightness: new ReadOnlyProxyObservable(actualBrightness, (value) =>
+        value === null ? '' : value,
+      ),
+      ...labels,
+    });
+
+    context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, {
+      brightness: setBrightness,
+      ...labels,
+    });
+
+    context.metrics.addMetric(
+      `${$}_override`,
+      'is led overridden',
+      isOverridden,
+      labels,
+    );
+  };
+
   return {
     $,
-    $init: () => {
-      // noop
-    },
+    $init,
     actuatorStaleness,
+    automated: {
+      $exclude: true as const,
+      led,
+    },
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level,

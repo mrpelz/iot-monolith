@@ -24,6 +24,7 @@ export const sonoffBasic = <T extends string>(
     button: button(context, device, 0),
     indicator,
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       relay: output(context, device, 0, topic, indicator),
     },

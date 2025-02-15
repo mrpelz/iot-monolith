@@ -21,6 +21,7 @@ export const h801 = (
   return {
     indicator,
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       ledR: led(context, device, 0, indicator),
       ledG: led(context, device, 1, undefined),

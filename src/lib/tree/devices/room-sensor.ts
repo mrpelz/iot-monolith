@@ -78,6 +78,7 @@ export const roomSensor = (
 
   return {
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       humidity,
       // motion: input(device, undefined, 'motion'),

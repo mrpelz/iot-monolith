@@ -20,6 +20,7 @@ export const shelly1 = <T extends string>(
   return {
     button: button(context, device, 0),
     internal: {
+      $exclude: true as const,
       $noMainReference: true as const,
       relay: output(context, device, 0, topic, undefined),
     },

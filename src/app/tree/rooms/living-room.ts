@@ -45,10 +45,12 @@ export const properties = {
   overrideTimer: offTimer(context, epochs.hour * 12, true),
   standingLamp: devices.standingLamp.internal.relay,
   terrariumLedRed: overriddenLed(
+    context,
     devices.terrariumLeds.internal.ledB,
     isTerrariumLedsOverride,
   ),
   terrariumLedTop: overriddenLed(
+    context,
     devices.terrariumLeds.internal.ledR,
     isTerrariumLedsOverride,
   ),

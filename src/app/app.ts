@@ -4,6 +4,13 @@ import { collectDefaultMetrics, register } from 'prom-client';
 import { WebApi } from '../lib/api/main.js';
 import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
+// import {
+//   anyBoolean,
+//   excludePattern,
+//   Level,
+//   levelObjectMatch,
+//   match,
+// } from '../lib/tree/main.js';
 import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
@@ -32,33 +39,42 @@ export const app = async (): Promise<void> => {
   // console.log(JSON.stringify(serialization.tree, undefined, 2));
 
   // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const lightingOn = match({ topic: 'lighting' as const }, system).flatMap(
-  //   (child) => match({ name: 'on' as const }, child),
-  // );
+  // const lightingOn = match(
+  //   { topic: 'lighting' as const },
+  //   excludePattern,
+  //   system,
+  // ).flatMap((child) => match({ name: 'on' as const }, excludePattern, child));
 
   // const roomDevices = match(
   //   {
   //     $: 'testRoom' as const,
   //     level: Level.ROOM as const,
   //   },
+  //   excludePattern,
   //   system,
-  // ).flatMap((child) => match(levelObjectMatch[Level.DEVICE], child));
+  // ).flatMap((child) =>
+  //   match(levelObjectMatch[Level.DEVICE], excludePattern, child),
+  // );
 
   // // eslint-disable-next-line no-console
   // console.log(roomDevices.map((device) => device.$));
 
-  // const [testRoom] = match({ $: 'testRoom' as const }, system);
-  // const [lol] = match({ lol: anyBoolean }, testRoom);
+  // const [testRoom] = match({ $: 'testRoom' as const }, excludePattern, system);
+  // const [lol] = match({ lol: anyBoolean }, undefined, testRoom);
   // // eslint-disable-next-line no-console
-  // console.log(lol);
+  // console.log(testRoom?.$, lol?.lol);
 
-  // const [sunElevation] = match({ $: 'sunElevation' as const }, system);
+  // const [sunElevation] = match(
+  //   { $: 'sunElevation' as const },
+  //   excludePattern,
+  //   system,
+  // );
 
   // if (sunElevation) {
   //   // eslint-disable-next-line no-console
   //   console.log(
-  //     paths.getByObject(sunElevation)?.id,
-  //     paths.getParent(sunElevation.isDay)?.id,
+  //     introspection.getObject(sunElevation)?.id,
+  //     introspection.getObject(sunElevation.isDay)?.id,
   //   );
   // }
 

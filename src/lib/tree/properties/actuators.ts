@@ -99,6 +99,7 @@ export const led = (
 
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
+
     if (!mainReference) return;
 
     context.persistence.observe(
