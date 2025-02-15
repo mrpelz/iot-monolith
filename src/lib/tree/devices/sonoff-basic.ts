@@ -10,28 +10,23 @@ import { button } from '../properties/sensors.js';
 export const sonoffBasic = <T extends string>(
   topic: T,
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
 
   return {
-    button: button(device, 0),
+    button: button(context, device, 0),
     indicator,
     internal: {
       $noMainReference: true as const,
-      relay: output(device, 0, topic, indicator, persistence),
+      relay: output(context, device, 0, topic, indicator),
     },
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      indicator,
-      initiallyOnline,
-    ),
+    ...ipDevice(context, device, false, indicator, initiallyOnline),
   };
 };

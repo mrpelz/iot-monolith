@@ -36,11 +36,11 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.internal.ledB,
   ledRightFloodlight: devices.ledsRight.internal.ledW1,
   ledRightWWhite: devices.ledsRight.internal.ledG,
-  window: window(devices.windowSensor),
+  window: window(context, devices.windowSensor),
 };
 
 export const groups = {
-  allLights: ledGrouping([
+  allLights: ledGrouping(context, [
     properties.ledLeftCWhite,
     properties.ledLeftFloodlight,
     properties.ledLeftWWhite,
@@ -48,25 +48,28 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping(properties.window.open.main.state),
-  cWhite: ledGrouping([properties.ledLeftCWhite, properties.ledRightCWhite]),
-  floodlight: ledGrouping([
+  allWindows: inputGrouping(context, properties.window.open.main.state),
+  cWhite: ledGrouping(context, [
+    properties.ledLeftCWhite,
+    properties.ledRightCWhite,
+  ]),
+  floodlight: ledGrouping(context, [
     properties.ledLeftFloodlight,
     properties.ledRightFloodlight,
   ]),
-  wWhite: ledGrouping([
+  wWhite: ledGrouping(context, [
     properties.ledLeftFloodlight,
     properties.ledLeftWWhite,
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  worklight: ledGrouping([
+  worklight: ledGrouping(context, [
     properties.ledLeftCWhite,
     properties.ledLeftWWhite,
     properties.ledRightCWhite,
     properties.ledRightWWhite,
   ]),
-  worklightWWhite: ledGrouping([
+  worklightWWhite: ledGrouping(context, [
     properties.ledLeftWWhite,
     properties.ledRightWWhite,
   ]),

@@ -7,23 +7,18 @@ import { button } from '../properties/sensors.js';
 
 export const shellyi3 = (
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   return {
-    button0: button(device, 0),
-    button1: button(device, 1),
-    button2: button(device, 2),
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      undefined,
-      initiallyOnline,
-    ),
+    button0: button(context, device, 0),
+    button1: button(context, device, 1),
+    button2: button(context, device, 2),
+    ...ipDevice(context, device, false, undefined, initiallyOnline),
   };
 };

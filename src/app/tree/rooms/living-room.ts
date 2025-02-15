@@ -16,7 +16,6 @@ import {
 } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
-import { persistence } from '../../persistence.js';
 import { every2Minutes } from '../../timings.js';
 import { overriddenLed, sunlightLeds } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
@@ -43,7 +42,7 @@ export const instances = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
-  overrideTimer: offTimer(epochs.hour * 12, true, persistence),
+  overrideTimer: offTimer(context, epochs.hour * 12, true),
   standingLamp: devices.standingLamp.internal.relay,
   terrariumLedRed: overriddenLed(
     devices.terrariumLeds.internal.ledB,
@@ -56,7 +55,7 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping([
+  allLights: outputGrouping(context, [
     properties.standingLamp,
     properties.terrariumLedRed,
     properties.terrariumLedTop,
@@ -64,27 +63,36 @@ export const groups = {
 };
 
 export const scenes = {
-  mediaOff: triggerElement(async () => {
-    await promiseGuard(
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
-        method: 'POST',
-        signal: AbortSignal.timeout(1000),
-      }),
-    );
+  mediaOff: triggerElement(
+    context,
+    async () => {
+      await promiseGuard(
+        fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
+          method: 'POST',
+          signal: AbortSignal.timeout(1000),
+        }),
+      );
 
-    isTerrariumLedsOverride.value = false;
-  }, 'media'),
-  mediaOnOrSwitch: triggerElement(async () => {
-    await promiseGuard(
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
-        method: 'POST',
-        signal: AbortSignal.timeout(1000),
-      }),
-    );
+      isTerrariumLedsOverride.value = false;
+    },
+    'media',
+  ),
+  mediaOnOrSwitch: triggerElement(
+    context,
+    async () => {
+      await promiseGuard(
+        fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
+          method: 'POST',
+          signal: AbortSignal.timeout(1000),
+        }),
+      );
 
-    isTerrariumLedsOverride.value = true;
-  }, 'media'),
+      isTerrariumLedsOverride.value = true;
+    },
+    'media',
+  ),
   terrariumLedsOverride: scene(
+    context,
     [new SceneMember(isTerrariumLedsOverride, true, false)],
     'automation',
   ),

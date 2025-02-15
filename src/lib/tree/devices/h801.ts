@@ -8,10 +8,12 @@ import { led } from '../properties/actuators.js';
 
 export const h801 = (
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
@@ -20,19 +22,12 @@ export const h801 = (
     indicator,
     internal: {
       $noMainReference: true as const,
-      ledR: led(device, 0, indicator, persistence),
-      ledG: led(device, 1, undefined, persistence),
-      ledB: led(device, 2, undefined, persistence),
-      ledW1: led(device, 3, undefined, persistence),
-      ledW2: led(device, 4, undefined, persistence),
+      ledR: led(context, device, 0, indicator),
+      ledG: led(context, device, 1, undefined),
+      ledB: led(context, device, 2, undefined),
+      ledW1: led(context, device, 3, undefined),
+      ledW2: led(context, device, 4, undefined),
     },
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      indicator,
-      initiallyOnline,
-    ),
+    ...ipDevice(context, device, false, indicator, initiallyOnline),
   };
 };

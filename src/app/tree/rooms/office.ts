@@ -9,7 +9,6 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 import { properties as livingRoomProperties } from './living-room.js';
 
@@ -38,13 +37,16 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
   floodlight: devices.floodlight.internal.relay,
-  floodlightTimer: offTimer(epochs.hour, undefined, persistence),
-  window: window(devices.windowSensor),
+  floodlightTimer: offTimer(context, epochs.hour, undefined),
+  window: window(context, devices.windowSensor),
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight, properties.floodlight]),
-  allWindows: inputGrouping(properties.window.open.main.state),
+  allLights: outputGrouping(context, [
+    properties.ceilingLight,
+    properties.floodlight,
+  ]),
+  allWindows: inputGrouping(context, properties.window.open.main.state),
 };
 
 (async () => {

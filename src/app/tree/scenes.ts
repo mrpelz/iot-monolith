@@ -3,6 +3,7 @@ import {
   SceneMember,
   triggerElement,
 } from '../../lib/tree/properties/actuators.js';
+import { context } from '../context.js';
 import { all, allLights } from './groups.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
@@ -10,6 +11,7 @@ import { properties as livingRoomProperties } from './rooms/living-room.js';
 import { properties as officeProperties } from './rooms/office.js';
 
 export const kitchenAdjacentChillax = scene(
+  context,
   [
     new SceneMember(hallwayProperties.ceilingLightBack.main.setState, false),
     new SceneMember(hallwayProperties.ceilingLightFront.main.setState, false),
@@ -47,6 +49,7 @@ export const kitchenAdjacentChillax = scene(
 );
 
 export const kitchenAdjacentBright = scene(
+  context,
   [
     new SceneMember(
       hallwayProperties.ceilingLightBack.main.setState,
@@ -93,12 +96,20 @@ export const kitchenAdjacentBright = scene(
   'lighting',
 );
 
-export const allLightsOff = triggerElement(async () => {
-  const allLights_ = await allLights;
-  allLights_.main.setState.value = false;
-}, 'lighting');
+export const allLightsOff = triggerElement(
+  context,
+  async () => {
+    const allLights_ = await allLights;
+    allLights_.main.setState.value = false;
+  },
+  'lighting',
+);
 
-export const allOff = triggerElement(async () => {
-  const all_ = await all;
-  all_.main.setState.value = false;
-}, 'scene');
+export const allOff = triggerElement(
+  context,
+  async () => {
+    const all_ = await all;
+    all_.main.setState.value = false;
+  },
+  'scene',
+);

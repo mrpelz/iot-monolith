@@ -10,18 +10,24 @@ import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { BooleanState, NullState } from '../../state.js';
 import { Timer } from '../../timer.js';
+import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 import { Introspection } from '../operations/introspection.js';
+import { Metrics } from '../operations/metrics.js';
 
 export const offTimer = (
+  context: Context,
   time: number,
   enableFromStart = true,
-  persistence?: Persistence,
 ) => {
+  const $ = 'offTimer' as const;
+
+  const { persistence } = context;
+
   const enabled = new BooleanState(enableFromStart);
   const active = new BooleanState(false);
 
@@ -70,10 +76,35 @@ export const offTimer = (
     if (!mainReference) return;
 
     persistence.observe(Introspection.pathString(mainReference.path), enabled);
+
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'is timer enabled?',
+      enabled,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_set`,
+      'is timer currently running?',
+      active,
+      {
+        runoutTime: new ReadOnlyProxyObservable(runoutTime, (value) =>
+          value === null ? '' : value,
+        ),
+        triggerTime: new ReadOnlyProxyObservable(triggerTime, (value) =>
+          value === null ? '' : value,
+        ),
+        ...labels,
+      },
+    );
   };
 
   return {
-    $: 'offTimer' as const,
+    $,
     $init,
     active: {
       cancel: {

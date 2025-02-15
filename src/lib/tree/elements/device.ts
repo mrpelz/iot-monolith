@@ -5,8 +5,8 @@ import { Ev1527Device } from '../../device/ev1527.js';
 import { Device } from '../../device/main.js';
 import { TCPDevice } from '../../device/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
-import { Persistence } from '../../persistence.js';
 import { Indicator } from '../../services/indicator.js';
+import { Context } from '../context.js';
 import { Level } from '../main.js';
 import {
   identifyDevice,
@@ -24,38 +24,42 @@ const deviceMeta = <S extends boolean>(device: Device, isSubDevice: S) => ({
 });
 
 export const espNowDevice = <S extends boolean>(
+  context: Context,
   device: ESPNowDevice,
   isSubDevice: S,
 ) => ({
   $: 'espNowDevice' as const,
   ...deviceMeta(device, isSubDevice),
-  ...lastSeen(device.seen),
-  ...vcc(device),
+  ...lastSeen(context, device.seen),
+  ...vcc(context, device),
 });
 
-export const ev1527Device = (device: Ev1527Device) => ({
+export const ev1527Device = (context: Context, device: Ev1527Device) => ({
   $: 'ev1527Device' as const,
   ...deviceMeta(device, false),
-  ...lastSeen(device.seen),
+  ...lastSeen(context, device.seen),
 });
 
 export const ipDevice = <S extends boolean>(
+  context: Context,
   device: TCPDevice | UDPDevice,
   isSubDevice: S,
-  persistence: Persistence,
-  timings: Timings,
   indicator?: Indicator,
   initiallyOnline = false,
-) => ({
-  $: 'ipDevice' as const,
-  ...(indicator ? identifyDevice(indicator) : {}),
-  ...deviceMeta(device, isSubDevice),
-  ...hello(device, timings.moderate || timings.default),
-  ...online(device, persistence, initiallyOnline),
-  ...resetDevice(device),
-  host: device.transport.host,
-  port: device.transport.port,
-});
+) => {
+  const { timings } = context;
+
+  return {
+    $: 'ipDevice' as const,
+    ...(indicator ? identifyDevice(context, indicator) : {}),
+    ...deviceMeta(device, isSubDevice),
+    ...hello(context, device, timings.moderate || timings.default),
+    ...online(context, device, initiallyOnline),
+    ...resetDevice(context, device),
+    host: device.transport.host,
+    port: device.transport.port,
+  };
+};
 
 export const deviceMap = <T extends object>(devices: T) => ({
   devices: {

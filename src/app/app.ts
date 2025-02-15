@@ -6,7 +6,6 @@ import { httpHooks } from '../lib/http-hooks.js';
 import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
-import { setupMetrics } from '../lib/tree/operations/metrics.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
 
 export const app = async (): Promise<void> => {
@@ -25,8 +24,6 @@ export const app = async (): Promise<void> => {
   init(system, introspection);
 
   const serialization = new Serialization(system, introspection);
-
-  setupMetrics(logger, system, introspection);
 
   // // eslint-disable-next-line no-console
   // serialization.updates.observe((value) => console.log(value));

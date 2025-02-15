@@ -17,7 +17,6 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { persistence } from '../../persistence.js';
 import {
   isAstronomicalTwilight,
   isCivilTwilight,
@@ -61,16 +60,16 @@ export const instances = {
 };
 
 export const properties = {
-  allLightsTimer: offTimer(epochs.minute * 30, true, persistence),
+  allLightsTimer: offTimer(context, epochs.minute * 30, true),
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(devices.doorSensor),
+  door: door(context, devices.doorSensor),
   mirrorLed: devices.leds.internal.ledR,
   mirrorLight: devices.mirrorLight.internal.relay,
   nightLight: devices.nightLight.internal.relay,
 };
 
 export const groups = {
-  allLights: outputGrouping([
+  allLights: outputGrouping(context, [
     properties.ceilingLight,
     properties.mirrorLed,
     properties.mirrorLight,
@@ -80,6 +79,7 @@ export const groups = {
 
 export const scenesPartial = {
   astronomicalTwilightLighting: scene(
+    context,
     [
       new SceneMember(properties.ceilingLight.main.setState, false),
       new SceneMember(properties.mirrorLed.brightness.setState, 0),
@@ -89,6 +89,7 @@ export const scenesPartial = {
     'light',
   ),
   civilTwilightLighting: scene(
+    context,
     [
       new SceneMember(properties.ceilingLight.main.setState, false),
       new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
@@ -98,6 +99,7 @@ export const scenesPartial = {
     'light',
   ),
   dayLighting: scene(
+    context,
     [
       new SceneMember(properties.ceilingLight.main.setState, true, false),
       new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
@@ -107,6 +109,7 @@ export const scenesPartial = {
     'light',
   ),
   nauticalTwilightLighting: scene(
+    context,
     [
       new SceneMember(properties.ceilingLight.main.setState, false),
       new SceneMember(properties.mirrorLed.brightness.setState, 1, 0),
@@ -116,6 +119,7 @@ export const scenesPartial = {
     'light',
   ),
   nightLighting: scene(
+    context,
     [
       new SceneMember(properties.ceilingLight.main.setState, false),
       new SceneMember(properties.mirrorLed.brightness.setState, 0.5, 0),
@@ -127,70 +131,74 @@ export const scenesPartial = {
 };
 
 export const scenes = {
-  autoLight: triggerElement(() => {
-    let failover = false;
+  autoLight: triggerElement(
+    context,
+    () => {
+      let failover = false;
 
-    const elevation = sunElevation();
+      const elevation = sunElevation();
 
-    if (isNight(elevation)) {
-      if (devices.nightLight.online.main.state.value) {
-        scenes.nightLighting.main.setState.value = true;
+      if (isNight(elevation)) {
+        if (devices.nightLight.online.main.state.value) {
+          scenes.nightLighting.main.setState.value = true;
 
-        return;
+          return;
+        }
+
+        failover = true;
       }
 
-      failover = true;
-    }
+      if (isAstronomicalTwilight(elevation) || failover) {
+        if (
+          devices.leds.online.main.state.value ||
+          devices.nightLight.online.main.state.value
+        ) {
+          scenes.astronomicalTwilightLighting.main.setState.value = true;
 
-    if (isAstronomicalTwilight(elevation) || failover) {
+          return;
+        }
+
+        failover = true;
+      }
+
+      if (isNauticalTwilight(elevation) || failover) {
+        if (
+          devices.leds.online.main.state.value ||
+          devices.mirrorLight.online.main.state.value
+        ) {
+          scenes.nauticalTwilightLighting.main.setState.value = true;
+
+          return;
+        }
+
+        failover = true;
+      }
+
       if (
-        devices.leds.online.main.state.value ||
-        devices.nightLight.online.main.state.value
+        (isCivilTwilight(elevation) || failover) &&
+        (devices.leds.online.main.state.value ||
+          devices.mirrorLight.online.main.state.value ||
+          devices.nightLight.online.main.state.value)
       ) {
-        scenes.astronomicalTwilightLighting.main.setState.value = true;
+        scenes.civilTwilightLighting.main.setState.value = true;
 
         return;
       }
 
-      failover = true;
-    }
-
-    if (isNauticalTwilight(elevation) || failover) {
       if (
+        devices.ceilingLight.online.main.state.value ||
         devices.leds.online.main.state.value ||
         devices.mirrorLight.online.main.state.value
       ) {
-        scenes.nauticalTwilightLighting.main.setState.value = true;
+        scenes.dayLighting.main.setState.value = true;
 
         return;
       }
 
-      failover = true;
-    }
-
-    if (
-      (isCivilTwilight(elevation) || failover) &&
-      (devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value ||
-        devices.nightLight.online.main.state.value)
-    ) {
-      scenes.civilTwilightLighting.main.setState.value = true;
-
-      return;
-    }
-
-    if (
-      devices.ceilingLight.online.main.state.value ||
-      devices.leds.online.main.state.value ||
-      devices.mirrorLight.online.main.state.value
-    ) {
-      scenes.dayLighting.main.setState.value = true;
-
-      return;
-    }
-
-    groups.allLights.main.setState.value = true;
-  }, 'light'),
+      groups.allLights.main.setState.value = true;
+    },
+    'light',
+  ),
   ...scenesPartial,
 };
 

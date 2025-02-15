@@ -21,28 +21,30 @@ export type EspNowWindowSensorOptions = {
   };
 };
 
-const children = (device: Device) => ({
+const children = (context: Context, device: Device) => ({
   internal: {
     $noMainReference: true as const,
-    input0: input(device, 0, 'input0'),
-    input1: input(device, 1, 'input1'),
-    input2: input(device, 2, 'input2'),
+    input0: input(context, device, 0, 'input0'),
+    input1: input(context, device, 1, 'input1'),
+    input2: input(context, device, 2, 'input2'),
     lol: true as const,
   },
 });
 
 export const espNowWindowSensor = (
   options: EspNowWindowSensorOptions,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
 ) => {
+  const { connect, logger } = context;
+
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
       espNow: {
-        ...children(device),
-        ...espNowDevice(device, true),
+        ...children(context, device),
+        ...espNowDevice(context, device, true),
       },
     };
   })();
@@ -53,15 +55,8 @@ export const espNowWindowSensor = (
 
     return {
       wifi: {
-        ...children(device),
-        ...ipDevice(
-          device,
-          true,
-          persistence,
-          timings,
-          undefined,
-          initiallyOnline,
-        ),
+        ...children(context, device),
+        ...ipDevice(context, device, true, undefined, initiallyOnline),
       },
     };
   })();

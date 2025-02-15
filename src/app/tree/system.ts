@@ -1,7 +1,7 @@
 import { epochs } from '../../lib/epochs.js';
 import { Level } from '../../lib/tree/main.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
-import { persistence } from '../persistence.js';
+import { context } from '../context.js';
 import { every5Seconds } from '../timings.js';
 import {
   all as all_,
@@ -63,7 +63,7 @@ export const system = (async () => {
   const all = await all_;
   const allLights = await allLights_;
 
-  const allTimer = offTimer(epochs.day, true, persistence);
+  const allTimer = offTimer(context, epochs.day, true);
 
   return {
     $: 'system' as const,

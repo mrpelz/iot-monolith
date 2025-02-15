@@ -8,7 +8,6 @@ import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
-import { persistence } from '../../persistence.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 
 export const devices = {
@@ -27,12 +26,12 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(devices.doorSensor),
-  lightTimer: offTimer(epochs.minute * 5, undefined, persistence),
+  door: door(context, devices.doorSensor),
+  lightTimer: offTimer(context, epochs.minute * 5, undefined),
 };
 
 export const groups = {
-  allLights: outputGrouping([properties.ceilingLight]),
+  allLights: outputGrouping(context, [properties.ceilingLight]),
 };
 
 (() => {
