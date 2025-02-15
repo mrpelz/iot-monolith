@@ -28,12 +28,9 @@ class MergedObservableGroup extends ObservableGroup<number | null> {
   }
 }
 
-export const testDevice = ({
-  connect,
-  logger,
-  persistence,
-  timings,
-}: Context) => {
+export const testDevice = (context: Context) => {
+  const { connect, logger, timings } = context;
+
   const device = new UDPDevice(
     logger,
     'test-device.iot-ng.lan.wurstsalat.cloud',
@@ -44,9 +41,13 @@ export const testDevice = ({
     humidity,
     pressure,
     temperature: bme280Temperature,
-  } = bme280(device, timings.default);
+  } = bme280(context, device, timings.default);
 
-  const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
+  const { temperature: mcp9808Temperature } = mcp9808(
+    context,
+    device,
+    timings.default,
+  );
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
@@ -57,25 +58,27 @@ export const testDevice = ({
 
   const temperature = {
     $: 'temperature' as const,
-    ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
+    ...metricStaleness(context, temperatureState, timings.default[1]),
   };
 
   return {
-    ...ipDevice(device, false, persistence, timings, undefined, connect),
     internal: {
-      ...async(device, timings.slow || timings.default),
-      ...mhz19(device, timings.slow || timings.default),
-      ...sds011(device, timings.slow || timings.default),
-      ...tsl2561(device, timings.default),
-      ...uvIndex(device, timings.default),
+      $exclude: true as const,
+      $noMainReference: true as const,
       humidity,
-      motion: input(device, undefined, 'motion'),
+      motion: input(context, device, undefined, 'motion'),
       pressure,
       temperature,
+      ...async(context, device, timings.slow || timings.default),
+      ...mhz19(context, device, timings.slow || timings.default),
+      ...sds011(context, device, timings.slow || timings.default),
+      ...tsl2561(context, device, timings.default),
+      ...uvIndex(context, device, timings.default),
     },
+    ...ipDevice(context, device, false, undefined, connect),
   };
 };

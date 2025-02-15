@@ -1,21 +1,26 @@
 import { isPlainObject, objectValues } from '../../oop.js';
 
 export class Parents {
-  private readonly _parents = new Map<object, object | undefined>();
+  private readonly _parents = new WeakMap<object, Set<object>>();
   constructor(object: object) {
-    this._addChildren(object, undefined);
+    this._addChildren(object);
   }
 
   private _addChildren(object: object, parent?: object) {
-    this._parents.set(object, parent);
+    if (parent) {
+      const parents = this._parents.get(object) ?? new Set<object>();
+
+      parents.add(parent);
+      this._parents.set(object, parents);
+    }
 
     for (const child of objectValues(object)) {
-      if (!isPlainObject(child)) continue;
+      if (!isPlainObject(child) && !Array.isArray(child)) continue;
       this._addChildren(child, object);
     }
   }
 
-  getParent(object: object): object | undefined {
+  getParents(object: object): Set<object> | undefined {
     return this._parents.get(object);
   }
 }

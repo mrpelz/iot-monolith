@@ -10,7 +10,8 @@ import {
 
 export const DEFAULT_MATCH_DEPTH = 6;
 
-export type TExclude = { $exclude: true };
+export const excludePattern = { $exclude: true as const };
+export type TExclude = typeof excludePattern;
 
 export type SymbolizedAny = unknown;
 export const any = Symbol('any') as SymbolizedAny;
@@ -28,9 +29,10 @@ export const anyString = Symbol('string') as unknown as SymbolizedString;
 
 export type Match<
   M extends object,
+  E,
   R extends object,
   D extends number = typeof DEFAULT_MATCH_DEPTH,
-> = Extract<DeepValuesInclusive<R, TExclude | Primitive, D>, M>;
+> = Extract<DeepValuesInclusive<R, E | Primitive, D>, M>;
 
 export enum Level {
   NONE,
@@ -133,14 +135,16 @@ export const isLocalMatch = <P extends object, R extends object>(
 
 export const match = <
   P extends object,
+  E,
   R,
   D extends number = typeof DEFAULT_MATCH_DEPTH,
 >(
   pattern: P,
+  exclude: E,
   root: R,
   depth = DEFAULT_MATCH_DEPTH as D,
   limitToPlainObjects = true,
-): Match<P, Extract<R, object>, D>[] => {
+): Match<P, E, Extract<R, object>, D>[] => {
   if (depth < 0) return [];
 
   const root_ = (limitToPlainObjects ? isPlainObject : isObject)(root)
@@ -148,20 +152,25 @@ export const match = <
     : undefined;
 
   if (!root_) return [];
-  if ('$exclude' in root_ && root_.$exclude === true) return [];
+  if (isObject(exclude) && isLocalMatch(exclude, root_)) return [];
 
   const localMatch = isLocalMatch(pattern, root_) ? [root] : [];
 
   const nextDepth = (depth - 1) as Prev[D];
   const childMatch = objectValues(root_).flatMap((child) =>
-    match(pattern, child, nextDepth),
+    match(pattern, exclude, child, nextDepth),
   );
 
-  return [localMatch, childMatch].flat(1) as Match<P, Extract<R, object>, D>[];
+  return [localMatch, childMatch].flat(1) as Match<
+    P,
+    E,
+    Extract<R, object>,
+    D
+  >[];
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const roomDevices = match(
-  {} as const,
-  { foo: 'bar', zaz: { $exclude: true, boo: 'bah' } } as const,
-);
+const roomDevices = match({} as const, excludePattern, {
+  foo: 'bar',
+  zaz: { $exclude: true, boo: 'bah' },
+} as const);

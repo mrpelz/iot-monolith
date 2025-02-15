@@ -10,32 +10,36 @@ import { ev1527Device } from '../elements/device.js';
 export const ev1527ButtonX4 = (
   address: number,
   transport: Ev1527Transport,
-  { logger }: Context,
+  context: Context,
 ) => {
+  const { logger } = context;
+
   const device = new Ev1527Device(logger, transport, address);
 
   return {
-    ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
       'bottomRight',
       'topLeft',
       'topRight',
     ]).state,
+    ...ev1527Device(context, device),
   };
 };
 
 export const ev1527ButtonX1 = (
   address: number,
   transport: Ev1527Transport,
-  { logger }: Context,
+  context: Context,
 ) => {
+  const { logger } = context;
+
   const device = new Ev1527Device(logger, transport, address);
 
   return {
-    ...ev1527Device(device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
     ]).state.bottomLeft,
+    ...ev1527Device(context, device),
   };
 };

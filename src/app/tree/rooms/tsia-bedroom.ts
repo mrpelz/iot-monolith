@@ -47,19 +47,19 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(devices.doorSensor),
+  door: door(context, devices.doorSensor),
   nightLight: devices.nightLight.internal.relay,
   standingLamp: devices.standingLamp.internal.relay,
-  windowRight: window(devices.windowSensorRight),
+  windowRight: window(context, devices.windowSensorRight),
 };
 
 export const groups = {
-  allLights: outputGrouping([
+  allLights: outputGrouping(context, [
     properties.ceilingLight,
     properties.nightLight,
     properties.standingLamp,
   ]),
-  allWindows: inputGrouping(properties.windowRight.open.main.state),
+  allWindows: inputGrouping(context, properties.windowRight.open.main.state),
 };
 
 (() => {
@@ -107,8 +107,8 @@ export const groups = {
 
 export const tsiaBedroom = {
   $: 'tsiaBedroom' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

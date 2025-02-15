@@ -28,19 +28,25 @@ class MergedObservableGroup extends ObservableGroup<number | null> {
 
 export const roomSensor = (
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger, timings } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   const {
     humidity,
     pressure,
     temperature: bme280Temperature,
-  } = bme280(device, timings.default);
+  } = bme280(context, device, timings.default);
 
-  const { temperature: mcp9808Temperature } = mcp9808(device, timings.default);
+  const { temperature: mcp9808Temperature } = mcp9808(
+    context,
+    device,
+    timings.default,
+  );
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
@@ -51,11 +57,11 @@ export const roomSensor = (
 
   const temperature = {
     $: 'temperature' as const,
-    ...metricStaleness(temperatureState, timings.default[1]),
     bme280: bme280Temperature,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
+    ...metricStaleness(context, temperatureState, timings.default[1]),
   };
 
   const sgp30MeasurementInputGetter = () => {
@@ -71,27 +77,23 @@ export const roomSensor = (
   };
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      undefined,
-      initiallyOnline,
-    ),
     internal: {
-      // ...mhz19(device, timings.slow || timings.default),
-      // ...sds011(device, timings.slow || timings.default),
-      ...sgp30(
-        device,
-        timings.slow || timings.default,
-        sgp30MeasurementInputGetter,
-      ),
-      ...tsl2561(device, timings.default),
+      $exclude: true as const,
+      $noMainReference: true as const,
       humidity,
       // motion: input(device, undefined, 'motion'),
       pressure,
       temperature,
+      // ...mhz19(device, timings.slow || timings.default),
+      // ...sds011(device, timings.slow || timings.default),
+      ...sgp30(
+        context,
+        device,
+        timings.slow || timings.default,
+        sgp30MeasurementInputGetter,
+      ),
+      ...tsl2561(context, device, timings.default),
     },
+    ...ipDevice(context, device, false, undefined, initiallyOnline),
   };
 };

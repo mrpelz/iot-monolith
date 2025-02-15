@@ -4,7 +4,10 @@ import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
-import { metric } from '../../lib/tree/operations/metrics.js';
+import { InitFunction } from '../../lib/tree/operations/init.js';
+import { Introspection } from '../../lib/tree/operations/introspection.js';
+import { Metrics } from '../../lib/tree/operations/metrics.js';
+import { metrics } from '../metrics.js';
 import { persistence } from '../persistence.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
@@ -29,6 +32,8 @@ const getValues = () => {
 };
 
 export const sunElevation = (schedule: Schedule) => {
+  const $ = 'sunElevation' as const;
+
   const elevation = new Observable(getValues().elevation);
   const readOnlyElevation = new ReadOnlyObservable(elevation);
 
@@ -63,25 +68,31 @@ export const sunElevation = (schedule: Schedule) => {
     isNight.value = state.isNight;
   });
 
-  persistence.observe('sunElevation', elevation);
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      elevation,
+    );
+
+    metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
+      isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
+      isCivilTwilight: readOnlyIsCivilTwilight,
+      isDay: readOnlyIsDay,
+      isNauticalTwilight: readOnlyIsNauticalTwilight,
+      isNight: readOnlyIsNight,
+      unit: 'degrees',
+      ...Metrics.hierarchyLabels(introspection, self),
+    });
+  };
 
   return {
     sunElevation: {
-      $: 'sunElevation' as const,
+      $,
       $exclude: false as const,
-      ...metric(
-        'sunElevation',
-        readOnlyElevation,
-        {
-          isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
-          isCivilTwilight: readOnlyIsCivilTwilight,
-          isDay: readOnlyIsDay,
-          isNauticalTwilight: readOnlyIsNauticalTwilight,
-          isNight: readOnlyIsNight,
-          unit: 'degrees',
-        },
-        'sun elevation angle in degrees',
-      ),
+      $init,
       isAstronomicalTwilight: getter(
         ValueType.BOOLEAN,
         readOnlyIsAstronomicalTwilight,

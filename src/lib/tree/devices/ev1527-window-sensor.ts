@@ -9,13 +9,18 @@ import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
+import { InitFunction } from '../operations/init.js';
+import { Introspection } from '../operations/introspection.js';
+import { Metrics } from '../operations/metrics.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
   address: number,
   transport: Ev1527Transport,
-  { logger, persistence }: Context,
+  context: Context,
 ) => {
+  const { logger, persistence } = context;
+
   const device = new Ev1527Device(logger, transport, address);
 
   const { open: receivedOpen, tamperSwitch: receivedTamperSwitch } =
@@ -25,13 +30,62 @@ export const ev1527WindowSensor = (
     ]).state;
 
   const persistedOpen = new Observable<boolean | null>(null);
-  persistence.observe(`ev1527WindowSensor/${address}/open`, persistedOpen);
+  const isOpen = new ReadOnlyProxyObservable(receivedOpen, (input) =>
+    input === null ? persistedOpen.value : input,
+  );
+  const isReceivedValue = new ReadOnlyProxyObservable(
+    receivedOpen,
+    (input) => input !== null,
+  );
+
+  const $initOpen: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      persistedOpen,
+    );
+
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric('open', 'state door/window sensor', isOpen, {
+      isReceivedValue,
+      ...labels,
+    });
+  };
 
   const persistedTamperSwitch = new Observable<boolean | null>(null);
-  persistence.observe(
-    `ev1527WindowSensor/${address}/tamperSwitch`,
-    persistedTamperSwitch,
+  receivedTamperSwitch.observe((value) => {
+    if (value === null) return;
+
+    persistedTamperSwitch.value = value;
+  });
+  const tamperSwitch = new ReadOnlyProxyObservable(
+    receivedTamperSwitch,
+    (input) => (input === null ? persistedTamperSwitch.value : input),
   );
+
+  const $initTamperSwitch: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    persistence.observe(
+      Introspection.pathString(mainReference.path),
+      persistedTamperSwitch,
+    );
+
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric(
+      'open_tamperSwitch',
+      'state door/window sensor tamper switch',
+      tamperSwitch,
+      labels,
+    );
+  };
 
   receivedOpen.observe((value) => {
     if (value === null) return;
@@ -39,39 +93,23 @@ export const ev1527WindowSensor = (
     persistedOpen.value = value;
   });
 
-  receivedTamperSwitch.observe((value) => {
-    if (value === null) return;
-
-    persistedTamperSwitch.value = value;
-  });
-
-  const isOpen = new ReadOnlyProxyObservable(receivedOpen, (input) =>
-    input === null ? persistedOpen.value : input,
-  );
-
-  const tamperSwitch = new ReadOnlyProxyObservable(
-    receivedTamperSwitch,
-    (input) => (input === null ? persistedTamperSwitch.value : input),
-  );
-
-  const isReceivedValue = new ReadOnlyProxyObservable(
-    receivedOpen,
-    (input) => input !== null,
-  );
-
   return {
-    ...ev1527Device(device),
     internal: {
+      $exclude: true as const,
+      $noMainReference: true as const,
       open: {
-        ...lastChange(receivedOpen),
+        $init: $initOpen,
         isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
         level: Level.PROPERTY as const,
         main: getter(ValueType.BOOLEAN, isOpen),
         tamperSwitch: {
-          ...lastChange(receivedTamperSwitch),
+          $init: $initTamperSwitch,
           main: getter(ValueType.BOOLEAN, tamperSwitch),
+          ...lastChange(context, receivedTamperSwitch),
         },
+        ...lastChange(context, receivedOpen),
       },
     },
+    ...ev1527Device(context, device),
   };
 };

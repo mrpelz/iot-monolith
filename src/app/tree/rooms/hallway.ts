@@ -9,7 +9,6 @@ import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -45,23 +44,22 @@ export const instances = {
 const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.internal.relay,
   ceilingLightFront: devices.ceilingLightFront.internal.relay,
-  entryDoor: door(devices.doorSensor),
+  entryDoor: door(context, devices.doorSensor),
 };
 
 export const properties = {
+  entryDoorTimer: offTimer(context, epochs.minute * 3, undefined),
   ...partialProperties,
-  entryDoorTimer: offTimer(epochs.minute * 3, undefined, [
-    'hallway/entryDoorTimer',
-    persistence,
-  ]),
 };
 
 export const groups = {
   allLights: outputGrouping(
+    context,
     [properties.ceilingLightBack, properties.ceilingLightFront],
     'lighting',
   ),
   ceilingLight: outputGrouping(
+    context,
     [properties.ceilingLightBack, properties.ceilingLightFront],
     'lighting',
   ),
@@ -141,8 +139,8 @@ export const groups = {
 
 export const hallway = {
   $: 'hallway' as const,
+  level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

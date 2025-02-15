@@ -10,27 +10,24 @@ import { button } from '../properties/sensors.js';
 export const obiPlug = <T extends string>(
   topic: T,
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   const indicator = device.addService(new Indicator(0));
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      indicator,
-      initiallyOnline,
-    ),
-    button: button(device, 0),
+    button: button(context, device, 0),
     indicator,
     internal: {
-      relay: output(device, 0, topic, indicator, persistence),
+      $exclude: true as const,
+      $noMainReference: true as const,
+      relay: output(context, device, 0, topic, indicator),
     },
+    ...ipDevice(context, device, false, indicator, initiallyOnline),
   };
 };

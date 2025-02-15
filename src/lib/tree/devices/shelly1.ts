@@ -9,24 +9,21 @@ import { button } from '../properties/sensors.js';
 export const shelly1 = <T extends string>(
   topic: T,
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      undefined,
-      initiallyOnline,
-    ),
-    button: button(device, 0),
+    button: button(context, device, 0),
     internal: {
-      relay: output(device, 0, topic, undefined, persistence),
+      $exclude: true as const,
+      $noMainReference: true as const,
+      relay: output(context, device, 0, topic, undefined),
     },
+    ...ipDevice(context, device, false, undefined, initiallyOnline),
   };
 };

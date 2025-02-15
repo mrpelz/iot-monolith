@@ -21,23 +21,25 @@ export type EspNowButtonOptions = {
   };
 };
 
-const children = (device: Device) => ({
-  button0: button(device, 0),
-  button1: button(device, 1),
+const children = (context: Context, device: Device) => ({
+  button0: button(context, device, 0),
+  button1: button(context, device, 1),
 });
 
 export const espNowButton = (
   options: EspNowButtonOptions,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
 ) => {
+  const { connect, logger } = context;
+
   const espNow = (() => {
     const { macAddress, transport } = options.espNow;
     const device = new ESPNowDevice(logger, transport, macAddress);
 
     return {
       espNow: {
-        ...children(device),
-        ...espNowDevice(device, true),
+        ...children(context, device),
+        ...espNowDevice(context, device, true),
       },
     };
   })();
@@ -48,23 +50,16 @@ export const espNowButton = (
 
     return {
       wifi: {
-        ...children(device),
-        ...ipDevice(
-          device,
-          true,
-          persistence,
-          timings,
-          undefined,
-          initiallyOnline,
-        ),
+        ...children(context, device),
+        ...ipDevice(context, device, true, undefined, initiallyOnline),
       },
     };
   })();
 
   return {
     $: 'espNowButton' as const,
+    level: Level.DEVICE as const,
     ...espNow,
     ...wifi,
-    level: Level.DEVICE as const,
   };
 };

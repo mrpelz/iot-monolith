@@ -17,7 +17,7 @@ import {
   TValueType,
   ValueType,
 } from '../main.js';
-import { Paths } from './paths.js';
+import { Introspection } from './introspection.js';
 
 export enum InteractionType {
   EMIT,
@@ -57,7 +57,10 @@ export type InteractionReference<
 
 export type InteractionUpdate = [string, unknown];
 
-export type ObjectAmendments = { $id: string };
+export type ObjectAmendments = {
+  $id: string;
+  $path?: (string | number)[];
+};
 
 export type TElementSerializationPrimitive = boolean | null | number | string;
 
@@ -153,7 +156,7 @@ export class Serialization<T extends object> {
 
   constructor(
     root: T,
-    private readonly _paths: Paths,
+    private readonly _introspection: Introspection,
   ) {
     this.updates = new ReadOnlyNullState(this._updates);
 
@@ -200,11 +203,16 @@ export class Serialization<T extends object> {
   }
 
   private _serializeObject<E extends object>(object: E) {
-    const pathRecord = this._paths.getByObject(object);
-    if (!pathRecord) return undefined;
+    const { id, mainReference } = this._introspection.getObject(object) ?? {};
+    if (!id) {
+      return undefined;
+    }
 
     const result = {
-      $id: pathRecord.id,
+      $id: id,
+      $path: mainReference?.path.map((value) =>
+        typeof value === 'symbol' ? value.description : value,
+      ),
     } as Record<string, TElementSerialization> & ObjectAmendments;
 
     let props: EmptyObject;
@@ -215,7 +223,7 @@ export class Serialization<T extends object> {
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', pathRecord.id),
+        uuidv5('state', id),
         state,
         valueType,
       );
@@ -225,13 +233,13 @@ export class Serialization<T extends object> {
       props = rest;
 
       result.state = this._registerEmitter(
-        uuidv5('state', pathRecord.id),
+        uuidv5('state', id),
         state,
         valueType,
       );
 
       result.setState = this._registerCollector(
-        uuidv5('setState', pathRecord.id),
+        uuidv5('setState', id),
         setState,
         valueType,
       );
@@ -241,7 +249,7 @@ export class Serialization<T extends object> {
       props = rest;
 
       result.setState = this._registerCollector(
-        uuidv5('setState', pathRecord.id),
+        uuidv5('setState', id),
         setState,
         valueType,
       );
@@ -251,7 +259,6 @@ export class Serialization<T extends object> {
 
     for (const key of objectKeys(props)) {
       if (typeof key === 'symbol') continue;
-      if (key === '$ref') continue;
 
       const { [key]: sourceProperty } = props;
 

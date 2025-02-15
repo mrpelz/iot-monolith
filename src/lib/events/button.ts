@@ -29,10 +29,10 @@ export class Button extends Event<ButtonPayload> {
     try {
       const [partialResult, pressedMap] = payload.decodeOpenended(input);
       return {
-        ...partialResult,
         pressedMap: bufferChunks(pressedMap, pressedMapItem.size).map((chunk) =>
           pressedMapItem.decode(chunk),
         ),
+        ...partialResult,
       };
     } catch {
       return null;

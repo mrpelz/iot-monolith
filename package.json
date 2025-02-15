@@ -18,6 +18,10 @@
       "default": "./dist/lib/tree/main.js",
       "types": "./dist/lib/tree/main.d.ts"
     },
+    "./tree-introspection": {
+      "default": "./dist/lib/tree/operations/introspection.js",
+      "types": "./dist/lib/tree/operations/introspection.d.ts"
+    },
     "./tree-parents": {
       "default": "./dist/lib/tree/operations/parents.js",
       "types": "./dist/lib/tree/operations/parents.d.ts"

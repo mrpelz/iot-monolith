@@ -11,26 +11,21 @@ import { rfReadout } from '../properties/sensors.js';
 
 export const rfBridge = (
   host: string,
-  { connect, logger, persistence, timings }: Context,
+  context: Context,
   port = 1337,
-  initiallyOnline = connect,
+  initiallyOnline = context.connect,
 ) => {
+  const { logger } = context;
+
   const device = new UDPDevice(logger, host, port);
 
   const espNowEvent = device.addEvent(new ESPNow());
   const rf433Event = device.addEvent(new Rf433());
 
   return {
-    ...ipDevice(
-      device,
-      false,
-      persistence,
-      timings,
-      undefined,
-      initiallyOnline,
-    ),
-    ...rfReadout(espNowEvent, rf433Event),
     espNowTransport: new ESPNowTransport(logger, espNowEvent),
     ev1527Transport: new Ev1527Transport(logger, rf433Event),
+    ...ipDevice(context, device, false, undefined, initiallyOnline),
+    ...rfReadout(context, espNowEvent, rf433Event),
   };
 };

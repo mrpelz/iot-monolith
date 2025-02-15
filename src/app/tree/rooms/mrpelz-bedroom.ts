@@ -84,7 +84,7 @@ export const properties = {
   bookshelfLedUpWWhite: devices.bookshelfLeds.internal.ledR,
   brightness: devices.roomSensor.internal.brightness,
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(devices.doorSensor),
+  door: door(context, devices.doorSensor),
   heatLamp: devices.heatLamp.internal.relay,
   humidity: devices.roomSensor.internal.humidity,
   ionGenerator: devices.ionGenerator.internal.relay,
@@ -97,11 +97,11 @@ export const properties = {
   standingLamp: devices.standingLamp.internal.relay,
   temperature: devices.roomSensor.internal.temperature,
   tvoc: devices.roomSensor.internal.tvoc,
-  windowLeft: window(devices.windowSensorLeft),
+  windowLeft: window(context, devices.windowSensorLeft),
 };
 
 export const groups = {
-  all: outputGrouping([
+  all: outputGrouping(context, [
     properties.bookshelfLedDown,
     properties.bookshelfLedUpRed,
     properties.bookshelfLedUpWWhite,
@@ -115,7 +115,7 @@ export const groups = {
     properties.nightstandRightLedWWhite,
     properties.standingLamp,
   ]),
-  allLights: outputGrouping([
+  allLights: outputGrouping(context, [
     properties.bookshelfLedDown,
     properties.bookshelfLedUpRed,
     properties.bookshelfLedUpWWhite,
@@ -128,25 +128,25 @@ export const groups = {
     properties.nightstandRightLedWWhite,
     properties.standingLamp,
   ]),
-  allWindows: inputGrouping(properties.windowLeft.open.main.state),
-  bookshelfLedWWhite: ledGrouping([
+  allWindows: inputGrouping(context, properties.windowLeft.open.main.state),
+  bookshelfLedWWhite: ledGrouping(context, [
     properties.bookshelfLedDown,
     properties.bookshelfLedUpWWhite,
   ]),
-  nightstandLedRed: ledGrouping([
+  nightstandLedRed: ledGrouping(context, [
     properties.nightstandLeftLedRed,
     properties.nightstandRightLedRed,
   ]),
-  nightstandLedWWhite: ledGrouping([
+  nightstandLedWWhite: ledGrouping(context, [
     properties.nightstandLeftLedWWhite,
     properties.nightstandRightLedWWhite,
   ]),
-  redLeds: ledGrouping([
+  redLeds: ledGrouping(context, [
     properties.bookshelfLedUpRed,
     properties.nightstandLeftLedRed,
     properties.nightstandRightLedRed,
   ]),
-  wWhiteLeds: ledGrouping([
+  wWhiteLeds: ledGrouping(context, [
     properties.bookshelfLedDown,
     properties.bookshelfLedUpWWhite,
     properties.nightstandLeftLedWWhite,
@@ -156,6 +156,7 @@ export const groups = {
 
 const scenes = {
   allOff: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 0),
       new SceneMember(properties.nightstandLeftLedRed.brightness.setState, 0),
@@ -177,6 +178,7 @@ const scenes = {
     'light',
   ),
   allRed: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 1, 0),
       new SceneMember(
@@ -206,6 +208,7 @@ const scenes = {
     'light',
   ),
   onlyNightLight: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 0),
       new SceneMember(properties.nightstandLeftLedRed.brightness.setState, 0),
@@ -228,6 +231,7 @@ const scenes = {
   ),
   // eslint-disable-next-line sort-keys
   moodLight: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 1, 0),
       new SceneMember(properties.nightstandLeftLedRed.brightness.setState, 0),
@@ -254,6 +258,7 @@ const scenes = {
   ),
   // eslint-disable-next-line sort-keys
   ceilingLightPlus: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 0),
       new SceneMember(properties.nightstandLeftLedRed.brightness.setState, 0),
@@ -281,6 +286,7 @@ const scenes = {
     'light',
   ),
   everythingOn: scene(
+    context,
     [
       new SceneMember(properties.bookshelfLedUpRed.brightness.setState, 1, 0),
       new SceneMember(
@@ -434,8 +440,13 @@ const sceneCycle = new EnumState(
 
 export const mrpelzBedroom = {
   $: 'mrpelzBedroom' as const,
+  level: Level.ROOM as const,
+  scenes: {
+    $: 'scenes' as const,
+    level: Level.NONE as const,
+    ...scenes,
+  },
   ...deviceMap(devices),
   ...groups,
   ...properties,
-  level: Level.ROOM as const,
 };

@@ -1,105 +1,91 @@
 import { Gauge } from 'prom-client';
 
-import { Logger } from '../../log.js';
-import { AnyReadOnlyObservable } from '../../observable.js';
+import { Input, Logger } from '../../log.js';
+import { AnyObservable } from '../../observable.js';
 import { objectKeys } from '../../oop.js';
-import { match } from '../main.js';
-import { Paths } from './paths.js';
+import { Introspection } from './introspection.js';
 
 const METRIC_NAME_PREFIX = 'iot_';
 
-const cleanValue = (value: number | boolean | null) => {
-  if (value === null) return Number.NaN;
-  if (typeof value === 'boolean') return value ? 1 : 0;
+export class Metrics {
+  private static _cleanLabel(label: string) {
+    return label
+      .replaceAll(new RegExp('[^a-zA-Z0-9_:]', 'g'), '_')
+      .toLowerCase();
+  }
 
-  return value;
-};
+  private static _cleanLabelValue(value: string | number | boolean) {
+    if (typeof value === 'boolean') return value ? 1 : 0;
 
-const cleanLabel = (label: string) =>
-  label.replaceAll(new RegExp('[^a-zA-Z0-9_:]', 'g'), '_').toLowerCase();
+    return value;
+  }
 
-const cleanLabelValue = (value: string | number | boolean) => {
-  if (typeof value === 'boolean') return value ? 1 : 0;
+  private static _cleanValue(value: number | boolean | null) {
+    if (value === null) return Number.NaN;
+    if (typeof value === 'boolean') return value ? 1 : 0;
 
-  return value;
-};
+    return value;
+  }
 
-export const metric = <
-  N extends string,
-  T extends AnyReadOnlyObservable<number | boolean | null>,
-  L extends Record<
-    string,
-    string | AnyReadOnlyObservable<string | number | boolean>
-  >,
->(
-  metricName: N,
-  metricValue: T,
-  metricLabels = {} as L,
-  metricHelp = 'help',
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-) => ({
-  $metric: true as const,
-  metric: {
-    $exclude: true as const,
-    metricHelp,
-    metricLabels,
-    metricName,
-    metricValue,
-  },
-});
+  static hierarchyLabels(
+    introspection: Introspection,
+    object: object,
+  ): { id: string; path: string } | undefined {
+    const { id, mainReference } = introspection.getObject(object) ?? {};
 
-export const setupMetrics = <T extends object>(
-  logger: Logger,
-  root: T,
-  paths: Paths,
-): void => {
-  const log = logger.getInput({
-    head: 'setupMetrics',
-  });
+    if (!id || !mainReference) return undefined;
 
-  for (const object of match(
-    {
-      $metric: true as const,
-    },
-    root,
-    50,
-  )) {
+    return {
+      id,
+      path: Introspection.pathString(mainReference.path),
+    };
+  }
+
+  private readonly _gauges = new Map<string, Gauge>();
+  private readonly _log: Input;
+
+  constructor(logger: Logger) {
+    this._log = logger.getInput({
+      head: this.constructor.name,
+    });
+  }
+
+  addMetric(
+    name: string,
+    help: string,
+    value: AnyObservable<number | boolean | null>,
+    labels: Record<
+      string,
+      string | AnyObservable<string | number | boolean>
+    > = {},
+  ): void {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { path } = paths.getByObject(object) ?? {};
-      if (!path) continue;
+      const outputLabels: Record<string, string | number> = {};
+      let outputValue = Metrics._cleanValue(value.value);
 
-      const {
-        metric: { metricHelp, metricLabels, metricName, metricValue },
-      } = object as unknown as ReturnType<typeof metric>;
+      const keys = objectKeys(labels);
 
-      const outputLabels = {
-        path: path.join('.'),
-      } as Record<string, string | number>;
-      let outputValue = cleanValue(metricValue.value);
-
-      const keys = objectKeys(metricLabels);
-
-      const gauge = new Gauge({
-        help: metricHelp,
-        labelNames: ['path', ...keys.map((key) => cleanLabel(key))],
-        name: `${METRIC_NAME_PREFIX}${cleanLabel(metricName)}`,
-      });
+      const gauge =
+        this._gauges.get(name) ??
+        new Gauge({
+          help,
+          labelNames: keys.map((key) => Metrics._cleanLabel(key)).sort(),
+          name: `${METRIC_NAME_PREFIX}${Metrics._cleanLabel(name)}`,
+        });
+      this._gauges.set(name, gauge);
 
       const set = () => gauge.set(outputLabels, outputValue);
 
-      metricValue.observe((value) => {
-        outputValue = cleanValue(value);
-
+      value.observe((value_) => {
+        outputValue = Metrics._cleanValue(value_);
         set();
       });
 
       for (const key of keys) {
-        const label = metricLabels[key];
+        const label = labels[key];
         if (!label) continue;
 
-        const cleanKey = cleanLabel(key);
+        const cleanKey = Metrics._cleanLabel(key);
 
         if (typeof label === 'string') {
           outputLabels[cleanKey] = label;
@@ -107,17 +93,17 @@ export const setupMetrics = <T extends object>(
           continue;
         }
 
-        outputLabels[cleanKey] = cleanLabelValue(label.value);
+        outputLabels[cleanKey] = Metrics._cleanLabelValue(label.value);
 
-        label.observe((value) => {
-          outputLabels[cleanKey] = cleanLabelValue(value);
+        label.observe((value_) => {
+          outputLabels[cleanKey] = Metrics._cleanLabelValue(value_);
           set();
         });
       }
 
       set();
     } catch (error) {
-      log.error(() => error.message, error.stack);
+      this._log.error(() => error.message, error.stack);
     }
   }
-};
+}
