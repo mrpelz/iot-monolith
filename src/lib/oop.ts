@@ -221,7 +221,7 @@ export const ensureKeys = <
 >(
   object: T,
   ...keys: K[]
-): Extract<T, Record<K, any>> => {
+): Partial<Extract<T, Record<K, any>>> => {
   const keys_ = [keys, objectKeys(object)].flat();
 
   const result = {} as Extract<T, Record<K, any>>;
