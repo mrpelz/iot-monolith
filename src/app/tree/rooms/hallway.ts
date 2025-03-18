@@ -93,6 +93,9 @@ export const groups = {
   instances.wallswitchMiddle.up(() =>
     groups.ceilingLight.flip.setState.trigger(),
   );
+  instances.wallswitchMiddle.longPress(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
 
   instances.wallswitchFrontLeft.up(() =>
     properties.ceilingLightFront.flip.setState.trigger(),
