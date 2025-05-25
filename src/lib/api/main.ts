@@ -54,7 +54,9 @@ export class WebApi {
       this._handleStreamUpgrade(request, socket, head),
     );
 
-    this._wss.on('connection', (ws) => this._handleStream(ws));
+    this._wss.on('connection', (ws, request) =>
+      this._handleStream(ws, request),
+    );
   }
 
   private _handleHierarchyGet({ response, utils }: RouteHandle) {
@@ -64,7 +66,12 @@ export class WebApi {
     response.end(this._hierarchy);
   }
 
-  private _handleStream(ws: webSocket) {
+  private _handleStream(ws: webSocket, request: IncomingMessage) {
+    if (!request.url) return;
+
+    const url = this._httpServer.requestUrl(request.url);
+    const countConnection = url.searchParams.get('count') !== '0';
+
     try {
       const { updates } = this._serialization;
 
@@ -78,7 +85,7 @@ export class WebApi {
         ws.send(JSON.stringify(entry));
       });
 
-      this._streamCount.value += 1;
+      if (countConnection) this._streamCount.value += 1;
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
@@ -122,7 +129,9 @@ export class WebApi {
         streamCountObserver.remove();
         observer.remove();
 
-        this._streamCount.value -= Math.max(0, this._streamCount.value - 1);
+        if (countConnection) {
+          this._streamCount.value -= Math.max(0, this._streamCount.value - 1);
+        }
 
         ws.close();
       };

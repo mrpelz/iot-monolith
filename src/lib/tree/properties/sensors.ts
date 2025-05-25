@@ -445,7 +445,7 @@ export const rfReadout = (
   const state = new Observable<any>({});
 
   espNowEvent.observable.observe(({ deviceIdentifier, data }) => {
-    state.value = {
+    state.value = structuredClone({
       espNow: {
         data: [...data],
         macAddress: [...deviceIdentifier]
@@ -453,12 +453,12 @@ export const rfReadout = (
           .join(':'),
       },
       ...state.value,
-    };
+    });
   });
 
   rf433Event.observable.observe(
     ({ data, deviceIdentifier, protocol, value }) => {
-      state.value = {
+      state.value = structuredClone({
         rf433: {
           data: `0b${[...data]
             .reverse()
@@ -472,7 +472,7 @@ export const rfReadout = (
             .join('')}`,
         },
         ...state.value,
-      };
+      });
     },
   );
 
