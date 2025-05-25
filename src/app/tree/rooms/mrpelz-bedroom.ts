@@ -63,6 +63,7 @@ export const devices = {
     context,
   ),
   windowSensorLeft: ev1527WindowSensor(762_272, ev1527Transport, context),
+  windowSensorRight: ev1527WindowSensor(247_072, ev1527Transport, context),
 };
 
 export const instances = {
@@ -98,6 +99,7 @@ export const properties = {
   temperature: devices.roomSensor.internal.temperature,
   tvoc: devices.roomSensor.internal.tvoc,
   windowLeft: window(context, devices.windowSensorLeft),
+  windowRight: window(context, devices.windowSensorRight),
 };
 
 export const groups = {
@@ -128,7 +130,11 @@ export const groups = {
     properties.nightstandRightLedWWhite,
     properties.standingLamp,
   ]),
-  allWindows: inputGrouping(context, properties.windowLeft.open.main.state),
+  allWindows: inputGrouping(
+    context,
+    properties.windowLeft.open.main.state,
+    properties.windowLeft.open.main.state,
+  ),
   bookshelfLedWWhite: ledGrouping(context, [
     properties.bookshelfLedDown,
     properties.bookshelfLedUpWWhite,
