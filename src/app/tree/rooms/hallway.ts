@@ -67,14 +67,14 @@ export const groups = {
 
 (async () => {
   const {
-    allThings: all_,
     allLights: allLights_,
+    allThings: allThings_,
     kitchenAdjacentLights,
   } = await import('../groups.js');
   const { kitchenAdjacentChillax } = await import('../scenes.js');
 
-  const all = await all_;
   const allLights = await allLights_;
+  const allThings = await allThings_;
 
   const kitchenAdjecentsLightsOffKitchenChillaxOn = () => {
     if (kitchenAdjacentLights.main.setState.value) {
@@ -112,7 +112,7 @@ export const groups = {
   );
 
   instances.wallswitchFrontRight.up(async () => {
-    all.main.setState.value = false;
+    allThings.main.setState.value = false;
   });
   instances.wallswitchFrontRight.longPress(async () => {
     allLights.flip.setState.trigger();

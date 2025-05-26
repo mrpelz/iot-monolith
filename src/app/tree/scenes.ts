@@ -108,8 +108,8 @@ export const allLightsOff = triggerElement(
 export const allOff = triggerElement(
   context,
   async () => {
-    const all_ = await allThings;
-    all_.main.setState.value = false;
+    const allThings_ = await allThings;
+    allThings_.main.setState.value = false;
   },
   'scene',
 );
