@@ -338,6 +338,7 @@ export const input = <T extends string>(
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     topic,
+    ...lastChange(context, state),
   };
 };
 
@@ -347,13 +348,15 @@ export const inputGrouping = (
 ) => {
   const $ = 'inputGrouping' as const;
 
-  const state = new BooleanStateGroup(
+  const state_ = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
     inputs.map(
       (anInput) =>
         new ReadOnlyProxyObservable(anInput, (value) => Boolean(value)),
     ),
   );
+
+  const state = new ReadOnlyObservable(state_);
 
   const $init: InitFunction = (self, introspection) => {
     const labels = Metrics.hierarchyLabels(introspection, self);
@@ -367,6 +370,7 @@ export const inputGrouping = (
     $init,
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
+    ...lastChange(context, state),
   };
 };
 

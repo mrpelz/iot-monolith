@@ -4,8 +4,9 @@ import { offTimer } from '../../lib/tree/properties/logic.js';
 import { context } from '../context.js';
 import { every5Seconds } from '../timings.js';
 import {
-  all as all_,
   allLights as allLights_,
+  allThings as allThings_,
+  allWindows as allWindows_,
   kitchenAdjacentLights,
 } from './groups.js';
 import { sunElevation } from './misc.js';
@@ -60,27 +61,29 @@ export const wurstHome = {
 };
 
 export const system = (async () => {
-  const all = await all_;
+  const allThings = await allThings_;
   const allLights = await allLights_;
+  const allWindows = await allWindows_;
 
   const allTimer = offTimer(context, epochs.day, true);
 
   return {
     $: 'system' as const,
     $init: () => {
-      all.main.setState.observe((value) => {
+      allThings.main.setState.observe((value) => {
         allTimer.active.state.value = value;
       }, true);
 
       allTimer.state.observe(() => {
-        all.main.setState.value = false;
+        allThings.main.setState.value = false;
       });
     },
-    all,
     allLights,
     allLightsOff,
     allOff,
+    allThings,
     allTimer,
+    allWindows,
     level: Level.SYSTEM as const,
     wurstHome,
   };

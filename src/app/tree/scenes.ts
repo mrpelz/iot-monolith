@@ -4,7 +4,7 @@ import {
   triggerElement,
 } from '../../lib/tree/properties/actuators.js';
 import { context } from '../context.js';
-import { all, allLights } from './groups.js';
+import { allLights, allThings } from './groups.js';
 import { properties as hallwayProperties } from './rooms/hallway.js';
 import { properties as kitchenProperties } from './rooms/kitchen.js';
 import { properties as livingRoomProperties } from './rooms/living-room.js';
@@ -108,7 +108,7 @@ export const allLightsOff = triggerElement(
 export const allOff = triggerElement(
   context,
   async () => {
-    const all_ = await all;
+    const all_ = await allThings;
     all_.main.setState.value = false;
   },
   'scene',

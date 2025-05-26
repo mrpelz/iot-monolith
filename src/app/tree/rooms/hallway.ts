@@ -67,7 +67,7 @@ export const groups = {
 
 (async () => {
   const {
-    all: all_,
+    allThings: all_,
     allLights: allLights_,
     kitchenAdjacentLights,
   } = await import('../groups.js');
