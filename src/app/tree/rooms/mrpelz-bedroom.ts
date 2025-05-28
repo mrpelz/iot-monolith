@@ -140,10 +140,7 @@ export const groups = {
   ),
   allWindows: inputGrouping(
     context,
-    [
-      properties.windowLeft.open.main.state,
-      properties.windowLeft.open.main.state,
-    ],
+    [properties.windowLeft, properties.windowLeft],
     'security',
   ),
   bookshelfLedWWhite: ledGrouping(context, [

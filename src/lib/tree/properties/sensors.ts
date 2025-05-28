@@ -16,7 +16,6 @@ import {
   SingleValueSensor,
 } from '../../items/sensor.js';
 import {
-  AnyObservable,
   AnyReadOnlyObservable,
   Observable,
   ReadOnlyObservable,
@@ -346,7 +345,11 @@ export const input = <T extends string | undefined>(
 
 export const inputGrouping = <T extends string | undefined>(
   context: Context,
-  inputs: AnyObservable<boolean | null>[],
+  inputs: (
+    | ReturnType<typeof input>
+    | ReturnType<typeof door>
+    | ReturnType<typeof window>
+  )[],
   topic: T,
 ) => {
   const $ = 'inputGrouping' as const;
@@ -357,7 +360,10 @@ export const inputGrouping = <T extends string | undefined>(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
     inputs_.map(
       (anInput) =>
-        new ReadOnlyProxyObservable(anInput, (value) => Boolean(value)),
+        new ReadOnlyProxyObservable(
+          anInput.$ === 'input' ? anInput.main.state : anInput.open.main.state,
+          (value) => Boolean(value),
+        ),
     ),
   );
 

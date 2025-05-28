@@ -48,11 +48,7 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping(
-    context,
-    [properties.window.open.main.state],
-    'security',
-  ),
+  allWindows: inputGrouping(context, [properties.window], 'security'),
   cWhite: ledGrouping(context, [
     properties.ledLeftCWhite,
     properties.ledRightCWhite,

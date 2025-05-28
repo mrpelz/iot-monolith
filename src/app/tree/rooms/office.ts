@@ -47,11 +47,7 @@ export const groups = {
     [properties.ceilingLight, properties.floodlight],
     'lighting',
   ),
-  allWindows: inputGrouping(
-    context,
-    [properties.window.open.main.state],
-    'security',
-  ),
+  allWindows: inputGrouping(context, [properties.window], 'security'),
 };
 
 (async () => {

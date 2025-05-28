@@ -51,7 +51,7 @@ export const allWindows = (async () => {
       },
       excludePattern,
       wurstHome,
-    ).map((window) => window.open.main.state),
+    ),
     'security',
   );
 })();

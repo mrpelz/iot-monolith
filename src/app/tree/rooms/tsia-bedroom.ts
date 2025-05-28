@@ -59,11 +59,7 @@ export const groups = {
     [properties.ceilingLight, properties.nightLight, properties.standingLamp],
     'lighting',
   ),
-  allWindows: inputGrouping(
-    context,
-    [properties.windowRight.open.main.state],
-    'security',
-  ),
+  allWindows: inputGrouping(context, [properties.windowRight], 'security'),
 };
 
 (() => {
