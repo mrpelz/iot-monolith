@@ -103,33 +103,41 @@ export const properties = {
 };
 
 export const groups = {
-  all: outputGrouping(context, [
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpRed,
-    properties.bookshelfLedUpWWhite,
-    properties.ceilingLight,
-    properties.heatLamp,
-    properties.ionGenerator,
-    properties.nightLight,
-    properties.nightstandLeftLedRed,
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedRed,
-    properties.nightstandRightLedWWhite,
-    properties.standingLamp,
-  ]),
-  allLights: outputGrouping(context, [
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpRed,
-    properties.bookshelfLedUpWWhite,
-    properties.ceilingLight,
-    properties.heatLamp,
-    properties.nightLight,
-    properties.nightstandLeftLedRed,
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedRed,
-    properties.nightstandRightLedWWhite,
-    properties.standingLamp,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [
+      properties.bookshelfLedDown,
+      properties.bookshelfLedUpRed,
+      properties.bookshelfLedUpWWhite,
+      properties.ceilingLight,
+      properties.heatLamp,
+      properties.nightLight,
+      properties.nightstandLeftLedRed,
+      properties.nightstandLeftLedWWhite,
+      properties.nightstandRightLedRed,
+      properties.nightstandRightLedWWhite,
+      properties.standingLamp,
+    ],
+    'lighting',
+  ),
+  allThings: outputGrouping(
+    context,
+    [
+      properties.bookshelfLedDown,
+      properties.bookshelfLedUpRed,
+      properties.bookshelfLedUpWWhite,
+      properties.ceilingLight,
+      properties.heatLamp,
+      properties.ionGenerator,
+      properties.nightLight,
+      properties.nightstandLeftLedRed,
+      properties.nightstandLeftLedWWhite,
+      properties.nightstandRightLedRed,
+      properties.nightstandRightLedWWhite,
+      properties.standingLamp,
+    ],
+    undefined,
+  ),
   allWindows: inputGrouping(
     context,
     properties.windowLeft.open.main.state,
@@ -367,35 +375,35 @@ const sceneCycle = new EnumState(
     properties.heatLamp.flip.setState.trigger(),
   );
   instances.heatLampButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.ionGeneratorButton.up(() =>
     properties.ionGenerator.flip.setState.trigger(),
   );
   instances.ionGeneratorButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.nightLightButton.up(() =>
     properties.nightLight.flip.setState.trigger(),
   );
   instances.nightLightButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.standingLampButton.up(() =>
     properties.standingLamp.flip.setState.trigger(),
   );
   instances.standingLampButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.wallswitchBed.up(() =>
     properties.ceilingLight.flip.setState.trigger(),
   );
   instances.wallswitchBed.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.wallswitchDoorLeft.up(() => {
@@ -407,7 +415,7 @@ const sceneCycle = new EnumState(
     sceneCycle.previous();
   });
   instances.wallswitchDoorLeft.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.wallswitchDoorMiddle.up(() => {
@@ -419,7 +427,7 @@ const sceneCycle = new EnumState(
     scenes.moodLight.main.setState.value = true;
   });
   instances.wallswitchDoorMiddle.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   instances.wallswitchDoorRight.up(() => {
@@ -431,7 +439,7 @@ const sceneCycle = new EnumState(
     sceneCycle.next();
   });
   instances.wallswitchDoorRight.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allLights.main.setState.value = false),
   );
 
   sceneCycle.observe((value) => (value.main.setState.value = true));
@@ -447,12 +455,8 @@ const sceneCycle = new EnumState(
 export const mrpelzBedroom = {
   $: 'mrpelzBedroom' as const,
   level: Level.ROOM as const,
-  scenes: {
-    $: 'scenes' as const,
-    level: Level.NONE as const,
-    ...scenes,
-  },
   ...deviceMap(devices),
   ...groups,
   ...properties,
+  ...scenes,
 };

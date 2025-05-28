@@ -54,11 +54,11 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping(context, [
-    properties.ceilingLight,
-    properties.nightLight,
-    properties.standingLamp,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [properties.ceilingLight, properties.nightLight, properties.standingLamp],
+    'lighting',
+  ),
   allWindows: inputGrouping(context, properties.windowRight.open.main.state),
 };
 

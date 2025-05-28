@@ -135,7 +135,7 @@ export const led = (
   };
 };
 
-export const output = <T extends string>(
+export const output = <T extends string | undefined>(
   context: Context,
   device: IpDevice,
   index = 0,
@@ -265,10 +265,10 @@ export const ledGrouping = (
   };
 };
 
-export const outputGrouping = <T extends string>(
+export const outputGrouping = <T extends string | undefined>(
   context: Context,
   outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
-  topic = 'lighting' as T,
+  topic: T,
 ) => {
   const $ = 'outputGrouping' as const;
 

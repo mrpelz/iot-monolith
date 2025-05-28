@@ -69,12 +69,16 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping(context, [
-    properties.ceilingLight,
-    properties.mirrorLed,
-    properties.mirrorLight,
-    properties.nightLight,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [
+      properties.ceilingLight,
+      properties.mirrorLed,
+      properties.mirrorLight,
+      properties.nightLight,
+    ],
+    'lighting',
+  ),
 };
 
 export const scenesPartial = {
@@ -317,12 +321,8 @@ export const scenes = {
 export const tsiaBathroom = {
   $: 'tsiaBathroom' as const,
   level: Level.ROOM as const,
-  scenes: {
-    $: 'scenes' as const,
-    level: Level.NONE as const,
-    ...scenes,
-  },
   ...deviceMap(devices),
   ...groups,
   ...properties,
+  ...scenes,
 };

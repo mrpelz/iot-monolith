@@ -42,10 +42,11 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping(context, [
-    properties.ceilingLight,
-    properties.floodlight,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [properties.ceilingLight, properties.floodlight],
+    'lighting',
+  ),
   allWindows: inputGrouping(context, properties.window.open.main.state),
 };
 

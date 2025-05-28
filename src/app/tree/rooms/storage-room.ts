@@ -31,7 +31,7 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping(context, [properties.ceilingLight]),
+  allLights: outputGrouping(context, [properties.ceilingLight], 'lighting'),
 };
 
 (() => {

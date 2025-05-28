@@ -16,7 +16,7 @@ export const allThings = (async () => {
       match({ $: 'output' as const }, excludePattern, wurstHome),
       match({ $: 'led' as const }, excludePattern, wurstHome),
     ].flat(1),
-    'group',
+    undefined,
   );
 })();
 
@@ -36,6 +36,7 @@ export const allLights = (async () => {
       ),
       match({ $: 'led' as const }, excludePattern, wurstHome),
     ].flat(1),
+    'lighting',
   );
 })();
 
@@ -54,18 +55,22 @@ export const allWindows = (async () => {
   );
 })();
 
-export const kitchenAdjacentLights = outputGrouping(context, [
-  officeProperties.floodlight,
-  officeProperties.ceilingLight,
-  hallwayProperties.ceilingLightBack,
-  hallwayProperties.ceilingLightFront,
-  kitchenProperties.ledLeftCWhite,
-  kitchenProperties.ledLeftFloodlight,
-  kitchenProperties.ledLeftWWhite,
-  kitchenProperties.ledRightCWhite,
-  kitchenProperties.ledRightFloodlight,
-  kitchenProperties.ledRightWWhite,
-  livingRoomProperties.standingLamp,
-  livingRoomProperties.terrariumLedRed,
-  livingRoomProperties.terrariumLedTop,
-]);
+export const kitchenAdjacentLights = outputGrouping(
+  context,
+  [
+    officeProperties.floodlight,
+    officeProperties.ceilingLight,
+    hallwayProperties.ceilingLightBack,
+    hallwayProperties.ceilingLightFront,
+    kitchenProperties.ledLeftCWhite,
+    kitchenProperties.ledLeftFloodlight,
+    kitchenProperties.ledLeftWWhite,
+    kitchenProperties.ledRightCWhite,
+    kitchenProperties.ledRightFloodlight,
+    kitchenProperties.ledRightWWhite,
+    livingRoomProperties.standingLamp,
+    livingRoomProperties.terrariumLedRed,
+    livingRoomProperties.terrariumLedTop,
+  ],
+  'lighting',
+);

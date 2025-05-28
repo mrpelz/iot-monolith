@@ -57,11 +57,15 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: outputGrouping(context, [
-    properties.standingLamp,
-    properties.terrariumLedRed,
-    properties.terrariumLedTop,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [
+      properties.standingLamp,
+      properties.terrariumLedRed,
+      properties.terrariumLedTop,
+    ],
+    'lighting',
+  ),
 };
 
 export const scenes = {
@@ -207,12 +211,8 @@ export const scenes = {
 export const livingRoom = {
   $: 'livingRoom' as const,
   level: Level.ROOM as const,
-  scenes: {
-    $: 'scenes' as const,
-    level: Level.NONE as const,
-    ...scenes,
-  },
   ...deviceMap(devices),
   ...groups,
   ...properties,
+  ...scenes,
 };

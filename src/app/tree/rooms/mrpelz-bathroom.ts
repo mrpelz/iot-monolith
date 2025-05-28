@@ -77,7 +77,17 @@ export const properties = {
 };
 
 export const groups = {
-  all: outputGrouping(
+  allLights: outputGrouping(
+    context,
+    [
+      properties.ceilingLight,
+      properties.mirrorLed,
+      properties.mirrorLight,
+      properties.nightLight,
+    ],
+    'lighting',
+  ),
+  allThings: outputGrouping(
     context,
     [
       properties.ceilingLight,
@@ -86,14 +96,8 @@ export const groups = {
       properties.mirrorLight,
       properties.nightLight,
     ],
-    'group',
+    undefined,
   ),
-  allLights: outputGrouping(context, [
-    properties.ceilingLight,
-    properties.mirrorLed,
-    properties.mirrorLight,
-    properties.nightLight,
-  ]),
 };
 
 const scenesPartial = {
@@ -226,21 +230,21 @@ export const scenes = {
     properties.mirrorHeating.flip.setState.trigger(),
   );
   instances.mirrorHeatingButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   instances.mirrorLightButton.up(() =>
     properties.mirrorLight.flip.setState.trigger(),
   );
   instances.mirrorLightButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   instances.nightLightButton.up(() =>
     properties.nightLight.flip.setState.trigger(),
   );
   instances.nightLightButton.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   const timer = new Timer(epochs.second * 5);
@@ -310,34 +314,34 @@ export const scenes = {
   });
 
   instances.wallswitchDoor.up(() => {
-    if (groups.all.main.setState.value) {
-      groups.all.main.setState.value = false;
+    if (groups.allThings.main.setState.value) {
+      groups.allThings.main.setState.value = false;
       return;
     }
 
     scenes.dayLighting.main.setState.value = true;
   });
   instances.wallswitchDoor.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   instances.wallswitchMirrorTop.up(() =>
     properties.mirrorLight.flip.setState.trigger(),
   );
   instances.wallswitchMirrorTop.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   instances.wallswitchMirrorBottom.up(() => {
     if (scenes.nightLighting.main.state.value) {
-      groups.all.main.setState.value = false;
+      groups.allThings.main.setState.value = false;
       return;
     }
 
     scenes.nightLighting.main.setState.value = true;
   });
   instances.wallswitchMirrorBottom.longPress(
-    () => (groups.all.main.setState.value = false),
+    () => (groups.allThings.main.setState.value = false),
   );
 
   properties.door.open.main.state.observe((value) => {
@@ -347,12 +351,12 @@ export const scenes = {
     scenes.autoLight.main.setState.trigger();
   });
 
-  groups.all.main.setState.observe((value) => {
+  groups.allThings.main.setState.observe((value) => {
     properties.allTimer.active.state.value = value;
   }, true);
 
   properties.allTimer.state.observe(() => {
-    groups.all.main.setState.value = false;
+    groups.allThings.main.setState.value = false;
   });
 
   groups.allLights.main.setState.observe((value) => {
@@ -363,12 +367,8 @@ export const scenes = {
 export const mrpelzBathroom = {
   $: 'mrpelzBathroom' as const,
   level: Level.ROOM as const,
-  scenes: {
-    $: 'scenes' as const,
-    level: Level.NONE as const,
-    ...scenes,
-  },
   ...deviceMap(devices),
   ...groups,
   ...properties,
+  ...scenes,
 };
