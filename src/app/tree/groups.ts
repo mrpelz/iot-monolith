@@ -45,13 +45,14 @@ export const allWindows = (async () => {
 
   return inputGrouping(
     context,
-    ...match(
+    match(
       {
         $: 'window' as const,
       },
       excludePattern,
       wurstHome,
     ).map((window) => window.open.main.state),
+    'security',
   );
 })();
 

@@ -44,7 +44,7 @@ export const instances = {
 const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.internal.relay,
   ceilingLightFront: devices.ceilingLightFront.internal.relay,
-  entryDoor: door(context, devices.doorSensor),
+  entryDoor: door(context, devices.doorSensor, 'security'),
 };
 
 export const properties = {

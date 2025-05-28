@@ -47,10 +47,10 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(context, devices.doorSensor),
+  door: door(context, devices.doorSensor, undefined),
   nightLight: devices.nightLight.internal.relay,
   standingLamp: devices.standingLamp.internal.relay,
-  windowRight: window(context, devices.windowSensorRight),
+  windowRight: window(context, devices.windowSensorRight, 'security'),
 };
 
 export const groups = {
@@ -59,7 +59,11 @@ export const groups = {
     [properties.ceilingLight, properties.nightLight, properties.standingLamp],
     'lighting',
   ),
-  allWindows: inputGrouping(context, properties.windowRight.open.main.state),
+  allWindows: inputGrouping(
+    context,
+    [properties.windowRight.open.main.state],
+    'security',
+  ),
 };
 
 (() => {

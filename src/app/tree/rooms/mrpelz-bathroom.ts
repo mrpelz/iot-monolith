@@ -69,7 +69,7 @@ export const instances = {
 export const properties = {
   allTimer: offTimer(context, epochs.minute * 30, true),
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(context, devices.doorSensor),
+  door: door(context, devices.doorSensor, undefined),
   mirrorHeating: devices.mirrorHeating.internal.relay,
   mirrorLed: devices.leds.internal.ledR,
   mirrorLight: devices.mirrorLight.internal.relay,

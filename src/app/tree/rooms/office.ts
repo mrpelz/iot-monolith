@@ -38,7 +38,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
   floodlight: devices.floodlight.internal.relay,
   floodlightTimer: offTimer(context, epochs.hour, undefined),
-  window: window(context, devices.windowSensor),
+  window: window(context, devices.windowSensor, 'security'),
 };
 
 export const groups = {
@@ -47,7 +47,11 @@ export const groups = {
     [properties.ceilingLight, properties.floodlight],
     'lighting',
   ),
-  allWindows: inputGrouping(context, properties.window.open.main.state),
+  allWindows: inputGrouping(
+    context,
+    [properties.window.open.main.state],
+    'security',
+  ),
 };
 
 (async () => {

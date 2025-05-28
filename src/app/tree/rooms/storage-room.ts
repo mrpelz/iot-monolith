@@ -26,7 +26,7 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(context, devices.doorSensor),
+  door: door(context, devices.doorSensor, undefined),
   lightTimer: offTimer(context, epochs.minute * 5, undefined),
 };
 

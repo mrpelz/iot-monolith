@@ -85,7 +85,7 @@ export const properties = {
   bookshelfLedUpWWhite: devices.bookshelfLeds.internal.ledR,
   brightness: devices.roomSensor.internal.brightness,
   ceilingLight: devices.ceilingLight.internal.relay,
-  door: door(context, devices.doorSensor),
+  door: door(context, devices.doorSensor, undefined),
   heatLamp: devices.heatLamp.internal.relay,
   humidity: devices.roomSensor.internal.humidity,
   ionGenerator: devices.ionGenerator.internal.relay,
@@ -98,8 +98,8 @@ export const properties = {
   standingLamp: devices.standingLamp.internal.relay,
   temperature: devices.roomSensor.internal.temperature,
   tvoc: devices.roomSensor.internal.tvoc,
-  windowLeft: window(context, devices.windowSensorLeft),
-  windowRight: window(context, devices.windowSensorRight),
+  windowLeft: window(context, devices.windowSensorLeft, 'security'),
+  windowRight: window(context, devices.windowSensorRight, 'security'),
 };
 
 export const groups = {
@@ -140,8 +140,11 @@ export const groups = {
   ),
   allWindows: inputGrouping(
     context,
-    properties.windowLeft.open.main.state,
-    properties.windowLeft.open.main.state,
+    [
+      properties.windowLeft.open.main.state,
+      properties.windowLeft.open.main.state,
+    ],
+    'security',
   ),
   bookshelfLedWWhite: ledGrouping(context, [
     properties.bookshelfLedDown,

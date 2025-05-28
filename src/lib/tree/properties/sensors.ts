@@ -265,9 +265,10 @@ export const button = (context: Context, device: Device, index = 0) => {
   };
 };
 
-export const door = (
+export const door = <T extends string | undefined>(
   _: Context,
   sensor: ReturnType<typeof ev1527WindowSensor>,
+  topic: T,
 ) => {
   const $ = 'door' as const;
 
@@ -277,6 +278,7 @@ export const door = (
     $,
     level: Level.PROPERTY as const,
     open,
+    topic,
   };
 };
 
@@ -315,7 +317,7 @@ export const hello = (
   };
 };
 
-export const input = <T extends string>(
+export const input = <T extends string | undefined>(
   context: Context,
   device: Device,
   index = 0,
@@ -342,15 +344,18 @@ export const input = <T extends string>(
   };
 };
 
-export const inputGrouping = (
+export const inputGrouping = <T extends string | undefined>(
   context: Context,
-  ...inputs: AnyObservable<boolean | null>[]
+  inputs: AnyObservable<boolean | null>[],
+  topic: T,
 ) => {
   const $ = 'inputGrouping' as const;
 
+  const inputs_ = Array.from(new Set(inputs));
+
   const state_ = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE,
-    inputs.map(
+    inputs_.map(
       (anInput) =>
         new ReadOnlyProxyObservable(anInput, (value) => Boolean(value)),
     ),
@@ -368,8 +373,11 @@ export const inputGrouping = (
   return {
     $,
     $init,
+    $noMainReference: true as const,
+    inputs: inputs_,
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
+    topic,
     ...lastChange(context, state),
   };
 };
@@ -611,9 +619,10 @@ export const vcc = (_: Context, device: Device) => {
   };
 };
 
-export const window = (
+export const window = <T extends string | undefined>(
   _: Context,
   sensor: ReturnType<typeof ev1527WindowSensor>,
+  topic: T,
 ) => {
   const { open } = sensor.internal;
 
@@ -621,5 +630,6 @@ export const window = (
     $: 'window' as const,
     level: Level.PROPERTY as const,
     open,
+    topic,
   };
 };
