@@ -1,4 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
+import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -23,12 +24,14 @@ export const devices = {
     'mrpelzbedroom-floodlight.lan.wurstsalat.cloud',
     context,
   ),
+  multiButton: ev1527ButtonX4(714_410, ev1527Transport, context),
   wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
   windowSensor: ev1527WindowSensor(670_496, ev1527Transport, context),
 };
 
 export const instances = {
   floodlightButton: devices.floodlight.button.state,
+  multiButton: devices.multiButton.state,
   wallswitchBottom: devices.wallswitch.button2.state,
   wallswitchMiddle: devices.wallswitch.button1.state,
   wallswitchTop: devices.wallswitch.button0.state,
@@ -79,6 +82,19 @@ export const groups = {
   );
   instances.floodlightButton.longPress(
     kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
+
+  instances.multiButton.topLeft.observe(() =>
+    properties.ceilingLight.flip.setState.trigger(),
+  );
+  instances.multiButton.topRight.observe(() =>
+    properties.floodlight.flip.setState.trigger(),
+  );
+  instances.multiButton.bottomLeft.observe(
+    kitchenAdjecentsLightsOffKitchenChillaxOn,
+  );
+  instances.multiButton.bottomRight.observe(
+    kitchenAdjecentsLightsOffKitchenBrightOn,
   );
 
   instances.wallswitchBottom.up(() =>
