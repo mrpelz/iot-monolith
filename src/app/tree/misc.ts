@@ -6,8 +6,8 @@ import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
 import { InitFunction } from '../../lib/tree/operations/init.js';
 import { Introspection } from '../../lib/tree/operations/introspection.js';
-import { Metrics } from '../../lib/tree/operations/metrics.js';
-import { metrics } from '../metrics.js';
+// import { Metrics } from '../../lib/tree/operations/metrics.js';
+// import { metrics } from '../metrics.js';
 import { persistence } from '../persistence.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
@@ -77,15 +77,15 @@ export const sunElevation = (schedule: Schedule) => {
       elevation,
     );
 
-    metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
-      isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
-      isCivilTwilight: readOnlyIsCivilTwilight,
-      isDay: readOnlyIsDay,
-      isNauticalTwilight: readOnlyIsNauticalTwilight,
-      isNight: readOnlyIsNight,
-      unit: 'degrees',
-      ...Metrics.hierarchyLabels(introspection, self),
-    });
+    // metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
+    //   isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
+    //   isCivilTwilight: readOnlyIsCivilTwilight,
+    //   isDay: readOnlyIsDay,
+    //   isNauticalTwilight: readOnlyIsNauticalTwilight,
+    //   isNight: readOnlyIsNight,
+    //   unit: 'degrees',
+    //   ...Metrics.hierarchyLabels(introspection, self),
+    // });
   };
 
   return {

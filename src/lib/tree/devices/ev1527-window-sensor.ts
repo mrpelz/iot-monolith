@@ -11,7 +11,7 @@ import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 import { Introspection } from '../operations/introspection.js';
-import { Metrics } from '../operations/metrics.js';
+// import { Metrics } from '../operations/metrics.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
@@ -47,13 +47,13 @@ export const ev1527WindowSensor = (
       persistedOpen,
     );
 
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
+    // const labels = Metrics.hierarchyLabels(introspection, self);
+    // if (!labels) return;
 
-    context.metrics.addMetric('open', 'state door/window sensor', isOpen, {
-      isReceivedValue,
-      ...labels,
-    });
+    // context.metrics.addMetric('open', 'state door/window sensor', isOpen, {
+    //   isReceivedValue,
+    //   ...labels,
+    // });
   };
 
   const persistedTamperSwitch = new Observable<boolean | null>(null);
@@ -76,15 +76,15 @@ export const ev1527WindowSensor = (
       persistedTamperSwitch,
     );
 
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
+    // const labels = Metrics.hierarchyLabels(introspection, self);
+    // if (!labels) return;
 
-    context.metrics.addMetric(
-      'open_tamperSwitch',
-      'state door/window sensor tamper switch',
-      tamperSwitch,
-      labels,
-    );
+    // context.metrics.addMetric(
+    //   'open_tamperSwitch',
+    //   'state door/window sensor tamper switch',
+    //   tamperSwitch,
+    //   labels,
+    // );
   };
 
   receivedOpen.observe((value) => {

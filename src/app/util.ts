@@ -14,7 +14,7 @@ import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
 import { InitFunction } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
-import { Metrics } from '../lib/tree/operations/metrics.js';
+// import { Metrics } from '../lib/tree/operations/metrics.js';
 import { led as led_ } from '../lib/tree/properties/actuators.js';
 
 export const LATITUDE = 53.547_47;
@@ -134,27 +134,27 @@ export const overriddenLed = (
       setBrightness,
     );
 
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
+    // const labels = Metrics.hierarchyLabels(introspection, self);
+    // if (!labels) return;
 
-    context.metrics.addMetric(`${$}_actual`, 'actual state of led', actualOn, {
-      brightness: new ReadOnlyProxyObservable(actualBrightness, (value) =>
-        value === null ? '' : value,
-      ),
-      ...labels,
-    });
+    // context.metrics.addMetric(`${$}_actual`, 'actual state of led', actualOn, {
+    //   brightness: new ReadOnlyProxyObservable(actualBrightness, (value) =>
+    //     value === null ? '' : value,
+    //   ),
+    //   ...labels,
+    // });
 
-    context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, {
-      brightness: setBrightness,
-      ...labels,
-    });
+    // context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, {
+    //   brightness: setBrightness,
+    //   ...labels,
+    // });
 
-    context.metrics.addMetric(
-      `${$}_override`,
-      'is led overridden',
-      isOverridden,
-      labels,
-    );
+    // context.metrics.addMetric(
+    //   `${$}_override`,
+    //   'is led overridden',
+    //   isOverridden,
+    //   labels,
+    // );
   };
 
   return {
