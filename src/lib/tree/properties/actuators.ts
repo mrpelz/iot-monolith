@@ -58,10 +58,19 @@ const actuatorStaleness = <T>(
     const labels = Metrics.hierarchyLabels(introspection, self);
     if (!labels) return;
 
-    context.metrics.addMetric($, 'is value of related actuator stale?', stale, {
+    context.metrics.addMetric(
+      `${$}_stale`,
+      'is value of related actuator stale?',
+      stale,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_loading`,
+      'is value of related actuator loading?',
       loading,
-      ...labels,
-    });
+      labels,
+    );
   };
 
   return {

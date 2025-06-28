@@ -60,8 +60,8 @@ export class Metrics {
     > = {},
   ): void {
     try {
-      const outputLabels: Record<string, string | number> = {};
-      let outputValue = Metrics._cleanValue(value.value);
+      let outputLabels: Record<string, string | number> = {};
+      let outputValue = Metrics._cleanValue(null);
 
       const keys = objectKeys(labels);
 
@@ -74,12 +74,22 @@ export class Metrics {
         });
       this._gauges.set(name, gauge);
 
-      const set = () => gauge.set(outputLabels, outputValue);
+      const set = (
+        newLabels: Record<string, string | number>,
+        newValue: number,
+      ) => {
+        gauge.remove(outputLabels);
+
+        outputLabels = newLabels;
+        outputValue = newValue;
+        gauge.set(outputLabels, outputValue);
+      };
 
       value.observe((value_) => {
-        outputValue = Metrics._cleanValue(value_);
-        set();
+        set(outputLabels, Metrics._cleanValue(value_));
       });
+
+      let nextLabels: Record<string, string | number> = {};
 
       for (const key of keys) {
         const label = labels[key];
@@ -88,20 +98,21 @@ export class Metrics {
         const cleanKey = Metrics._cleanLabel(key);
 
         if (typeof label === 'string') {
-          outputLabels[cleanKey] = label;
+          nextLabels[cleanKey] = label;
 
           continue;
         }
 
-        outputLabels[cleanKey] = Metrics._cleanLabelValue(label.value);
+        nextLabels[cleanKey] = Metrics._cleanLabelValue(label.value);
 
+        // eslint-disable-next-line no-loop-func
         label.observe((value_) => {
-          outputLabels[cleanKey] = Metrics._cleanLabelValue(value_);
-          set();
+          nextLabels[cleanKey] = Metrics._cleanLabelValue(value_);
+          set(nextLabels, outputValue);
         });
       }
 
-      set();
+      set(nextLabels, Metrics._cleanValue(value.value));
     } catch (error) {
       this._log.error(() => error.message, error.stack);
     }
