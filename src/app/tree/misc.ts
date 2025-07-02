@@ -5,7 +5,6 @@ import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
 import { InitFunction } from '../../lib/tree/operations/init.js';
-import { Introspection } from '../../lib/tree/operations/introspection.js';
 // import { Metrics } from '../../lib/tree/operations/metrics.js';
 // import { metrics } from '../metrics.js';
 import { persistence } from '../persistence.js';
@@ -72,10 +71,7 @@ export const sunElevation = (schedule: Schedule) => {
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(
-      Introspection.pathString(mainReference.path),
-      elevation,
-    );
+    persistence.observe(mainReference.pathString, elevation);
 
     // metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
     //   isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,

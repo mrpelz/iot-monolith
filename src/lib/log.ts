@@ -16,12 +16,12 @@ export type Log = {
 };
 
 export type LogWithLevel = Log & {
-  level: Level;
+  level: Level | CustomLevel;
 };
 
 export type Initiator = () => Log | string;
 
-export type Callback = (log: Log) => Promise<void>;
+export type Callback = (log: LogWithLevel) => Promise<void>;
 
 const logLevelNames = [
   'EMERGENCY',
@@ -41,12 +41,19 @@ const logMerge = (input: Log | string): Log =>
       }
     : input;
 
+export class CustomLevel {
+  constructor(readonly level: Level) {}
+}
+
 export class Output {
   private readonly _callback: Callback;
 
+  readonly customLevel?: CustomLevel;
   readonly levels: Level[];
 
-  constructor(logLevel: Level, callback: Callback) {
+  constructor(logLevel: Level | CustomLevel, callback: Callback) {
+    this.customLevel = logLevel instanceof CustomLevel ? logLevel : undefined;
+
     this.levels = [
       Level.EMERGENCY,
       Level.ALERT,
@@ -56,24 +63,35 @@ export class Output {
       Level.NOTICE,
       Level.INFO,
       Level.DEBUG,
-    ].slice(0, logLevel + 1);
+    ].slice(
+      0,
+      (logLevel instanceof CustomLevel ? logLevel.level : logLevel) + 1,
+    );
 
     this._callback = callback;
   }
 
   ingestLog(log: LogWithLevel): Promise<void> {
-    if (!this.levels.includes(log.level)) {
+    const { level } = log;
+    if (this.customLevel && this.customLevel !== level) {
       return Promise.resolve();
     }
 
-    return this._callback(log);
+    if (!(level instanceof CustomLevel) && !this.levels.includes(level)) {
+      return Promise.resolve();
+    }
+
+    return this._callback({
+      ...log,
+      level: level instanceof CustomLevel ? level.level : level,
+    });
   }
 }
 
 export class DevOutput extends Output {
   private static _callback({ body, head, level, stack }: LogWithLevel) {
     let output = `[${new Date().toLocaleTimeString('en', { hour12: false })}]`;
-    output += `${logLevelNames[level]}:\t`;
+    output += `${logLevelNames[level instanceof CustomLevel ? level.level : level]}:\t`;
 
     if (head) {
       output += `\t${head}`;
@@ -91,7 +109,7 @@ export class DevOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor(logLevel = Level.DEBUG) {
+  constructor(logLevel: Level | CustomLevel = Level.DEBUG) {
     super(logLevel, DevOutput._callback);
   }
 }
@@ -116,27 +134,36 @@ export class JournaldOutput extends Output {
     return Promise.resolve();
   }
 
-  constructor(logLevel = Level.DEBUG) {
+  constructor(logLevel: Level | CustomLevel = Level.DEBUG) {
     super(logLevel, JournaldOutput._callback);
   }
 }
 
-// export class TelegramOutput extends Output {
-//   private static _callback(log: LogWithLevel) {
-//     return telegramSend(
-//       [`*${logLevelNames[log.level]}*`, log.head, `\`${log.body}\``]
-//         .filter(Boolean)
-//         .join('  \n')
-//     ).catch((reason) => {
-//       // eslint-disable-next-line no-console
-//       console.log(`<${Level.ERROR}>failed to log to Telegram: ${reason}`);
-//     });
-//   }
+export class VirtualOutput extends Output {
+  private static _callback(logs: Map<Date, LogWithLevel>) {
+    return (log: LogWithLevel) => {
+      const date = new Date();
 
-//   constructor(logLevel = 7) {
-//     super(logLevel, TelegramOutput._callback);
-//   }
-// }
+      logs.set(date, log);
+
+      return Promise.resolve();
+    };
+  }
+
+  private readonly _logs: Map<Date, LogWithLevel>;
+
+  constructor(logLevel: Level | CustomLevel = Level.DEBUG) {
+    const logs = new Map<Date, LogWithLevel>();
+
+    super(logLevel, VirtualOutput._callback(logs));
+
+    this._logs = logs;
+  }
+
+  get logs(): [Date, Log][] {
+    return Array.from(this._logs);
+  }
+}
 
 export class Input {
   private readonly _logger: Logger;
@@ -150,9 +177,15 @@ export class Input {
     this._options = options;
   }
 
-  private _log(level: Level, initiator: Initiator, stack: string | undefined) {
+  log(
+    level: Level | CustomLevel,
+    initiator: Initiator,
+    stack?: string,
+  ): Promise<void> {
+    const effectiveLevel = level instanceof CustomLevel ? level.level : level;
+
     const stackLog =
-      level <= Level.NOTICE && stack
+      effectiveLevel <= Level.NOTICE && stack
         ? {
             stack,
           }
@@ -173,35 +206,35 @@ export class Input {
 
   /* eslint-disable @typescript-eslint/member-ordering */
   emergency(initiator: Initiator, stack: string | undefined): Promise<void> {
-    return this._log(Level.EMERGENCY, initiator, stack);
+    return this.log(Level.EMERGENCY, initiator, stack);
   }
 
   alert(initiator: Initiator, stack: string | undefined): Promise<void> {
-    return this._log(Level.ALERT, initiator, stack);
+    return this.log(Level.ALERT, initiator, stack);
   }
 
   critical(initiator: Initiator, stack: string | undefined): Promise<void> {
-    return this._log(Level.CRITICAL, initiator, stack);
+    return this.log(Level.CRITICAL, initiator, stack);
   }
 
   error(initiator: Initiator, stack: string | undefined): Promise<void> {
-    return this._log(Level.ERROR, initiator, stack);
+    return this.log(Level.ERROR, initiator, stack);
   }
 
   warning(initiator: Initiator, stack: string | undefined): Promise<void> {
-    return this._log(Level.WARNING, initiator, stack);
+    return this.log(Level.WARNING, initiator, stack);
   }
 
   notice(initiator: Initiator, stack?: string): Promise<void> {
-    return this._log(Level.NOTICE, initiator, stack);
+    return this.log(Level.NOTICE, initiator, stack);
   }
 
   info(initiator: Initiator, stack?: string): Promise<void> {
-    return this._log(Level.INFO, initiator, stack);
+    return this.log(Level.INFO, initiator, stack);
   }
 
   debug(initiator: Initiator, stack?: string): Promise<void> {
-    return this._log(Level.DEBUG, initiator, stack);
+    return this.log(Level.DEBUG, initiator, stack);
   }
   /* eslint-enable @typescript-eslint/member-ordering */
 
@@ -214,8 +247,12 @@ export class Logger {
   private readonly _inputs = new Set<Input>();
   private readonly _outputs = new Set<Output>();
 
-  private _shouldLog(level: Level) {
-    return [...this._outputs].some((output) => output.levels.includes(level));
+  private _shouldLog(level: Level | CustomLevel) {
+    return [...this._outputs].some((output) =>
+      output.levels.includes(
+        level instanceof CustomLevel ? level.level : level,
+      ),
+    );
   }
 
   addOutput(output: Output): { remove: () => void } {
@@ -236,7 +273,7 @@ export class Logger {
     return input;
   }
 
-  log(level: Level, initiator: () => Log): Promise<void> {
+  log(level: Level | CustomLevel, initiator: () => Log): Promise<void> {
     if (!this._shouldLog(level)) {
       return Promise.resolve();
     }

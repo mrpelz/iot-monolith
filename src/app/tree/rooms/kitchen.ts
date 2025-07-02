@@ -3,9 +3,11 @@ import { h801 } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -75,61 +77,148 @@ export const groups = {
   ]),
 };
 
-(async () => {
+const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentLights } = await import('../../tree/groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../../tree/scenes.js'
   );
 
-  instances.wallswitchFrontTop.up(() =>
-    groups.allLights.flip.setState.trigger(),
-  );
+  const log = logger.getInput({
+    head: introspection.getObject(room)?.mainReference?.pathString,
+  });
+
+  instances.wallswitchFrontTop.up(() => {
+    groups.allLights.flip.setState.trigger();
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontTop.up" flipped "${introspection.getObject(groups.allLights)?.mainReference?.pathString}"`,
+    );
+  });
+
   instances.wallswitchFrontTop.longPress(() => {
     if (kitchenAdjacentLights.main.state.value) {
       kitchenAdjacentLights.main.setState.value = false;
+
+      log.log(
+        logicReasoningLevel,
+        () =>
+          `"wallswitchFrontTop.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+      );
+
       return;
     }
 
     kitchenAdjacentBright.main.setState.value = true;
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontTop.longPress" turned on "${introspection.getObject(kitchenAdjacentBright)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    );
   });
 
-  instances.wallswitchFrontBottomLeft.up(() =>
-    groups.worklightWWhite.flip.setState.trigger(),
-  );
+  instances.wallswitchFrontBottomLeft.up(() => {
+    groups.worklightWWhite.flip.setState.trigger();
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontBottomLeft.up" flipped "${introspection.getObject(groups.worklightWWhite)?.mainReference?.pathString}"`,
+    );
+  });
+
   instances.wallswitchFrontBottomLeft.longPress(() => {
     if (kitchenAdjacentLights.main.state.value) {
       kitchenAdjacentLights.main.setState.value = false;
+
+      log.log(
+        logicReasoningLevel,
+        () =>
+          `"wallswitchFrontBottomLeft.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+      );
+
       return;
     }
 
     kitchenAdjacentChillax.main.setState.value = true;
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontBottomLeft.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    );
   });
 
-  instances.wallswitchFrontBottomRight.up(() =>
-    groups.floodlight.flip.setState.trigger(),
-  );
+  instances.wallswitchFrontBottomRight.up(() => {
+    groups.floodlight.flip.setState.trigger();
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontBottomRight.up" flipped "${introspection.getObject(groups.floodlight)?.mainReference?.pathString}"`,
+    );
+  });
+
   instances.wallswitchFrontBottomRight.longPress(() => {
     if (kitchenAdjacentLights.main.state.value) {
       kitchenAdjacentLights.main.setState.value = false;
+
+      log.log(
+        logicReasoningLevel,
+        () =>
+          `"wallswitchFrontBottomRight.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+      );
+
       return;
     }
 
     kitchenAdjacentChillax.main.setState.value = true;
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchFrontBottomRight.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    );
   });
 
-  instances.wallswitchBack.up(() => groups.allLights.flip.setState.trigger());
+  instances.wallswitchBack.up(() => {
+    groups.allLights.flip.setState.trigger();
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchBack.up" flipped "${introspection.getObject(groups.allLights)?.mainReference?.pathString}"`,
+    );
+  });
+
   instances.wallswitchBack.longPress(() => {
     if (kitchenAdjacentLights.main.state.value) {
       kitchenAdjacentLights.main.setState.value = false;
+
+      log.log(
+        logicReasoningLevel,
+        () =>
+          `"wallswitchBack.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+      );
+
       return;
     }
 
     kitchenAdjacentChillax.main.setState.value = true;
+
+    log.log(
+      logicReasoningLevel,
+      () =>
+        `"wallswitchBack.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    );
   });
-})();
+};
 
 export const kitchen = {
   $: 'kitchen' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,

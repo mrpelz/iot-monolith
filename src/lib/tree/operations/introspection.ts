@@ -5,6 +5,7 @@ import { isPlainObject, objectKeys } from '../../oop.js';
 export type ObjectReference = {
   parent?: object;
   path: PropertyKey[];
+  get pathString(): string;
 };
 
 export type ObjectIntrospection = {
@@ -16,7 +17,7 @@ export type ObjectIntrospection = {
 export const PATH_UUID_NAMESPACE = 'f0f4da2a-7955-43b0-9fe9-02430afad7ef';
 
 export class Introspection {
-  static pathString(path: PropertyKey[]): string {
+  private static _pathString(path: PropertyKey[]): string {
     let result: string[] = [];
 
     for (const key of path) {
@@ -65,11 +66,15 @@ export class Introspection {
   ) {
     if (!isPlainObject(input)) return;
 
-    const id = uuidv5(Introspection.pathString(path), PATH_UUID_NAMESPACE);
+    const pathString = Introspection._pathString(path);
+    const id = uuidv5(pathString, PATH_UUID_NAMESPACE);
 
     const reference: ObjectReference = {
       parent,
       path,
+      get pathString() {
+        return pathString;
+      },
     };
 
     const introspection = this._objects.get(input) ?? {

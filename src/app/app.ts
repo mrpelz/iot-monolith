@@ -14,16 +14,18 @@ import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
+import { logicReasoningOutput } from './logging.js';
 
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
-  const { logger } = await import('./logging.js');
+  const { logger, logicReasoningLevel } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
 
   const { system: _system } = await import('./tree/system.js');
 
   const log = logger.getInput({ head: 'app' });
+  log.log(logicReasoningLevel, () => 'logicReasoning log beginning');
 
   const system = await _system;
 
@@ -98,7 +100,20 @@ export const app = async (): Promise<void> => {
 
   httpServer.listen();
 
-  httpServer.route('/metrics', async ({ response }) => {
+  httpServer.route('/logic-reasoning', async ({ response, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
+    response.setHeader('Content-Type', 'application/json');
+    response.end(
+      JSON.stringify(
+        logicReasoningOutput.logs.map(([date, log_]) => [date.getTime(), log_]),
+      ),
+    );
+  });
+
+  httpServer.route('/metrics', async ({ response, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
   });

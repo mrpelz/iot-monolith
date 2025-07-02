@@ -27,7 +27,6 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Introspection } from '../operations/introspection.js';
 // import { Metrics } from '../operations/metrics.js';
 import { lastChange } from './sensors.js';
 
@@ -112,10 +111,7 @@ export const led = (
 
     if (!mainReference) return;
 
-    context.persistence.observe(
-      Introspection.pathString(mainReference.path),
-      setBrightness,
-    );
+    context.persistence.observe(mainReference.pathString, setBrightness);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;
@@ -163,10 +159,7 @@ export const output = <T extends string | undefined>(
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    context.persistence.observe(
-      Introspection.pathString(mainReference.path),
-      setState,
-    );
+    context.persistence.observe(mainReference.pathString, setState);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;

@@ -37,7 +37,7 @@ export class Metrics {
 
     return {
       id,
-      path: Introspection.pathString(mainReference.path),
+      path: mainReference.pathString,
     };
   }
 

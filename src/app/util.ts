@@ -13,7 +13,6 @@ import { setter } from '../lib/tree/elements/setter.js';
 import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
 import { InitFunction } from '../lib/tree/operations/init.js';
-import { Introspection } from '../lib/tree/operations/introspection.js';
 // import { Metrics } from '../lib/tree/operations/metrics.js';
 import { led as led_ } from '../lib/tree/properties/actuators.js';
 
@@ -129,10 +128,7 @@ export const overriddenLed = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    context.persistence.observe(
-      Introspection.pathString(mainReference.path),
-      setBrightness,
-    );
+    context.persistence.observe(mainReference.pathString, setBrightness);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;

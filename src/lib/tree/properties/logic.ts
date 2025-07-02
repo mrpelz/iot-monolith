@@ -16,7 +16,6 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Introspection } from '../operations/introspection.js';
 // import { Metrics } from '../operations/metrics.js';
 
 export const offTimer = (
@@ -75,7 +74,7 @@ export const offTimer = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(Introspection.pathString(mainReference.path), enabled);
+    persistence.observe(mainReference.pathString, enabled);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;

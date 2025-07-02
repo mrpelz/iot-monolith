@@ -10,7 +10,6 @@ import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Introspection } from '../operations/introspection.js';
 // import { Metrics } from '../operations/metrics.js';
 import { lastChange } from '../properties/sensors.js';
 
@@ -42,10 +41,7 @@ export const ev1527WindowSensor = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(
-      Introspection.pathString(mainReference.path),
-      persistedOpen,
-    );
+    persistence.observe(mainReference.pathString, persistedOpen);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;
@@ -71,10 +67,7 @@ export const ev1527WindowSensor = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(
-      Introspection.pathString(mainReference.path),
-      persistedTamperSwitch,
-    );
+    persistence.observe(mainReference.pathString, persistedTamperSwitch);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;
