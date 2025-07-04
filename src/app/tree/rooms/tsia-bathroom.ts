@@ -53,10 +53,10 @@ export const devices = {
 
 export const instances = {
   bathtubButton: devices.bathtubButton.state,
-  mirrorLightButton: devices.mirrorLight.button.state,
-  nightLightButton: devices.nightLight.button.state,
-  wallswitchDoor: devices.ceilingLight.button.state,
-  wallswitchMirror: devices.wallswitchMirror.button0.state,
+  mirrorLightButton: devices.mirrorLight.internal.button.state,
+  nightLightButton: devices.nightLight.internal.button.state,
+  wallswitchDoor: devices.ceilingLight.internal.button.state,
+  wallswitchMirror: devices.wallswitchMirror.internal.button0.state,
 };
 
 export const properties = {

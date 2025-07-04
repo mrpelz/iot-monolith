@@ -38,11 +38,11 @@ export const devices = {
 
 export const instances = {
   button: devices.button.state,
-  nightLightButton: devices.nightLight.button.state,
-  standingLampButton: devices.standingLamp.button.state,
-  wallswitchLeft: devices.wallswitch.button0.state,
-  wallswitchMiddle: devices.wallswitch.button1.state,
-  wallswitchRight: devices.wallswitch.button2.state,
+  nightLightButton: devices.nightLight.internal.button.state,
+  standingLampButton: devices.standingLamp.internal.button.state,
+  wallswitchLeft: devices.wallswitch.internal.button0.state,
+  wallswitchMiddle: devices.wallswitch.internal.button1.state,
+  wallswitchRight: devices.wallswitch.internal.button2.state,
 };
 
 export const properties = {

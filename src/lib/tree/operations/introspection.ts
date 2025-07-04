@@ -127,3 +127,8 @@ export class Introspection {
     return this._objects.get(object);
   }
 }
+
+export const makePathStringRetriever =
+  (introspection: Introspection): ((object: object) => string | undefined) =>
+  (object: object) =>
+    introspection.getObject(object)?.mainReference?.pathString;

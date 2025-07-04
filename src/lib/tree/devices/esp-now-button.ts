@@ -22,8 +22,12 @@ export type EspNowButtonOptions = {
 };
 
 const children = (context: Context, device: Device) => ({
-  button0: button(context, device, 0),
-  button1: button(context, device, 1),
+  internal: {
+    $exclude: true as const,
+    $noMainReference: true as const,
+    button0: button(context, device, 0),
+    button1: button(context, device, 1),
+  },
 });
 
 export const espNowButton = (

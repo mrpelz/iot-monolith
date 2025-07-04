@@ -57,13 +57,13 @@ export const devices = {
 };
 
 export const instances = {
-  mirrorHeatingButton: devices.mirrorHeating.button.state,
-  mirrorLightButton: devices.mirrorLight.button.state,
-  nightLightButton: devices.nightLight.button.state,
+  mirrorHeatingButton: devices.mirrorHeating.internal.button.state,
+  mirrorLightButton: devices.mirrorLight.internal.button.state,
+  nightLightButton: devices.nightLight.internal.button.state,
   showerButton: devices.showerButton.state,
-  wallswitchDoor: devices.wallswitchDoor.button0.state,
-  wallswitchMirrorBottom: devices.wallswitchDoor.button2.state,
-  wallswitchMirrorTop: devices.wallswitchDoor.button1.state,
+  wallswitchDoor: devices.wallswitchDoor.internal.button0.state,
+  wallswitchMirrorBottom: devices.wallswitchDoor.internal.button2.state,
+  wallswitchMirrorTop: devices.wallswitchDoor.internal.button1.state,
 };
 
 export const properties = {

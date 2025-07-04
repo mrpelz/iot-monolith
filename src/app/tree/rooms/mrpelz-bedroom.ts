@@ -68,15 +68,15 @@ export const devices = {
 
 export const instances = {
   button: devices.button.state,
-  heatLampButton: devices.heatLamp.button.state,
-  ionGeneratorButton: devices.ionGenerator.button.state,
+  heatLampButton: devices.heatLamp.internal.button.state,
+  ionGeneratorButton: devices.ionGenerator.internal.button.state,
   multiButton: devices.multiButton.state,
-  nightLightButton: devices.nightLight.button.state,
-  standingLampButton: devices.standingLamp.button.state,
-  wallswitchBed: devices.ceilingLight.button.state,
-  wallswitchDoorLeft: devices.wallswitchDoor.button0.state,
-  wallswitchDoorMiddle: devices.wallswitchDoor.button1.state,
-  wallswitchDoorRight: devices.wallswitchDoor.button2.state,
+  nightLightButton: devices.nightLight.internal.button.state,
+  standingLampButton: devices.standingLamp.internal.button.state,
+  wallswitchBed: devices.ceilingLight.internal.button.state,
+  wallswitchDoorLeft: devices.wallswitchDoor.internal.button0.state,
+  wallswitchDoorMiddle: devices.wallswitchDoor.internal.button1.state,
+  wallswitchDoorRight: devices.wallswitchDoor.internal.button2.state,
 };
 
 export const properties = {

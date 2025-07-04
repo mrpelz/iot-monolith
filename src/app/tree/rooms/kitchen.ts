@@ -1,9 +1,12 @@
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
@@ -25,10 +28,10 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.button0.state,
-  wallswitchFrontBottomLeft: devices.wallswitchFront.button1.state,
-  wallswitchFrontBottomRight: devices.wallswitchFront.button2.state,
-  wallswitchFrontTop: devices.wallswitchFront.button0.state,
+  wallswitchBack: devices.wallswitchBack.internal.button0,
+  wallswitchFrontBottomLeft: devices.wallswitchFront.internal.button1,
+  wallswitchFrontBottomRight: devices.wallswitchFront.internal.button2,
+  wallswitchFrontTop: devices.wallswitchFront.internal.button0,
 };
 
 export const properties = {
@@ -83,137 +86,113 @@ const $init: InitFunction = async (room, introspection) => {
     '../../tree/scenes.js'
   );
 
-  const log = logger.getInput({
-    head: introspection.getObject(room)?.mainReference?.pathString,
-  });
+  const { allLights, floodlight, worklightWWhite } = groups;
+  const {
+    wallswitchBack,
+    wallswitchFrontBottomLeft,
+    wallswitchFrontBottomRight,
+    wallswitchFrontTop,
+  } = instances;
 
-  instances.wallswitchFrontTop.up(() => {
-    groups.allLights.flip.setState.trigger();
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
+  );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontTop.up" flipped "${introspection.getObject(groups.allLights)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchFrontTop.longPress(() => {
-    if (kitchenAdjacentLights.main.state.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"wallswitchFrontTop.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+  const kitchenAdjecentsLightsOffKitchenBrightOn = (cause: string) => {
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+        ),
       );
 
       return;
     }
 
-    kitchenAdjacentBright.main.setState.value = true;
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontTop.longPress" turned on "${introspection.getObject(kitchenAdjacentBright)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    setMain(kitchenAdjacentBright, false, () =>
+      l(
+        `"${cause}" turned on "${p(kitchenAdjacentBright)}" because "${p(kitchenAdjacentLights)}" was off`,
+      ),
     );
-  });
+  };
 
-  instances.wallswitchFrontBottomLeft.up(() => {
-    groups.worklightWWhite.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontBottomLeft.up" flipped "${introspection.getObject(groups.worklightWWhite)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchFrontBottomLeft.longPress(() => {
-    if (kitchenAdjacentLights.main.state.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"wallswitchFrontBottomLeft.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+  const kitchenAdjecentsLightsOffKitchenChillaxOn = (cause: string) => {
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+        ),
       );
 
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontBottomLeft.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    setMain(kitchenAdjacentChillax, false, () =>
+      l(
+        `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
+      ),
     );
-  });
+  };
 
-  instances.wallswitchFrontBottomRight.up(() => {
-    groups.floodlight.flip.setState.trigger();
+  wallswitchFrontTop.state.up(() =>
+    flipMain(allLights, () =>
+      l(
+        `"${p(wallswitchFrontTop)} ${wallswitchFrontTop.state.up.name}" flipped "${p(allLights)}"`,
+      ),
+    ),
+  );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontBottomRight.up" flipped "${introspection.getObject(groups.floodlight)?.mainReference?.pathString}"`,
-    );
-  });
+  wallswitchFrontTop.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(
+      `${p(wallswitchFrontTop)} ${wallswitchFrontTop.state.longPress.name}`,
+    ),
+  );
 
-  instances.wallswitchFrontBottomRight.longPress(() => {
-    if (kitchenAdjacentLights.main.state.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+  wallswitchFrontBottomLeft.state.up(() =>
+    flipMain(worklightWWhite, () =>
+      l(
+        `"${p(wallswitchFrontBottomLeft)} ${wallswitchFrontBottomLeft.state.up.name}" flipped "${p(worklightWWhite)}"`,
+      ),
+    ),
+  );
 
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"wallswitchFrontBottomRight.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
-      );
+  wallswitchFrontBottomLeft.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchFrontBottomLeft)} ${wallswitchFrontBottomLeft.state.longPress.name}`,
+    ),
+  );
 
-      return;
-    }
+  wallswitchFrontBottomRight.state.up(() =>
+    flipMain(floodlight, () =>
+      l(
+        `"${p(wallswitchFrontBottomRight)} ${wallswitchFrontBottomRight.state.up.name}" flipped "${p(floodlight)}"`,
+      ),
+    ),
+  );
 
-    kitchenAdjacentChillax.main.setState.value = true;
+  wallswitchFrontBottomRight.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchFrontBottomRight)} ${wallswitchFrontBottomRight.state.longPress.name}`,
+    ),
+  );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontBottomRight.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
-    );
-  });
+  wallswitchBack.state.up(() =>
+    flipMain(allLights, () =>
+      l(
+        `"${p(wallswitchBack)} ${wallswitchBack.state.up.name}" flipped "${p(allLights)}"`,
+      ),
+    ),
+  );
 
-  instances.wallswitchBack.up(() => {
-    groups.allLights.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchBack.up" flipped "${introspection.getObject(groups.allLights)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchBack.longPress(() => {
-    if (kitchenAdjacentLights.main.state.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"wallswitchBack.longPress" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
-      );
-
-      return;
-    }
-
-    kitchenAdjacentChillax.main.setState.value = true;
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchBack.longPress" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
-    );
-  });
+  wallswitchBack.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchBack)} ${wallswitchBack.state.longPress.name}`,
+    ),
+  );
 };
 
 export const kitchen = {
@@ -222,5 +201,6 @@ export const kitchen = {
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };

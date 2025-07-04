@@ -295,6 +295,12 @@ export class Logger {
   }
 }
 
+export const makeCustomStringLogger =
+  (log: Input, level: CustomLevel): ((value: string) => void) =>
+  (value: string) => {
+    log.log(level, () => value);
+  };
+
 export const callstack = (error?: Error): string | undefined =>
   // eslint-disable-next-line unicorn/error-message
   (error || new Error()).stack

@@ -21,11 +21,11 @@ export const obiPlug = <T extends string>(
   const indicator = device.addService(new Indicator(0));
 
   return {
-    button: button(context, device, 0),
     indicator,
     internal: {
       $exclude: true as const,
       $noMainReference: true as const,
+      button: button(context, device, 0),
       relay: output(context, device, 0, topic, indicator),
     },
     ...ipDevice(context, device, false, indicator, initiallyOnline),

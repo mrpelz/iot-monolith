@@ -1,11 +1,14 @@
 import { epochs } from '../../../lib/epochs.js';
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
@@ -36,11 +39,11 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.button0.state,
-  wallswitchFrontLeft: devices.wallswitchFront.button0.state,
-  wallswitchFrontMiddle: devices.wallswitchFront.button1.state,
-  wallswitchFrontRight: devices.wallswitchFront.button2.state,
-  wallswitchMiddle: devices.wallswitchBack.button1.state,
+  wallswitchBack: devices.wallswitchBack.internal.button0,
+  wallswitchFrontLeft: devices.wallswitchFront.internal.button0,
+  wallswitchFrontMiddle: devices.wallswitchFront.internal.button1,
+  wallswitchFrontRight: devices.wallswitchFront.internal.button2,
+  wallswitchMiddle: devices.wallswitchBack.internal.button1,
 };
 
 const partialProperties = {
@@ -78,160 +81,152 @@ const $init: InitFunction = async (room, introspection) => {
   const allLights = await allLights_;
   const allThings = await allThings_;
 
-  const log = logger.getInput({
-    head: introspection.getObject(room)?.mainReference?.pathString,
-  });
+  const { ceilingLight } = groups;
+  const {
+    wallswitchBack,
+    wallswitchFrontLeft,
+    wallswitchFrontMiddle,
+    wallswitchFrontRight,
+    wallswitchMiddle,
+  } = instances;
+  const { ceilingLightBack, ceilingLightFront, entryDoor, entryDoorTimer } =
+    properties;
+
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
+  );
 
   const kitchenAdjecentsLightsOffKitchenChillaxOn = (cause: string) => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
-
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"${cause}" turned off "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was on`,
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+        ),
       );
 
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"${cause}" turned on "${introspection.getObject(kitchenAdjacentChillax)?.mainReference?.pathString}" because "${introspection.getObject(kitchenAdjacentLights)?.mainReference?.pathString}" was off`,
+    setMain(kitchenAdjacentChillax, false, () =>
+      l(
+        `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
+      ),
     );
   };
 
-  instances.wallswitchBack.up(() => {
-    groups.ceilingLight.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchBack.up" flipped "${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchBack.longPress(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn('wallswitchBack.longPress'),
-  );
-
-  instances.wallswitchMiddle.up(() => {
-    groups.ceilingLight.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchMiddle.up" flipped "${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchMiddle.longPress(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn('wallswitchMiddle.longPress'),
-  );
-
-  instances.wallswitchFrontLeft.up(() => {
-    properties.ceilingLightFront.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontLeft.up" flipped "${introspection.getObject(properties.ceilingLightFront)?.mainReference?.pathString}"`,
-    );
-  });
-
-  instances.wallswitchFrontLeft.longPress(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn('wallswitchFrontLeft.longPress'),
-  );
-
-  instances.wallswitchFrontMiddle.up(() => {
-    properties.ceilingLightBack.flip.setState.trigger();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontMiddle.up" flipped "${introspection.getObject(properties.ceilingLightBack)?.mainReference?.pathString}"`,
-    );
-  });
-  instances.wallswitchFrontMiddle.longPress(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn(
-      'wallswitchFrontMiddle.longPress',
+  wallswitchBack.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `"${p(wallswitchBack)} ${wallswitchBack.state.up.name}" flipped "${p(ceilingLight)}"`,
+      ),
     ),
   );
 
-  instances.wallswitchFrontRight.up(async () => {
-    allThings.main.setState.value = false;
+  wallswitchBack.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchBack)} ${wallswitchBack.state.longPress.name}`,
+    ),
+  );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontRight.up" turned off "${introspection.getObject(allLights)?.mainReference?.pathString}"`,
-    );
-  });
-  instances.wallswitchFrontRight.longPress(async () => {
-    allLights.flip.setState.trigger();
+  wallswitchMiddle.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `"${p(wallswitchMiddle)} ${wallswitchMiddle.state.up.name}" flipped "${p(ceilingLight)}"`,
+      ),
+    ),
+  );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"wallswitchFrontRight.longPress" flipped "${introspection.getObject(allLights)?.mainReference?.pathString}"`,
-    );
-  });
+  wallswitchMiddle.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name}`,
+    ),
+  );
 
-  properties.entryDoor.open.main.state.observe((value) => {
-    if (!value) {
-      if (!groups.ceilingLight.main.state.value) {
-        log.log(
-          logicReasoningLevel,
-          () =>
-            `"${introspection.getObject(properties.entryDoor.open)?.mainReference?.pathString}" was closed, but "${introspection.getObject(properties.entryDoorTimer)?.mainReference?.pathString}" wasn’t activated, because "${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}" is already off`,
-        );
+  wallswitchFrontLeft.state.up(() =>
+    flipMain(ceilingLightFront, () =>
+      l(
+        `"${p(wallswitchFrontLeft)} ${wallswitchFrontLeft.state.up.name}" flipped "${p(ceilingLightFront)}"`,
+      ),
+    ),
+  );
 
-        return;
-      }
+  wallswitchFrontLeft.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchFrontLeft)} ${wallswitchFrontLeft.state.longPress.name}`,
+    ),
+  );
 
-      properties.entryDoorTimer.state.start();
+  wallswitchFrontMiddle.state.up(() =>
+    flipMain(ceilingLightBack, () =>
+      l(
+        `"${p(wallswitchFrontMiddle)} ${wallswitchFrontMiddle.state.up.name}" flipped "${p(ceilingLightBack)}"`,
+      ),
+    ),
+  );
 
-      log.log(
-        logicReasoningLevel,
-        () =>
-          `"${introspection.getObject(properties.entryDoor.open)?.mainReference?.pathString}" was closed and "${introspection.getObject(properties.entryDoorTimer)?.mainReference?.pathString}" was activated, because "${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}" is on`,
+  wallswitchFrontMiddle.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchFrontMiddle)} ${wallswitchFrontMiddle.state.longPress.name}`,
+    ),
+  );
+
+  wallswitchFrontRight.state.up(() =>
+    setMain(allThings, false, () =>
+      l(
+        `"${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.up.name}" turned off "${p(allLights)}"`,
+      ),
+    ),
+  );
+
+  wallswitchFrontRight.state.longPress(() =>
+    flipMain(allLights, () =>
+      l(
+        `"${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.longPress.name}" flipped "${p(allLights)}"`,
+      ),
+    ),
+  );
+
+  entryDoor.open.main.state.observe((open) => {
+    if (!getMain(ceilingLight)) {
+      l(
+        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'}, but "${p(entryDoorTimer)}" wasn’t activated, because "${p(ceilingLight)}" is already off`,
       );
 
       return;
     }
 
-    properties.ceilingLightFront.main.setState.value = true;
-    properties.entryDoorTimer.state.start();
+    entryDoorTimer.state.start();
+    l(
+      `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} and "${p(entryDoorTimer)}" was activated`,
+    );
 
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"${introspection.getObject(properties.entryDoor.open)?.mainReference?.pathString}" was opened, "${introspection.getObject(properties.ceilingLightFront)?.mainReference?.pathString}" was turned on and "${introspection.getObject(properties.entryDoorTimer)?.mainReference?.pathString}" was activated`,
+    if (open) {
+      setMain(ceilingLightFront, true, () => {
+        l(
+          `"${p(entryDoor)}" was opened and "${p(ceilingLightFront)}" was turned on`,
+        );
+      });
+    }
+  });
+
+  ceilingLight.main.setState.observe(() => {
+    entryDoorTimer.state.stop();
+    l(
+      `"${p(entryDoorTimer)}" was deactivated because "${p(ceilingLight)}" was manually set`,
     );
   });
 
-  groups.ceilingLight.main.setState.observe(() => {
-    properties.entryDoorTimer.state.stop();
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"${introspection.getObject(properties.entryDoorTimer)?.mainReference?.pathString}" was deactivated because "${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}" was manually set`,
-    );
-  }, true);
-
-  properties.entryDoorTimer.state.observe(() => {
-    groups.ceilingLight.main.setState.value = false;
-
-    log.log(
-      logicReasoningLevel,
-      () =>
-        `"${introspection.getObject(groups.ceilingLight)?.mainReference?.pathString}" was turned off because "${introspection.getObject(properties.entryDoorTimer)?.mainReference?.pathString}" ran out`,
-    );
-  });
+  entryDoorTimer.state.observe(() =>
+    setMain(ceilingLight, false, () =>
+      l(
+        `"${p(ceilingLight)}" was turned off because "${p(entryDoorTimer)}" ran out`,
+      ),
+    ),
+  );
 };
 
 export const hallway = {
@@ -240,5 +235,6 @@ export const hallway = {
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };

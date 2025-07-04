@@ -34,9 +34,9 @@ export const devices = {
 
 export const instances = {
   couchButton: devices.couchButton.state,
-  standingLampButton: devices.standingLamp.button.state,
-  wallswitchBottom: devices.wallswitch.button1.state,
-  wallswitchTop: devices.wallswitch.button0.state,
+  standingLampButton: devices.standingLamp.internal.button.state,
+  wallswitchBottom: devices.wallswitch.internal.button1.state,
+  wallswitchTop: devices.wallswitch.internal.button0.state,
 };
 
 const isTerrariumLedsOverride = new BooleanState(false);

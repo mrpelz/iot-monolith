@@ -30,11 +30,11 @@ export const devices = {
 };
 
 export const instances = {
-  floodlightButton: devices.floodlight.button.state,
+  floodlightButton: devices.floodlight.internal.button.state,
   multiButton: devices.multiButton.state,
-  wallswitchBottom: devices.wallswitch.button2.state,
-  wallswitchMiddle: devices.wallswitch.button1.state,
-  wallswitchTop: devices.wallswitch.button0.state,
+  wallswitchBottom: devices.wallswitch.internal.button2.state,
+  wallswitchMiddle: devices.wallswitch.internal.button1.state,
+  wallswitchTop: devices.wallswitch.internal.button0.state,
 };
 
 export const properties = {

@@ -37,8 +37,8 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.button0.state,
-  espNowButton1: devices.espNowButton.espNow.button1.state,
+  espNowButton0: devices.espNowButton.espNow.internal.button0.state,
+  espNowButton1: devices.espNowButton.espNow.internal.button1.state,
 };
 
 export const properties = {

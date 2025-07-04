@@ -21,7 +21,7 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitch: devices.ceilingLight.button.state,
+  wallswitch: devices.ceilingLight.internal.button.state,
 };
 
 export const properties = {
