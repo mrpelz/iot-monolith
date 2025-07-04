@@ -191,25 +191,27 @@ const $init: InitFunction = async (room, introspection) => {
   );
 
   entryDoor.open.main.state.observe((open) => {
-    if (!getMain(ceilingLight)) {
-      l(
-        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'}, but "${p(entryDoorTimer)}" wasn’t activated, because "${p(ceilingLight)}" is already off`,
-      );
+    const wasOn = getMain(ceilingLight);
 
-      return;
-    }
-
-    entryDoorTimer.state.start();
-    l(
-      `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} and "${p(entryDoorTimer)}" was activated`,
-    );
-
+    // when entry door is opened, immediately turn on front ceiling light
     if (open) {
       setMain(ceilingLightFront, true, () => {
         l(
           `"${p(entryDoor)}" was opened and "${p(ceilingLightFront)}" was turned on`,
         );
       });
+    }
+
+    // if entry door is opened OR if it is closed but the ceiling light is already on, (re)start the timer
+    if (open || wasOn) {
+      entryDoorTimer.state.start();
+      l(
+        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and "${p(entryDoorTimer)}" was (re)started`,
+      );
+    } else {
+      l(
+        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and "${p(entryDoorTimer)}" was not started`,
+      );
     }
   });
 
@@ -218,7 +220,7 @@ const $init: InitFunction = async (room, introspection) => {
     l(
       `"${p(entryDoorTimer)}" was deactivated because "${p(ceilingLight)}" was manually set`,
     );
-  });
+  }, true);
 
   entryDoorTimer.state.observe(() =>
     setMain(ceilingLight, false, () =>
