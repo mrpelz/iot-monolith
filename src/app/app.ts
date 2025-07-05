@@ -14,12 +14,13 @@ import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
-import { logicReasoningOutput } from './logging.js';
 
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
-  const { logger, logicReasoningLevel } = await import('./logging.js');
+  const { logger, logicReasoningLevel, logicReasoningOutput } = await import(
+    './logging.js'
+  );
   const { persistence } = await import('./persistence.js');
 
   const { system: _system } = await import('./tree/system.js');

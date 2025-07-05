@@ -16,7 +16,10 @@ const primaryOutput = isProd
   : new DevOutput(logLevel ?? Level.DEBUG);
 
 export const logicReasoningLevel = new CustomLevel(Level.INFO);
-export const logicReasoningOutput = new VirtualOutput(logicReasoningLevel);
+export const logicReasoningOutput = new VirtualOutput(
+  logicReasoningLevel,
+  5000,
+);
 
 // const telegramLogOutput = new TelegramOutput(logLevel);
 
