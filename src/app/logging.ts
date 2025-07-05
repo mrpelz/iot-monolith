@@ -15,6 +15,8 @@ const primaryOutput = isProd
   ? new JournaldOutput(logLevel ?? Level.INFO)
   : new DevOutput(logLevel ?? Level.DEBUG);
 
+export const virtualOutput = new VirtualOutput(Level.INFO, 5000);
+
 export const logicReasoningLevel = new CustomLevel(Level.INFO);
 export const logicReasoningOutput = new VirtualOutput(
   logicReasoningLevel,
@@ -24,5 +26,6 @@ export const logicReasoningOutput = new VirtualOutput(
 // const telegramLogOutput = new TelegramOutput(logLevel);
 
 logger.addOutput(primaryOutput);
+logger.addOutput(virtualOutput);
 logger.addOutput(logicReasoningOutput);
 // logger.addOutput(telegramLogOutput);
