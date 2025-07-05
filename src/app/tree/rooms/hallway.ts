@@ -111,7 +111,7 @@ const $init: InitFunction = async (room, introspection) => {
       return;
     }
 
-    setMain(kitchenAdjacentChillax, false, () =>
+    setMain(kitchenAdjacentChillax, true, () =>
       l(
         `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
       ),
