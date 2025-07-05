@@ -103,7 +103,7 @@ export const app = async (): Promise<void> => {
   httpServer.route('/logic-reasoning', async ({ response, utils }) => {
     if (utils.constrainMethod('GET')) return;
 
-    response.setHeader('Content-Type', 'application/json');
+    response.setHeader('Content-Type', 'application/json;charset=utf-8');
     response.end(
       JSON.stringify(
         logicReasoningOutput.logs.map(([date, log_]) => [date.getTime(), log_]),

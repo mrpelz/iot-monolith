@@ -14,6 +14,14 @@ export const setMain = <T>(
   then?.(value);
 };
 
+export const triggerMain = (
+  subject: { main: { setState: NullState } },
+  then?: () => unknown,
+): void => {
+  subject.main.setState.trigger();
+  then?.();
+};
+
 export const flipMain = (
   subject: { flip: { setState: NullState } },
   then?: () => unknown,
