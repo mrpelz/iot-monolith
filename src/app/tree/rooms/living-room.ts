@@ -79,34 +79,8 @@ export const groups = {
 };
 
 export const scenes = {
-  mediaOff: triggerElement(
-    context,
-    async () => {
-      await promiseGuard(
-        fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
-          method: 'POST',
-          signal: AbortSignal.timeout(1000),
-        }),
-      );
-
-      isTerrariumLedsOverride.value = false;
-    },
-    'media',
-  ),
-  mediaOnOrSwitch: triggerElement(
-    context,
-    async () => {
-      await promiseGuard(
-        fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
-          method: 'POST',
-          signal: AbortSignal.timeout(1000),
-        }),
-      );
-
-      isTerrariumLedsOverride.value = true;
-    },
-    'media',
-  ),
+  mediaOff: triggerElement(context, 'media'),
+  mediaOnOrSwitch: triggerElement(context, 'media'),
   terrariumLedsOverride: scene(
     context,
     [new SceneMember(isTerrariumLedsOverride, true, false)],
@@ -138,7 +112,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(kitchenAdjacentLights)) {
       setMain(kitchenAdjacentLights, false, () =>
         l(
-          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
         ),
       );
 
@@ -147,7 +121,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(kitchenAdjacentBright, true, () =>
       l(
-        `"${cause}" turned on "${p(kitchenAdjacentBright)}" because "${p(kitchenAdjacentLights)}" was off`,
+        `${cause} turned on ${p(kitchenAdjacentBright)} because ${p(kitchenAdjacentLights)} was off`,
       ),
     );
   };
@@ -156,7 +130,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(kitchenAdjacentLights)) {
       setMain(kitchenAdjacentLights, false, () =>
         l(
-          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
         ),
       );
 
@@ -165,7 +139,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(kitchenAdjacentChillax, true, () =>
       l(
-        `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
+        `${cause} turned on ${p(kitchenAdjacentChillax)} because ${p(kitchenAdjacentLights)} was off`,
       ),
     );
   };
@@ -180,20 +154,20 @@ const $init: InitFunction = async (room, introspection) => {
 
   couchButton.state.bottomLeft.observe(() =>
     triggerMain(mediaOnOrSwitch, () =>
-      l(`"${p(couchButton)} bottomLeft" triggered "${p(mediaOnOrSwitch)}"`),
+      l(`${p(couchButton)} bottomLeft" triggered "${p(mediaOnOrSwitch)}`),
     ),
   );
 
   couchButton.state.bottomRight.observe(() =>
     triggerMain(mediaOff, () =>
-      l(`"${p(couchButton)} bottomRight" triggered "${p(mediaOff)}"`),
+      l(`${p(couchButton)} bottomRight" triggered "${p(mediaOff)}`),
     ),
   );
 
   standingLampButton.state.up(() =>
     flipMain(standingLamp, () =>
       l(
-        `"${p(standingLampButton)} ${standingLampButton.state.up.name}" flipped "${p(standingLamp)}"`,
+        `${p(standingLampButton)} ${standingLampButton.state.up.name} flipped ${p(standingLamp)}`,
       ),
     ),
   );
@@ -207,7 +181,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchBottom.state.up(() =>
     flipMain(standingLamp, () =>
       l(
-        `"${p(wallswitchBottom)} ${wallswitchBottom.state.up.name}" flipped "${p(standingLamp)}"`,
+        `${p(wallswitchBottom)} ${wallswitchBottom.state.up.name} flipped ${p(standingLamp)}`,
       ),
     ),
   );
@@ -221,7 +195,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchTop.state.up(() =>
     flipMain(hallwayGroups.ceilingLight, () =>
       l(
-        `"${p(wallswitchTop)} ${wallswitchTop.state.up.name}" flipped "${p(hallwayGroups.ceilingLight)}"`,
+        `${p(wallswitchTop)} ${wallswitchTop.state.up.name} flipped ${p(hallwayGroups.ceilingLight)}`,
       ),
     ),
   );
@@ -253,7 +227,7 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
 
     l(
-      `"for sun-elevation automation, set "${p(terrariumLedRed)}" to ${JSON.stringify(brightnessRed)} and "${p(terrariumLedTop)}" to ${JSON.stringify(brightnessWhite)}`,
+      `"for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
     );
   };
 
@@ -261,7 +235,7 @@ const $init: InitFunction = async (room, introspection) => {
     overrideTimer.state[value ? 'start' : 'stop']();
 
     l(
-      `"${value ? 'started' : 'stopped'}" timer "${p(overrideTimer)}" because "${p(terrariumLedsOverride)}" was set to ${JSON.stringify(value)}`,
+      `${value ? 'started' : 'stopped'} timer ${p(overrideTimer)} because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
     );
 
     if (!value) return;
@@ -270,7 +244,7 @@ const $init: InitFunction = async (room, introspection) => {
     setMain(devices.terrariumLeds.internal.ledB, false);
 
     l(
-      `"set "${p(terrariumLedRed)}" and "${p(terrariumLedTop)}" off because "${p(terrariumLedsOverride)}" was set to ${JSON.stringify(value)}`,
+      `"set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
     );
   });
 
@@ -279,7 +253,7 @@ const $init: InitFunction = async (room, introspection) => {
   devices.terrariumLeds.online.main.state.observe((isOnline) => {
     if (!isOnline) return;
 
-    l(`"${p(devices.terrariumLeds)}" is back online, running automation`);
+    l(`${p(devices.terrariumLeds)} is back online, running automation`);
 
     handleTerrariumLedsAutomation();
   });
@@ -288,7 +262,45 @@ const $init: InitFunction = async (room, introspection) => {
     isTerrariumLedsOverride.value = false;
 
     l(
-      `"${p(terrariumLedsOverride)}" was set false because "${p(overrideTimer)}" ran out`,
+      `${p(terrariumLedsOverride)} was set false because ${p(overrideTimer)} ran out`,
+    );
+  });
+
+  mediaOff.state.observe(async () => {
+    const result = await promiseGuard(
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
+        method: 'POST',
+        signal: AbortSignal.timeout(1000),
+      }),
+    );
+
+    l(
+      `${result?.type} ${result?.url} was sent because ${p(mediaOff)} was triggered`,
+    );
+
+    isTerrariumLedsOverride.value = false;
+
+    l(
+      `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
+    );
+  });
+
+  mediaOnOrSwitch.state.observe(async () => {
+    const result = await promiseGuard(
+      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
+        method: 'POST',
+        signal: AbortSignal.timeout(1000),
+      }),
+    );
+
+    l(
+      `${result?.type} ${result?.url} was sent because ${p(mediaOnOrSwitch)} was triggered`,
+    );
+
+    isTerrariumLedsOverride.value = true;
+
+    l(
+      `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
     );
   });
 };

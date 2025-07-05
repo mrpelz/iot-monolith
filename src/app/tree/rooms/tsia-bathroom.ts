@@ -135,74 +135,70 @@ export const scenesPartial = {
 };
 
 export const scenes = {
-  autoLight: triggerElement(
-    context,
-    () => {
-      let failover = false;
+  autoLight: triggerElement(context, 'light', () => {
+    let failover = false;
 
-      const elevation = sunElevation();
+    const elevation = sunElevation();
 
-      if (isNight(elevation)) {
-        if (devices.nightLight.online.main.state.value) {
-          scenes.nightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isAstronomicalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.nightLight.online.main.state.value
-        ) {
-          scenes.astronomicalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isNauticalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value
-        ) {
-          scenes.nauticalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (
-        (isCivilTwilight(elevation) || failover) &&
-        (devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value ||
-          devices.nightLight.online.main.state.value)
-      ) {
-        scenes.civilTwilightLighting.main.setState.value = true;
+    if (isNight(elevation)) {
+      if (devices.nightLight.online.main.state.value) {
+        scenes.nightLighting.main.setState.value = true;
 
         return;
       }
 
+      failover = true;
+    }
+
+    if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.ceilingLight.online.main.state.value ||
+        devices.leds.online.main.state.value ||
+        devices.nightLight.online.main.state.value
+      ) {
+        scenes.astronomicalTwilightLighting.main.setState.value = true;
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
         devices.leds.online.main.state.value ||
         devices.mirrorLight.online.main.state.value
       ) {
-        scenes.dayLighting.main.setState.value = true;
+        scenes.nauticalTwilightLighting.main.setState.value = true;
 
         return;
       }
 
-      groups.allLights.main.setState.value = true;
-    },
-    'light',
-  ),
+      failover = true;
+    }
+
+    if (
+      (isCivilTwilight(elevation) || failover) &&
+      (devices.leds.online.main.state.value ||
+        devices.mirrorLight.online.main.state.value ||
+        devices.nightLight.online.main.state.value)
+    ) {
+      scenes.civilTwilightLighting.main.setState.value = true;
+
+      return;
+    }
+
+    if (
+      devices.ceilingLight.online.main.state.value ||
+      devices.leds.online.main.state.value ||
+      devices.mirrorLight.online.main.state.value
+    ) {
+      scenes.dayLighting.main.setState.value = true;
+
+      return;
+    }
+
+    groups.allLights.main.setState.value = true;
+  }),
   ...scenesPartial,
 };
 

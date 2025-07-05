@@ -106,7 +106,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(kitchenAdjacentLights)) {
       setMain(kitchenAdjacentLights, false, () =>
         l(
-          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
         ),
       );
 
@@ -115,7 +115,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(kitchenAdjacentBright, true, () =>
       l(
-        `"${cause}" turned on "${p(kitchenAdjacentBright)}" because "${p(kitchenAdjacentLights)}" was off`,
+        `${cause} turned on ${p(kitchenAdjacentBright)} because ${p(kitchenAdjacentLights)} was off`,
       ),
     );
   };
@@ -124,7 +124,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(kitchenAdjacentLights)) {
       setMain(kitchenAdjacentLights, false, () =>
         l(
-          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
         ),
       );
 
@@ -133,7 +133,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(kitchenAdjacentChillax, true, () =>
       l(
-        `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
+        `${cause} turned on ${p(kitchenAdjacentChillax)} because ${p(kitchenAdjacentLights)} was off`,
       ),
     );
   };
@@ -141,7 +141,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontTop.state.up(() =>
     flipMain(allLights, () =>
       l(
-        `"${p(wallswitchFrontTop)} ${wallswitchFrontTop.state.up.name}" flipped "${p(allLights)}"`,
+        `${p(wallswitchFrontTop)} ${wallswitchFrontTop.state.up.name} flipped ${p(allLights)}`,
       ),
     ),
   );
@@ -155,7 +155,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontBottomLeft.state.up(() =>
     flipMain(worklightWWhite, () =>
       l(
-        `"${p(wallswitchFrontBottomLeft)} ${wallswitchFrontBottomLeft.state.up.name}" flipped "${p(worklightWWhite)}"`,
+        `${p(wallswitchFrontBottomLeft)} ${wallswitchFrontBottomLeft.state.up.name} flipped ${p(worklightWWhite)}`,
       ),
     ),
   );
@@ -169,7 +169,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontBottomRight.state.up(() =>
     flipMain(floodlight, () =>
       l(
-        `"${p(wallswitchFrontBottomRight)} ${wallswitchFrontBottomRight.state.up.name}" flipped "${p(floodlight)}"`,
+        `${p(wallswitchFrontBottomRight)} ${wallswitchFrontBottomRight.state.up.name} flipped ${p(floodlight)}`,
       ),
     ),
   );
@@ -183,7 +183,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchBack.state.up(() =>
     flipMain(allLights, () =>
       l(
-        `"${p(wallswitchBack)} ${wallswitchBack.state.up.name}" flipped "${p(allLights)}"`,
+        `${p(wallswitchBack)} ${wallswitchBack.state.up.name} flipped ${p(allLights)}`,
       ),
     ),
   );

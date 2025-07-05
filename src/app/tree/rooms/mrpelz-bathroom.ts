@@ -164,74 +164,7 @@ const scenesPartial = {
 };
 
 export const scenes = {
-  autoLight: triggerElement(
-    context,
-    () => {
-      let failover = false;
-
-      const elevation = sunElevation();
-
-      if (isNight(elevation)) {
-        if (devices.nightLight.online.main.state.value) {
-          scenes.nightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isAstronomicalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.nightLight.online.main.state.value
-        ) {
-          scenes.astronomicalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isNauticalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value
-        ) {
-          scenes.nauticalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (
-        (isCivilTwilight(elevation) || failover) &&
-        (devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value ||
-          devices.nightLight.online.main.state.value)
-      ) {
-        scenes.civilTwilightLighting.main.setState.value = true;
-
-        return;
-      }
-
-      if (
-        devices.ceilingLight.online.main.state.value ||
-        devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value
-      ) {
-        scenes.dayLighting.main.setState.value = true;
-
-        return;
-      }
-
-      groups.allLights.main.setState.value = true;
-    },
-    'light',
-  ),
+  autoLight: triggerElement(context, 'light'),
   ...scenesPartial,
 };
 
@@ -275,7 +208,7 @@ const $init: InitFunction = async (room, introspection) => {
   mirrorHeatingButton.state.up(() =>
     flipMain(mirrorHeating, () =>
       l(
-        `"${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.up.name}" flipped "${p(mirrorHeating)}"`,
+        `${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.up.name} flipped ${p(mirrorHeating)}`,
       ),
     ),
   );
@@ -283,7 +216,7 @@ const $init: InitFunction = async (room, introspection) => {
   mirrorHeatingButton.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -291,7 +224,7 @@ const $init: InitFunction = async (room, introspection) => {
   mirrorLightButton.state.up(() =>
     flipMain(mirrorLight, () =>
       l(
-        `"${p(mirrorLightButton)} ${mirrorLightButton.state.up.name}" flipped "${p(mirrorLight)}"`,
+        `${p(mirrorLightButton)} ${mirrorLightButton.state.up.name} flipped ${p(mirrorLight)}`,
       ),
     ),
   );
@@ -299,7 +232,7 @@ const $init: InitFunction = async (room, introspection) => {
   mirrorLightButton.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(mirrorLightButton)} ${mirrorLightButton.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(mirrorLightButton)} ${mirrorLightButton.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -307,7 +240,7 @@ const $init: InitFunction = async (room, introspection) => {
   nightLightButton.state.up(() =>
     flipMain(nightLight, () =>
       l(
-        `"${p(nightLightButton)} ${nightLightButton.state.up.name}" flipped "${p(nightLight)}"`,
+        `${p(nightLightButton)} ${nightLightButton.state.up.name} flipped ${p(nightLight)}`,
       ),
     ),
   );
@@ -315,7 +248,7 @@ const $init: InitFunction = async (room, introspection) => {
   nightLightButton.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(nightLightButton)} ${nightLightButton.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(nightLightButton)} ${nightLightButton.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -390,7 +323,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(allThings)) {
       setMain(allThings, false, () =>
         l(
-          `"${p(wallswitchDoor)} ${wallswitchDoor.state.up.name}" turned off "${p(allThings)}" because "${p(allThings)}" was on`,
+          `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} turned off ${p(allThings)} because ${p(allThings)} was on`,
         ),
       );
 
@@ -399,7 +332,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(dayLighting, true, () =>
       l(
-        `"${p(wallswitchDoor)} ${wallswitchDoor.state.up.name}" turned on "${p(dayLighting)}" because "${p(allThings)}" was off`,
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} turned on ${p(dayLighting)} because ${p(allThings)} was off`,
       ),
     );
   });
@@ -407,7 +340,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchDoor.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(wallswitchDoor)} ${wallswitchDoor.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -415,7 +348,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchMirrorTop.state.up(() =>
     flipMain(mirrorLight, () =>
       l(
-        `"${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.up.name}" flipped "${p(mirrorLight)}"`,
+        `${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.up.name} flipped ${p(mirrorLight)}`,
       ),
     ),
   );
@@ -423,7 +356,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchMirrorTop.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -432,7 +365,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(allThings)) {
       setMain(allThings, false, () =>
         l(
-          `"${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name}" turned off "${p(allThings)}" because "${p(allThings)}" was on`,
+          `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name} turned off ${p(allThings)} because ${p(allThings)} was on`,
         ),
       );
 
@@ -441,7 +374,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(nightLighting, true, () =>
       l(
-        `"${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name}" turned on "${p(nightLighting)}" because "${p(allThings)}" was off`,
+        `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name} turned on ${p(nightLighting)} because ${p(allThings)} was off`,
       ),
     );
   });
@@ -449,7 +382,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchMirrorBottom.state.longPress(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.longPress.name}" turned off "${p(allThings)}"`,
+        `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.longPress.name} turned off ${p(allThings)}`,
       ),
     ),
   );
@@ -458,7 +391,9 @@ const $init: InitFunction = async (room, introspection) => {
     if (!open) return;
     if (getMain(allLights)) return;
 
-    triggerMain(autoLight);
+    triggerMain(autoLight, () =>
+      l(`${p(door_)} was opened and ${p(autoLight)} was triggered`),
+    );
   });
 
   allThings.main.setState.observe((value) => {
@@ -467,7 +402,7 @@ const $init: InitFunction = async (room, introspection) => {
 
   allTimer.state.observe(() =>
     setMain(allThings, false, () =>
-      l(`"${p(allThings)}" was turned off because "${p(allTimer)}" ran out`),
+      l(`${p(allThings)} was turned off because ${p(allTimer)} ran out`),
     ),
   );
 
@@ -476,6 +411,93 @@ const $init: InitFunction = async (room, introspection) => {
       l(
         `${p(mirrorHeating)} was turned ${value ? 'on' : 'off'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
       ),
+    );
+  });
+
+  autoLight.state.observe(() => {
+    let failover = false;
+
+    const elevation = sunElevation();
+
+    if (isNight(elevation)) {
+      if (devices.nightLight.online.main.state.value) {
+        setMain(nightLighting, true, () =>
+          l(
+            `${p(nightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isAstronomicalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online.main.state.value ||
+        devices.nightLight.online.main.state.value
+      ) {
+        setMain(astronomicalTwilightLighting, true, () =>
+          l(
+            `${p(astronomicalTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online.main.state.value ||
+        devices.mirrorLight.online.main.state.value
+      ) {
+        setMain(nauticalTwilightLighting, true, () =>
+          l(
+            `${p(nauticalTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (
+      (isCivilTwilight(elevation) || failover) &&
+      (devices.leds.online.main.state.value ||
+        devices.mirrorLight.online.main.state.value ||
+        devices.nightLight.online.main.state.value)
+    ) {
+      setMain(civilTwilightLighting, true, () =>
+        l(
+          `${p(civilTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+        ),
+      );
+
+      return;
+    }
+
+    if (
+      devices.ceilingLight.online.main.state.value ||
+      devices.leds.online.main.state.value ||
+      devices.mirrorLight.online.main.state.value
+    ) {
+      setMain(dayLighting, true, () =>
+        l(
+          `${p(dayLighting)} was turned on because sun elevation is ${elevation}`,
+        ),
+      );
+
+      return;
+    }
+
+    setMain(allLights, true, () =>
+      l(`${p(allLights)} was turned on because scene members not online`),
     );
   });
 };

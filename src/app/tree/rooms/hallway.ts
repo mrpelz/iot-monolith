@@ -104,7 +104,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (getMain(kitchenAdjacentLights)) {
       setMain(kitchenAdjacentLights, false, () =>
         l(
-          `"${cause}" turned off "${p(kitchenAdjacentLights)}" because "${p(kitchenAdjacentLights)}" was on`,
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
         ),
       );
 
@@ -113,7 +113,7 @@ const $init: InitFunction = async (room, introspection) => {
 
     setMain(kitchenAdjacentChillax, true, () =>
       l(
-        `"${cause}" turned on "${p(kitchenAdjacentChillax)}" because "${p(kitchenAdjacentLights)}" was off`,
+        `${cause} turned on ${p(kitchenAdjacentChillax)} because ${p(kitchenAdjacentLights)} was off`,
       ),
     );
   };
@@ -121,7 +121,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchBack.state.up(() =>
     flipMain(ceilingLight, () =>
       l(
-        `"${p(wallswitchBack)} ${wallswitchBack.state.up.name}" flipped "${p(ceilingLight)}"`,
+        `${p(wallswitchBack)} ${wallswitchBack.state.up.name} flipped ${p(ceilingLight)}`,
       ),
     ),
   );
@@ -135,7 +135,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchMiddle.state.up(() =>
     flipMain(ceilingLight, () =>
       l(
-        `"${p(wallswitchMiddle)} ${wallswitchMiddle.state.up.name}" flipped "${p(ceilingLight)}"`,
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.up.name} flipped ${p(ceilingLight)}`,
       ),
     ),
   );
@@ -149,7 +149,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontLeft.state.up(() =>
     flipMain(ceilingLightFront, () =>
       l(
-        `"${p(wallswitchFrontLeft)} ${wallswitchFrontLeft.state.up.name}" flipped "${p(ceilingLightFront)}"`,
+        `${p(wallswitchFrontLeft)} ${wallswitchFrontLeft.state.up.name} flipped ${p(ceilingLightFront)}`,
       ),
     ),
   );
@@ -163,7 +163,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontMiddle.state.up(() =>
     flipMain(ceilingLightBack, () =>
       l(
-        `"${p(wallswitchFrontMiddle)} ${wallswitchFrontMiddle.state.up.name}" flipped "${p(ceilingLightBack)}"`,
+        `${p(wallswitchFrontMiddle)} ${wallswitchFrontMiddle.state.up.name} flipped ${p(ceilingLightBack)}`,
       ),
     ),
   );
@@ -177,7 +177,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontRight.state.up(() =>
     setMain(allThings, false, () =>
       l(
-        `"${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.up.name}" turned off "${p(allLights)}"`,
+        `${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.up.name} turned off ${p(allLights)}`,
       ),
     ),
   );
@@ -185,7 +185,7 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchFrontRight.state.longPress(() =>
     flipMain(allLights, () =>
       l(
-        `"${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.longPress.name}" flipped "${p(allLights)}"`,
+        `${p(wallswitchFrontRight)} ${wallswitchFrontRight.state.longPress.name} flipped ${p(allLights)}`,
       ),
     ),
   );
@@ -197,7 +197,7 @@ const $init: InitFunction = async (room, introspection) => {
     if (open) {
       setMain(ceilingLightFront, true, () => {
         l(
-          `"${p(entryDoor)}" was opened and "${p(ceilingLightFront)}" was turned on`,
+          `${p(entryDoor)} was opened and ${p(ceilingLightFront)} was turned on`,
         );
       });
     }
@@ -207,11 +207,11 @@ const $init: InitFunction = async (room, introspection) => {
       entryDoorTimer.state.start();
 
       l(
-        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and "${p(entryDoorTimer)}" was (re)started`,
+        `${p(entryDoor)} was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and ${p(entryDoorTimer)} was (re)started`,
       );
     } else {
       l(
-        `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and "${p(entryDoorTimer)}" was not started`,
+        `${p(entryDoor)} was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and ${p(entryDoorTimer)} was not started`,
       );
     }
   });
@@ -220,14 +220,14 @@ const $init: InitFunction = async (room, introspection) => {
     entryDoorTimer.state.stop();
 
     l(
-      `"${p(entryDoorTimer)}" was deactivated because "${p(ceilingLight)}" was manually set`,
+      `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
     );
   }, true);
 
   entryDoorTimer.state.observe(() =>
     setMain(ceilingLight, false, () =>
       l(
-        `"${p(ceilingLight)}" was turned off because "${p(entryDoorTimer)}" ran out`,
+        `${p(ceilingLight)} was turned off because ${p(entryDoorTimer)} ran out`,
       ),
     ),
   );
