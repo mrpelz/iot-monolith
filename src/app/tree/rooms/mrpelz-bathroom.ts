@@ -250,7 +250,7 @@ export const scenes = {
   const timer = new Timer(epochs.second * 5);
 
   instances.showerButton.observe(() => {
-    const firstPress = !timer.isRunning;
+    const firstPress = !timer.isActive;
 
     timer.start();
 
@@ -352,7 +352,7 @@ export const scenes = {
   });
 
   groups.allThings.main.setState.observe((value) => {
-    properties.allTimer.active.state.value = value;
+    properties.allTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   properties.allTimer.state.observe(() => {

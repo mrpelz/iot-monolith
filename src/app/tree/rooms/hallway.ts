@@ -204,7 +204,8 @@ const $init: InitFunction = async (room, introspection) => {
 
     // if entry door is opened OR if it is closed but the ceiling light is already on, (re)start the timer
     if (open || wasOn) {
-      entryDoorTimer.active.state.value = true;
+      entryDoorTimer.state.start();
+
       l(
         `"${p(entryDoor)}" was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and "${p(entryDoorTimer)}" was (re)started`,
       );
@@ -216,7 +217,8 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   ceilingLight.main.setState.observe(() => {
-    entryDoorTimer.active.state.value = false;
+    entryDoorTimer.state.stop();
+
     l(
       `"${p(entryDoorTimer)}" was deactivated because "${p(ceilingLight)}" was manually set`,
     );

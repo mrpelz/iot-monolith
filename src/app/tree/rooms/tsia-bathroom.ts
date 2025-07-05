@@ -210,7 +210,7 @@ export const scenes = {
   const timer = new Timer(epochs.second * 5);
 
   instances.bathtubButton.observe(() => {
-    const firstPress = !timer.isRunning;
+    const firstPress = !timer.isActive;
 
     timer.start();
 
@@ -310,7 +310,7 @@ export const scenes = {
   });
 
   groups.allLights.main.setState.observe((value) => {
-    properties.allLightsTimer.active.state.value = value;
+    properties.allLightsTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   properties.allLightsTimer.state.observe(() => {

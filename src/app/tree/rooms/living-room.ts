@@ -187,7 +187,7 @@ export const scenes = {
   };
 
   isTerrariumLedsOverride.observe((value) => {
-    properties.overrideTimer.active.state.value = value;
+    properties.overrideTimer.state[value ? 'start' : 'stop']();
 
     if (!value) return;
 
