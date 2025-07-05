@@ -1,6 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
@@ -181,10 +180,8 @@ const $init: InitFunction = async (room, introspection) => {
   const { allLights, allThings } = groups;
   const {
     allTimer,
-    ceilingLight,
     door: door_,
     mirrorHeating,
-    mirrorLed,
     mirrorLight,
     nightLight,
   } = properties;
@@ -253,71 +250,9 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  const timer = new Timer(epochs.second * 5);
-
-  showerButton.state.observe(() => {
-    const firstPress = !timer.isActive;
-
-    timer.start();
-
-    if (!getMain(allLights)) {
-      setMain(nightLighting, true);
-
-      return;
-    }
-
-    if (firstPress) {
-      setMain(allLights, false);
-
-      return;
-    }
-
-    if (
-      !getMain(ceilingLight) &&
-      !getMain(mirrorLed) &&
-      !getMain(mirrorLight) &&
-      getMain(nightLight)
-    ) {
-      setMain(astronomicalTwilightLighting, true);
-
-      return;
-    }
-
-    if (
-      !getMain(ceilingLight) &&
-      !getMain(mirrorLight) &&
-      getMain(mirrorLed) &&
-      getMain(nightLight)
-    ) {
-      setMain(nauticalTwilightLighting, true);
-
-      return;
-    }
-
-    if (
-      !getMain(ceilingLight) &&
-      !getMain(nightLight) &&
-      getMain(mirrorLed) &&
-      getMain(mirrorLight)
-    ) {
-      setMain(civilTwilightLighting, true);
-
-      return;
-    }
-
-    if (
-      !getMain(ceilingLight) &&
-      getMain(mirrorLed) &&
-      getMain(mirrorLight) &&
-      getMain(nightLight)
-    ) {
-      setMain(dayLighting, true);
-
-      return;
-    }
-
-    setMain(nightLight, true);
-  });
+  showerButton.state.observe(() =>
+    flipMain(allThings, () => l(`${p(showerButton)} flipped ${p(allThings)}`)),
+  );
 
   wallswitchDoor.state.up(() => {
     if (getMain(allThings)) {
@@ -330,17 +265,17 @@ const $init: InitFunction = async (room, introspection) => {
       return;
     }
 
-    setMain(dayLighting, true, () =>
+    triggerMain(autoLight, () =>
       l(
-        `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} turned on ${p(dayLighting)} because ${p(allThings)} was off`,
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} triggered ${p(autoLight)} because ${p(allThings)} was off`,
       ),
     );
   });
 
   wallswitchDoor.state.longPress(() =>
-    setMain(allThings, false, () =>
+    flipMain(allThings, () =>
       l(
-        `${p(wallswitchDoor)} ${wallswitchDoor.state.longPress.name} turned off ${p(allThings)}`,
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.longPress.name} flipped ${p(allThings)}`,
       ),
     ),
   );
@@ -397,7 +332,11 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   allThings.main.setState.observe((value) => {
-    properties.allTimer.state[value ? 'start' : 'stop']();
+    allTimer.state[value ? 'start' : 'stop']();
+
+    l(
+      `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+    );
   }, true);
 
   allTimer.state.observe(() =>

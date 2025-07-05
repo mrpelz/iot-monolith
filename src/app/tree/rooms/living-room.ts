@@ -227,7 +227,7 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
 
     l(
-      `"for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
+      `for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
     );
   };
 
@@ -244,7 +244,7 @@ const $init: InitFunction = async (room, introspection) => {
     setMain(devices.terrariumLeds.internal.ledB, false);
 
     l(
-      `"set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
+      `set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
     );
   });
 
@@ -274,9 +274,7 @@ const $init: InitFunction = async (room, introspection) => {
       }),
     );
 
-    l(
-      `${result?.type} ${result?.url} was sent because ${p(mediaOff)} was triggered`,
-    );
+    l(`${result?.url} was sent because ${p(mediaOff)} was triggered`);
 
     isTerrariumLedsOverride.value = false;
 
@@ -293,9 +291,7 @@ const $init: InitFunction = async (room, introspection) => {
       }),
     );
 
-    l(
-      `${result?.type} ${result?.url} was sent because ${p(mediaOnOrSwitch)} was triggered`,
-    );
+    l(`${result?.url} was sent because ${p(mediaOnOrSwitch)} was triggered`);
 
     isTerrariumLedsOverride.value = true;
 
