@@ -1,6 +1,6 @@
 {
   "name": "@iot/iot-monolith",
-  "version": "4.4.3",
+  "version": "5.0.0",
   "description": "monolithic approach to Node.js-enabled home automation",
   "repository": {
     "type": "git",
