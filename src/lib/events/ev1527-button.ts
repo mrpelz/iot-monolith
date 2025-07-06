@@ -21,7 +21,7 @@ export class Ev1527Button extends Event<Ev1527ButtonPayload> {
   }
 
   protected decode(input: Buffer): Ev1527ButtonPayload | null {
-    if (this._timer.isActive) return null;
+    if (this._timer.isRunning) return null;
 
     try {
       const [bottomLeft, bottomRight, topLeft, topRight] =

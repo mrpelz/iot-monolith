@@ -71,7 +71,7 @@ export const system = (async () => {
     $: 'system' as const,
     $init: () => {
       allThings.main.setState.observe((value) => {
-        allTimer.state[value ? 'start' : 'stop']();
+        allTimer.active.state.value = value;
       }, true);
 
       allTimer.state.observe(() => {

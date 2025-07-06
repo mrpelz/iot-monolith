@@ -140,22 +140,11 @@ export class JournaldOutput extends Output {
 }
 
 export class VirtualOutput extends Output {
-  private static _callback(
-    logs: Map<Date, LogWithLevel>,
-    maxEntries: number | undefined,
-  ) {
+  private static _callback(logs: Map<Date, LogWithLevel>) {
     return (log: LogWithLevel) => {
       const date = new Date();
 
       logs.set(date, log);
-
-      if (maxEntries) {
-        for (const [key] of logs) {
-          if (logs.size <= maxEntries) break;
-
-          logs.delete(key);
-        }
-      }
 
       return Promise.resolve();
     };
@@ -163,13 +152,10 @@ export class VirtualOutput extends Output {
 
   private readonly _logs: Map<Date, LogWithLevel>;
 
-  constructor(
-    logLevel: Level | CustomLevel = Level.DEBUG,
-    maxEntries?: number,
-  ) {
+  constructor(logLevel: Level | CustomLevel = Level.DEBUG) {
     const logs = new Map<Date, LogWithLevel>();
 
-    super(logLevel, VirtualOutput._callback(logs, maxEntries));
+    super(logLevel, VirtualOutput._callback(logs));
 
     this._logs = logs;
   }

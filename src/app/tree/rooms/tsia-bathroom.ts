@@ -135,70 +135,74 @@ export const scenesPartial = {
 };
 
 export const scenes = {
-  autoLight: triggerElement(context, 'light', () => {
-    let failover = false;
+  autoLight: triggerElement(
+    context,
+    () => {
+      let failover = false;
 
-    const elevation = sunElevation();
+      const elevation = sunElevation();
 
-    if (isNight(elevation)) {
-      if (devices.nightLight.online.main.state.value) {
-        scenes.nightLighting.main.setState.value = true;
+      if (isNight(elevation)) {
+        if (devices.nightLight.online.main.state.value) {
+          scenes.nightLighting.main.setState.value = true;
 
-        return;
+          return;
+        }
+
+        failover = true;
       }
 
-      failover = true;
-    }
+      if (isAstronomicalTwilight(elevation) || failover) {
+        if (
+          devices.leds.online.main.state.value ||
+          devices.nightLight.online.main.state.value
+        ) {
+          scenes.astronomicalTwilightLighting.main.setState.value = true;
 
-    if (isAstronomicalTwilight(elevation) || failover) {
+          return;
+        }
+
+        failover = true;
+      }
+
+      if (isNauticalTwilight(elevation) || failover) {
+        if (
+          devices.leds.online.main.state.value ||
+          devices.mirrorLight.online.main.state.value
+        ) {
+          scenes.nauticalTwilightLighting.main.setState.value = true;
+
+          return;
+        }
+
+        failover = true;
+      }
+
       if (
-        devices.leds.online.main.state.value ||
-        devices.nightLight.online.main.state.value
+        (isCivilTwilight(elevation) || failover) &&
+        (devices.leds.online.main.state.value ||
+          devices.mirrorLight.online.main.state.value ||
+          devices.nightLight.online.main.state.value)
       ) {
-        scenes.astronomicalTwilightLighting.main.setState.value = true;
+        scenes.civilTwilightLighting.main.setState.value = true;
 
         return;
       }
 
-      failover = true;
-    }
-
-    if (isNauticalTwilight(elevation) || failover) {
       if (
+        devices.ceilingLight.online.main.state.value ||
         devices.leds.online.main.state.value ||
         devices.mirrorLight.online.main.state.value
       ) {
-        scenes.nauticalTwilightLighting.main.setState.value = true;
+        scenes.dayLighting.main.setState.value = true;
 
         return;
       }
 
-      failover = true;
-    }
-
-    if (
-      (isCivilTwilight(elevation) || failover) &&
-      (devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value ||
-        devices.nightLight.online.main.state.value)
-    ) {
-      scenes.civilTwilightLighting.main.setState.value = true;
-
-      return;
-    }
-
-    if (
-      devices.ceilingLight.online.main.state.value ||
-      devices.leds.online.main.state.value ||
-      devices.mirrorLight.online.main.state.value
-    ) {
-      scenes.dayLighting.main.setState.value = true;
-
-      return;
-    }
-
-    groups.allLights.main.setState.value = true;
-  }),
+      groups.allLights.main.setState.value = true;
+    },
+    'light',
+  ),
   ...scenesPartial,
 };
 
@@ -206,7 +210,7 @@ export const scenes = {
   const timer = new Timer(epochs.second * 5);
 
   instances.bathtubButton.observe(() => {
-    const firstPress = !timer.isActive;
+    const firstPress = !timer.isRunning;
 
     timer.start();
 
@@ -306,7 +310,7 @@ export const scenes = {
   });
 
   groups.allLights.main.setState.observe((value) => {
-    properties.allLightsTimer.state[value ? 'start' : 'stop']();
+    properties.allLightsTimer.active.state.value = value;
   }, true);
 
   properties.allLightsTimer.state.observe(() => {

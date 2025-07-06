@@ -117,7 +117,7 @@ export const groups = {
   instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
 
   properties.floodlight.main.setState.observe((value) => {
-    properties.floodlightTimer.state[value ? 'start' : 'stop']();
+    properties.floodlightTimer.active.state.value = value;
   }, true);
 
   properties.floodlightTimer.state.observe(() => {

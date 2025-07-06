@@ -1,45 +1,24 @@
-import {
-  AnyReadOnlyObservable,
-  Observable,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from './observable.js';
-import { BooleanState, NullState } from './state.js';
+import { NullState } from './state.js';
 
 export class Timer extends NullState {
+  private _enabled = false;
   private readonly _time: number;
-  private _timeout: NodeJS.Timeout | null;
-  private readonly _triggerTime = new Observable<number | null>(null);
+  private _timeout: NodeJS.Timeout | null = null;
 
-  readonly isEnabled: BooleanState;
-  readonly runoutTime: ReadOnlyProxyObservable<number | null>;
-
-  constructor(time = 0, enableFromStart = false) {
+  constructor(time = 0) {
     super();
 
     this._time = time;
 
-    this.isEnabled = new BooleanState(enableFromStart, (enabled) => {
-      if (enabled) return;
-
-      this.stop();
-    });
-
-    this.runoutTime = new ReadOnlyProxyObservable(
-      this._triggerTime,
-      (value) => {
-        if (value === null) return null;
-        return value + this._time;
-      },
-    );
+    this.enable();
   }
 
-  get isActive(): AnyReadOnlyObservable<boolean> {
-    return new ReadOnlyProxyObservable(this._triggerTime, Boolean);
+  get isRunning(): boolean {
+    return Boolean(this._timeout);
   }
 
-  get triggerTime(): AnyReadOnlyObservable<number | null> {
-    return new ReadOnlyObservable(this._triggerTime);
+  get isEnabled(): boolean {
+    return Boolean(this._enabled);
   }
 
   private _handleFire() {
@@ -48,28 +27,28 @@ export class Timer extends NullState {
   }
 
   disable(): void {
-    this.isEnabled.value = false;
+    if (!this._enabled) return;
+
+    this.stop();
+    this._enabled = false;
   }
 
   enable(): void {
-    this.isEnabled.value = true;
+    this._enabled = true;
   }
 
   start(restart = true): void {
-    if (!this.isEnabled.value) return;
-    if (this._timeout && !restart) return;
+    if (!this._enabled) return;
+    if (this.isRunning && !restart) return;
 
     this.stop();
-
     this._timeout = setTimeout(() => this._handleFire(), this._time);
-    this._triggerTime.value = Date.now();
   }
 
   stop(): void {
-    if (!this._timeout) return;
-
-    clearTimeout(this._timeout);
-    this._timeout = null;
-    this._triggerTime.value = null;
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = null;
+    }
   }
 }

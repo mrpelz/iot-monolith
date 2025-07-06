@@ -405,19 +405,14 @@ export const identifyDevice = (_: Context, indicator: Indicator) => ({
 
 export const triggerElement = <T extends string>(
   _: Context,
+  handler: () => void,
   topic: T,
-  handler?: () => void,
-) => {
-  const state = new NullState(handler);
-
-  return {
-    $: 'triggerElement' as const,
-    level: Level.PROPERTY as const,
-    main: trigger(ValueType.NULL, state, 'trigger'),
-    state,
-    topic,
-  };
-};
+) => ({
+  $: 'triggerElement' as const,
+  level: Level.PROPERTY as const,
+  main: trigger(ValueType.NULL, new NullState(handler), 'trigger'),
+  topic,
+});
 
 export class SceneMember<T> {
   constructor(
