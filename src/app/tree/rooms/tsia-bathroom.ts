@@ -206,7 +206,7 @@ export const scenes = {
   const timer = new Timer(epochs.second * 5);
 
   instances.bathtubButton.observe(() => {
-    const firstPress = !timer.isActive;
+    const firstPress = !timer.isActive.value;
 
     timer.start();
 
