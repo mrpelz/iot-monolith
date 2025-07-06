@@ -14,7 +14,7 @@ export class Timer extends NullState {
   readonly isEnabled: BooleanState;
   readonly runoutTime: ReadOnlyProxyObservable<number | null>;
 
-  constructor(time = 0, enableFromStart = false) {
+  constructor(time = 0, enableFromStart = true) {
     super();
 
     this._time = time;
