@@ -96,20 +96,12 @@ export const kitchenAdjacentBright = scene(
   'lighting',
 );
 
-export const allLightsOff = triggerElement(
-  context,
-  async () => {
-    const allLights_ = await allLights;
-    allLights_.main.setState.value = false;
-  },
-  'lighting',
-);
+export const allLightsOff = triggerElement(context, 'lighting', async () => {
+  const allLights_ = await allLights;
+  allLights_.main.setState.value = false;
+});
 
-export const allOff = triggerElement(
-  context,
-  async () => {
-    const allThings_ = await allThings;
-    allThings_.main.setState.value = false;
-  },
-  'scene',
-);
+export const allOff = triggerElement(context, 'scene', async () => {
+  const allThings_ = await allThings;
+  allThings_.main.setState.value = false;
+});

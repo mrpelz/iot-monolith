@@ -14,12 +14,12 @@ import { HttpServer } from '../lib/http-server.js';
 import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
-import { logicReasoningOutput } from './logging.js';
 
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
-  const { logger, logicReasoningLevel } = await import('./logging.js');
+  const { logger, logicReasoningLevel, logicReasoningOutput, virtualOutput } =
+    await import('./logging.js');
   const { persistence } = await import('./persistence.js');
 
   const { system: _system } = await import('./tree/system.js');
@@ -100,13 +100,30 @@ export const app = async (): Promise<void> => {
 
   httpServer.listen();
 
+  httpServer.route('/log', async ({ response, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
+    response.setHeader('Content-Type', 'application/json;charset=utf-8');
+    response.end(
+      JSON.stringify(
+        virtualOutput.logs.map(([date, log_]) => [
+          { date: date.toString(), epoch: date.getTime() },
+          log_,
+        ]),
+      ),
+    );
+  });
+
   httpServer.route('/logic-reasoning', async ({ response, utils }) => {
     if (utils.constrainMethod('GET')) return;
 
-    response.setHeader('Content-Type', 'application/json');
+    response.setHeader('Content-Type', 'application/json;charset=utf-8');
     response.end(
       JSON.stringify(
-        logicReasoningOutput.logs.map(([date, log_]) => [date.getTime(), log_]),
+        logicReasoningOutput.logs.map(([date, log_]) => [
+          { date: date.toString(), epoch: date.getTime() },
+          log_,
+        ]),
       ),
     );
   });

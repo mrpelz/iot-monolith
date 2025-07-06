@@ -27,46 +27,7 @@ export const offTimer = (
 
   const { persistence } = context;
 
-  const enabled = new BooleanState(enableFromStart);
-  const active = new BooleanState(false);
-
-  const triggerTime = new Observable<number | null>(null);
-  const runoutTime = new ReadOnlyProxyObservable(triggerTime, (input) => {
-    if (input === null) return null;
-    return input + time;
-  });
-
-  const timer = new Timer(time);
-
-  enabled.observe((value) => {
-    if (value) return;
-
-    active.value = false;
-  });
-
-  active.observe((value) => {
-    if (value) {
-      if (!enabled.value) {
-        active.value = false;
-
-        return;
-      }
-
-      timer.start();
-      triggerTime.value = Date.now();
-
-      return;
-    }
-
-    triggerTime.value = null;
-
-    if (!timer.isRunning) return;
-    timer.stop();
-  }, true);
-
-  timer.observe(() => {
-    active.value = false;
-  });
+  const timer = new Timer(time, enableFromStart);
 
   const $init: InitFunction = (self, introspection) => {
     if (!persistence) return;
@@ -74,7 +35,7 @@ export const offTimer = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(mainReference.pathString, enabled);
+    persistence.observe(mainReference.pathString, timer.isEnabled);
 
     // const labels = Metrics.hierarchyLabels(introspection, self);
     // if (!labels) return;
@@ -107,38 +68,28 @@ export const offTimer = (
     $init,
     active: {
       cancel: {
-        main: trigger(
-          ValueType.NULL,
-          new NullState(() => (active.value = false)),
-        ),
+        main: trigger(ValueType.NULL, new NullState(() => timer.stop())),
       },
-      main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(active)),
+      main: getter(ValueType.BOOLEAN, timer.isActive),
       reset: {
-        main: trigger(
-          ValueType.NULL,
-          new NullState(() => {
-            if (!active.value) return;
-            active.value = true;
-          }),
-        ),
+        main: trigger(ValueType.NULL, new NullState(() => timer.start())),
       },
-      state: active,
+      state: timer.isActive,
     },
     flip: {
-      main: trigger(ValueType.NULL, new NullState(() => enabled.flip())),
+      main: trigger(
+        ValueType.NULL,
+        new NullState(() => timer.isEnabled.flip()),
+      ),
     },
     level: Level.PROPERTY as const,
-    main: setter(ValueType.BOOLEAN, enabled, undefined, 'on'),
+    main: setter(ValueType.BOOLEAN, timer.isEnabled, undefined, 'on'),
     runoutTime: {
-      main: getter(ValueType.NUMBER, runoutTime, 'date'),
+      main: getter(ValueType.NUMBER, timer.runoutTime, 'date'),
     },
     state: timer,
     triggerTime: {
-      main: getter(
-        ValueType.NUMBER,
-        new ReadOnlyObservable(triggerTime),
-        'date',
-      ),
+      main: getter(ValueType.NUMBER, timer.triggerTime, 'date'),
     },
   };
 };

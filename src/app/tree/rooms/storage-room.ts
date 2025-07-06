@@ -52,8 +52,7 @@ export const groups = {
 
     indicatorInProgress = false;
 
-    // eslint-disable-next-line require-atomic-updates
-    properties.lightTimer.active.state.value = false;
+    properties.lightTimer.state.stop();
   });
 
   properties.door.open.main.state.observe((value) => {
@@ -64,7 +63,7 @@ export const groups = {
   properties.ceilingLight.main.setState.observe((value) => {
     if (indicatorInProgress) return;
 
-    properties.lightTimer.active.state.value = value;
+    properties.lightTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   properties.lightTimer.state.observe(() => {

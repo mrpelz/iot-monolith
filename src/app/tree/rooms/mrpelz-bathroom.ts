@@ -1,5 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
-import { Timer } from '../../../lib/timer.js';
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
@@ -7,7 +7,15 @@ import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import {
+  flipMain,
+  getMain,
+  setMain,
+  triggerMain,
+} from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import {
   outputGrouping,
   scene,
@@ -17,6 +25,7 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import {
   isAstronomicalTwilight,
   isCivilTwilight,
@@ -57,13 +66,13 @@ export const devices = {
 };
 
 export const instances = {
-  mirrorHeatingButton: devices.mirrorHeating.internal.button.state,
-  mirrorLightButton: devices.mirrorLight.internal.button.state,
-  nightLightButton: devices.nightLight.internal.button.state,
-  showerButton: devices.showerButton.state,
-  wallswitchDoor: devices.wallswitchDoor.internal.button0.state,
-  wallswitchMirrorBottom: devices.wallswitchDoor.internal.button2.state,
-  wallswitchMirrorTop: devices.wallswitchDoor.internal.button1.state,
+  mirrorHeatingButton: devices.mirrorHeating.internal.button,
+  mirrorLightButton: devices.mirrorLight.internal.button,
+  nightLightButton: devices.nightLight.internal.button,
+  showerButton: devices.showerButton,
+  wallswitchDoor: devices.wallswitchDoor.internal.button0,
+  wallswitchMirrorBottom: devices.wallswitchDoor.internal.button2,
+  wallswitchMirrorTop: devices.wallswitchDoor.internal.button1,
 };
 
 export const properties = {
@@ -154,221 +163,291 @@ const scenesPartial = {
 };
 
 export const scenes = {
-  autoLight: triggerElement(
-    context,
-    () => {
-      let failover = false;
-
-      const elevation = sunElevation();
-
-      if (isNight(elevation)) {
-        if (devices.nightLight.online.main.state.value) {
-          scenes.nightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isAstronomicalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.nightLight.online.main.state.value
-        ) {
-          scenes.astronomicalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (isNauticalTwilight(elevation) || failover) {
-        if (
-          devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value
-        ) {
-          scenes.nauticalTwilightLighting.main.setState.value = true;
-
-          return;
-        }
-
-        failover = true;
-      }
-
-      if (
-        (isCivilTwilight(elevation) || failover) &&
-        (devices.leds.online.main.state.value ||
-          devices.mirrorLight.online.main.state.value ||
-          devices.nightLight.online.main.state.value)
-      ) {
-        scenes.civilTwilightLighting.main.setState.value = true;
-
-        return;
-      }
-
-      if (
-        devices.ceilingLight.online.main.state.value ||
-        devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value
-      ) {
-        scenes.dayLighting.main.setState.value = true;
-
-        return;
-      }
-
-      groups.allLights.main.setState.value = true;
-    },
-    'light',
-  ),
+  autoLight: triggerElement(context, 'light'),
   ...scenesPartial,
 };
 
-(() => {
-  instances.mirrorHeatingButton.up(() =>
-    properties.mirrorHeating.flip.setState.trigger(),
-  );
-  instances.mirrorHeatingButton.longPress(
-    () => (groups.allThings.main.setState.value = false),
+const $init: InitFunction = async (room, introspection) => {
+  const {
+    mirrorHeatingButton,
+    mirrorLightButton,
+    nightLightButton,
+    showerButton,
+    wallswitchDoor,
+    wallswitchMirrorBottom,
+    wallswitchMirrorTop,
+  } = instances;
+  const { allLights, allThings } = groups;
+  const {
+    allTimer,
+    door: door_,
+    mirrorHeating,
+    mirrorLight,
+    nightLight,
+  } = properties;
+  const {
+    astronomicalTwilightLighting,
+    autoLight,
+    civilTwilightLighting,
+    dayLighting,
+    nauticalTwilightLighting,
+    nightLighting,
+  } = scenes;
+
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
   );
 
-  instances.mirrorLightButton.up(() =>
-    properties.mirrorLight.flip.setState.trigger(),
-  );
-  instances.mirrorLightButton.longPress(
-    () => (groups.allThings.main.setState.value = false),
-  );
-
-  instances.nightLightButton.up(() =>
-    properties.nightLight.flip.setState.trigger(),
-  );
-  instances.nightLightButton.longPress(
-    () => (groups.allThings.main.setState.value = false),
+  mirrorHeatingButton.state.up(() =>
+    flipMain(mirrorHeating, () =>
+      l(
+        `${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.up.name} flipped ${p(mirrorHeating)}`,
+      ),
+    ),
   );
 
-  const timer = new Timer(epochs.second * 5);
+  mirrorHeatingButton.state.longPress(() =>
+    setMain(allThings, false, () =>
+      l(
+        `${p(mirrorHeatingButton)} ${mirrorHeatingButton.state.longPress.name} turned off ${p(allThings)}`,
+      ),
+    ),
+  );
 
-  instances.showerButton.observe(() => {
-    const firstPress = !timer.isRunning;
+  mirrorLightButton.state.up(() =>
+    flipMain(mirrorLight, () =>
+      l(
+        `${p(mirrorLightButton)} ${mirrorLightButton.state.up.name} flipped ${p(mirrorLight)}`,
+      ),
+    ),
+  );
 
-    timer.start();
+  mirrorLightButton.state.longPress(() =>
+    setMain(allThings, false, () =>
+      l(
+        `${p(mirrorLightButton)} ${mirrorLightButton.state.longPress.name} turned off ${p(allThings)}`,
+      ),
+    ),
+  );
 
-    if (!groups.allLights.main.setState.value) {
-      scenes.nightLighting.main.setState.value = true;
+  nightLightButton.state.up(() =>
+    flipMain(nightLight, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.up.name} flipped ${p(nightLight)}`,
+      ),
+    ),
+  );
+
+  nightLightButton.state.longPress(() =>
+    setMain(allThings, false, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.longPress.name} turned off ${p(allThings)}`,
+      ),
+    ),
+  );
+
+  showerButton.state.observe(() =>
+    flipMain(allThings, () => l(`${p(showerButton)} flipped ${p(allThings)}`)),
+  );
+
+  wallswitchDoor.state.up(() => {
+    if (getMain(allThings)) {
+      setMain(allThings, false, () =>
+        l(
+          `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} turned off ${p(allThings)} because ${p(allThings)} was on`,
+        ),
+      );
 
       return;
     }
 
-    if (firstPress) {
-      groups.allLights.main.setState.value = false;
-
-      return;
-    }
-
-    if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.mirrorLed.main.setState.value &&
-      !properties.mirrorLight.main.setState.value &&
-      properties.nightLight.main.setState.value
-    ) {
-      scenes.astronomicalTwilightLighting.main.setState.value = true;
-
-      return;
-    }
-
-    if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.mirrorLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.nightLight.main.setState.value
-    ) {
-      scenes.nauticalTwilightLighting.main.setState.value = true;
-
-      return;
-    }
-
-    if (
-      !properties.ceilingLight.main.setState.value &&
-      !properties.nightLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.mirrorLight.main.setState.value
-    ) {
-      scenes.civilTwilightLighting.main.setState.value = true;
-
-      return;
-    }
-
-    if (
-      !properties.ceilingLight.main.setState.value &&
-      properties.mirrorLed.main.setState.value &&
-      properties.mirrorLight.main.setState.value &&
-      properties.nightLight.main.setState.value
-    ) {
-      scenes.dayLighting.main.setState.value = true;
-
-      return;
-    }
-
-    scenes.nightLighting.main.setState.value = true;
+    triggerMain(autoLight, () =>
+      l(
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.up.name} triggered ${p(autoLight)} because ${p(allThings)} was off`,
+      ),
+    );
   });
 
-  instances.wallswitchDoor.up(() => {
-    if (groups.allThings.main.setState.value) {
-      groups.allThings.main.setState.value = false;
+  wallswitchDoor.state.longPress(() =>
+    flipMain(allThings, () =>
+      l(
+        `${p(wallswitchDoor)} ${wallswitchDoor.state.longPress.name} flipped ${p(allThings)}`,
+      ),
+    ),
+  );
+
+  wallswitchMirrorTop.state.up(() =>
+    flipMain(mirrorLight, () =>
+      l(
+        `${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.up.name} flipped ${p(mirrorLight)}`,
+      ),
+    ),
+  );
+
+  wallswitchMirrorTop.state.longPress(() =>
+    setMain(allThings, false, () =>
+      l(
+        `${p(wallswitchMirrorTop)} ${wallswitchMirrorTop.state.longPress.name} turned off ${p(allThings)}`,
+      ),
+    ),
+  );
+
+  wallswitchMirrorBottom.state.up(() => {
+    if (getMain(allThings)) {
+      setMain(allThings, false, () =>
+        l(
+          `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name} turned off ${p(allThings)} because ${p(allThings)} was on`,
+        ),
+      );
+
       return;
     }
 
-    scenes.dayLighting.main.setState.value = true;
-  });
-  instances.wallswitchDoor.longPress(
-    () => (groups.allThings.main.setState.value = false),
-  );
-
-  instances.wallswitchMirrorTop.up(() =>
-    properties.mirrorLight.flip.setState.trigger(),
-  );
-  instances.wallswitchMirrorTop.longPress(
-    () => (groups.allThings.main.setState.value = false),
-  );
-
-  instances.wallswitchMirrorBottom.up(() => {
-    if (scenes.nightLighting.main.state.value) {
-      groups.allThings.main.setState.value = false;
-      return;
-    }
-
-    scenes.nightLighting.main.setState.value = true;
-  });
-  instances.wallswitchMirrorBottom.longPress(
-    () => (groups.allThings.main.setState.value = false),
-  );
-
-  properties.door.open.main.state.observe((value) => {
-    if (!value) return;
-    if (groups.allLights.main.setState.value) return;
-
-    scenes.autoLight.main.setState.trigger();
+    setMain(nightLighting, true, () =>
+      l(
+        `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.up.name} turned on ${p(nightLighting)} because ${p(allThings)} was off`,
+      ),
+    );
   });
 
-  groups.allThings.main.setState.observe((value) => {
-    properties.allTimer.active.state.value = value;
+  wallswitchMirrorBottom.state.longPress(() =>
+    setMain(allThings, false, () =>
+      l(
+        `${p(wallswitchMirrorBottom)} ${wallswitchMirrorBottom.state.longPress.name} turned off ${p(allThings)}`,
+      ),
+    ),
+  );
+
+  door_.open.main.state.observe((open) => {
+    if (!open) return;
+    if (getMain(allLights)) return;
+
+    triggerMain(autoLight, () =>
+      l(`${p(door_)} was opened and ${p(autoLight)} was triggered`),
+    );
+  });
+
+  allThings.main.setState.observe((value) => {
+    allTimer.state[value ? 'start' : 'stop']();
+
+    l(
+      `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+    );
   }, true);
 
-  properties.allTimer.state.observe(() => {
-    groups.allThings.main.setState.value = false;
+  allTimer.state.observe(() =>
+    setMain(allThings, false, () =>
+      l(`${p(allThings)} was turned off because ${p(allTimer)} ran out`),
+    ),
+  );
+
+  allLights.main.setState.observe((value) => {
+    setMain(mirrorHeating, value, () =>
+      l(
+        `${p(mirrorHeating)} was turned ${value ? 'on' : 'off'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
+      ),
+    );
   });
 
-  groups.allLights.main.setState.observe((value) => {
-    properties.mirrorHeating.main.setState.value = value;
+  autoLight.state.observe(() => {
+    let failover = false;
+
+    const elevation = sunElevation();
+
+    if (isNight(elevation)) {
+      if (devices.nightLight.online.main.state.value) {
+        setMain(nightLighting, true, () =>
+          l(
+            `${p(nightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isAstronomicalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online.main.state.value ||
+        devices.nightLight.online.main.state.value
+      ) {
+        setMain(astronomicalTwilightLighting, true, () =>
+          l(
+            `${p(astronomicalTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (isNauticalTwilight(elevation) || failover) {
+      if (
+        devices.leds.online.main.state.value ||
+        devices.mirrorLight.online.main.state.value
+      ) {
+        setMain(nauticalTwilightLighting, true, () =>
+          l(
+            `${p(nauticalTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+          ),
+        );
+
+        return;
+      }
+
+      failover = true;
+    }
+
+    if (
+      (isCivilTwilight(elevation) || failover) &&
+      (devices.leds.online.main.state.value ||
+        devices.mirrorLight.online.main.state.value ||
+        devices.nightLight.online.main.state.value)
+    ) {
+      setMain(civilTwilightLighting, true, () =>
+        l(
+          `${p(civilTwilightLighting)} was turned on because sun elevation is ${elevation}`,
+        ),
+      );
+
+      return;
+    }
+
+    if (
+      devices.ceilingLight.online.main.state.value ||
+      devices.leds.online.main.state.value ||
+      devices.mirrorLight.online.main.state.value
+    ) {
+      setMain(dayLighting, true, () =>
+        l(
+          `${p(dayLighting)} was turned on because sun elevation is ${elevation}`,
+        ),
+      );
+
+      return;
+    }
+
+    setMain(allLights, true, () =>
+      l(`${p(allLights)} was turned on because scene members not online`),
+    );
   });
-})();
+};
 
 export const mrpelzBathroom = {
   $: 'mrpelzBathroom' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
   ...scenes,
 };
