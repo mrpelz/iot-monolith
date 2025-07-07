@@ -1,3 +1,4 @@
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { EnumState } from '../../../lib/state.js';
 import {
   ev1527ButtonX1,
@@ -11,7 +12,10 @@ import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import {
   ledGrouping,
   outputGrouping,
@@ -24,6 +28,7 @@ import {
   window,
 } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -67,16 +72,16 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.state,
-  heatLampButton: devices.heatLamp.internal.button.state,
-  ionGeneratorButton: devices.ionGenerator.internal.button.state,
-  multiButton: devices.multiButton.state,
-  nightLightButton: devices.nightLight.internal.button.state,
-  standingLampButton: devices.standingLamp.internal.button.state,
-  wallswitchBed: devices.ceilingLight.internal.button.state,
-  wallswitchDoorLeft: devices.wallswitchDoor.internal.button0.state,
-  wallswitchDoorMiddle: devices.wallswitchDoor.internal.button1.state,
-  wallswitchDoorRight: devices.wallswitchDoor.internal.button2.state,
+  button: devices.button,
+  heatLampButton: devices.heatLamp.internal.button,
+  ionGeneratorButton: devices.ionGenerator.internal.button,
+  multiButton: devices.multiButton,
+  nightLightButton: devices.nightLight.internal.button,
+  standingLampButton: devices.standingLamp.internal.button,
+  wallswitchBed: devices.ceilingLight.internal.button,
+  wallswitchDoorLeft: devices.wallswitchDoor.internal.button0,
+  wallswitchDoorMiddle: devices.wallswitchDoor.internal.button1,
+  wallswitchDoorRight: devices.wallswitchDoor.internal.button2,
 };
 
 export const properties = {
@@ -349,100 +354,239 @@ const sceneCycle = new EnumState(
   scenes.allOff,
 );
 
-(() => {
-  const offOrElse = (fn: () => void) => () => {
-    if (groups.allLights.main.setState.value) {
-      groups.allLights.main.setState.value = false;
+const $init: InitFunction = (room, introspection) => {
+  const { allLights } = groups;
+  const {
+    button,
+    heatLampButton,
+    ionGeneratorButton,
+    multiButton,
+    nightLightButton,
+    standingLampButton,
+    wallswitchBed,
+    wallswitchDoorLeft,
+    wallswitchDoorMiddle,
+    wallswitchDoorRight,
+  } = instances;
+  const { ceilingLight, heatLamp, ionGenerator, nightLight, standingLamp } =
+    properties;
+  const { ceilingLightPlus, moodLight, onlyNightLight } = scenes;
+
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
+  );
+
+  const offOrElse = (cause: string, fn: (cause: string) => void) => () => {
+    if (getMain(allLights)) {
+      setMain(allLights, false, () =>
+        l(
+          `${cause} turned off ${p(allLights)}, because ${p(allLights)} was on`,
+        ),
+      );
+
       return;
     }
 
-    fn();
+    fn(cause);
   };
-  instances.button.observe(
-    offOrElse(() => (scenes.onlyNightLight.main.setState.value = true)),
+
+  button.state.observe(
+    offOrElse(`${p(button)}`, (cause) =>
+      setMain(onlyNightLight, true, () =>
+        l(
+          `${cause} turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
+        ),
+      ),
+    ),
   );
 
-  instances.multiButton.topLeft.observe(
-    offOrElse(() => (scenes.moodLight.main.setState.value = true)),
-  );
-  instances.multiButton.topRight.observe(
-    offOrElse(() => (scenes.ceilingLightPlus.main.setState.value = true)),
-  );
-  instances.multiButton.bottomLeft.observe(() => sceneCycle.previous());
-  instances.multiButton.bottomRight.observe(() => sceneCycle.next());
-
-  instances.heatLampButton.up(() =>
-    properties.heatLamp.flip.setState.trigger(),
-  );
-  instances.heatLampButton.longPress(
-    () => (groups.allLights.main.setState.value = false),
+  multiButton.state.topLeft.observe(
+    offOrElse(`${p(multiButton)} topLeft`, (cause) =>
+      setMain(moodLight, true, () =>
+        l(
+          `${cause} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+        ),
+      ),
+    ),
   );
 
-  instances.ionGeneratorButton.up(() =>
-    properties.ionGenerator.flip.setState.trigger(),
-  );
-  instances.ionGeneratorButton.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
-
-  instances.nightLightButton.up(() =>
-    properties.nightLight.flip.setState.trigger(),
-  );
-  instances.nightLightButton.longPress(
-    () => (groups.allLights.main.setState.value = false),
+  multiButton.state.topRight.observe(
+    offOrElse(`${p(multiButton)} topRight`, (cause) =>
+      setMain(ceilingLightPlus, true, () =>
+        l(
+          `${cause} turned on ${p(ceilingLightPlus)}, because ${p(allLights)} was off`,
+        ),
+      ),
+    ),
   );
 
-  instances.standingLampButton.up(() =>
-    properties.standingLamp.flip.setState.trigger(),
-  );
-  instances.standingLampButton.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
-
-  instances.wallswitchBed.up(() =>
-    properties.ceilingLight.flip.setState.trigger(),
-  );
-  instances.wallswitchBed.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
-
-  instances.wallswitchDoorLeft.up(() => {
-    if (!groups.allLights.main.setState.value) {
-      scenes.onlyNightLight.main.setState.value = true;
-      return;
-    }
-
+  multiButton.state.bottomLeft.observe(() => {
+    l(`${p(multiButton)} bottomLeft triggering sceneCycle to previous`);
     sceneCycle.previous();
   });
-  instances.wallswitchDoorLeft.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
 
-  instances.wallswitchDoorMiddle.up(() => {
-    if (groups.allLights.main.setState.value) {
-      groups.allLights.main.setState.value = false;
-      return;
-    }
-
-    scenes.moodLight.main.setState.value = true;
-  });
-  instances.wallswitchDoorMiddle.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
-
-  instances.wallswitchDoorRight.up(() => {
-    if (!groups.allLights.main.setState.value) {
-      scenes.ceilingLightPlus.main.setState.value = true;
-      return;
-    }
-
+  multiButton.state.bottomRight.observe(() => {
+    l(`${p(multiButton)} bottomRight triggering sceneCycle to next`);
     sceneCycle.next();
   });
-  instances.wallswitchDoorRight.longPress(
-    () => (groups.allLights.main.setState.value = false),
+
+  heatLampButton.state.up(() =>
+    flipMain(heatLamp, () =>
+      l(
+        `${p(heatLampButton)} ${heatLampButton.state.up.name} flipped ${p(heatLamp)}`,
+      ),
+    ),
   );
 
-  sceneCycle.observe((value) => (value.main.setState.value = true));
+  heatLampButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(heatLampButton)} ${heatLampButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  ionGeneratorButton.state.up(() =>
+    flipMain(ionGenerator, () =>
+      l(
+        `${p(ionGeneratorButton)} ${ionGeneratorButton.state.up.name} flipped ${p(ionGenerator)}`,
+      ),
+    ),
+  );
+
+  ionGeneratorButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(ionGeneratorButton)} ${ionGeneratorButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  nightLightButton.state.up(() =>
+    flipMain(nightLight, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.up.name} flipped ${p(nightLight)}`,
+      ),
+    ),
+  );
+
+  nightLightButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  standingLampButton.state.up(() =>
+    flipMain(standingLamp, () =>
+      l(
+        `${p(standingLampButton)} ${standingLampButton.state.up.name} flipped ${p(standingLamp)}`,
+      ),
+    ),
+  );
+
+  standingLampButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(standingLampButton)} ${standingLampButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchBed.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `${p(wallswitchBed)} ${wallswitchBed.state.up.name} flipped ${p(ceilingLight)}`,
+      ),
+    ),
+  );
+
+  wallswitchBed.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchBed)} ${wallswitchBed.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchDoorLeft.state.up(() => {
+    if (!getMain(allLights)) {
+      setMain(onlyNightLight, true, () =>
+        l(
+          `${p(wallswitchDoorLeft)} ${wallswitchDoorLeft.state.up.name} turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
+        ),
+      );
+
+      return;
+    }
+
+    l(
+      `${p(wallswitchDoorLeft)} ${wallswitchDoorLeft.state.up.name} triggering sceneCycle to previous`,
+    );
+    sceneCycle.previous();
+  });
+
+  wallswitchDoorLeft.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchDoorLeft)} ${wallswitchDoorLeft.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchDoorMiddle.state.up(() =>
+    offOrElse(
+      `${p(wallswitchDoorMiddle)} ${wallswitchDoorMiddle.state.up.name}`,
+      (cause) =>
+        setMain(moodLight, true, () =>
+          l(
+            `${cause} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+          ),
+        ),
+    ),
+  );
+
+  wallswitchDoorMiddle.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchDoorMiddle)} ${wallswitchDoorMiddle.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchDoorRight.state.up(() => {
+    if (!getMain(allLights)) {
+      setMain(ceilingLightPlus, true, () =>
+        l(
+          `${p(wallswitchDoorRight)} ${wallswitchDoorRight.state.up.name} turned on ${p(ceilingLightPlus)}, because ${p(allLights)} was off`,
+        ),
+      );
+
+      return;
+    }
+
+    l(
+      `${p(wallswitchDoorRight)} ${wallswitchDoorRight.state.up.name} triggering sceneCycle to next`,
+    );
+    sceneCycle.next();
+  });
+
+  wallswitchDoorRight.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchDoorRight)} ${wallswitchDoorRight.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  sceneCycle.observe((value) =>
+    setMain(value, true, () => l(`sceneCycle triggering ${p(value)}`)),
+  );
 
   for (const aScene of Object.values(scenes)) {
     aScene.main.state.observe((value) => {
@@ -450,13 +594,15 @@ const sceneCycle = new EnumState(
       sceneCycle.value = aScene;
     });
   }
-})();
+};
 
 export const mrpelzBedroom = {
   $: 'mrpelzBedroom' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
   ...scenes,
 };
