@@ -539,17 +539,23 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  wallswitchDoorMiddle.state.up(() =>
-    offOrElse(
-      `${p(wallswitchDoorMiddle)} ${wallswitchDoorMiddle.state.up.name}`,
-      (cause) =>
-        setMain(moodLight, true, () =>
-          l(
-            `${cause} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
-          ),
+  wallswitchDoorMiddle.state.up(() => {
+    if (getMain(allLights)) {
+      setMain(allLights, false, () =>
+        l(
+          `${p(wallswitchDoorMiddle)} ${wallswitchDoorMiddle.state.up.name} turned off ${p(allLights)}, because ${p(allLights)} was on`,
         ),
-    ),
-  );
+      );
+
+      return;
+    }
+
+    setMain(moodLight, true, () =>
+      l(
+        `${p(wallswitchDoorMiddle)} ${wallswitchDoorMiddle.state.up.name} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+      ),
+    );
+  });
 
   wallswitchDoorMiddle.state.longPress(() =>
     setMain(allLights, false, () =>
