@@ -1,15 +1,20 @@
 import { epochs } from '../../../lib/epochs.js';
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 import { properties as livingRoomProperties } from './living-room.js';
 
@@ -30,11 +35,11 @@ export const devices = {
 };
 
 export const instances = {
-  floodlightButton: devices.floodlight.internal.button.state,
-  multiButton: devices.multiButton.state,
-  wallswitchBottom: devices.wallswitch.internal.button2.state,
-  wallswitchMiddle: devices.wallswitch.internal.button1.state,
-  wallswitchTop: devices.wallswitch.internal.button0.state,
+  floodlightButton: devices.floodlight.internal.button,
+  multiButton: devices.multiButton,
+  wallswitchBottom: devices.wallswitch.internal.button2,
+  wallswitchMiddle: devices.wallswitch.internal.button1,
+  wallswitchTop: devices.wallswitch.internal.button0,
 };
 
 export const properties = {
@@ -53,82 +58,164 @@ export const groups = {
   allWindows: inputGrouping(context, [properties.window], 'security'),
 };
 
-(async () => {
+const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentLights } = await import('../groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
     '../scenes.js'
   );
 
-  const kitchenAdjecentsLightsOffKitchenBrightOn = () => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+  const {
+    floodlightButton,
+    multiButton,
+    wallswitchBottom,
+    wallswitchMiddle,
+    wallswitchTop,
+  } = instances;
+  const { ceilingLight, floodlight, floodlightTimer } = properties;
+
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
+  );
+
+  const kitchenAdjecentsLightsOffKitchenBrightOn = (cause: string) => {
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
+        ),
+      );
+
       return;
     }
 
-    kitchenAdjacentBright.main.setState.value = true;
+    setMain(kitchenAdjacentBright, true, () =>
+      l(
+        `${cause} turned on ${p(kitchenAdjacentBright)} because ${p(kitchenAdjacentLights)} was off`,
+      ),
+    );
   };
 
-  const kitchenAdjecentsLightsOffKitchenChillaxOn = () => {
-    if (kitchenAdjacentLights.main.setState.value) {
-      kitchenAdjacentLights.main.setState.value = false;
+  const kitchenAdjecentsLightsOffKitchenChillaxOn = (cause: string) => {
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `${cause} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
+        ),
+      );
+
       return;
     }
 
-    kitchenAdjacentChillax.main.setState.value = true;
+    setMain(kitchenAdjacentChillax, true, () =>
+      l(
+        `${cause} turned on ${p(kitchenAdjacentChillax)} because ${p(kitchenAdjacentLights)} was off`,
+      ),
+    );
   };
 
-  instances.floodlightButton.up(() =>
-    properties.floodlight.flip.setState.trigger(),
-  );
-  instances.floodlightButton.longPress(
-    kitchenAdjecentsLightsOffKitchenChillaxOn,
-  );
-
-  instances.multiButton.topLeft.observe(() =>
-    properties.ceilingLight.flip.setState.trigger(),
-  );
-  instances.multiButton.topRight.observe(() =>
-    properties.floodlight.flip.setState.trigger(),
-  );
-  instances.multiButton.bottomLeft.observe(
-    kitchenAdjecentsLightsOffKitchenChillaxOn,
-  );
-  instances.multiButton.bottomRight.observe(
-    kitchenAdjecentsLightsOffKitchenBrightOn,
+  floodlightButton.state.up(() =>
+    flipMain(floodlight, () =>
+      l(
+        `${p(floodlightButton)} ${floodlightButton.state.up.name} flipped ${p(floodlight)}`,
+      ),
+    ),
   );
 
-  instances.wallswitchBottom.up(() =>
-    livingRoomProperties.standingLamp.flip.setState.trigger(),
-  );
-  instances.wallswitchBottom.longPress(
-    kitchenAdjecentsLightsOffKitchenChillaxOn,
-  );
-
-  instances.wallswitchMiddle.up(() =>
-    properties.floodlight.flip.setState.trigger(),
-  );
-  instances.wallswitchMiddle.longPress(
-    kitchenAdjecentsLightsOffKitchenBrightOn,
+  floodlightButton.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(floodlightButton)} ${floodlightButton.state.longPress.name}`,
+    ),
   );
 
-  instances.wallswitchTop.up(() =>
-    properties.ceilingLight.flip.setState.trigger(),
+  multiButton.state.topLeft.observe(() =>
+    flipMain(ceilingLight, () =>
+      l(`${p(multiButton)} topLeft flipped ${p(ceilingLight)}`),
+    ),
   );
-  instances.wallswitchTop.longPress(kitchenAdjecentsLightsOffKitchenBrightOn);
 
-  properties.floodlight.main.setState.observe((value) => {
-    properties.floodlightTimer.state[value ? 'start' : 'stop']();
+  multiButton.state.topRight.observe(() =>
+    flipMain(floodlight, () =>
+      l(`${p(multiButton)} topRight flipped ${p(floodlight)}`),
+    ),
+  );
+
+  multiButton.state.bottomLeft.observe(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(multiButton)} bottomLeft`),
+  );
+
+  multiButton.state.bottomRight.observe(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(multiButton)} bottomRight`),
+  );
+
+  wallswitchBottom.state.up(() =>
+    flipMain(livingRoomProperties.standingLamp, () =>
+      l(
+        `${p(wallswitchBottom)} ${wallswitchBottom.state.up.name} flipped ${p(livingRoomProperties.standingLamp)}`,
+      ),
+    ),
+  );
+
+  wallswitchBottom.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(
+      `${p(wallswitchBottom)} ${wallswitchBottom.state.longPress.name}`,
+    ),
+  );
+
+  wallswitchMiddle.state.up(() =>
+    flipMain(floodlight, () =>
+      l(
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.up.name} flipped ${p(floodlight)}`,
+      ),
+    ),
+  );
+
+  wallswitchMiddle.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(
+      `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name}`,
+    ),
+  );
+
+  wallswitchTop.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `${p(wallswitchTop)} ${wallswitchTop.state.up.name} flipped ${p(ceilingLight)}`,
+      ),
+    ),
+  );
+
+  wallswitchTop.state.longPress(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(
+      `${p(wallswitchTop)} ${wallswitchTop.state.longPress.name}`,
+    ),
+  );
+
+  floodlight.main.setState.observe((value) => {
+    floodlightTimer.state[value ? 'start' : 'stop']();
+
+    l(
+      `${p(floodlightTimer)} was ${value ? 'started' : 'stopped'} because ${p(floodlight)} was turned ${value ? 'on' : 'off'}`,
+    );
   }, true);
 
-  properties.floodlightTimer.state.observe(() => {
-    properties.floodlight.main.setState.value = false;
-  });
-})();
+  floodlightTimer.state.observe(() =>
+    setMain(floodlight, false, () =>
+      l(
+        `${p(floodlight)} was turned off because ${p(floodlightTimer)} ran out`,
+      ),
+    ),
+  );
+};
 
 export const office = {
   $: 'office' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };
