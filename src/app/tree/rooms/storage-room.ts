@@ -1,12 +1,17 @@
 import { epochs } from '../../../lib/epochs.js';
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 
@@ -21,7 +26,7 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitch: devices.ceilingLight.internal.button.state,
+  wallswitch: devices.ceilingLight.internal.button,
 };
 
 export const properties = {
@@ -34,47 +39,83 @@ export const groups = {
   allLights: outputGrouping(context, [properties.ceilingLight], 'lighting'),
 };
 
-(() => {
-  let indicatorInProgress = false;
+const $init: InitFunction = (room, introspection) => {
+  const { wallswitch } = instances;
+  const { ceilingLight, door: door_, lightTimer } = properties;
 
-  instances.wallswitch.up(() =>
-    properties.ceilingLight.flip.setState.trigger(),
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
   );
 
-  instances.wallswitch.longPress(async () => {
-    if (!properties.lightTimer.main.state.value) return;
+  let indicatorInProgress = false;
+
+  wallswitch.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `${p(wallswitch)} ${wallswitch.state.up.name} flipped ${p(ceilingLight)}`,
+      ),
+    ),
+  );
+
+  wallswitch.state.longPress(async () => {
+    if (!lightTimer.state.isEnabled.value) {
+      l(
+        `${p(wallswitch)} ${wallswitch.state.longPress.name} didn’t do anything, because ${p(lightTimer)} is disabled`,
+      );
+
+      return;
+    }
 
     indicatorInProgress = true;
 
-    await (properties.ceilingLight.main.setState.value
-      ? ackBlinkFromOn(properties.ceilingLight.main.setState)
-      : ackBlinkFromOff(properties.ceilingLight.main.setState));
+    await (getMain(ceilingLight)
+      ? ackBlinkFromOn(ceilingLight.main.setState)
+      : ackBlinkFromOff(ceilingLight.main.setState));
 
     indicatorInProgress = false;
 
-    properties.lightTimer.state.stop();
+    lightTimer.state.stop();
+
+    l(
+      `${p(wallswitch)} ${wallswitch.state.longPress.name} triggered blink-orchestration and stopped ${p(lightTimer)}`,
+    );
   });
 
-  properties.door.open.main.state.observe((value) => {
-    if (!value) return;
-    properties.ceilingLight.main.setState.value = true;
+  door_.open.main.state.observe((open) => {
+    if (!open) return;
+
+    setMain(ceilingLight, true, () =>
+      l(`${p(door_)} was opened and turned on ${p(ceilingLight)}`),
+    );
   });
 
-  properties.ceilingLight.main.setState.observe((value) => {
+  ceilingLight.main.setState.observe((value) => {
     if (indicatorInProgress) return;
 
-    properties.lightTimer.state[value ? 'start' : 'stop']();
+    lightTimer.state[value ? 'start' : 'stop']();
+
+    l(
+      `${p(lightTimer)} was ${value ? 'started' : 'stopped'} because ${p(ceilingLight)} was turned ${value ? 'on' : 'off'}`,
+    );
   }, true);
 
-  properties.lightTimer.state.observe(() => {
-    properties.ceilingLight.main.setState.value = false;
-  });
-})();
+  lightTimer.state.observe(() =>
+    setMain(ceilingLight, false, () =>
+      l(`${p(ceilingLight)} was turned off because ${p(lightTimer)} ran out`),
+    ),
+  );
+};
 
 export const storageRoom = {
   $: 'storageRoom' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };
