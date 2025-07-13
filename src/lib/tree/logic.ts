@@ -10,22 +10,22 @@ export const setMain = <T>(
   value: T,
   then?: (value: T) => unknown,
 ): void => {
-  subject.main.setState.value = value;
   then?.(value);
+  subject.main.setState.value = value;
 };
 
 export const triggerMain = (
   subject: { main: { setState: NullState } },
   then?: () => unknown,
 ): void => {
-  subject.main.setState.trigger();
   then?.();
+  subject.main.setState.trigger();
 };
 
 export const flipMain = (
   subject: { flip: { setState: NullState } },
   then?: () => unknown,
 ): void => {
-  subject.flip.setState.trigger();
   then?.();
+  subject.flip.setState.trigger();
 };

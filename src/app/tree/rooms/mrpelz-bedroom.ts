@@ -579,6 +579,7 @@ const $init: InitFunction = (room, introspection) => {
     l(
       `${p(wallswitchDoorRight)} ${wallswitchDoorRight.state.up.name} triggering sceneCycle to next`,
     );
+
     sceneCycle.next();
   });
 

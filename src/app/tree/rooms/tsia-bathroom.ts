@@ -341,11 +341,11 @@ const $init: InitFunction = (room, introspection) => {
   });
 
   allLights.main.setState.observe((value) => {
-    allLightsTimer.state[value ? 'start' : 'stop']();
-
     l(
       `${p(allLightsTimer)} was ${value ? 'started' : 'stopped'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
     );
+
+    allLightsTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   allLightsTimer.state.observe(() =>

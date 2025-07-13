@@ -194,11 +194,11 @@ const $init: InitFunction = async (room, introspection) => {
   );
 
   floodlight.main.setState.observe((value) => {
-    floodlightTimer.state[value ? 'start' : 'stop']();
-
     l(
       `${p(floodlightTimer)} was ${value ? 'started' : 'stopped'} because ${p(floodlight)} was turned ${value ? 'on' : 'off'}`,
     );
+
+    floodlightTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   floodlightTimer.state.observe(() =>

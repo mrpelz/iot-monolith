@@ -223,12 +223,12 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (!getMain(terrariumLeds.online)) return;
 
-    terrariumLeds.internal.ledB.brightness.setState.value = brightnessRed;
-    terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
-
     l(
       `for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
     );
+
+    terrariumLeds.internal.ledB.brightness.setState.value = brightnessRed;
+    terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
   };
 
   isTerrariumLedsOverride.observe((value) => {
@@ -240,12 +240,12 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (!value) return;
 
-    setMain(devices.terrariumLeds.internal.ledR, false);
-    setMain(devices.terrariumLeds.internal.ledB, false);
-
     l(
       `set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
     );
+
+    setMain(devices.terrariumLeds.internal.ledR, false);
+    setMain(devices.terrariumLeds.internal.ledB, false);
   });
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
@@ -259,45 +259,49 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   overrideTimer.state.observe(() => {
-    isTerrariumLedsOverride.value = false;
-
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(overrideTimer)} ran out`,
     );
+
+    isTerrariumLedsOverride.value = false;
   });
 
   mediaOff.state.observe(async () => {
-    const result = await promiseGuard(
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/off', {
+    const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/off';
+
+    l(`${url} was sent because ${p(mediaOff)} was triggered`);
+
+    await promiseGuard(
+      fetch(url, {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
       }),
     );
-
-    l(`${result?.url} was sent because ${p(mediaOff)} was triggered`);
-
-    isTerrariumLedsOverride.value = false;
 
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
     );
+
+    isTerrariumLedsOverride.value = false;
   });
 
   mediaOnOrSwitch.state.observe(async () => {
-    const result = await promiseGuard(
-      fetch('http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch', {
+    const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch';
+
+    l(`${url} was sent because ${p(mediaOnOrSwitch)} was triggered`);
+
+    await promiseGuard(
+      fetch(url, {
         method: 'POST',
         signal: AbortSignal.timeout(1000),
       }),
     );
 
-    l(`${result?.url} was sent because ${p(mediaOnOrSwitch)} was triggered`);
-
-    isTerrariumLedsOverride.value = true;
-
     l(
       `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
     );
+
+    isTerrariumLedsOverride.value = true;
   });
 };
 

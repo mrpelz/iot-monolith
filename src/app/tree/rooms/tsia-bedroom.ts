@@ -5,7 +5,7 @@ import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { flipMain, setMain } from '../../../lib/tree/logic.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
@@ -88,12 +88,21 @@ const $init: InitFunction = (room, introspection) => {
   );
 
   button.state.observe(() => {
-    if (groups.allLights.main.setState.value) {
-      groups.allLights.main.setState.value = false;
+    if (getMain(allLights)) {
+      setMain(allLights, false, () =>
+        l(
+          `${p(button)} turned off ${p(allLights)}, because ${p(allLights)} was on`,
+        ),
+      );
+
       return;
     }
 
-    properties.nightLight.flip.setState.trigger();
+    flipMain(nightLight, () =>
+      l(
+        `${p(button)} flipped ${p(nightLight)}, because ${p(allLights)} was off`,
+      ),
+    );
   });
 
   nightLightButton.state.up(() =>

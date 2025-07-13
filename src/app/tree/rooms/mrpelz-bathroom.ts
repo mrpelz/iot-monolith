@@ -346,11 +346,11 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   allThings.main.setState.observe((value) => {
-    allTimer.state[value ? 'start' : 'stop']();
-
     l(
       `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
     );
+
+    allTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   allTimer.state.observe(() =>
