@@ -1,10 +1,14 @@
+import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { flipMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import {
   door,
@@ -12,6 +16,7 @@ import {
   window,
 } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
+import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -37,12 +42,12 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button.state,
-  nightLightButton: devices.nightLight.internal.button.state,
-  standingLampButton: devices.standingLamp.internal.button.state,
-  wallswitchLeft: devices.wallswitch.internal.button0.state,
-  wallswitchMiddle: devices.wallswitch.internal.button1.state,
-  wallswitchRight: devices.wallswitch.internal.button2.state,
+  button: devices.button,
+  nightLightButton: devices.nightLight.internal.button,
+  standingLampButton: devices.standingLamp.internal.button,
+  wallswitchLeft: devices.wallswitch.internal.button0,
+  wallswitchMiddle: devices.wallswitch.internal.button1,
+  wallswitchRight: devices.wallswitch.internal.button2,
 };
 
 export const properties = {
@@ -62,8 +67,27 @@ export const groups = {
   allWindows: inputGrouping(context, [properties.windowRight], 'security'),
 };
 
-(() => {
-  instances.button.observe(() => {
+const $init: InitFunction = (room, introspection) => {
+  const { allLights } = groups;
+  const {
+    button,
+    nightLightButton,
+    standingLampButton,
+    wallswitchLeft,
+    wallswitchMiddle,
+    wallswitchRight,
+  } = instances;
+  const { ceilingLight, nightLight, standingLamp } = properties;
+
+  const p = makePathStringRetriever(introspection);
+  const l = makeCustomStringLogger(
+    logger.getInput({
+      head: p(room),
+    }),
+    logicReasoningLevel,
+  );
+
+  button.state.observe(() => {
     if (groups.allLights.main.setState.value) {
       groups.allLights.main.setState.value = false;
       return;
@@ -72,43 +96,93 @@ export const groups = {
     properties.nightLight.flip.setState.trigger();
   });
 
-  instances.nightLightButton.up(() =>
-    properties.nightLight.flip.setState.trigger(),
+  nightLightButton.state.up(() =>
+    flipMain(nightLight, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.up.name} flipped ${p(nightLight)}`,
+      ),
+    ),
   );
 
-  instances.standingLampButton.up(() =>
-    properties.standingLamp.flip.setState.trigger(),
-  );
-  instances.standingLampButton.longPress(
-    () => (groups.allLights.main.setState.value = false),
-  );
-
-  instances.wallswitchLeft.up(() =>
-    properties.ceilingLight.flip.setState.trigger(),
-  );
-  instances.wallswitchLeft.longPress(
-    () => (groups.allLights.main.setState.value = false),
+  nightLightButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(nightLightButton)} ${nightLightButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
   );
 
-  instances.wallswitchMiddle.up(() =>
-    properties.standingLamp.flip.setState.trigger(),
-  );
-  instances.wallswitchMiddle.longPress(
-    () => (groups.allLights.main.setState.value = false),
+  standingLampButton.state.up(() =>
+    flipMain(standingLamp, () =>
+      l(
+        `${p(standingLampButton)} ${standingLampButton.state.up.name} flipped ${p(standingLamp)}`,
+      ),
+    ),
   );
 
-  instances.wallswitchRight.up(() =>
-    properties.nightLight.flip.setState.trigger(),
+  standingLampButton.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(standingLampButton)} ${standingLampButton.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
   );
-  instances.wallswitchRight.longPress(
-    () => (groups.allLights.main.setState.value = false),
+
+  wallswitchLeft.state.up(() =>
+    flipMain(ceilingLight, () =>
+      l(
+        `${p(wallswitchLeft)} ${wallswitchLeft.state.up.name} flipped ${p(ceilingLight)}`,
+      ),
+    ),
   );
-})();
+
+  wallswitchLeft.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchLeft)} ${wallswitchLeft.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchMiddle.state.up(() =>
+    flipMain(standingLamp, () =>
+      l(
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.up.name} flipped ${p(standingLamp)}`,
+      ),
+    ),
+  );
+
+  wallswitchMiddle.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+
+  wallswitchRight.state.up(() =>
+    flipMain(nightLight, () =>
+      l(
+        `${p(wallswitchRight)} ${wallswitchRight.state.up.name} flipped ${p(nightLight)}`,
+      ),
+    ),
+  );
+
+  wallswitchRight.state.longPress(() =>
+    setMain(allLights, false, () =>
+      l(
+        `${p(wallswitchRight)} ${wallswitchRight.state.longPress.name} turned off ${p(allLights)}`,
+      ),
+    ),
+  );
+};
 
 export const tsiaBedroom = {
   $: 'tsiaBedroom' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };
