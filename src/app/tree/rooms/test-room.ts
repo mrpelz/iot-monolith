@@ -3,6 +3,7 @@ import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sen
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
+import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
@@ -37,8 +38,8 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.internal.button0.state,
-  espNowButton1: devices.espNowButton.espNow.internal.button1.state,
+  espNowButton0: devices.espNowButton.espNow.internal.button0,
+  espNowButton1: devices.espNowButton.espNow.internal.button1,
 };
 
 export const properties = {
@@ -58,14 +59,16 @@ export const properties = {
 
 export const groups = {};
 
-(() => {
+const $init: InitFunction = () => {
   // noop
-})();
+};
 
 export const testRoom = {
   $: 'testRoom' as const,
+  $init,
   level: Level.ROOM as const,
   ...deviceMap(devices),
   ...groups,
+  ...instances,
   ...properties,
 };

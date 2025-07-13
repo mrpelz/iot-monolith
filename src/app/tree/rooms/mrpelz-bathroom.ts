@@ -250,9 +250,23 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  showerButton.state.observe(() =>
-    flipMain(allThings, () => l(`${p(showerButton)} flipped ${p(allThings)}`)),
-  );
+  showerButton.state.observe(() => {
+    if (getMain(allThings)) {
+      setMain(allThings, false, () =>
+        l(
+          `${p(showerButton)} turned off ${p(allThings)} because ${p(allThings)} was on`,
+        ),
+      );
+
+      return;
+    }
+
+    triggerMain(autoLight, () =>
+      l(
+        `${p(showerButton)} triggered ${p(autoLight)} because ${p(allThings)} was off`,
+      ),
+    );
+  });
 
   wallswitchDoor.state.up(() => {
     if (getMain(allThings)) {
