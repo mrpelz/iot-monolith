@@ -5,8 +5,8 @@ import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
 import { InitFunction } from '../../lib/tree/operations/init.js';
-// import { Metrics } from '../../lib/tree/operations/metrics.js';
-// import { metrics } from '../metrics.js';
+import { Metrics } from '../../lib/tree/operations/metrics.js';
+import { metrics } from '../metrics.js';
 import { persistence } from '../persistence.js';
 import {
   isAstronomicalTwilight as isAstronomicalTwilightUtil,
@@ -73,15 +73,53 @@ export const sunElevation = (schedule: Schedule) => {
 
     persistence.observe(mainReference.pathString, elevation);
 
-    // metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
-    //   isAstronomicalTwilight: readOnlyIsAstronomicalTwilight,
-    //   isCivilTwilight: readOnlyIsCivilTwilight,
-    //   isDay: readOnlyIsDay,
-    //   isNauticalTwilight: readOnlyIsNauticalTwilight,
-    //   isNight: readOnlyIsNight,
-    //   unit: 'degrees',
-    //   ...Metrics.hierarchyLabels(introspection, self),
-    // });
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
+      unit: 'degrees',
+      ...labels,
+    });
+
+    metrics.addMetric(
+      `${$}_isAstronomicalTwilight`,
+      'sun elevation matches phase',
+      readOnlyIsAstronomicalTwilight,
+      { unit: 'boolean', ...labels },
+    );
+    metrics.addMetric(
+      `${$}_isCivilTwilight`,
+      'sun elevation matches phase',
+      readOnlyIsCivilTwilight,
+      {
+        unit: 'boolean',
+        ...labels,
+      },
+    );
+    metrics.addMetric(
+      `${$}_isDay`,
+      'sun elevation matches phase',
+      readOnlyIsDay,
+      {
+        unit: 'boolean',
+        ...labels,
+      },
+    );
+    metrics.addMetric(
+      `${$}_isNauticalTwilight`,
+      'sun elevation matches phase',
+      readOnlyIsNauticalTwilight,
+      { unit: 'boolean', ...labels },
+    );
+    metrics.addMetric(
+      `${$}_isNight`,
+      'sun elevation matches phase',
+      readOnlyIsNight,
+      {
+        unit: 'boolean',
+        ...labels,
+      },
+    );
   };
 
   return {

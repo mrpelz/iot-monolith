@@ -16,7 +16,7 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-// import { Metrics } from '../operations/metrics.js';
+import { Metrics } from '../operations/metrics.js';
 
 export const offTimer = (
   context: Context,
@@ -37,30 +37,36 @@ export const offTimer = (
 
     persistence.observe(mainReference.pathString, timer.isEnabled);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   `${$}_actual`,
-    //   'is timer enabled?',
-    //   enabled,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_enabled`,
+      'is timer enabled?',
+      timer.isEnabled,
+      labels,
+    );
 
-    // context.metrics.addMetric(
-    //   `${$}_set`,
-    //   'is timer currently running?',
-    //   active,
-    //   {
-    //     runoutTime: new ReadOnlyProxyObservable(runoutTime, (value) =>
-    //       value === null ? '' : value,
-    //     ),
-    //     triggerTime: new ReadOnlyProxyObservable(triggerTime, (value) =>
-    //       value === null ? '' : value,
-    //     ),
-    //     ...labels,
-    //   },
-    // );
+    context.metrics.addMetric(
+      `${$}_active`,
+      'is timer currently running?',
+      timer.isActive,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_triggerTime`,
+      'when was timer triggered?',
+      timer.triggerTime,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_runoutTime`,
+      'when will timer run out?',
+      timer.runoutTime,
+      labels,
+    );
   };
 
   return {

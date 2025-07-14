@@ -231,18 +231,22 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
   };
 
-  isTerrariumLedsOverride.observe((value) => {
-    overrideTimer.state[value ? 'start' : 'stop']();
+  isTerrariumLedsOverride.observe((value, _observer, changed) => {
+    if (changed) {
+      l(
+        `${value ? 'started' : 'stopped'} timer ${p(overrideTimer)} because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
+      );
+    }
 
-    l(
-      `${value ? 'started' : 'stopped'} timer ${p(overrideTimer)} because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
-    );
+    overrideTimer.state[value ? 'start' : 'stop']();
 
     if (!value) return;
 
-    l(
-      `set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
-    );
+    if (changed) {
+      l(
+        `set ${p(terrariumLedRed)} and ${p(terrariumLedTop)} off because ${p(terrariumLedsOverride)} was set to ${JSON.stringify(value)}`,
+      );
+    }
 
     setMain(devices.terrariumLeds.internal.ledR, false);
     setMain(devices.terrariumLeds.internal.ledB, false);

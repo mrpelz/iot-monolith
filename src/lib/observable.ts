@@ -4,8 +4,12 @@ export type Observer = {
   remove: () => void;
 };
 
-export type MetaObserverCallback<T> = (value: T) => void;
-export type ObserverCallback<T> = (value: T, observer: Observer) => void;
+export type MetaObserverCallback<T> = (value: T, changed: boolean) => void;
+export type ObserverCallback<T> = (
+  value: T,
+  observer: Observer,
+  changed: boolean,
+) => void;
 export type ProxyFn<T, S> = (input: T) => S;
 
 export type AnyObservable<T> =
@@ -57,7 +61,7 @@ export class Observable<T> {
     for (const [observer, forcedReport] of this._observers) {
       if (!changed && !forcedReport) continue;
 
-      observer(this._value);
+      observer(this._value, changed);
     }
   }
 
@@ -67,8 +71,8 @@ export class Observable<T> {
   ): Observer {
     let observer: Observer;
 
-    const metaObserverCallback = (value: T) => {
-      observerCallback(value, observer);
+    const metaObserverCallback = (value: T, changed: boolean) => {
+      observerCallback(value, observer, changed);
     };
 
     this._observers.set(metaObserverCallback, forcedReport);
@@ -126,7 +130,8 @@ export class ReadOnlyProxyObservable<T, S = T> {
     forcedReport = false,
   ): Observer {
     return this._observable.observe(
-      (value, observer) => observerCallback(this._get(value), observer),
+      (value, observer, changed) =>
+        observerCallback(this._get(value), observer, changed),
       forcedReport,
     );
   }
@@ -185,10 +190,10 @@ export class ProxyObservable<T, S = T> {
     observerCallback: ObserverCallback<S>,
     forcedReport = false,
   ): Observer {
-    return this._observable.observe((value, observer) => {
+    return this._observable.observe((value, observer, changed) => {
       if (this._suspend) return;
 
-      observerCallback(this._get(value), observer);
+      observerCallback(this._get(value), observer, changed);
     }, forcedReport);
   }
 }

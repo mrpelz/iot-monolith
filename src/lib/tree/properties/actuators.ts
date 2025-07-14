@@ -27,7 +27,7 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-// import { Metrics } from '../operations/metrics.js';
+import { Metrics } from '../operations/metrics.js';
 import { lastChange } from './sensors.js';
 
 const actuatorStaleness = <T>(
@@ -41,8 +41,7 @@ const actuatorStaleness = <T>(
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
-  // self, introspection
-  const $init: InitFunction = () => {
+  const $init: InitFunction = (self, introspection) => {
     state.observe((value) => {
       if (setState.value === value) return;
       loading.value = true;
@@ -55,22 +54,22 @@ const actuatorStaleness = <T>(
       loading.value = false;
     }, true);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   `${$}_stale`,
-    //   'is value of related actuator stale?',
-    //   stale,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_stale`,
+      'is value of related actuator stale?',
+      stale,
+      labels,
+    );
 
-    // context.metrics.addMetric(
-    //   `${$}_loading`,
-    //   'is value of related actuator loading?',
-    //   loading,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_loading`,
+      'is value of related actuator loading?',
+      loading,
+      labels,
+    );
   };
 
   return {
@@ -113,20 +112,31 @@ export const led = (
 
     context.persistence.observe(mainReference.pathString, setBrightness);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(`${$}_actual`, 'actual state of led', actualOn, {
-    //   brightness: new ReadOnlyProxyObservable(actualBrightness, (value) =>
-    //     value === null ? '' : value,
-    //   ),
-    //   ...labels,
-    // });
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'actual state of led',
+      actualOn,
+      labels,
+    );
 
-    // context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, {
-    //   brightness: setBrightness,
-    //   ...labels,
-    // });
+    context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, labels);
+
+    context.metrics.addMetric(
+      `${$}_brightness_actual`,
+      'actual brightness of led',
+      actualBrightness,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_brightness_set`,
+      'set brightness of led',
+      setBrightness,
+      labels,
+    );
   };
 
   return {
@@ -161,22 +171,22 @@ export const output = <T extends string | undefined>(
 
     context.persistence.observe(mainReference.pathString, setState);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   `${$}_actual`,
-    //   'actual state of output',
-    //   actualState,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'actual state of output',
+      actualState,
+      labels,
+    );
 
-    // context.metrics.addMetric(
-    //   `${$}_set`,
-    //   'set state of output',
-    //   setState,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_set`,
+      'set state of output',
+      setState,
+      labels,
+    );
   };
 
   return {
@@ -235,24 +245,37 @@ export const ledGrouping = (
     lights_.map((light) => light.brightness.setState),
   );
 
-  // self, introspection
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const $init: InitFunction = () => {
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
-    // context.metrics.addMetric(
-    //   `${$}_actual`,
-    //   'actual state of led group',
-    //   actualOn,
-    //   {
-    //     brightness: actualBrightness,
-    //     ...labels,
-    //   },
-    // );
-    // context.metrics.addMetric(`${$}_set`, 'set state of led group', setOn, {
-    //   brightness: setBrightness,
-    //   ...labels,
-    // });
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'actual state of led group',
+      actualOn,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_set`,
+      'set state of led group',
+      setOn,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_brightness_actual`,
+      'actual brightness of led group',
+      actualBrightness,
+      labels,
+    );
+
+    context.metrics.addMetric(
+      `${$}_brightness_set`,
+      'set brightness of led group',
+      setBrightness,
+      labels,
+    );
   };
 
   return {
@@ -289,23 +312,22 @@ export const outputGrouping = <T extends string | undefined>(
     outputs_.map((outputElement) => outputElement.main.setState),
   );
 
-  // self, introspection
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const $init: InitFunction = () => {
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
-    // context.metrics.addMetric(
-    //   `${$}_actual`,
-    //   'actual state of output group',
-    //   actualState,
-    //   labels,
-    // );
-    // context.metrics.addMetric(
-    //   `${$}_set`,
-    //   'set state of output group',
-    //   setState,
-    //   labels,
-    // );
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'actual state of output group',
+      actualState,
+      labels,
+    );
+    context.metrics.addMetric(
+      `${$}_set`,
+      'set state of output group',
+      setState,
+      labels,
+    );
   };
 
   return {
@@ -329,8 +351,7 @@ export const online = (
 
   const state = new BooleanState(initiallyOnline);
 
-  // self, introspection
-  const $init: InitFunction = () => {
+  const $init: InitFunction = (self, introspection) => {
     if (initiallyOnline) {
       device.transport.connect();
     }
@@ -345,22 +366,22 @@ export const online = (
       device.transport.disconnect();
     });
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   `${$}_actual`,
-    //   'is device online?',
-    //   device.isOnline,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_actual`,
+      'is device online?',
+      device.isOnline,
+      labels,
+    );
 
-    // context.metrics.addMetric(
-    //   `${$}_set`,
-    //   'is device set to online?',
-    //   state,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      `${$}_set`,
+      'is device set to online?',
+      state,
+      labels,
+    );
   };
 
   return {
@@ -448,12 +469,11 @@ export const scene = <T extends string>(
     proxyObservables,
   );
 
-  // self, introspection
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const $init: InitFunction = () => {
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
-    // context.metrics.addMetric($, 'state of scene', set, labels);
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric($, 'state of scene', set, labels);
   };
 
   return {

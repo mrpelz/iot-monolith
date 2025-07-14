@@ -1,7 +1,12 @@
 import { epochs } from '../../lib/epochs.js';
+import { makeCustomStringLogger } from '../../lib/log.js';
+import { setMain } from '../../lib/tree/logic.js';
 import { Level } from '../../lib/tree/main.js';
+import { InitFunction } from '../../lib/tree/operations/init.js';
+import { makePathStringRetriever } from '../../lib/tree/operations/introspection.js';
 import { offTimer } from '../../lib/tree/properties/logic.js';
 import { context } from '../context.js';
+import { logger, logicReasoningLevel } from '../logging.js';
 import { every5Seconds } from '../timings.js';
 import {
   allLights as allLights_,
@@ -67,17 +72,35 @@ export const system = (async () => {
 
   const allTimer = offTimer(context, epochs.day, true);
 
+  const $init: InitFunction = (self, introspection) => {
+    const p = makePathStringRetriever(introspection);
+    const l = makeCustomStringLogger(
+      logger.getInput({
+        head: p(self),
+      }),
+      logicReasoningLevel,
+    );
+
+    allThings.main.setState.observe((value, _observer, changed) => {
+      if (changed) {
+        l(
+          `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+        );
+      }
+
+      allTimer.state[value ? 'start' : 'stop']();
+    }, true);
+
+    allTimer.state.observe(() =>
+      setMain(allThings, false, () =>
+        l(`${p(allThings)} was turned off because ${p(allTimer)} ran out`),
+      ),
+    );
+  };
+
   return {
     $: 'system' as const,
-    $init: () => {
-      allThings.main.setState.observe((value) => {
-        allTimer.state[value ? 'start' : 'stop']();
-      }, true);
-
-      allTimer.state.observe(() => {
-        allThings.main.setState.value = false;
-      });
-    },
+    $init,
     allLights,
     allLightsOff,
     allOff,

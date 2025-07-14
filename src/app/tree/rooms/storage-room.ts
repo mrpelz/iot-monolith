@@ -93,12 +93,14 @@ const $init: InitFunction = (room, introspection) => {
     );
   });
 
-  ceilingLight.main.setState.observe((value) => {
+  ceilingLight.main.setState.observe((value, _observer, changed) => {
     if (indicatorInProgress) return;
 
-    l(
-      `${p(lightTimer)} was ${value ? 'started' : 'stopped'} because ${p(ceilingLight)} was turned ${value ? 'on' : 'off'}`,
-    );
+    if (changed) {
+      l(
+        `${p(lightTimer)} was ${value ? 'started' : 'stopped'} because ${p(ceilingLight)} was turned ${value ? 'on' : 'off'}`,
+      );
+    }
 
     lightTimer.state[value ? 'start' : 'stop']();
   }, true);

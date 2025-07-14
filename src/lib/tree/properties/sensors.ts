@@ -44,7 +44,7 @@ import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-// import { Metrics } from '../operations/metrics.js';
+import { Metrics } from '../operations/metrics.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -58,23 +58,22 @@ export const lastChange = <T>(
 
   const changed = new Observable<number | null>(null);
 
-  const $init: InitFunction = () => {
-    // self, introspection
+  const $init: InitFunction = (self, introspection) => {
     state.observe((value) => {
       if (value === null) return;
 
       changed.value = Date.now();
     });
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   $,
-    //   'when did related sensor value last change?',
-    //   changed,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      $,
+      'when did related sensor value last change?',
+      changed,
+      labels,
+    );
   };
 
   return {
@@ -95,23 +94,22 @@ export const lastSeen = <T>(
 
   const seen = new Observable<number | null>(null);
 
-  // self, introspection
-  const $init: InitFunction = () => {
+  const $init: InitFunction = (self, introspection) => {
     state.observe((value) => {
       if (state instanceof ReadOnlyObservable && value === null) return;
 
       seen.value = Date.now();
     }, true);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   $,
-    //   'when was related sensor value last seen (even without changing)?',
-    //   seen,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      $,
+      'when was related sensor value last seen (even without changing)?',
+      seen,
+      labels,
+    );
   };
 
   return {
@@ -133,8 +131,7 @@ export const metricStaleness = <T>(
 
   const stale = new BooleanState(true);
 
-  // self, introspection
-  const $init: InitFunction = () => {
+  const $init: InitFunction = (self, introspection) => {
     const timer = new Timer(timeout + epochs.second * 10);
     timer.observe(() => {
       stale.value = true;
@@ -145,15 +142,15 @@ export const metricStaleness = <T>(
       timer.start();
     }, true);
 
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-    // context.metrics.addMetric(
-    //   $,
-    //   'is value of related sensor stale?',
-    //   stale,
-    //   labels,
-    // );
+    context.metrics.addMetric(
+      $,
+      'is value of related sensor stale?',
+      stale,
+      labels,
+    );
   };
 
   return {
@@ -296,23 +293,9 @@ export const hello = (
     schedule,
   );
 
-  // self, introspection
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const $init: InitFunction = () => {
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
-    // context.metrics.addMetric($, 'diagnostic device data', new Observable(1), {
-    //   hello: new ReadOnlyProxyObservable(state, (value) =>
-    //     value === null ? '' : value,
-    //   ),
-    //   ...labels,
-    // });
-  };
-
   return {
     hello: {
       $,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.STRING, state),
       ...metricStaleness(context, state, epoch),
@@ -330,16 +313,16 @@ export const input = <T extends string | undefined>(
 
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
-  // const $init: InitFunction = (self, introspection) => {
-  //   const labels = Metrics.hierarchyLabels(introspection, self);
-  //   if (!labels) return;
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
 
-  //   context.metrics.addMetric($, 'actual state of input', state, labels);
-  // };
+    context.metrics.addMetric($, 'actual state of input', state, labels);
+  };
 
   return {
     $,
-    // $init,
+    $init,
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     topic,
@@ -373,12 +356,10 @@ export const inputGrouping = <T extends string | undefined>(
 
   const state = new ReadOnlyObservable(state_);
 
-  // self, introspection
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  const $init: InitFunction = () => {
-    // const labels = Metrics.hierarchyLabels(introspection, self);
-    // if (!labels) return;
-    // context.metrics.addMetric($, 'actual state of input group', state, labels);
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+    context.metrics.addMetric($, 'actual state of input group', state, labels);
   };
 
   return {

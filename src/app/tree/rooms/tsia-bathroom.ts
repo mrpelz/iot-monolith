@@ -1,6 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { Timer } from '../../../lib/timer.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
@@ -340,10 +339,12 @@ const $init: InitFunction = (room, introspection) => {
     );
   });
 
-  allLights.main.setState.observe((value) => {
-    l(
-      `${p(allLightsTimer)} was ${value ? 'started' : 'stopped'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
-    );
+  allLights.main.setState.observe((value, _observer, changed) => {
+    if (changed) {
+      l(
+        `${p(allLightsTimer)} was ${value ? 'started' : 'stopped'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
+      );
+    }
 
     allLightsTimer.state[value ? 'start' : 'stop']();
   }, true);

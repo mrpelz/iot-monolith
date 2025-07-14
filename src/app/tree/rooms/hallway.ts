@@ -216,12 +216,14 @@ const $init: InitFunction = async (room, introspection) => {
     }
   });
 
-  ceilingLight.main.setState.observe(() => {
-    entryDoorTimer.state.stop();
+  ceilingLight.main.setState.observe((_value, _observer, changed) => {
+    if (changed) {
+      l(
+        `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
+      );
+    }
 
-    l(
-      `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
-    );
+    entryDoorTimer.state.stop();
   }, true);
 
   entryDoorTimer.state.observe(() =>

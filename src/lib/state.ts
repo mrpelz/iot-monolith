@@ -190,8 +190,8 @@ export class NullState<T = null> {
   observe(observerCallback: ObserverCallback<T>): Observer {
     let observer: Observer;
 
-    const metaObserverCallback = (value: T) => {
-      observerCallback(value, observer);
+    const metaObserverCallback = (value: T, changed: boolean) => {
+      observerCallback(value, observer, changed);
     };
 
     this._observers.add(metaObserverCallback);
@@ -205,7 +205,7 @@ export class NullState<T = null> {
 
   trigger(data: T | null = null): void {
     for (const observer of this._observers) {
-      observer(data);
+      observer(data, false);
     }
   }
 }
