@@ -359,6 +359,7 @@ export const inputGrouping = <T extends string | undefined>(
   const $init: InitFunction = (self, introspection) => {
     const labels = Metrics.hierarchyLabels(introspection, self);
     if (!labels) return;
+
     context.metrics.addMetric($, 'actual state of input group', state, labels);
   };
 
@@ -384,9 +385,21 @@ export const mcp9808 = (
     schedule,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric('temperature', 'sensor reading', state, {
+      sensor: 'mcp9808',
+      unit: 'deg-c',
+      ...labels,
+    });
+  };
+
   return {
     temperature: {
       $: 'temperature' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'deg-c'),
       ...metricStaleness(context, state, epoch),
@@ -413,9 +426,29 @@ export const mhz19 = (
     schedule,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    for (const metric of metrics) {
+      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
+        sensor: 'mhz19',
+        unit: {
+          abc: 'boolean',
+          accuracy: 'percent',
+          co2: 'ppm',
+          temperature: 'deg-c',
+          transmittance: 'percent',
+        }[metric],
+        ...labels,
+      });
+    }
+  };
+
   return {
     co2: {
       $: 'co2' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.co2, 'ppm'),
       // eslint-disable-next-line sort-keys
@@ -505,9 +538,23 @@ export const sds011 = (
     schedule,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    for (const metric of metrics) {
+      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
+        sensor: 'sds011',
+        unit: 'micrograms/m3',
+        ...labels,
+      });
+    }
+  };
+
   return {
     pm025: {
       $: 'pm025' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
       ...metricStaleness(context, state.pm025, epoch),
@@ -536,9 +583,28 @@ export const sgp30 = (
     measurementInputGetter,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    for (const metric of metrics) {
+      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
+        sensor: 'sgp30',
+        unit: {
+          eco2: 'ppm',
+          ethanol: 'ppm',
+          h2: 'ppm',
+          tvoc: 'ppb',
+        }[metric],
+        ...labels,
+      });
+    }
+  };
+
   return {
     tvoc: {
       $: 'tvoc' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
@@ -569,9 +635,21 @@ export const tsl2561 = (
     schedule,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric('brightness', 'sensor reading', state, {
+      sensor: 'tsl2561',
+      unit: 'lux',
+      ...labels,
+    });
+  };
+
   return {
     brightness: {
       $: 'brightness' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'lux'),
       ...metricStaleness(context, state, epoch),
@@ -589,9 +667,20 @@ export const uvIndex = (
     schedule,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    context.metrics.addMetric('uvIndex', 'sensor reading', state, {
+      sensor: 'veml6070',
+      ...labels,
+    });
+  };
+
   return {
     uvIndex: {
       $: 'uvIndex' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state),
       ...metricStaleness(context, state, epoch),
