@@ -216,10 +216,15 @@ export const bme280 = (
     }
   };
 
+  // @todo: for all multi-value-sensors, get rid of the implicit object-key amending behavior
+  // (too much risk for unwanted/hard-to-spot key-overrides) and expose a root object
+  // with $=<sensor name> that also hosts $init
+  // establish exposing these sensor objects in full for sensor-hosting devices
+  // to ensure they are exposed in the overall tree,
+  // as long as the device is exposed in-full in the parent room
   return {
     humidity: {
       $: 'humidity' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
       ...metricStaleness(context, state.humidity, epoch),
