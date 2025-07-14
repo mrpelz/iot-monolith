@@ -15,7 +15,7 @@ import {
   mhz19,
   sds011,
   tsl2561,
-  uvIndex,
+  veml6070,
 } from '../properties/sensors.js';
 
 class MergedObservableGroup extends ObservableGroup<number | null> {
@@ -77,7 +77,7 @@ export const testDevice = (context: Context) => {
       ...mhz19(context, device, timings.slow || timings.default),
       ...sds011(context, device, timings.slow || timings.default),
       ...tsl2561(context, device, timings.default),
-      ...uvIndex(context, device, timings.default),
+      ...veml6070(context, device, timings.default),
     },
     ...ipDevice(context, device, false, undefined, connect),
   };

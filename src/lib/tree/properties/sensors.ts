@@ -189,15 +189,37 @@ export const bme280 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'bme280';
+
+  const metrics = ['humidity', 'pressure', 'temperature'] as const;
+
   const { state } = new MultiValueSensor(
     device.addService(new Bme280()),
-    ['humidity', 'pressure', 'temperature'] as const,
+    metrics,
     schedule,
   );
+
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    for (const metric of metrics) {
+      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
+        sensor: $,
+        unit: {
+          humidity: 'percent-rh',
+          pressure: 'pa',
+          temperature: 'deg-c',
+        }[metric],
+        ...labels,
+      });
+    }
+  };
 
   return {
     humidity: {
       $: 'humidity' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
       ...metricStaleness(context, state.humidity, epoch),
@@ -210,6 +232,7 @@ export const bme280 = (
     },
     temperature: {
       $: 'temperature' as const,
+      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
       ...metricStaleness(context, state.temperature, epoch),
@@ -657,7 +680,7 @@ export const tsl2561 = (
   };
 };
 
-export const uvIndex = (
+export const veml6070 = (
   context: Context,
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
