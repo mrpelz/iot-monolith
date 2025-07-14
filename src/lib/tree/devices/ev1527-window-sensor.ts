@@ -3,7 +3,11 @@
 import { Ev1527Device } from '../../device/ev1527.js';
 import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
 import { MultiValueEvent } from '../../items/event.js';
-import { Observable, ReadOnlyProxyObservable } from '../../observable.js';
+import {
+  Observable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '../../observable.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
@@ -28,10 +32,22 @@ export const ev1527WindowSensor = (
       'tamperSwitch',
     ]).state;
 
-  const persistedOpen = new Observable<boolean | null>(null);
-  const isOpen = new ReadOnlyProxyObservable(receivedOpen, (input) =>
-    input === null ? persistedOpen.value : input,
-  );
+  const isOpen_ = new Observable<boolean | null>(receivedOpen.value);
+  receivedOpen.observe((value) => {
+    if (value === null) return;
+
+    isOpen_.value = value;
+  });
+
+  const persistedOpen = new Observable<boolean | null>(null, (value) => {
+    if (value === null) return;
+    if (isOpen_.value !== null) return;
+
+    isOpen_.value = value;
+  });
+
+  const isOpen = new ReadOnlyObservable(isOpen_);
+
   const isReceivedValue = new ReadOnlyProxyObservable(
     receivedOpen,
     (input) => input !== null,
