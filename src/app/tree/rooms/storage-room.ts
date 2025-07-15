@@ -26,11 +26,11 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitch: devices.ceilingLight.internal.button,
+  wallswitch: devices.ceilingLight.button,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.internal.relay,
+  ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   lightTimer: offTimer(context, epochs.minute * 5, undefined),
 };
@@ -115,8 +115,8 @@ const $init: InitFunction = (room, introspection) => {
 export const storageRoom = {
   $: 'storageRoom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

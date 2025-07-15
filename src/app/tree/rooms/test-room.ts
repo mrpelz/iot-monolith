@@ -38,23 +38,23 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.internal.button0,
-  espNowButton1: devices.espNowButton.espNow.internal.button1,
+  espNowButton0: devices.espNowButton.espNow.button0,
+  espNowButton1: devices.espNowButton.espNow.button1,
 };
 
 export const properties = {
-  brightness: devices.testDevice.internal.brightness,
-  co2: devices.testDevice.internal.co2,
-  espNowWindowSensor0: devices.espNowWindowSensor.espNow.internal.input0,
-  espNowWindowSensor1: devices.espNowWindowSensor.espNow.internal.input1,
-  espNowWindowSensor2: devices.espNowWindowSensor.espNow.internal.input2,
-  humidity: devices.testDevice.internal.humidity,
-  motion: devices.testDevice.internal.motion,
-  pm025: devices.testDevice.internal.pm025,
-  pm10: devices.testDevice.internal.pm10,
-  pressure: devices.testDevice.internal.pressure,
-  temperature: devices.testDevice.internal.temperature,
-  uvIndex: devices.testDevice.internal.uvIndex,
+  brightness: devices.testDevice.brightness,
+  co2: devices.testDevice.co2,
+  espNowWindowSensor0: devices.espNowWindowSensor.espNow.input0,
+  espNowWindowSensor1: devices.espNowWindowSensor.espNow.input1,
+  espNowWindowSensor2: devices.espNowWindowSensor.espNow.input2,
+  humidity: devices.testDevice.humidity,
+  motion: devices.testDevice.motion,
+  pm025: devices.testDevice.pm025,
+  pm10: devices.testDevice.pm10,
+  pressure: devices.testDevice.pressure,
+  temperature: devices.testDevice.temperature,
+  uvIndex: devices.testDevice.uvIndex,
 };
 
 export const groups = {};
@@ -66,8 +66,8 @@ const $init: InitFunction = () => {
 export const testRoom = {
   $: 'testRoom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

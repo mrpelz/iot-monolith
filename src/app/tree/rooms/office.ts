@@ -35,16 +35,16 @@ export const devices = {
 };
 
 export const instances = {
-  floodlightButton: devices.floodlight.internal.button,
+  floodlightButton: devices.floodlight.button,
   multiButton: devices.multiButton,
-  wallswitchBottom: devices.wallswitch.internal.button2,
-  wallswitchMiddle: devices.wallswitch.internal.button1,
-  wallswitchTop: devices.wallswitch.internal.button0,
+  wallswitchBottom: devices.wallswitch.button2,
+  wallswitchMiddle: devices.wallswitch.button1,
+  wallswitchTop: devices.wallswitch.button0,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.internal.relay,
-  floodlight: devices.floodlight.internal.relay,
+  ceilingLight: devices.ceilingLight.relay,
+  floodlight: devices.floodlight.relay,
   floodlightTimer: offTimer(context, epochs.hour, undefined),
   window: window(context, devices.windowSensor, 'security'),
 };
@@ -215,8 +215,8 @@ const $init: InitFunction = async (room, introspection) => {
 export const office = {
   $: 'office' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

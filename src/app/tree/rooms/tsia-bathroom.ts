@@ -62,19 +62,19 @@ export const devices = {
 
 export const instances = {
   bathtubButton: devices.bathtubButton,
-  mirrorLightButton: devices.mirrorLight.internal.button,
-  nightLightButton: devices.nightLight.internal.button,
-  wallswitchDoor: devices.ceilingLight.internal.button,
-  wallswitchMirror: devices.wallswitchMirror.internal.button0,
+  mirrorLightButton: devices.mirrorLight.button,
+  nightLightButton: devices.nightLight.button,
+  wallswitchDoor: devices.ceilingLight.button,
+  wallswitchMirror: devices.wallswitchMirror.button0,
 };
 
 export const properties = {
   allLightsTimer: offTimer(context, epochs.minute * 30, true),
-  ceilingLight: devices.ceilingLight.internal.relay,
+  ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
-  mirrorLed: devices.leds.internal.ledR,
-  mirrorLight: devices.mirrorLight.internal.relay,
-  nightLight: devices.nightLight.internal.relay,
+  mirrorLed: devices.leds.ledR,
+  mirrorLight: devices.mirrorLight.relay,
+  nightLight: devices.nightLight.relay,
 };
 
 export const groups = {
@@ -150,7 +150,7 @@ export const scenes = {
     const elevation = sunElevation();
 
     if (isNight(elevation)) {
-      if (devices.nightLight.online.main.state.value) {
+      if (devices.nightLight.device.online.main.state.value) {
         scenes.nightLighting.main.setState.value = true;
 
         return;
@@ -161,8 +161,8 @@ export const scenes = {
 
     if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.nightLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value
       ) {
         scenes.astronomicalTwilightLighting.main.setState.value = true;
 
@@ -174,8 +174,8 @@ export const scenes = {
 
     if (isNauticalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value
       ) {
         scenes.nauticalTwilightLighting.main.setState.value = true;
 
@@ -187,9 +187,9 @@ export const scenes = {
 
     if (
       (isCivilTwilight(elevation) || failover) &&
-      (devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value ||
-        devices.nightLight.online.main.state.value)
+      (devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value)
     ) {
       scenes.civilTwilightLighting.main.setState.value = true;
 
@@ -197,9 +197,9 @@ export const scenes = {
     }
 
     if (
-      devices.ceilingLight.online.main.state.value ||
-      devices.leds.online.main.state.value ||
-      devices.mirrorLight.online.main.state.value
+      devices.ceilingLight.device.online.main.state.value ||
+      devices.leds.device.online.main.state.value ||
+      devices.mirrorLight.device.online.main.state.value
     ) {
       scenes.dayLighting.main.setState.value = true;
 
@@ -361,7 +361,7 @@ const $init: InitFunction = (room, introspection) => {
     const elevation = sunElevation();
 
     if (isNight(elevation)) {
-      if (devices.nightLight.online.main.state.value) {
+      if (devices.nightLight.device.online.main.state.value) {
         setMain(nightLighting, true, () =>
           l(
             `${p(nightLighting)} was turned on because sun elevation is ${elevation}`,
@@ -376,8 +376,8 @@ const $init: InitFunction = (room, introspection) => {
 
     if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.nightLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value
       ) {
         setMain(astronomicalTwilightLighting, true, () =>
           l(
@@ -393,8 +393,8 @@ const $init: InitFunction = (room, introspection) => {
 
     if (isNauticalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value
       ) {
         setMain(nauticalTwilightLighting, true, () =>
           l(
@@ -410,9 +410,9 @@ const $init: InitFunction = (room, introspection) => {
 
     if (
       (isCivilTwilight(elevation) || failover) &&
-      (devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value ||
-        devices.nightLight.online.main.state.value)
+      (devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value)
     ) {
       setMain(civilTwilightLighting, true, () =>
         l(
@@ -424,9 +424,9 @@ const $init: InitFunction = (room, introspection) => {
     }
 
     if (
-      devices.ceilingLight.online.main.state.value ||
-      devices.leds.online.main.state.value ||
-      devices.mirrorLight.online.main.state.value
+      devices.ceilingLight.device.online.main.state.value ||
+      devices.leds.device.online.main.state.value ||
+      devices.mirrorLight.device.online.main.state.value
     ) {
       setMain(dayLighting, true, () =>
         l(
@@ -446,8 +446,8 @@ const $init: InitFunction = (room, introspection) => {
 export const tsiaBathroom = {
   $: 'tsiaBathroom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

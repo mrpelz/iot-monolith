@@ -43,18 +43,18 @@ export const devices = {
 
 export const instances = {
   button: devices.button,
-  nightLightButton: devices.nightLight.internal.button,
-  standingLampButton: devices.standingLamp.internal.button,
-  wallswitchLeft: devices.wallswitch.internal.button0,
-  wallswitchMiddle: devices.wallswitch.internal.button1,
-  wallswitchRight: devices.wallswitch.internal.button2,
+  nightLightButton: devices.nightLight.button,
+  standingLampButton: devices.standingLamp.button,
+  wallswitchLeft: devices.wallswitch.button0,
+  wallswitchMiddle: devices.wallswitch.button1,
+  wallswitchRight: devices.wallswitch.button2,
 };
 
 export const properties = {
-  ceilingLight: devices.ceilingLight.internal.relay,
+  ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
-  nightLight: devices.nightLight.internal.relay,
-  standingLamp: devices.standingLamp.internal.relay,
+  nightLight: devices.nightLight.relay,
+  standingLamp: devices.standingLamp.relay,
   windowRight: window(context, devices.windowSensorRight, 'security'),
 };
 
@@ -189,8 +189,8 @@ const $init: InitFunction = (room, introspection) => {
 export const tsiaBedroom = {
   $: 'tsiaBedroom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

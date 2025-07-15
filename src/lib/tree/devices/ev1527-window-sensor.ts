@@ -112,22 +112,19 @@ export const ev1527WindowSensor = (
   });
 
   return {
-    internal: {
-      $exclude: true as const,
-      $noMainReference: true as const,
-      open: {
-        $init: $initOpen,
-        isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
-        level: Level.PROPERTY as const,
-        main: getter(ValueType.BOOLEAN, isOpen),
-        tamperSwitch: {
-          $init: $initTamperSwitch,
-          main: getter(ValueType.BOOLEAN, tamperSwitch),
-          ...lastChange(context, receivedTamperSwitch),
-        },
-        ...lastChange(context, receivedOpen),
+    $noMainReference: true as const,
+    device: ev1527Device(context, device),
+    open: {
+      $init: $initOpen,
+      isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
+      lastChange: lastChange(context, receivedOpen),
+      level: Level.PROPERTY as const,
+      main: getter(ValueType.BOOLEAN, isOpen),
+      tamperSwitch: {
+        $init: $initTamperSwitch,
+        lastChange: lastChange(context, receivedTamperSwitch),
+        main: getter(ValueType.BOOLEAN, tamperSwitch),
       },
     },
-    ...ev1527Device(context, device),
   };
 };

@@ -44,24 +44,24 @@ export const devices = {
 
 export const instances = {
   couchButton: devices.couchButton,
-  standingLampButton: devices.standingLamp.internal.button,
-  wallswitchBottom: devices.wallswitch.internal.button1,
-  wallswitchTop: devices.wallswitch.internal.button0,
+  standingLampButton: devices.standingLamp.button,
+  wallswitchBottom: devices.wallswitch.button1,
+  wallswitchTop: devices.wallswitch.button0,
 };
 
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
   overrideTimer: offTimer(context, epochs.hour * 12, true),
-  standingLamp: devices.standingLamp.internal.relay,
+  standingLamp: devices.standingLamp.relay,
   terrariumLedRed: overriddenLed(
     context,
-    devices.terrariumLeds.internal.ledB,
+    devices.terrariumLeds.ledB,
     isTerrariumLedsOverride,
   ),
   terrariumLedTop: overriddenLed(
     context,
-    devices.terrariumLeds.internal.ledR,
+    devices.terrariumLeds.ledR,
     isTerrariumLedsOverride,
   ),
 };
@@ -221,14 +221,14 @@ const $init: InitFunction = async (room, introspection) => {
     const brightnessRed = red ? maxmin(red + 0.18) : 0;
     const brightnessWhite = white ? maxmin(white + 0.18) : 0;
 
-    if (!getMain(terrariumLeds.online)) return;
+    if (!getMain(terrariumLeds.device.online)) return;
 
     l(
       `for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
     );
 
-    terrariumLeds.internal.ledB.brightness.setState.value = brightnessRed;
-    terrariumLeds.internal.ledR.brightness.setState.value = brightnessWhite;
+    terrariumLeds.ledB.brightness.setState.value = brightnessRed;
+    terrariumLeds.ledR.brightness.setState.value = brightnessWhite;
   };
 
   isTerrariumLedsOverride.observe((value, _observer, changed) => {
@@ -248,13 +248,13 @@ const $init: InitFunction = async (room, introspection) => {
       );
     }
 
-    setMain(devices.terrariumLeds.internal.ledR, false);
-    setMain(devices.terrariumLeds.internal.ledB, false);
+    setMain(devices.terrariumLeds.ledR, false);
+    setMain(devices.terrariumLeds.ledB, false);
   });
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
   every2Minutes.addTask(handleTerrariumLedsAutomation);
-  devices.terrariumLeds.online.main.state.observe((isOnline) => {
+  devices.terrariumLeds.device.online.main.state.observe((isOnline) => {
     if (!isOnline) return;
 
     l(`${p(devices.terrariumLeds)} is back online, running automation`);
@@ -312,8 +312,8 @@ const $init: InitFunction = async (room, introspection) => {
 export const livingRoom = {
   $: 'livingRoom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

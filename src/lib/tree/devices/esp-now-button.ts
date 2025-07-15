@@ -22,12 +22,9 @@ export type EspNowButtonOptions = {
 };
 
 const children = (context: Context, device: Device) => ({
-  internal: {
-    $exclude: true as const,
-    $noMainReference: true as const,
-    button0: button(context, device, 0),
-    button1: button(context, device, 1),
-  },
+  $noMainReference: true as const,
+  button0: button(context, device, 0),
+  button1: button(context, device, 1),
 });
 
 export const espNowButton = (
@@ -43,7 +40,7 @@ export const espNowButton = (
     return {
       espNow: {
         ...children(context, device),
-        ...espNowDevice(context, device, true),
+        device: espNowDevice(context, device, true),
       },
     };
   })();
@@ -55,7 +52,7 @@ export const espNowButton = (
     return {
       wifi: {
         ...children(context, device),
-        ...ipDevice(context, device, true, undefined, initiallyOnline),
+        device: ipDevice(context, device, true, undefined, initiallyOnline),
       },
     };
   })();

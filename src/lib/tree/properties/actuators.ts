@@ -73,22 +73,20 @@ const actuatorStaleness = <T>(
   };
 
   return {
-    actuatorStaleness: {
-      $,
-      $init,
-      level: Level.PROPERTY as const,
-      loading: getter(ValueType.BOOLEAN, new ReadOnlyObservable(loading)),
-      stale: getter(
-        ValueType.BOOLEAN,
-        new ReadOnlyObservable(
-          new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
-            stale,
-            // invert online state to be true if device is offline
-            new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
-          ]),
-        ),
+    $,
+    $init,
+    level: Level.PROPERTY as const,
+    loading: getter(ValueType.BOOLEAN, new ReadOnlyObservable(loading)),
+    stale: getter(
+      ValueType.BOOLEAN,
+      new ReadOnlyObservable(
+        new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
+          stale,
+          // invert online state to be true if device is offline
+          new ReadOnlyProxyObservable(device.isOnline, (online) => !online),
+        ]),
       ),
-    },
+    ),
   };
 };
 
@@ -142,12 +140,17 @@ export const led = (
   return {
     $,
     $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualBrightness,
+      setBrightness,
+      device,
+    ),
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     topic: 'lighting' as const,
-    ...actuatorStaleness(context, actualBrightness, setBrightness, device),
   };
 };
 
@@ -192,11 +195,16 @@ export const output = <T extends string | undefined>(
   return {
     $,
     $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualState,
+      setState,
+      device,
+    ),
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
     topic,
-    ...actuatorStaleness(context, actualState, setState, device),
   };
 };
 
@@ -385,43 +393,37 @@ export const online = (
   };
 
   return {
-    online: {
-      $,
-      $init,
-      flip: trigger(ValueType.NULL, new NullState(() => state.flip())),
-      level: Level.PROPERTY as const,
-      main: setter(ValueType.BOOLEAN, state, device.isOnline),
-      ...lastChange(context, device.isOnline),
-    },
+    $,
+    $init,
+    flip: trigger(ValueType.NULL, new NullState(() => state.flip())),
+    lastChange: lastChange(context, device.isOnline),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, state, device.isOnline),
   };
 };
 
 export const resetDevice = (_: Context, device: Device) => ({
-  resetDevice: {
-    $: 'resetDevice' as const,
-    level: Level.PROPERTY as const,
-    main: trigger(ValueType.NULL, new NullState(() => device.triggerReset())),
-  },
+  $: 'resetDevice' as const,
+  level: Level.PROPERTY as const,
+  main: trigger(ValueType.NULL, new NullState(() => device.triggerReset())),
 });
 
 export const identifyDevice = (_: Context, indicator: Indicator) => ({
-  identifyDevice: {
-    $: 'identifyDevice' as const,
-    level: Level.PROPERTY as const,
-    main: trigger(
-      ValueType.NULL,
-      new NullState(() =>
-        indicator
-          .request({
-            blink: 10,
-            mode: IndicatorMode.BLINK,
-          })
-          .catch(() => {
-            // noop
-          }),
-      ),
+  $: 'identifyDevice' as const,
+  level: Level.PROPERTY as const,
+  main: trigger(
+    ValueType.NULL,
+    new NullState(() =>
+      indicator
+        .request({
+          blink: 10,
+          mode: IndicatorMode.BLINK,
+        })
+        .catch(() => {
+          // noop
+        }),
     ),
-  },
+  ),
 });
 
 export const triggerElement = <T extends string>(

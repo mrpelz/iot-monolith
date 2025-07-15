@@ -66,23 +66,23 @@ export const devices = {
 };
 
 export const instances = {
-  mirrorHeatingButton: devices.mirrorHeating.internal.button,
-  mirrorLightButton: devices.mirrorLight.internal.button,
-  nightLightButton: devices.nightLight.internal.button,
+  mirrorHeatingButton: devices.mirrorHeating.button,
+  mirrorLightButton: devices.mirrorLight.button,
+  nightLightButton: devices.nightLight.button,
   showerButton: devices.showerButton,
-  wallswitchDoor: devices.wallswitchDoor.internal.button0,
-  wallswitchMirrorBottom: devices.wallswitchDoor.internal.button2,
-  wallswitchMirrorTop: devices.wallswitchDoor.internal.button1,
+  wallswitchDoor: devices.wallswitchDoor.button0,
+  wallswitchMirrorBottom: devices.wallswitchDoor.button2,
+  wallswitchMirrorTop: devices.wallswitchDoor.button1,
 };
 
 export const properties = {
   allTimer: offTimer(context, epochs.minute * 30, true),
-  ceilingLight: devices.ceilingLight.internal.relay,
+  ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
-  mirrorHeating: devices.mirrorHeating.internal.relay,
-  mirrorLed: devices.leds.internal.ledR,
-  mirrorLight: devices.mirrorLight.internal.relay,
-  nightLight: devices.nightLight.internal.relay,
+  mirrorHeating: devices.mirrorHeating.relay,
+  mirrorLed: devices.leds.ledR,
+  mirrorLight: devices.mirrorLight.relay,
+  nightLight: devices.nightLight.relay,
 };
 
 export const groups = {
@@ -375,7 +375,7 @@ const $init: InitFunction = async (room, introspection) => {
     const elevation = sunElevation();
 
     if (isNight(elevation)) {
-      if (devices.nightLight.online.main.state.value) {
+      if (devices.nightLight.device.online.main.state.value) {
         setMain(nightLighting, true, () =>
           l(
             `${p(nightLighting)} was turned on because sun elevation is ${elevation}`,
@@ -390,8 +390,8 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (isAstronomicalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.nightLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value
       ) {
         setMain(astronomicalTwilightLighting, true, () =>
           l(
@@ -407,8 +407,8 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (isNauticalTwilight(elevation) || failover) {
       if (
-        devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value
+        devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value
       ) {
         setMain(nauticalTwilightLighting, true, () =>
           l(
@@ -424,9 +424,9 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (
       (isCivilTwilight(elevation) || failover) &&
-      (devices.leds.online.main.state.value ||
-        devices.mirrorLight.online.main.state.value ||
-        devices.nightLight.online.main.state.value)
+      (devices.leds.device.online.main.state.value ||
+        devices.mirrorLight.device.online.main.state.value ||
+        devices.nightLight.device.online.main.state.value)
     ) {
       setMain(civilTwilightLighting, true, () =>
         l(
@@ -438,9 +438,9 @@ const $init: InitFunction = async (room, introspection) => {
     }
 
     if (
-      devices.ceilingLight.online.main.state.value ||
-      devices.leds.online.main.state.value ||
-      devices.mirrorLight.online.main.state.value
+      devices.ceilingLight.device.online.main.state.value ||
+      devices.leds.device.online.main.state.value ||
+      devices.mirrorLight.device.online.main.state.value
     ) {
       setMain(dayLighting, true, () =>
         l(
@@ -460,8 +460,8 @@ const $init: InitFunction = async (room, introspection) => {
 export const mrpelzBathroom = {
   $: 'mrpelzBathroom' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

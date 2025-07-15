@@ -16,13 +16,10 @@ export const shellyi3 = (
   const device = new UDPDevice(logger, host, port);
 
   return {
-    internal: {
-      $exclude: true as const,
-      $noMainReference: true as const,
-      button0: button(context, device, 0),
-      button1: button(context, device, 1),
-      button2: button(context, device, 2),
-    },
-    ...ipDevice(context, device, false, undefined, initiallyOnline),
+    $noMainReference: true as const,
+    button0: button(context, device, 0),
+    button1: button(context, device, 1),
+    button2: button(context, device, 2),
+    device: ipDevice(context, device, false, undefined, initiallyOnline),
   };
 };

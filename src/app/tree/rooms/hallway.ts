@@ -39,16 +39,16 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.internal.button0,
-  wallswitchFrontLeft: devices.wallswitchFront.internal.button0,
-  wallswitchFrontMiddle: devices.wallswitchFront.internal.button1,
-  wallswitchFrontRight: devices.wallswitchFront.internal.button2,
-  wallswitchMiddle: devices.wallswitchBack.internal.button1,
+  wallswitchBack: devices.wallswitchBack.button0,
+  wallswitchFrontLeft: devices.wallswitchFront.button0,
+  wallswitchFrontMiddle: devices.wallswitchFront.button1,
+  wallswitchFrontRight: devices.wallswitchFront.button2,
+  wallswitchMiddle: devices.wallswitchBack.button1,
 };
 
 const partialProperties = {
-  ceilingLightBack: devices.ceilingLightBack.internal.relay,
-  ceilingLightFront: devices.ceilingLightFront.internal.relay,
+  ceilingLightBack: devices.ceilingLightBack.relay,
+  ceilingLightFront: devices.ceilingLightFront.relay,
   entryDoor: door(context, devices.doorSensor, 'security'),
 };
 
@@ -238,8 +238,8 @@ const $init: InitFunction = async (room, introspection) => {
 export const hallway = {
   $: 'hallway' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

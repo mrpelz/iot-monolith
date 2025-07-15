@@ -19,16 +19,13 @@ export const h801 = (
   const indicator = device.addService(new Indicator(0));
 
   return {
+    $noMainReference: true as const,
+    device: ipDevice(context, device, false, indicator, initiallyOnline),
     indicator,
-    internal: {
-      $exclude: true as const,
-      $noMainReference: true as const,
-      ledR: led(context, device, 0, indicator),
-      ledG: led(context, device, 1, undefined),
-      ledB: led(context, device, 2, undefined),
-      ledW1: led(context, device, 3, undefined),
-      ledW2: led(context, device, 4, undefined),
-    },
-    ...ipDevice(context, device, false, indicator, initiallyOnline),
+    ledR: led(context, device, 0, indicator),
+    ledG: led(context, device, 1, undefined),
+    ledB: led(context, device, 2, undefined),
+    ledW1: led(context, device, 3, undefined),
+    ledW2: led(context, device, 4, undefined),
   };
 };

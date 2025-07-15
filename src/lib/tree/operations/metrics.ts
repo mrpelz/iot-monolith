@@ -30,13 +30,18 @@ export class Metrics {
     introspection: Introspection,
     object: object,
   ): { id: string; path: string } | undefined {
-    const { id, mainReference } = introspection.getObject(object) ?? {};
+    const objectIntrospection = introspection.getObject(object);
+    const { id, mainReference } = objectIntrospection ?? {};
 
-    if (!id || !mainReference) return undefined;
+    const reference = mainReference ?? objectIntrospection?.shortest;
+
+    if (!id || !reference) {
+      return undefined;
+    }
 
     return {
       id,
-      path: mainReference.pathString,
+      path: reference.pathString,
     };
   }
 

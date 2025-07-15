@@ -56,13 +56,14 @@ export const lastChange = <T>(
 ) => {
   const $ = 'lastChange' as const;
 
-  const changed = new Observable<number | null>(null);
+  const changed_ = new Observable<number | null>(null);
+  const changed = new ReadOnlyObservable(changed_);
 
   const $init: InitFunction = (self, introspection) => {
     state.observe((value) => {
       if (value === null) return;
 
-      changed.value = Date.now();
+      changed_.value = Date.now();
     });
 
     const labels = Metrics.hierarchyLabels(introspection, self);
@@ -77,12 +78,11 @@ export const lastChange = <T>(
   };
 
   return {
-    lastChange: {
-      $,
-      $init,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.NUMBER, new ReadOnlyObservable(changed), 'date'),
-    },
+    $,
+    $init,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, changed, 'date'),
+    state: changed,
   };
 };
 
@@ -92,13 +92,14 @@ export const lastSeen = <T>(
 ) => {
   const $ = 'lastSeen' as const;
 
-  const seen = new Observable<number | null>(null);
+  const seen_ = new Observable<number | null>(null);
+  const seen = new ReadOnlyObservable(seen_);
 
   const $init: InitFunction = (self, introspection) => {
     state.observe((value) => {
       if (state instanceof ReadOnlyObservable && value === null) return;
 
-      seen.value = Date.now();
+      seen_.value = Date.now();
     }, true);
 
     const labels = Metrics.hierarchyLabels(introspection, self);
@@ -113,12 +114,11 @@ export const lastSeen = <T>(
   };
 
   return {
-    lastSeen: {
-      $,
-      $init,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.NUMBER, new ReadOnlyObservable(seen), 'date'),
-    },
+    $,
+    $init,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, seen, 'date'),
+    state: seen,
   };
 };
 
@@ -129,16 +129,17 @@ export const metricStaleness = <T>(
 ) => {
   const $ = 'metricStaleness' as const;
 
-  const stale = new BooleanState(true);
+  const stale_ = new BooleanState(true);
+  const stale = new ReadOnlyObservable(stale_);
 
   const $init: InitFunction = (self, introspection) => {
     const timer = new Timer(timeout + epochs.second * 10);
     timer.observe(() => {
-      stale.value = true;
+      stale_.value = true;
     });
 
     state.observe((value) => {
-      stale.value = value === null;
+      stale_.value = value === null;
       timer.start();
     }, true);
 
@@ -154,13 +155,12 @@ export const metricStaleness = <T>(
   };
 
   return {
-    stale: {
-      $,
-      $init,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(stale)),
-    },
-    ...lastSeen(context, state),
+    $,
+    $init,
+    lastSeen: lastSeen(context, state),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.BOOLEAN, stale),
+    state: stale,
   };
 };
 
@@ -175,12 +175,11 @@ export const async = (
   );
 
   return {
-    async: {
-      $: 'async' as const,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.RAW, state),
-      ...metricStaleness(context, state, epoch),
-    },
+    $: 'async' as const,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.RAW, state),
+    metricStaleness: metricStaleness(context, state, epoch),
+    state,
   };
 };
 
@@ -189,7 +188,7 @@ export const bme280 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
-  const $ = 'bme280';
+  const $ = 'bme280' as const;
 
   const metrics = ['humidity', 'pressure', 'temperature'] as const;
 
@@ -216,31 +215,29 @@ export const bme280 = (
     }
   };
 
-  // @todo: for all multi-value-sensors, get rid of the implicit object-key amending behavior
-  // (too much risk for unwanted/hard-to-spot key-overrides) and expose a root object
-  // with $=<sensor name> that also hosts $init
-  // establish exposing these sensor objects in full for sensor-hosting devices
-  // to ensure they are exposed in the overall tree,
-  // as long as the device is exposed in-full in the parent room
   return {
+    $,
+    $init,
     humidity: {
       $: 'humidity' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
-      ...metricStaleness(context, state.humidity, epoch),
+      metricStaleness: metricStaleness(context, state.humidity, epoch),
+      state: state.humidity,
     },
     pressure: {
       $: 'pressure' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pressure, 'pa'),
-      ...metricStaleness(context, state.pressure, epoch),
+      metricStaleness: metricStaleness(context, state.pressure, epoch),
+      state: state.pressure,
     },
     temperature: {
       $: 'temperature' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
-      ...metricStaleness(context, state.temperature, epoch),
+      metricStaleness: metricStaleness(context, state.temperature, epoch),
+      state: state.temperature,
     },
   };
 };
@@ -251,6 +248,8 @@ export const ccs811 = (
   [schedule, epoch]: ScheduleEpochPair,
   measurementInputGetter: MeasurementInputGetter<Ccs811Request>,
 ) => {
+  const $ = 'ccs811' as const;
+
   const metrics = ['eco2', 'temperature', 'tvoc'] as const;
 
   const { state } = new MultiValueSensor(
@@ -260,23 +259,45 @@ export const ccs811 = (
     measurementInputGetter,
   );
 
+  const $init: InitFunction = (self, introspection) => {
+    const labels = Metrics.hierarchyLabels(introspection, self);
+    if (!labels) return;
+
+    for (const metric of metrics) {
+      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
+        sensor: $,
+        unit: {
+          eco2: 'ppm',
+          temperature: 'deg-c',
+          tvoc: 'ppb',
+        }[metric],
+        ...labels,
+      });
+    }
+  };
+
   return {
+    $,
+    $init,
     tvoc: {
       $: 'tvoc' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
+      state: state.tvoc,
       // eslint-disable-next-line sort-keys
       eco2: {
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
-        ...metricStaleness(context, state.eco2, epoch),
+        metricStaleness: metricStaleness(context, state.eco2, epoch),
+        state: state.eco2,
       },
+      metricStaleness: metricStaleness(context, state.tvoc, epoch),
       temperature: {
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
-        ...metricStaleness(context, state.temperature, epoch),
+        metricStaleness: metricStaleness(context, state.temperature, epoch),
+        state: state.temperature,
       },
-      ...metricStaleness(context, state.tvoc, epoch),
     },
   };
 };
@@ -286,9 +307,9 @@ export const button = (context: Context, device: Device, index = 0) => {
 
   return {
     $: 'button' as const,
+    lastSeen: lastSeen(context, buttonEvent.observable),
     level: Level.PROPERTY as const,
     state: new Button(buttonEvent),
-    ...lastSeen(context, buttonEvent.observable),
   };
 };
 
@@ -299,7 +320,7 @@ export const door = <T extends string | undefined>(
 ) => {
   const $ = 'door' as const;
 
-  const { open } = sensor.internal;
+  const { open } = sensor;
 
   return {
     $,
@@ -322,12 +343,11 @@ export const hello = (
   );
 
   return {
-    hello: {
-      $,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.STRING, state),
-      ...metricStaleness(context, state, epoch),
-    },
+    $,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.STRING, state),
+    metricStaleness: metricStaleness(context, state, epoch),
+    state,
   };
 };
 
@@ -351,10 +371,10 @@ export const input = <T extends string | undefined>(
   return {
     $,
     $init,
+    lastChange: lastChange(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     topic,
-    ...lastChange(context, state),
   };
 };
 
@@ -396,10 +416,10 @@ export const inputGrouping = <T extends string | undefined>(
     $init,
     $noMainReference: true as const,
     inputs: inputs_,
+    lastChange: lastChange(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
     topic,
-    ...lastChange(context, state),
   };
 };
 
@@ -408,6 +428,8 @@ export const mcp9808 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'mcp9808' as const;
+
   const { state } = new SingleValueSensor(
     device.addService(new Mcp9808()),
     schedule,
@@ -418,19 +440,21 @@ export const mcp9808 = (
     if (!labels) return;
 
     context.metrics.addMetric('temperature', 'sensor reading', state, {
-      sensor: 'mcp9808',
+      sensor: $,
       unit: 'deg-c',
       ...labels,
     });
   };
 
   return {
+    $,
+    $init,
     temperature: {
       $: 'temperature' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'deg-c'),
-      ...metricStaleness(context, state, epoch),
+      metricStaleness: metricStaleness(context, state, epoch),
+      state,
     },
   };
 };
@@ -440,6 +464,8 @@ export const mhz19 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'mhz19' as const;
+
   const metrics = [
     'abc',
     'accuracy',
@@ -460,7 +486,7 @@ export const mhz19 = (
 
     for (const metric of metrics) {
       context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: 'mhz19',
+        sensor: $,
         unit: {
           abc: 'boolean',
           accuracy: 'percent',
@@ -474,29 +500,35 @@ export const mhz19 = (
   };
 
   return {
+    $,
+    $init,
     co2: {
       $: 'co2' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.co2, 'ppm'),
+      state: state.co2,
       // eslint-disable-next-line sort-keys
       abc: {
         main: getter(ValueType.BOOLEAN, state.abc),
-        ...metricStaleness(context, state.abc, epoch),
+        metricStaleness: metricStaleness(context, state.abc, epoch),
+        state: state.abc,
       },
       accuracy: {
         main: getter(ValueType.NUMBER, state.accuracy, 'percent'),
-        ...metricStaleness(context, state.accuracy, epoch),
+        metricStaleness: metricStaleness(context, state.accuracy, epoch),
+        state: state.accuracy,
       },
+      metricStaleness: metricStaleness(context, state.co2, epoch),
       temperature: {
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
-        ...metricStaleness(context, state.temperature, epoch),
+        metricStaleness: metricStaleness(context, state.temperature, epoch),
+        state: state.temperature,
       },
       transmittance: {
         main: getter(ValueType.NUMBER, state.transmittance, 'percent'),
-        ...metricStaleness(context, state.transmittance, epoch),
+        metricStaleness: metricStaleness(context, state.transmittance, epoch),
+        state: state.transmittance,
       },
-      ...metricStaleness(context, state.co2, epoch),
     },
   };
 };
@@ -507,11 +539,12 @@ export const rfReadout = (
   rf433Event: Rf433,
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const state = new Observable<any>({});
+  const state_ = new Observable<any>({});
+  const state = new ReadOnlyObservable(state_);
 
   espNowEvent.observable.observe(({ deviceIdentifier, data }) => {
-    state.value = {
-      ...state.value,
+    state_.value = {
+      ...state_.value,
       espNow: {
         data: [...data],
         macAddress: [...deviceIdentifier]
@@ -523,8 +556,8 @@ export const rfReadout = (
 
   rf433Event.observable.observe(
     ({ data, deviceIdentifier, protocol, value }) => {
-      state.value = {
-        ...state.value,
+      state_.value = {
+        ...state_.value,
         rf433: {
           data: `0b${[...data]
             .reverse()
@@ -541,15 +574,12 @@ export const rfReadout = (
     },
   );
 
-  const readOnlyState = new ReadOnlyObservable(state);
-
   return {
-    rfReadout: {
-      $: 'rfReadout' as const,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.RAW, readOnlyState),
-      ...lastSeen(context, readOnlyState),
-    },
+    $: 'rfReadout' as const,
+    lastSeen: lastSeen(context, state),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.RAW, state),
+    state,
   };
 };
 
@@ -558,6 +588,8 @@ export const sds011 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'sds011' as const;
+
   const metrics = ['pm025', 'pm10'] as const;
 
   const { state } = new MultiValueSensor(
@@ -572,7 +604,7 @@ export const sds011 = (
 
     for (const metric of metrics) {
       context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: 'sds011',
+        sensor: $,
         unit: 'micrograms/m3',
         ...labels,
       });
@@ -580,18 +612,21 @@ export const sds011 = (
   };
 
   return {
+    $,
+    $init,
     pm025: {
       $: 'pm025' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
-      ...metricStaleness(context, state.pm025, epoch),
+      metricStaleness: metricStaleness(context, state.pm025, epoch),
+      state: state.pm025,
     },
     pm10: {
       $: 'pm10' as const,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.pm10, 'micrograms/m3'),
-      ...metricStaleness(context, state.pm10, epoch),
+      metricStaleness: metricStaleness(context, state.pm10, epoch),
+      state: state.pm10,
     },
   };
 };
@@ -602,6 +637,8 @@ export const sgp30 = (
   [schedule, epoch]: ScheduleEpochPair,
   measurementInputGetter: MeasurementInputGetter<Sgp30Request>,
 ) => {
+  const $ = 'sgp30' as const;
+
   const metrics = ['eco2', 'ethanol', 'h2', 'tvoc'] as const;
 
   const { state } = new MultiValueSensor(
@@ -617,7 +654,7 @@ export const sgp30 = (
 
     for (const metric of metrics) {
       context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: 'sgp30',
+        sensor: $,
         unit: {
           eco2: 'ppm',
           ethanol: 'ppm',
@@ -630,25 +667,30 @@ export const sgp30 = (
   };
 
   return {
+    $,
+    $init,
     tvoc: {
       $: 'tvoc' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
+      state: state.tvoc,
       // eslint-disable-next-line sort-keys
       eco2: {
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
-        ...metricStaleness(context, state.eco2, epoch),
+        metricStaleness: metricStaleness(context, state.eco2, epoch),
+        state: state.eco2,
       },
       ethanol: {
         main: getter(ValueType.NUMBER, state.ethanol, 'ppm'),
-        ...metricStaleness(context, state.ethanol, epoch),
+        metricStaleness: metricStaleness(context, state.ethanol, epoch),
+        state: state.ethanol,
       },
       h2: {
         main: getter(ValueType.NUMBER, state.h2, 'ppm'),
-        ...metricStaleness(context, state.h2, epoch),
+        metricStaleness: metricStaleness(context, state.h2, epoch),
+        state: state.h2,
       },
-      ...metricStaleness(context, state.tvoc, epoch),
+      metricStaleness: metricStaleness(context, state.tvoc, epoch),
     },
   };
 };
@@ -658,6 +700,8 @@ export const tsl2561 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'tsl2561' as const;
+
   const { state } = new SingleValueSensor(
     device.addService(new Tsl2561()),
     schedule,
@@ -668,19 +712,21 @@ export const tsl2561 = (
     if (!labels) return;
 
     context.metrics.addMetric('brightness', 'sensor reading', state, {
-      sensor: 'tsl2561',
+      sensor: $,
       unit: 'lux',
       ...labels,
     });
   };
 
   return {
+    $,
+    $init,
     brightness: {
       $: 'brightness' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state, 'lux'),
-      ...metricStaleness(context, state, epoch),
+      metricStaleness: metricStaleness(context, state, epoch),
+      state,
     },
   };
 };
@@ -690,6 +736,8 @@ export const veml6070 = (
   device: Device,
   [schedule, epoch]: ScheduleEpochPair,
 ) => {
+  const $ = 'veml6070' as const;
+
   const { state } = new SingleValueSensor(
     device.addService(new Veml6070()),
     schedule,
@@ -700,18 +748,20 @@ export const veml6070 = (
     if (!labels) return;
 
     context.metrics.addMetric('uvIndex', 'sensor reading', state, {
-      sensor: 'veml6070',
+      sensor: $,
       ...labels,
     });
   };
 
   return {
+    $,
+    $init,
     uvIndex: {
       $: 'uvIndex' as const,
-      $init,
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state),
-      ...metricStaleness(context, state, epoch),
+      metricStaleness: metricStaleness(context, state, epoch),
+      state,
     },
   };
 };
@@ -720,11 +770,9 @@ export const vcc = (_: Context, device: Device) => {
   const { state } = new SingleValueEvent(device.addEvent(new VCC()));
 
   return {
-    vcc: {
-      $: 'vcc' as const,
-      level: Level.PROPERTY as const,
-      main: getter(ValueType.NUMBER, state),
-    },
+    $: 'vcc' as const,
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.NUMBER, state),
   };
 };
 
@@ -733,7 +781,7 @@ export const window = <T extends string | undefined>(
   sensor: ReturnType<typeof ev1527WindowSensor>,
   topic: T,
 ) => {
-  const { open } = sensor.internal;
+  const { open } = sensor;
 
   return {
     $: 'window' as const,

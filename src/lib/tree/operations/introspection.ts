@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-array-reduce */
 import { v5 as uuidv5 } from 'uuid';
 
 import { isPlainObject, objectKeys } from '../../oop.js';
@@ -12,6 +13,10 @@ export type ObjectIntrospection = {
   id: string;
   mainReference?: ObjectReference;
   references: Set<ObjectReference>;
+  get first(): ObjectReference | undefined;
+  get last(): ObjectReference | undefined;
+  get longest(): ObjectReference | undefined;
+  get shortest(): ObjectReference | undefined;
 };
 
 export const PATH_UUID_NAMESPACE = 'f0f4da2a-7955-43b0-9fe9-02430afad7ef';
@@ -77,11 +82,40 @@ export class Introspection {
       },
     };
 
-    const introspection = this._objects.get(input) ?? {
-      id: parent ? id : PATH_UUID_NAMESPACE,
-      mainReference: undefined,
-      references: new Set(),
-    };
+    const introspection =
+      this._objects.get(input) ??
+      (() => {
+        const references = new Set<ObjectReference>();
+
+        return {
+          get first() {
+            return references.values().next().value;
+          },
+          id: parent ? id : PATH_UUID_NAMESPACE,
+          get last() {
+            return references
+              .values()
+              .drop(references.size - 1)
+              .next().value;
+          },
+          get longest() {
+            return references
+              .values()
+              .reduce((acc, reference_) =>
+                reference_.path.length > acc.path.length ? reference_ : acc,
+              );
+          },
+          mainReference: undefined,
+          references,
+          get shortest() {
+            return references
+              .values()
+              .reduce((acc, reference_) =>
+                reference_.path.length < acc.path.length ? reference_ : acc,
+              );
+          },
+        };
+      })();
 
     const { mainReference, references } = introspection;
     references.add(reference);

@@ -28,19 +28,19 @@ export const devices = {
 };
 
 export const instances = {
-  wallswitchBack: devices.wallswitchBack.internal.button0,
-  wallswitchFrontBottomLeft: devices.wallswitchFront.internal.button1,
-  wallswitchFrontBottomRight: devices.wallswitchFront.internal.button2,
-  wallswitchFrontTop: devices.wallswitchFront.internal.button0,
+  wallswitchBack: devices.wallswitchBack.button0,
+  wallswitchFrontBottomLeft: devices.wallswitchFront.button1,
+  wallswitchFrontBottomRight: devices.wallswitchFront.button2,
+  wallswitchFrontTop: devices.wallswitchFront.button0,
 };
 
 export const properties = {
-  ledLeftCWhite: devices.ledsLeft.internal.ledG,
-  ledLeftFloodlight: devices.ledsLeft.internal.ledB,
-  ledLeftWWhite: devices.ledsLeft.internal.ledR,
-  ledRightCWhite: devices.ledsRight.internal.ledB,
-  ledRightFloodlight: devices.ledsRight.internal.ledW1,
-  ledRightWWhite: devices.ledsRight.internal.ledG,
+  ledLeftCWhite: devices.ledsLeft.ledG,
+  ledLeftFloodlight: devices.ledsLeft.ledB,
+  ledLeftWWhite: devices.ledsLeft.ledR,
+  ledRightCWhite: devices.ledsRight.ledB,
+  ledRightFloodlight: devices.ledsRight.ledW1,
+  ledRightWWhite: devices.ledsRight.ledG,
   window: window(context, devices.windowSensor, 'security'),
 };
 
@@ -198,8 +198,8 @@ const $init: InitFunction = async (room, introspection) => {
 export const kitchen = {
   $: 'kitchen' as const,
   $init,
+  devices: deviceMap(devices),
   level: Level.ROOM as const,
-  ...deviceMap(devices),
   ...groups,
   ...instances,
   ...properties,

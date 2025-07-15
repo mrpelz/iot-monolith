@@ -7,13 +7,13 @@ import { ipDevice } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import {
-  bme280,
+  bme280 as bme280_,
   // input,
-  mcp9808,
+  mcp9808 as mcp9808_,
   metricStaleness,
   // mhz19,
-  sgp30,
-  tsl2561,
+  sgp30 as sgp30_,
+  tsl2561 as tsl2561_,
 } from '../properties/sensors.js';
 
 class MergedObservableGroup extends ObservableGroup<number | null> {
@@ -36,22 +36,16 @@ export const roomSensor = (
 
   const device = new UDPDevice(logger, host, port);
 
-  const {
-    humidity,
-    pressure,
-    temperature: bme280Temperature,
-  } = bme280(context, device, timings.default);
+  const bme280 = bme280_(context, device, timings.default);
+  const { humidity, pressure, temperature: bme280Temperature } = bme280;
 
-  const { temperature: mcp9808Temperature } = mcp9808(
-    context,
-    device,
-    timings.default,
-  );
+  const mcp9808 = mcp9808_(context, device, timings.default);
+  const { temperature: mcp9808Temperature } = mcp9808;
 
   const temperatureState = new ReadOnlyObservable(
     new MergedObservableGroup(null, [
-      mcp9808Temperature.main.state,
-      bme280Temperature.main.state,
+      mcp9808Temperature.state,
+      bme280Temperature.state,
     ]),
   );
 
@@ -61,7 +55,11 @@ export const roomSensor = (
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, temperatureState, 'deg-c'),
     mcp9808: mcp9808Temperature,
-    ...metricStaleness(context, temperatureState, timings.default[1]),
+    metricStaleness: metricStaleness(
+      context,
+      temperatureState,
+      timings.default[1],
+    ),
   };
 
   const sgp30MeasurementInputGetter = () => {
@@ -76,24 +74,34 @@ export const roomSensor = (
     };
   };
 
+  const sgp30 = sgp30_(
+    context,
+    device,
+    timings.slow || timings.default,
+    sgp30MeasurementInputGetter,
+  );
+  const { tvoc } = sgp30;
+
+  const tsl2561 = tsl2561_(context, device, timings.default);
+  const { brightness } = tsl2561;
+
   return {
-    internal: {
-      $exclude: true as const,
-      $noMainReference: true as const,
-      humidity,
-      // motion: input(device, undefined, 'motion'),
-      pressure,
-      temperature,
+    $: 'roomSensor' as const,
+    $noMainReference: true as const,
+    brightness,
+    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    humidity,
+    // motion: input(device, undefined, 'motion'),
+    pressure,
+    sensors: {
+      bme280,
+      mcp9808,
       // ...mhz19(device, timings.slow || timings.default),
       // ...sds011(device, timings.slow || timings.default),
-      ...sgp30(
-        context,
-        device,
-        timings.slow || timings.default,
-        sgp30MeasurementInputGetter,
-      ),
-      ...tsl2561(context, device, timings.default),
+      sgp30,
+      tsl2561,
     },
-    ...ipDevice(context, device, false, undefined, initiallyOnline),
+    temperature,
+    tvoc,
   };
 };

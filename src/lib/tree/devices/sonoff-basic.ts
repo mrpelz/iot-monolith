@@ -21,13 +21,10 @@ export const sonoffBasic = <T extends string>(
   const indicator = device.addService(new Indicator(0));
 
   return {
+    $noMainReference: true as const,
+    button: button(context, device, 0),
+    device: ipDevice(context, device, false, indicator, initiallyOnline),
     indicator,
-    internal: {
-      $exclude: true as const,
-      $noMainReference: true as const,
-      button: button(context, device, 0),
-      relay: output(context, device, 0, topic, indicator),
-    },
-    ...ipDevice(context, device, false, indicator, initiallyOnline),
+    relay: output(context, device, 0, topic, indicator),
   };
 };
