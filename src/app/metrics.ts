@@ -365,6 +365,11 @@ export const attachMetrics = async (
       unit: 'percent',
     });
 
+    metrics.addMetric('mhz19_temperature', item.co2.temperature.state, {
+      ...labels,
+      unit: 'deg-c',
+    });
+
     metrics.addMetric('mhz19_transmittance', item.co2.transmittance.state, {
       ...labels,
       unit: 'percent',
