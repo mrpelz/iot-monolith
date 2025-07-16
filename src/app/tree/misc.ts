@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Metrics } from '../../lib/metrics.js';
 import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';
 import { InitFunction } from '../../lib/tree/operations/init.js';
-import { Metrics } from '../../lib/tree/operations/metrics.js';
 import { metrics } from '../metrics.js';
 import { persistence } from '../persistence.js';
 import {
@@ -76,50 +76,29 @@ export const sunElevation = (schedule: Schedule) => {
     const labels = Metrics.hierarchyLabels(introspection, self);
     if (!labels) return;
 
-    metrics.addMetric($, 'sun elevation angle in degrees', readOnlyElevation, {
-      unit: 'degrees',
-      ...labels,
-    });
+    metrics.addMetric(
+      $,
+      readOnlyElevation,
+      {
+        unit: 'degrees',
+        ...labels,
+      },
+      'sun elevation angle in degrees',
+    );
 
     metrics.addMetric(
       `${$}_isAstronomicalTwilight`,
-      'sun elevation matches phase',
       readOnlyIsAstronomicalTwilight,
-      { unit: 'boolean', ...labels },
+      labels,
     );
-    metrics.addMetric(
-      `${$}_isCivilTwilight`,
-      'sun elevation matches phase',
-      readOnlyIsCivilTwilight,
-      {
-        unit: 'boolean',
-        ...labels,
-      },
-    );
-    metrics.addMetric(
-      `${$}_isDay`,
-      'sun elevation matches phase',
-      readOnlyIsDay,
-      {
-        unit: 'boolean',
-        ...labels,
-      },
-    );
+    metrics.addMetric(`${$}_isCivilTwilight`, readOnlyIsCivilTwilight, labels);
+    metrics.addMetric(`${$}_isDay`, readOnlyIsDay, labels);
     metrics.addMetric(
       `${$}_isNauticalTwilight`,
-      'sun elevation matches phase',
       readOnlyIsNauticalTwilight,
-      { unit: 'boolean', ...labels },
+      labels,
     );
-    metrics.addMetric(
-      `${$}_isNight`,
-      'sun elevation matches phase',
-      readOnlyIsNight,
-      {
-        unit: 'boolean',
-        ...labels,
-      },
-    );
+    metrics.addMetric(`${$}_isNight`, readOnlyIsNight);
   };
 
   return {

@@ -61,6 +61,7 @@ export const testDevice = (context: Context) => {
       temperatureState,
       timings.default[1],
     ),
+    state: temperatureState,
   };
 
   const mhz19 = mhz19_(context, device, timings.slow || timings.default);

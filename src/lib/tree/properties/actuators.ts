@@ -27,7 +27,6 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Metrics } from '../operations/metrics.js';
 import { lastChange } from './sensors.js';
 
 const actuatorStaleness = <T>(
@@ -41,7 +40,7 @@ const actuatorStaleness = <T>(
   const stale = new BooleanState(true);
   const loading = new BooleanState(true);
 
-  const $init: InitFunction = (self, introspection) => {
+  const $init: InitFunction = () => {
     state.observe((value) => {
       if (setState.value === value) return;
       loading.value = true;
@@ -53,23 +52,6 @@ const actuatorStaleness = <T>(
       if (value !== null && setState.value !== value) return;
       loading.value = false;
     }, true);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_stale`,
-      'is value of related actuator stale?',
-      stale,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_loading`,
-      'is value of related actuator loading?',
-      loading,
-      labels,
-    );
   };
 
   return {
@@ -109,32 +91,6 @@ export const led = (
     if (!mainReference) return;
 
     context.persistence.observe(mainReference.pathString, setBrightness);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_actual`,
-      'actual state of led',
-      actualOn,
-      labels,
-    );
-
-    context.metrics.addMetric(`${$}_set`, 'set state of led', setOn, labels);
-
-    context.metrics.addMetric(
-      `${$}_brightness_actual`,
-      'actual brightness of led',
-      actualBrightness,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_brightness_set`,
-      'set brightness of led',
-      setBrightness,
-      labels,
-    );
   };
 
   return {
@@ -173,23 +129,6 @@ export const output = <T extends string | undefined>(
     if (!mainReference) return;
 
     context.persistence.observe(mainReference.pathString, setState);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_actual`,
-      'actual state of output',
-      actualState,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_set`,
-      'set state of output',
-      setState,
-      labels,
-    );
   };
 
   return {
@@ -253,42 +192,8 @@ export const ledGrouping = (
     lights_.map((light) => light.brightness.setState),
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_actual`,
-      'actual state of led group',
-      actualOn,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_set`,
-      'set state of led group',
-      setOn,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_brightness_actual`,
-      'actual brightness of led group',
-      actualBrightness,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_brightness_set`,
-      'set brightness of led group',
-      setBrightness,
-      labels,
-    );
-  };
-
   return {
     $,
-    $init,
     $noMainReference: true as const,
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
@@ -320,27 +225,8 @@ export const outputGrouping = <T extends string | undefined>(
     outputs_.map((outputElement) => outputElement.main.setState),
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_actual`,
-      'actual state of output group',
-      actualState,
-      labels,
-    );
-    context.metrics.addMetric(
-      `${$}_set`,
-      'set state of output group',
-      setState,
-      labels,
-    );
-  };
-
   return {
     $,
-    $init,
     $noMainReference: true as const,
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
@@ -359,7 +245,7 @@ export const online = (
 
   const state = new BooleanState(initiallyOnline);
 
-  const $init: InitFunction = (self, introspection) => {
+  const $init: InitFunction = () => {
     if (initiallyOnline) {
       device.transport.connect();
     }
@@ -373,23 +259,6 @@ export const online = (
 
       device.transport.disconnect();
     });
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      `${$}_actual`,
-      'is device online?',
-      device.isOnline,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      `${$}_set`,
-      'is device set to online?',
-      state,
-      labels,
-    );
   };
 
   return {
@@ -471,19 +340,12 @@ export const scene = <T extends string>(
     proxyObservables,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric($, 'state of scene', set, labels);
-  };
-
   return {
     $,
-    $init,
     flip: trigger(ValueType.NULL, new NullState(() => set.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, set, undefined, 'scene'),
+    state: set,
     topic,
   };
 };

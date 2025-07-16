@@ -60,6 +60,7 @@ export const roomSensor = (
       temperatureState,
       timings.default[1],
     ),
+    state: temperatureState,
   };
 
   const sgp30MeasurementInputGetter = () => {

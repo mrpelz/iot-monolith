@@ -30,7 +30,11 @@ export const app = async (): Promise<void> => {
   const system = await _system;
 
   const introspection = new Introspection(system);
+
   init(system, introspection);
+
+  const { attachMetrics } = await import('./metrics.js');
+  attachMetrics(introspection);
 
   const serialization = new Serialization(system, introspection);
 

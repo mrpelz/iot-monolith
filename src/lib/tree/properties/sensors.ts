@@ -44,7 +44,6 @@ import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Metrics } from '../operations/metrics.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -59,22 +58,12 @@ export const lastChange = <T>(
   const changed_ = new Observable<number | null>(null);
   const changed = new ReadOnlyObservable(changed_);
 
-  const $init: InitFunction = (self, introspection) => {
+  const $init: InitFunction = () => {
     state.observe((value) => {
       if (value === null) return;
 
       changed_.value = Date.now();
     });
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      $,
-      'when did related sensor value last change?',
-      changed,
-      labels,
-    );
   };
 
   return {
@@ -95,22 +84,12 @@ export const lastSeen = <T>(
   const seen_ = new Observable<number | null>(null);
   const seen = new ReadOnlyObservable(seen_);
 
-  const $init: InitFunction = (self, introspection) => {
+  const $init: InitFunction = () => {
     state.observe((value) => {
       if (state instanceof ReadOnlyObservable && value === null) return;
 
       seen_.value = Date.now();
     }, true);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      $,
-      'when was related sensor value last seen (even without changing)?',
-      seen,
-      labels,
-    );
   };
 
   return {
@@ -132,7 +111,7 @@ export const metricStaleness = <T>(
   const stale_ = new BooleanState(true);
   const stale = new ReadOnlyObservable(stale_);
 
-  const $init: InitFunction = (self, introspection) => {
+  const $init: InitFunction = () => {
     const timer = new Timer(timeout + epochs.second * 10);
     timer.observe(() => {
       stale_.value = true;
@@ -142,16 +121,6 @@ export const metricStaleness = <T>(
       stale_.value = value === null;
       timer.start();
     }, true);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      $,
-      'is value of related sensor stale?',
-      stale,
-      labels,
-    );
   };
 
   return {
@@ -198,26 +167,8 @@ export const bme280 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    for (const metric of metrics) {
-      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: $,
-        unit: {
-          humidity: 'percent-rh',
-          pressure: 'pa',
-          temperature: 'deg-c',
-        }[metric],
-        ...labels,
-      });
-    }
-  };
-
   return {
     $,
-    $init,
     humidity: {
       $: 'humidity' as const,
       level: Level.PROPERTY as const,
@@ -259,26 +210,8 @@ export const ccs811 = (
     measurementInputGetter,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    for (const metric of metrics) {
-      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: $,
-        unit: {
-          eco2: 'ppm',
-          temperature: 'deg-c',
-          tvoc: 'ppb',
-        }[metric],
-        ...labels,
-      });
-    }
-  };
-
   return {
     $,
-    $init,
     tvoc: {
       $: 'tvoc' as const,
       level: Level.PROPERTY as const,
@@ -361,19 +294,12 @@ export const input = <T extends string | undefined>(
 
   const { state } = new SingleValueEvent(device.addEvent(new Input(index)));
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric($, 'actual state of input', state, labels);
-  };
-
   return {
     $,
-    $init,
     lastChange: lastChange(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
+    state,
     topic,
   };
 };
@@ -404,21 +330,14 @@ export const inputGrouping = <T extends string | undefined>(
 
   const state = new ReadOnlyObservable(state_);
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric($, 'actual state of input group', state, labels);
-  };
-
   return {
     $,
-    $init,
     $noMainReference: true as const,
     inputs: inputs_,
     lastChange: lastChange(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
+    state,
     topic,
   };
 };
@@ -435,20 +354,8 @@ export const mcp9808 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric('temperature', 'sensor reading', state, {
-      sensor: $,
-      unit: 'deg-c',
-      ...labels,
-    });
-  };
-
   return {
     $,
-    $init,
     temperature: {
       $: 'temperature' as const,
       level: Level.PROPERTY as const,
@@ -480,28 +387,8 @@ export const mhz19 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    for (const metric of metrics) {
-      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: $,
-        unit: {
-          abc: 'boolean',
-          accuracy: 'percent',
-          co2: 'ppm',
-          temperature: 'deg-c',
-          transmittance: 'percent',
-        }[metric],
-        ...labels,
-      });
-    }
-  };
-
   return {
     $,
-    $init,
     co2: {
       $: 'co2' as const,
       level: Level.PROPERTY as const,
@@ -598,22 +485,8 @@ export const sds011 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    for (const metric of metrics) {
-      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: $,
-        unit: 'micrograms/m3',
-        ...labels,
-      });
-    }
-  };
-
   return {
     $,
-    $init,
     pm025: {
       $: 'pm025' as const,
       level: Level.PROPERTY as const,
@@ -648,27 +521,8 @@ export const sgp30 = (
     measurementInputGetter,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    for (const metric of metrics) {
-      context.metrics.addMetric(metric, 'sensor reading', state[metric], {
-        sensor: $,
-        unit: {
-          eco2: 'ppm',
-          ethanol: 'ppm',
-          h2: 'ppm',
-          tvoc: 'ppb',
-        }[metric],
-        ...labels,
-      });
-    }
-  };
-
   return {
     $,
-    $init,
     tvoc: {
       $: 'tvoc' as const,
       level: Level.PROPERTY as const,
@@ -707,20 +561,8 @@ export const tsl2561 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric('brightness', 'sensor reading', state, {
-      sensor: $,
-      unit: 'lux',
-      ...labels,
-    });
-  };
-
   return {
     $,
-    $init,
     brightness: {
       $: 'brightness' as const,
       level: Level.PROPERTY as const,
@@ -743,19 +585,8 @@ export const veml6070 = (
     schedule,
   );
 
-  const $init: InitFunction = (self, introspection) => {
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric('uvIndex', 'sensor reading', state, {
-      sensor: $,
-      ...labels,
-    });
-  };
-
   return {
     $,
-    $init,
     uvIndex: {
       $: 'uvIndex' as const,
       level: Level.PROPERTY as const,

@@ -11,7 +11,7 @@ export const init = <T extends object>(
   introspection: Introspection,
 ): void => {
   for (const object of new Set(
-    match({ $init: anyFunction }, undefined, root, 50),
+    match({ $init: anyFunction }, undefined, root),
   )) {
     const fn = object.$init as InitFunction;
     fn(object, introspection);

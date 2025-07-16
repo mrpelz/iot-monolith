@@ -57,7 +57,7 @@ export class Paths {
   constructor(root: object) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    for (const object of match({}, root, 50)) {
+    for (const object of match({}, root)) {
       const path = getPathFromObject(root, object);
       if (!path) continue;
 

@@ -14,7 +14,6 @@ import { ev1527Device } from '../elements/device.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { Metrics } from '../operations/metrics.js';
 import { lastChange } from '../properties/sensors.js';
 
 export const ev1527WindowSensor = (
@@ -58,23 +57,6 @@ export const ev1527WindowSensor = (
     if (!mainReference) return;
 
     persistence.observe(mainReference.pathString, persistedOpen);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      'open',
-      'state door/window sensor',
-      isOpen,
-      labels,
-    );
-
-    context.metrics.addMetric(
-      'open_received',
-      'state door/window sensor',
-      isReceivedValue,
-      labels,
-    );
   };
 
   const persistedTamperSwitch = new Observable<boolean | null>(null);
@@ -93,16 +75,6 @@ export const ev1527WindowSensor = (
     if (!mainReference) return;
 
     persistence.observe(mainReference.pathString, persistedTamperSwitch);
-
-    const labels = Metrics.hierarchyLabels(introspection, self);
-    if (!labels) return;
-
-    context.metrics.addMetric(
-      'open_tamperSwitch',
-      'state door/window sensor tamper switch',
-      tamperSwitch,
-      labels,
-    );
   };
 
   receivedOpen.observe((value) => {
@@ -116,14 +88,19 @@ export const ev1527WindowSensor = (
     device: ev1527Device(context, device),
     open: {
       $init: $initOpen,
-      isReceivedValue: getter(ValueType.BOOLEAN, isReceivedValue),
+      isReceivedValue: {
+        main: getter(ValueType.BOOLEAN, isReceivedValue),
+        state: isReceivedValue,
+      },
       lastChange: lastChange(context, receivedOpen),
       level: Level.PROPERTY as const,
       main: getter(ValueType.BOOLEAN, isOpen),
+      state: isOpen,
       tamperSwitch: {
         $init: $initTamperSwitch,
         lastChange: lastChange(context, receivedTamperSwitch),
         main: getter(ValueType.BOOLEAN, tamperSwitch),
+        state: tamperSwitch,
       },
     },
   };

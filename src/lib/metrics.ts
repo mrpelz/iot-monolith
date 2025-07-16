@@ -1,8 +1,8 @@
 import { Gauge } from 'prom-client';
 
-import { Input, Logger } from '../../log.js';
-import { AnyObservable } from '../../observable.js';
-import { Introspection } from './introspection.js';
+import { Input, Logger } from './log.js';
+import { AnyObservable } from './observable.js';
+import { Introspection } from './tree/operations/introspection.js';
 
 const METRIC_NAME_PREFIX = 'iot_';
 
@@ -39,6 +39,9 @@ export class Metrics {
       return undefined;
     }
 
+    // exclude metrics whoose sole reference path within the tree includes an array index
+    if (reference.path.some((key) => typeof key === 'number')) return undefined;
+
     return {
       id,
       path: reference.pathString,
@@ -56,9 +59,9 @@ export class Metrics {
 
   addMetric(
     name: string,
-    help: string,
     value: AnyObservable<number | boolean | null>,
     labels: Record<string, string> = {},
+    help = 'gauge',
   ): void {
     try {
       const labels_ = Object.fromEntries(
