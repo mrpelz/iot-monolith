@@ -170,8 +170,49 @@ export const match = <
   >[];
 };
 
+export const markObjectKeysExcludedFromMatch = <
+  T extends object,
+  K extends keyof T,
+>(
+  object: T,
+  ...keys: K[]
+): {
+  [P in keyof T]: T[P] extends object
+    ? P extends K
+      ? T[P] & TExclude
+      : T[P]
+    : T[P];
+} => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result: any = {};
+
+  for (const key of objectKeys(object)) {
+    const value = object[key];
+
+    result[key] =
+      !isPlainObject(value) || !keys.includes(key as K)
+        ? value
+        : { ...value, ...excludePattern };
+  }
+
+  return result;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const roomDevices = match({} as const, excludePattern, {
   foo: 'bar',
-  zaz: { $exclude: true, boo: 'bah' },
+  zaz: { $exclude: true, boo: 'bah', doo: 'bull' },
 } as const);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const roomDevicesII = match(
+  {} as const,
+  excludePattern,
+  markObjectKeysExcludedFromMatch(
+    {
+      foo: 'bar',
+      zaz: { boo: 'bah', doo: 'bull' },
+    } as const,
+    'zaz',
+  ),
+);

@@ -14,7 +14,10 @@ import {
   setMain,
   triggerMain,
 } from '../../../lib/tree/logic.js';
-import { Level } from '../../../lib/tree/main.js';
+import {
+  Level,
+  markObjectKeysExcludedFromMatch,
+} from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import {
@@ -38,7 +41,12 @@ export const devices = {
     'livingroom-standinglamp.lan.wurstsalat.cloud',
     context,
   ),
-  terrariumLeds: h801('office-workbenchleds.lan.wurstsalat.cloud', context),
+  terrariumLeds: markObjectKeysExcludedFromMatch(
+    // prevent automated leds from appearing in groups
+    h801('office-workbenchleds.lan.wurstsalat.cloud', context),
+    'ledB',
+    'ledR',
+  ),
   wallswitch: shellyi3('diningroom-wallswitch.lan.wurstsalat.cloud', context),
 };
 
