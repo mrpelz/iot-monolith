@@ -1,6 +1,5 @@
 import { epochs } from '../../../lib/epochs.js';
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { sleep } from '../../../lib/sleep.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -217,10 +216,7 @@ const $init: InitFunction = async (room, introspection) => {
     }
   });
 
-  ceilingLight.main.setState.observe(async () => {
-    // wait to asses timer active to not compete with other logic
-    await sleep(500);
-
+  ceilingLight.main.setState.observe(() => {
     if (!entryDoorTimer.state.isActive) return;
 
     l(
