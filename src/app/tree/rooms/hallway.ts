@@ -217,7 +217,7 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   ceilingLight.main.setState.observe(() => {
-    if (!entryDoorTimer.state.isActive) return;
+    if (!entryDoorTimer.state.isActive.value) return;
 
     l(
       `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
