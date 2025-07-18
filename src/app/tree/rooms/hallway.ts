@@ -1,5 +1,6 @@
 import { epochs } from '../../../lib/epochs.js';
 import { makeCustomStringLogger } from '../../../lib/log.js';
+import { sleep } from '../../../lib/sleep.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -207,24 +208,27 @@ const $init: InitFunction = async (room, introspection) => {
       l(
         `${p(entryDoor)} was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and ${p(entryDoorTimer)} was (re)started`,
       );
+
+      entryDoorTimer.state.start();
     } else {
       l(
         `${p(entryDoor)} was ${open ? 'opened' : 'closed'} with ${p(ceilingLight)} ${wasOn ? 'on' : 'off'} and ${p(entryDoorTimer)} was not started`,
       );
-
-      entryDoorTimer.state.start();
     }
   });
 
-  ceilingLight.main.setState.observe((_value, _observer, changed) => {
-    if (changed && entryDoorTimer.state.isActive) {
-      l(
-        `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
-      );
-    }
+  ceilingLight.main.setState.observe(async () => {
+    // wait to asses timer active to not compete with other logic
+    await sleep(500);
+
+    if (!entryDoorTimer.state.isActive) return;
+
+    l(
+      `${p(entryDoorTimer)} was deactivated because ${p(ceilingLight)} was manually set`,
+    );
 
     entryDoorTimer.state.stop();
-  }, true);
+  });
 
   entryDoorTimer.state.observe(() =>
     setMain(ceilingLight, false, () =>
