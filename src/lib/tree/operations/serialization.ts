@@ -3,7 +3,7 @@ import {
   isPlainObject,
   objectKeys,
   Prev,
-} from '@mrpelz/misc-utils';
+} from '@mrpelz/misc-utils/oop';
 import {
   AnyObservable,
   AnyReadOnlyObservable,

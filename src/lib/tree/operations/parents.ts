@@ -1,4 +1,4 @@
-import { isPlainObject, objectValues } from '@mrpelz/misc-utils';
+import { isPlainObject, objectValues } from '@mrpelz/misc-utils/oop';
 
 export class Parents {
   private readonly _parents = new WeakMap<object, Set<object>>();
