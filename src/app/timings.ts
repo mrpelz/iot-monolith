@@ -1,5 +1,5 @@
-import { epochs } from '../lib/epochs.js';
-import { ModifiableDate, Unit } from '../lib/modifiable-date.js';
+import { epochs, ModifiableDate, Unit } from '@mrpelz/modifiable-date';
+
 import { Schedule } from '../lib/schedule.js';
 import { Timings } from '../lib/tree/properties/sensors.js';
 import { logger } from './logging.js';

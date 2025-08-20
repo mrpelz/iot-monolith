@@ -1,12 +1,13 @@
-import { gammaCorrect, maxmin } from '../number.js';
+import { gammaCorrect, maxmin } from '@mrpelz/misc-utils';
 import {
+  BooleanProxyState,
   Observable,
   ProxyObservable,
   ReadOnlyProxyObservable,
-} from '../observable.js';
+} from '@mrpelz/observable';
+
 import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Led as LedService } from '../services/led.js';
-import { BooleanProxyState } from '../state.js';
 
 const MAX_DUTY_CYCLE = 255;
 

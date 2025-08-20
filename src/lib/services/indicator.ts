@@ -1,7 +1,8 @@
 /* eslint-disable sort-keys */
 
+import { MappedStruct, TStruct, UInt8 } from '@mrpelz/struct';
+
 import { Service } from '../device/main.js';
-import { MappedStruct, TStruct, UInt8 } from '../struct/main.js';
 
 export enum IndicatorMode {
   OFF,

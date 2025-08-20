@@ -1,13 +1,14 @@
-import sunCalc from 'suncalc';
-
 import {
   AnyObservable,
+  BooleanProxyState,
+  NullState,
   ObservableGroup,
   ProxyObservable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
-} from '../lib/observable.js';
-import { BooleanProxyState, NullState } from '../lib/state.js';
+} from '@mrpelz/observable';
+import sunCalc from 'suncalc';
+
 import { Context } from '../lib/tree/context.js';
 import { setter } from '../lib/tree/elements/setter.js';
 import { trigger } from '../lib/tree/elements/trigger.js';

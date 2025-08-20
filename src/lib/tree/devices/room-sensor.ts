@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { ObservableGroup, ReadOnlyObservable } from '@mrpelz/observable';
+
 import { UDPDevice } from '../../device/udp.js';
-import { ObservableGroup, ReadOnlyObservable } from '../../observable.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
 import { getter } from '../elements/getter.js';

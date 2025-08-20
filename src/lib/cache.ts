@@ -1,4 +1,4 @@
-import { isPromise } from './promise.js';
+import { isPromise } from '@mrpelz/misc-utils';
 
 type PromiseResolver<T> = (value: T | PromiseLike<T>) => void;
 type PromiseRejector = (reason: Error) => void;

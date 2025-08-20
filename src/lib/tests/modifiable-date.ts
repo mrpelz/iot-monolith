@@ -1,4 +1,4 @@
-import { ModifiableDate, Unit } from '../modifiable-date.js';
+import { ModifiableDate, Unit } from '@mrpelz/modifiable-date';
 
 const test = new ModifiableDate();
 // eslint-disable-next-line no-console

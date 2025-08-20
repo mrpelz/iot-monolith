@@ -33,18 +33,6 @@
     "./tree-serialization": {
       "default": "./dist/lib/tree/operations/serialization.js",
       "types": "./dist/lib/tree/operations/serialization.d.ts"
-    },
-    "./observable": {
-      "default": "./dist/lib/observable.js",
-      "types": "./dist/lib/observable.d.ts"
-    },
-    "./state": {
-      "default": "./dist/lib/state.js",
-      "types": "./dist/lib/state.d.ts"
-    },
-    "./oop": {
-      "default": "./dist/lib/oop.js",
-      "types": "./dist/lib/oop.d.ts"
     }
   },
   "main": "dist/main.js",
@@ -55,6 +43,10 @@
     "Dockerfile"
   ],
   "dependencies": {
+    "@mrpelz/misc-utils": "latest",
+    "@mrpelz/modifiable-date": "latest",
+    "@mrpelz/observable": "latest",
+    "@mrpelz/struct": "latest",
     "prom-client": "latest",
     "proper-tags": "latest",
     "semver": "latest",

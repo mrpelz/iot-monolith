@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { isObject } from '../../oop.js';
-import { NullState } from '../../state.js';
+import { isObject } from '@mrpelz/misc-utils';
+import { NullState } from '@mrpelz/observable';
+
 import { isLocalMatch, Level, TValueType, ValueType } from '../main.js';
 
 export const $ = 'trigger' as const;

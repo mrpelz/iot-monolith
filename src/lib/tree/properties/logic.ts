@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { maxmin } from '../../number.js';
+import { maxmin } from '@mrpelz/misc-utils';
 import {
+  BooleanState,
+  NullState,
   Observable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
-} from '../../observable.js';
+  Timer,
+} from '@mrpelz/observable';
+
 import { Persistence } from '../../persistence.js';
 import { ScheduleEpochPair } from '../../schedule.js';
-import { BooleanState, NullState } from '../../state.js';
-import { Timer } from '../../timer.js';
 import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';

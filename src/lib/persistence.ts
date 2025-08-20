@@ -4,9 +4,10 @@ import nodePath from 'node:path';
 
 const { dirname } = nodePath;
 
-import { jsonParseGuarded } from './data.js';
+import { jsonParseGuarded } from '@mrpelz/misc-utils';
+import { AnyWritableObservable, Observer } from '@mrpelz/observable';
+
 import { callstack, Input, Logger } from './log.js';
-import { AnyWritableObservable, Observer } from './observable.js';
 import { Schedule } from './schedule.js';
 
 export class Persistence {

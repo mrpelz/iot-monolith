@@ -1,26 +1,25 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Device, IpDevice } from '../../device/main.js';
-import { Led } from '../../items/led.js';
-import { Output } from '../../items/output.js';
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
-  ObservableGroup,
-  ProxyObservable,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../observable.js';
-import { Indicator, IndicatorMode } from '../../services/indicator.js';
-import { Led as LedService } from '../../services/led.js';
-import { Output as OutputService } from '../../services/output.js';
-import {
   BooleanGroupStrategy,
   BooleanNullableStateGroup,
   BooleanState,
   BooleanStateGroup,
   NullState,
-} from '../../state.js';
+  ObservableGroup,
+  ProxyObservable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '@mrpelz/observable';
+
+import { Device, IpDevice } from '../../device/main.js';
+import { Led } from '../../items/led.js';
+import { Output } from '../../items/output.js';
+import { Indicator, IndicatorMode } from '../../services/indicator.js';
+import { Led as LedService } from '../../services/led.js';
+import { Output as OutputService } from '../../services/output.js';
 import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 
+import { Struct, UInt8, UIntLE } from '@mrpelz/struct';
+
 import { Service } from '../device/main.js';
-import { Struct, UInt8, UIntLE } from '../struct/main.js';
 
 export type IndicatorSequenceItem = {
   value: number;

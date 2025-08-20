@@ -1,6 +1,7 @@
+import { promiseGuard } from '@mrpelz/misc-utils';
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+
 import { Service } from '../device/main.js';
-import { Observable, ReadOnlyObservable } from '../observable.js';
-import { promiseGuard } from '../promise.js';
 import { Schedule } from '../schedule.js';
 
 export type MeasurementInputGetter<T> = () => T | null | Promise<T | null>;

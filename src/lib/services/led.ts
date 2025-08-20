@@ -1,5 +1,6 @@
+import { UInt8 } from '@mrpelz/struct';
+
 import { Service } from '../device/main.js';
-import { UInt8 } from '../struct/main.js';
 
 const request = new UInt8();
 

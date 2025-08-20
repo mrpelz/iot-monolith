@@ -1,5 +1,6 @@
+import { UIntLE } from '@mrpelz/struct';
+
 import { Event } from '../device/main.js';
-import { UIntLE } from '../struct/main.js';
 
 const payload = new UIntLE();
 

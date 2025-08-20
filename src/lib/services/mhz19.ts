@@ -1,6 +1,5 @@
 /* eslint-disable sort-keys */
 
-import { Service } from '../device/main.js';
 import {
   Bool,
   FloatLE,
@@ -8,7 +7,9 @@ import {
   MappedStruct,
   TStruct,
   UInt8,
-} from '../struct/main.js';
+} from '@mrpelz/struct';
+
+import { Service } from '../device/main.js';
 
 const response = new MappedStruct({
   accuracy: new UInt8(),

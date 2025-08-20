@@ -1,7 +1,7 @@
+import { AnyObservable } from '@mrpelz/observable';
 import { Gauge } from 'prom-client';
 
 import { Input, Logger } from './log.js';
-import { AnyObservable } from './observable.js';
 import { Introspection } from './tree/operations/introspection.js';
 
 const METRIC_NAME_PREFIX = 'iot_';

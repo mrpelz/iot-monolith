@@ -1,7 +1,7 @@
+import { BooleanState, ReadOnlyObservable } from '@mrpelz/observable';
+
 import { Device } from '../device/main.js';
 import { callstack, Input, Logger } from '../log.js';
-import { ReadOnlyObservable } from '../observable.js';
-import { BooleanState } from '../state.js';
 
 export class TransportDevice {
   static _isValidDeviceForTransport(

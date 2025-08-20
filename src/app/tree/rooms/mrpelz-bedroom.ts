@@ -1,5 +1,6 @@
+import { EnumState } from '@mrpelz/observable';
+
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { EnumState } from '../../../lib/state.js';
 import {
   ev1527ButtonX1,
   ev1527ButtonX4,

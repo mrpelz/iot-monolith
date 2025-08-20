@@ -1,5 +1,5 @@
-import { AnyWritableObservable } from './observable.js';
-import { sleep } from './sleep.js';
+import { sleep } from '@mrpelz/misc-utils';
+import { AnyWritableObservable } from '@mrpelz/observable';
 
 export type OrchestrationTimedStep<T> = [T, number];
 export type OrchestrationTimedSteps<T> = OrchestrationTimedStep<T>[];

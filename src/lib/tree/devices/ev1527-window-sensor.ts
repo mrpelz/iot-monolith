@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { Ev1527Device } from '../../device/ev1527.js';
-import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
-import { MultiValueEvent } from '../../items/event.js';
 import {
   Observable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
-} from '../../observable.js';
+} from '@mrpelz/observable';
+
+import { Ev1527Device } from '../../device/ev1527.js';
+import { Ev1527WindowSensor } from '../../events/ev1527-window-sensor.js';
+import { MultiValueEvent } from '../../items/event.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';

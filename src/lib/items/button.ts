@@ -1,5 +1,6 @@
+import { Observer } from '@mrpelz/observable';
+
 import { Button as ButtonEvent, ButtonPayload } from '../events/button.js';
-import { Observer } from '../observable.js';
 
 type Matcher = (payload: ButtonPayload) => boolean;
 type Callback = () => void;

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
-import { AnyReadOnlyObservable } from '../../observable.js';
-import { isObject } from '../../oop.js';
+import { isObject } from '@mrpelz/misc-utils';
+import { AnyReadOnlyObservable } from '@mrpelz/observable';
+
 import { isLocalMatch, Level, TValueType, ValueType } from '../main.js';
 
 export const $ = 'getter' as const;

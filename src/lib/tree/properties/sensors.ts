@@ -1,8 +1,20 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { epochs } from '@mrpelz/modifiable-date';
+import {
+  AnyReadOnlyObservable,
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+  Observable,
+  ReadOnlyNullState,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+  Timer,
+} from '@mrpelz/observable';
+
 import { byteLengthAddress } from '../../device/ev1527.js';
 import { Device } from '../../device/main.js';
-import { epochs } from '../../epochs.js';
 import { Button as ButtonEvent } from '../../events/button.js';
 import { ESPNow } from '../../events/esp-now.js';
 import { Input } from '../../events/input.js';
@@ -15,12 +27,6 @@ import {
   MultiValueSensor,
   SingleValueSensor,
 } from '../../items/sensor.js';
-import {
-  AnyReadOnlyObservable,
-  Observable,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-} from '../../observable.js';
 import { ScheduleEpochPair } from '../../schedule.js';
 import { Async } from '../../services/async.js';
 import { Bme280 } from '../../services/bme280.js';
@@ -32,13 +38,6 @@ import { Sds011 } from '../../services/sds011.js';
 import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
 import { Tsl2561 } from '../../services/tsl2561.js';
 import { Veml6070 } from '../../services/veml6070.js';
-import {
-  BooleanGroupStrategy,
-  BooleanState,
-  BooleanStateGroup,
-  ReadOnlyNullState,
-} from '../../state.js';
-import { Timer } from '../../timer.js';
 import { Context } from '../context.js';
 import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';

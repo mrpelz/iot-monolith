@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+
 import { Metrics } from '../../lib/metrics.js';
-import { Observable, ReadOnlyObservable } from '../../lib/observable.js';
 import { Schedule } from '../../lib/schedule.js';
 import { getter } from '../../lib/tree/elements/getter.js';
 import { Level, ValueType } from '../../lib/tree/main.js';

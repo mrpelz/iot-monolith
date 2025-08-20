@@ -1,24 +1,25 @@
-import { emptyBuffer } from '../data.js';
-import { callstack, Input, Logger } from '../log.js';
-import { NUMBER_RANGES } from '../number.js';
-import { Observer, ReadOnlyObservable } from '../observable.js';
-import { RollingNumber } from '../rolling-number.js';
+import { emptyBuffer, NUMBER_RANGES, RollingNumber } from '@mrpelz/misc-utils';
 import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
   NullState,
+  Observer,
   ReadOnlyNullState,
-} from '../state.js';
-import { DynamicBuffer, MappedDynamicStruct } from '../struct/dynamic.js';
+  ReadOnlyObservable,
+  Timer,
+} from '@mrpelz/observable';
 import {
+  DynamicBuffer,
   FixedBuffer,
+  MappedDynamicStruct,
   MappedStruct,
   StaticBuffer,
   staticValue,
   UInt8,
-} from '../struct/main.js';
-import { Timer } from '../timer.js';
+} from '@mrpelz/struct';
+
+import { callstack, Input, Logger } from '../log.js';
 import { Transport, TransportDevice } from '../transport/main.js';
 import { TCPTransport } from '../transport/tcp.js';
 import { UDPTransport } from '../transport/udp.js';

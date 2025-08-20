@@ -2,13 +2,12 @@ import { IncomingMessage } from 'node:http';
 import { Socket } from 'node:net';
 import { Duplex } from 'node:stream';
 
+import { Observable, Timer } from '@mrpelz/observable';
 import { stripIndent } from 'proper-tags';
 import webSocket, { WebSocketServer } from 'ws';
 
 import { HttpServer, RouteHandle } from '../http-server.js';
 import { callstack, Input, Logger } from '../log.js';
-import { Observable } from '../observable.js';
-import { Timer } from '../timer.js';
 import {
   InteractionUpdate,
   Serialization,

@@ -1,4 +1,5 @@
-import { ModifiableDate, Unit } from '../modifiable-date.js';
+import { ModifiableDate, Unit } from '@mrpelz/modifiable-date';
+
 import { Schedule } from '../schedule.js';
 import { logger } from './main.js';
 

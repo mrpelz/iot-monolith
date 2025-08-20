@@ -1,6 +1,7 @@
+import { Timer } from '@mrpelz/observable';
+import { Bitmap } from '@mrpelz/struct';
+
 import { Event } from '../device/main.js';
-import { Bitmap } from '../struct/main.js';
-import { Timer } from '../timer.js';
 
 const REPEAT_HOLDOFF_TIME = 250;
 

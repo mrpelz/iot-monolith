@@ -1,8 +1,8 @@
-import { epochs } from '../../../lib/epochs.js';
+import { maxmin, promiseGuard, round } from '@mrpelz/misc-utils';
+import { epochs } from '@mrpelz/modifiable-date';
+import { BooleanState } from '@mrpelz/observable';
+
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { maxmin, round } from '../../../lib/number.js';
-import { promiseGuard } from '../../../lib/promise.js';
-import { BooleanState } from '../../../lib/state.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';

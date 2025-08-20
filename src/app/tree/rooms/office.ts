@@ -1,4 +1,5 @@
-import { epochs } from '../../../lib/epochs.js';
+import { epochs } from '@mrpelz/modifiable-date';
+
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';

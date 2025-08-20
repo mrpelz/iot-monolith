@@ -1,10 +1,9 @@
+import { jsonParseGuarded } from '@mrpelz/misc-utils';
+import { AnyWritableObservable, NullState } from '@mrpelz/observable';
 import { stripIndent } from 'proper-tags';
 
-import { jsonParseGuarded } from './data.js';
 import { HttpServer } from './http-server.js';
 import { callstack, Logger } from './log.js';
-import { AnyWritableObservable } from './observable.js';
-import { NullState } from './state.js';
 import { isValueType } from './tree/main.js';
 import {
   InteractionType,

@@ -1,12 +1,15 @@
 import { promises } from 'node:dns';
 import { Socket } from 'node:net';
 
-import { humanPayload, readNumber, writeNumber } from '../data.js';
+import {
+  humanPayload,
+  readNumber,
+  rebind,
+  writeNumber,
+} from '@mrpelz/misc-utils';
+import { BooleanState, ReadOnlyObservable, Timer } from '@mrpelz/observable';
+
 import { callstack, Input, Logger } from '../log.js';
-import { ReadOnlyObservable } from '../observable.js';
-import { rebind } from '../oop.js';
-import { BooleanState } from '../state.js';
-import { Timer } from '../timer.js';
 import { Transport } from './main.js';
 
 const { lookup } = promises;

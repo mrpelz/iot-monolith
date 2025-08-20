@@ -1,14 +1,16 @@
 import { createSocket, RemoteInfo, Socket } from 'node:dgram';
 import { promises } from 'node:dns';
 
-import { humanPayload } from '../data.js';
+import {
+  humanPayload,
+  NUMBER_RANGES,
+  rebind,
+  RollingNumber,
+} from '@mrpelz/misc-utils';
+import { BooleanState, ReadOnlyObservable } from '@mrpelz/observable';
+import { MappedStruct, UInt8 } from '@mrpelz/struct';
+
 import { callstack, Input, Logger } from '../log.js';
-import { NUMBER_RANGES } from '../number.js';
-import { ReadOnlyObservable } from '../observable.js';
-import { rebind } from '../oop.js';
-import { RollingNumber } from '../rolling-number.js';
-import { BooleanState } from '../state.js';
-import { MappedStruct, UInt8 } from '../struct/main.js';
 import { Transport } from './main.js';
 
 const { lookup } = promises;

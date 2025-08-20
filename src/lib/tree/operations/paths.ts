@@ -1,7 +1,6 @@
+import { arrayCompare, isPlainObject, objectKeys } from '@mrpelz/misc-utils';
 import { v5 as uuidv5 } from 'uuid';
 
-import { arrayCompare } from '../../data.js';
-import { isPlainObject, objectKeys } from '../../oop.js';
 import { match } from '../main.js';
 
 export type Path = (string | number | symbol)[];

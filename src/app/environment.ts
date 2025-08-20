@@ -1,9 +1,7 @@
 import { createRequire } from 'node:module';
 
+import { ensureKeys, parse } from '@mrpelz/misc-utils';
 import { prerelease as semverPrerelease } from 'semver';
-
-import { ensureKeys } from '../lib/oop.js';
-import { parse } from '../lib/string.js';
 
 const nodeRequire = createRequire(import.meta.url);
 const packageJson = nodeRequire('../../package.json');

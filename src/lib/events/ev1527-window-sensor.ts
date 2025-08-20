@@ -1,5 +1,6 @@
+import { Bitmap } from '@mrpelz/struct';
+
 import { Event } from '../device/main.js';
-import { Bitmap } from '../struct/main.js';
 
 export type Ev1527WindowSensorPayload = {
   open: boolean;

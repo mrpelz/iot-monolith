@@ -1,6 +1,11 @@
+import {
+  NullState,
+  Observable,
+  ReadOnlyNullState,
+  ReadOnlyObservable,
+} from '@mrpelz/observable';
+
 import { Event } from '../device/main.js';
-import { Observable, ReadOnlyObservable } from '../observable.js';
-import { NullState, ReadOnlyNullState } from '../state.js';
 
 export class SingleValueEvent<T = unknown> {
   private readonly _event: Event<T>;

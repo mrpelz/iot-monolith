@@ -1,5 +1,6 @@
+import { Bool } from '@mrpelz/struct';
+
 import { Service } from '../device/main.js';
-import { Bool } from '../struct/main.js';
 
 const request = new Bool();
 

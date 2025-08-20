@@ -1,5 +1,6 @@
+import { bitRange, bytesRequiredForBitLength } from '@mrpelz/misc-utils';
+
 import { Logger } from '../log.js';
-import { bitRange, bytesRequiredForBitLength } from '../number.js';
 import { Ev1527Transport } from '../transport/ev1527.js';
 import { Device } from './main.js';
 

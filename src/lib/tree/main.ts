@@ -6,7 +6,7 @@ import {
   objectValues,
   Prev,
   Primitive,
-} from '../oop.js';
+} from '@mrpelz/misc-utils';
 
 // convince TypeScript to iterate while searching deeper at runtime 😅
 export const DEFAULT_MATCH_DEPTH = 50 as 8;

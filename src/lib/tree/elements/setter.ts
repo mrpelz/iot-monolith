@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { isObject } from '@mrpelz/misc-utils';
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
   ReadOnlyObservable,
-} from '../../observable.js';
-import { isObject } from '../../oop.js';
+} from '@mrpelz/observable';
+
 import { isLocalMatch, Level, TValueType, ValueType } from '../main.js';
 
 export const $ = 'setter' as const;

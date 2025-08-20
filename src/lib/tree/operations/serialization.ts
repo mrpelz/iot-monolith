@@ -1,12 +1,18 @@
-import { v5 as uuidv5 } from 'uuid';
-
+import {
+  EmptyObject,
+  isPlainObject,
+  objectKeys,
+  Prev,
+} from '@mrpelz/misc-utils';
 import {
   AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
-} from '../../observable.js';
-import { EmptyObject, isPlainObject, objectKeys, Prev } from '../../oop.js';
-import { NullState, ReadOnlyNullState } from '../../state.js';
+  NullState,
+  ReadOnlyNullState,
+} from '@mrpelz/observable';
+import { v5 as uuidv5 } from 'uuid';
+
 import { isGetter } from '../elements/getter.js';
 import { isSetter } from '../elements/setter.js';
 import { isTrigger } from '../elements/trigger.js';

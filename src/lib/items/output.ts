@@ -1,7 +1,11 @@
-import { Observable, ReadOnlyObservable } from '../observable.js';
+import {
+  BooleanState,
+  Observable,
+  ReadOnlyObservable,
+} from '@mrpelz/observable';
+
 import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Output as OutputService } from '../services/output.js';
-import { BooleanState } from '../state.js';
 
 export class Output {
   private readonly _actualState = new Observable<boolean | null>(null);

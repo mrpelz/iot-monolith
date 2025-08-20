@@ -1,4 +1,5 @@
-import { humanPayload } from '../data.js';
+import { humanPayload } from '@mrpelz/misc-utils';
+
 import { EVENT_IDENTIFIER } from '../device/main.js';
 import { ESPNow, ESPNowPayload } from '../events/esp-now.js';
 import { Input, Logger } from '../log.js';

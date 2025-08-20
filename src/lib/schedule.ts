@@ -1,5 +1,6 @@
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+
 import { callstack, Input, Logger } from './log.js';
-import { Observable, ReadOnlyObservable } from './observable.js';
 
 export type ScheduleEpochPair = [Schedule, number];
 

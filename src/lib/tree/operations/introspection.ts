@@ -1,7 +1,6 @@
 /* eslint-disable unicorn/no-array-reduce */
+import { isPlainObject, objectKeys } from '@mrpelz/misc-utils';
 import { v5 as uuidv5 } from 'uuid';
-
-import { isPlainObject, objectKeys } from '../../oop.js';
 
 export type ObjectReference = {
   parent?: object;

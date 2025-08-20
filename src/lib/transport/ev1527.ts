@@ -1,4 +1,5 @@
-import { humanPayload } from '../data.js';
+import { humanPayload } from '@mrpelz/misc-utils';
+
 import { EVENT_IDENTIFIER } from '../device/main.js';
 import { Rf433, Rf433Payload } from '../events/rf433.js';
 import { Input, Logger } from '../log.js';

@@ -1,4 +1,5 @@
-import { epochs } from '../../lib/epochs.js';
+import { epochs } from '@mrpelz/modifiable-date';
+
 import { makeCustomStringLogger } from '../../lib/log.js';
 import { setMain } from '../../lib/tree/logic.js';
 import { Level } from '../../lib/tree/main.js';
