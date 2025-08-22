@@ -1,6 +1,7 @@
-import { maxmin, promiseGuard, round } from '@mrpelz/misc-utils';
+import { maxmin, round } from '@mrpelz/misc-utils/number';
+import { promiseGuard } from '@mrpelz/misc-utils/promise';
 import { epochs } from '@mrpelz/modifiable-date';
-import { BooleanState } from '@mrpelz/observable';
+import { BooleanState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';

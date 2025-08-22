@@ -2,7 +2,8 @@ import { IncomingMessage } from 'node:http';
 import { Socket } from 'node:net';
 import { Duplex } from 'node:stream';
 
-import { Observable, Timer } from '@mrpelz/observable';
+import { Observable } from '@mrpelz/observable';
+import { Timer } from '@mrpelz/observable/timer';
 import { stripIndent } from 'proper-tags';
 import webSocket, { WebSocketServer } from 'ws';
 

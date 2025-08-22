@@ -1,14 +1,15 @@
-import { emptyBuffer, NUMBER_RANGES, RollingNumber } from '@mrpelz/misc-utils';
+import { emptyBuffer } from '@mrpelz/misc-utils/data';
+import { NUMBER_RANGES } from '@mrpelz/misc-utils/number';
+import { RollingNumber } from '@mrpelz/misc-utils/rolling-number';
+import { Observer, ReadOnlyObservable } from '@mrpelz/observable';
 import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
   NullState,
-  Observer,
   ReadOnlyNullState,
-  ReadOnlyObservable,
-  Timer,
-} from '@mrpelz/observable';
+} from '@mrpelz/observable/state';
+import { Timer } from '@mrpelz/observable/timer';
 import {
   DynamicBuffer,
   FixedBuffer,

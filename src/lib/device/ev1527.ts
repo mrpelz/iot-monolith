@@ -1,4 +1,4 @@
-import { bitRange, bytesRequiredForBitLength } from '@mrpelz/misc-utils';
+import { bitRange, bytesRequiredForBitLength } from '@mrpelz/misc-utils/number';
 
 import { Logger } from '../log.js';
 import { Ev1527Transport } from '../transport/ev1527.js';

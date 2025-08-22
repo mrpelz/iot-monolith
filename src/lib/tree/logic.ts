@@ -1,4 +1,5 @@
-import { AnyWritableObservable, NullState } from '@mrpelz/observable';
+import { AnyWritableObservable } from '@mrpelz/observable';
+import { NullState } from '@mrpelz/observable/state';
 
 export const getMain = <T>(subject: {
   main: { setState: AnyWritableObservable<T> };

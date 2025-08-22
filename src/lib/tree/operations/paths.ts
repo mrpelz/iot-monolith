@@ -1,4 +1,5 @@
-import { arrayCompare, isPlainObject, objectKeys } from '@mrpelz/misc-utils';
+import { arrayCompare } from '@mrpelz/misc-utils/data';
+import { isPlainObject, objectKeys } from '@mrpelz/misc-utils/oop';
 import { v5 as uuidv5 } from 'uuid';
 
 import { match } from '../main.js';

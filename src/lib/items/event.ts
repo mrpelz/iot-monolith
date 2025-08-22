@@ -1,9 +1,5 @@
-import {
-  NullState,
-  Observable,
-  ReadOnlyNullState,
-  ReadOnlyObservable,
-} from '@mrpelz/observable';
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 import { Event } from '../device/main.js';
 

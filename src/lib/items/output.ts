@@ -1,8 +1,5 @@
-import {
-  BooleanState,
-  Observable,
-  ReadOnlyObservable,
-} from '@mrpelz/observable';
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+import { BooleanState } from '@mrpelz/observable/state';
 
 import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Output as OutputService } from '../services/output.js';

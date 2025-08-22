@@ -1,4 +1,4 @@
-import { sleep } from '@mrpelz/misc-utils';
+import { sleep } from '@mrpelz/misc-utils/sleep';
 import { AnyWritableObservable } from '@mrpelz/observable';
 
 export type OrchestrationTimedStep<T> = [T, number];

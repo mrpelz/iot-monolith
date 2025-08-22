@@ -3,16 +3,18 @@
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
-  BooleanGroupStrategy,
-  BooleanNullableStateGroup,
-  BooleanState,
-  BooleanStateGroup,
-  NullState,
   ObservableGroup,
   ProxyObservable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
+import {
+  BooleanGroupStrategy,
+  BooleanNullableStateGroup,
+  BooleanState,
+  BooleanStateGroup,
+  NullState,
+} from '@mrpelz/observable/state';
 
 import { Device, IpDevice } from '../../device/main.js';
 import { Led } from '../../items/led.js';

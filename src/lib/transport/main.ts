@@ -1,4 +1,5 @@
-import { BooleanState, ReadOnlyObservable } from '@mrpelz/observable';
+import { ReadOnlyObservable } from '@mrpelz/observable';
+import { BooleanState } from '@mrpelz/observable/state';
 
 import { Device } from '../device/main.js';
 import { callstack, Input, Logger } from '../log.js';

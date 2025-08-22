@@ -1,4 +1,4 @@
-import { EnumState } from '@mrpelz/observable';
+import { EnumState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import {

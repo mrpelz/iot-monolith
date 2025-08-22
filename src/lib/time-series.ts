@@ -1,12 +1,11 @@
 import {
   AnyObservable,
-  NullState,
   Observable,
   Observer,
   ProxyFn,
-  ReadOnlyNullState,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
+import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 export enum TimeseriesLimitType {
   ENTRIES,

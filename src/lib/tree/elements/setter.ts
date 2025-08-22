@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { isObject } from '@mrpelz/misc-utils';
+import { isObject } from '@mrpelz/misc-utils/oop';
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,

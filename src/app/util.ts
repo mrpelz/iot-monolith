@@ -1,12 +1,11 @@
 import {
   AnyObservable,
-  BooleanProxyState,
-  NullState,
   ObservableGroup,
   ProxyObservable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
+import { BooleanProxyState, NullState } from '@mrpelz/observable/state';
 import sunCalc from 'suncalc';
 
 import { Context } from '../lib/tree/context.js';

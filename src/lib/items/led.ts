@@ -1,10 +1,10 @@
-import { gammaCorrect, maxmin } from '@mrpelz/misc-utils';
+import { gammaCorrect, maxmin } from '@mrpelz/misc-utils/number';
 import {
-  BooleanProxyState,
   Observable,
   ProxyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
+import { BooleanProxyState } from '@mrpelz/observable/state';
 
 import { Indicator, IndicatorMode } from '../services/indicator.js';
 import { Led as LedService } from '../services/led.js';

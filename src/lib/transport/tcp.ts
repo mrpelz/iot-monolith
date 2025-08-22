@@ -1,13 +1,11 @@
 import { promises } from 'node:dns';
 import { Socket } from 'node:net';
 
-import {
-  humanPayload,
-  readNumber,
-  rebind,
-  writeNumber,
-} from '@mrpelz/misc-utils';
-import { BooleanState, ReadOnlyObservable, Timer } from '@mrpelz/observable';
+import { humanPayload, readNumber, writeNumber } from '@mrpelz/misc-utils/data';
+import { rebind } from '@mrpelz/misc-utils/oop';
+import { ReadOnlyObservable } from '@mrpelz/observable';
+import { BooleanState } from '@mrpelz/observable/state';
+import { Timer } from '@mrpelz/observable/timer';
 
 import { callstack, Input, Logger } from '../log.js';
 import { Transport } from './main.js';

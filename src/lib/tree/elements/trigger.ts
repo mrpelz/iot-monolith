@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-import { isObject } from '@mrpelz/misc-utils';
-import { NullState } from '@mrpelz/observable';
+import { isObject } from '@mrpelz/misc-utils/oop';
+import { NullState } from '@mrpelz/observable/state';
 
 import { isLocalMatch, Level, TValueType, ValueType } from '../main.js';
 

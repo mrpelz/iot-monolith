@@ -1,4 +1,4 @@
-import { Timer } from '@mrpelz/observable';
+import { Timer } from '@mrpelz/observable/timer';
 import { Bitmap } from '@mrpelz/struct';
 
 import { Event } from '../device/main.js';

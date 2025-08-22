@@ -4,7 +4,7 @@ import nodePath from 'node:path';
 
 const { dirname } = nodePath;
 
-import { jsonParseGuarded } from '@mrpelz/misc-utils';
+import { jsonParseGuarded } from '@mrpelz/misc-utils/data';
 import { AnyWritableObservable, Observer } from '@mrpelz/observable';
 
 import { callstack, Input, Logger } from './log.js';

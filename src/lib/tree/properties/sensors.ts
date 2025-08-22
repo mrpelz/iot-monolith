@@ -3,15 +3,17 @@
 import { epochs } from '@mrpelz/modifiable-date';
 import {
   AnyReadOnlyObservable,
+  Observable,
+  ReadOnlyObservable,
+  ReadOnlyProxyObservable,
+} from '@mrpelz/observable';
+import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
-  Observable,
   ReadOnlyNullState,
-  ReadOnlyObservable,
-  ReadOnlyProxyObservable,
-  Timer,
-} from '@mrpelz/observable';
+} from '@mrpelz/observable/state';
+import { Timer } from '@mrpelz/observable/timer';
 
 import { byteLengthAddress } from '../../device/ev1527.js';
 import { Device } from '../../device/main.js';

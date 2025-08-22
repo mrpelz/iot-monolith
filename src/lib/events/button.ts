@@ -1,6 +1,6 @@
 /* eslint-disable sort-keys */
 
-import { bufferChunks } from '@mrpelz/misc-utils';
+import { bufferChunks } from '@mrpelz/misc-utils/data';
 import { Bool, MappedStruct, TStruct, UInt8, UIntLE } from '@mrpelz/struct';
 
 import { Event } from '../device/main.js';

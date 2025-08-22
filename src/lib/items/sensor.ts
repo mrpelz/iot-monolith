@@ -1,4 +1,4 @@
-import { promiseGuard } from '@mrpelz/misc-utils';
+import { promiseGuard } from '@mrpelz/misc-utils/promise';
 import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
 
 import { Service } from '../device/main.js';

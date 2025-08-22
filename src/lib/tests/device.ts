@@ -3,8 +3,8 @@ import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
-  Timer,
-} from '@mrpelz/observable';
+} from '@mrpelz/observable/state';
+import { Timer } from '@mrpelz/observable/timer';
 
 import { ESPNowDevice } from '../device/esp-now.js';
 import {

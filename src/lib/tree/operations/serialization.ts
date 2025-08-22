@@ -8,9 +8,8 @@ import {
   AnyObservable,
   AnyReadOnlyObservable,
   AnyWritableObservable,
-  NullState,
-  ReadOnlyNullState,
 } from '@mrpelz/observable';
+import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 import { v5 as uuidv5 } from 'uuid';
 
 import { isGetter } from '../elements/getter.js';
