@@ -17,7 +17,9 @@ import { hello, lastSeen, vcc } from '../properties/sensors.js';
 
 const deviceMeta = <S extends boolean>(device: Device, isSubDevice: S) => ({
   ...(device.identifier ? { identifier: [...device.identifier.values()] } : {}),
+  $allowMainReference: true as const,
   isSubDevice,
+  level: Level.DEVICE as const,
   transportType: device.transport.constructor.name,
   type: device.constructor.name,
 });

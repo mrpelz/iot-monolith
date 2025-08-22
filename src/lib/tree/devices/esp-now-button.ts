@@ -41,7 +41,6 @@ export const espNowButton = (
       espNow: {
         ...children(context, device),
         device: espNowDevice(context, device, true),
-        level: Level.DEVICE as const,
       },
     };
   })();

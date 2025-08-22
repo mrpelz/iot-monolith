@@ -4,7 +4,6 @@ import { UDPDevice } from '../../device/udp.js';
 import { Indicator } from '../../services/indicator.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
-import { Level } from '../main.js';
 import { output } from '../properties/actuators.js';
 import { button } from '../properties/sensors.js';
 
@@ -26,7 +25,6 @@ export const obiPlug = <T extends string>(
     button: button(context, device, 0),
     device: ipDevice(context, device, false, indicator, initiallyOnline),
     indicator,
-    level: Level.DEVICE as const,
     relay: output(context, device, 0, topic, indicator),
   };
 };

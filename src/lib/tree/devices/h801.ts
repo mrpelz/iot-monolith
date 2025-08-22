@@ -4,7 +4,6 @@ import { UDPDevice } from '../../device/udp.js';
 import { Indicator } from '../../services/indicator.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
-import { Level } from '../main.js';
 import { led } from '../properties/actuators.js';
 
 export const h801 = (
@@ -28,6 +27,5 @@ export const h801 = (
     ledB: led(context, device, 2, undefined),
     ledW1: led(context, device, 3, undefined),
     ledW2: led(context, device, 4, undefined),
-    level: Level.DEVICE as const,
   };
 };

@@ -7,7 +7,6 @@ import { ESPNowTransport } from '../../transport/esp-now.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
-import { Level } from '../main.js';
 import { rfReadout } from '../properties/sensors.js';
 
 export const rfBridge = (
@@ -27,7 +26,6 @@ export const rfBridge = (
     device: ipDevice(context, device, false, undefined, initiallyOnline),
     espNowTransport: new ESPNowTransport(logger, espNowEvent),
     ev1527Transport: new Ev1527Transport(logger, rf433Event),
-    level: Level.DEVICE as const,
     rfReadout: rfReadout(context, espNowEvent, rf433Event),
   };
 };

@@ -119,7 +119,12 @@ export class Introspection {
     const { mainReference, references } = introspection;
     references.add(reference);
 
-    const thisIsMainReference = allowMainReference && !mainReference;
+    const thisIsMainReference =
+      (allowMainReference ||
+        ('$allowMainReference' in input &&
+          input.$allowMainReference === true)) &&
+      !mainReference;
+
     if (thisIsMainReference) introspection.mainReference = reference;
     if (parent && thisIsMainReference) introspection.id = id;
 
