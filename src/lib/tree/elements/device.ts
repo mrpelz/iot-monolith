@@ -63,7 +63,6 @@ export const ipDevice = <S extends boolean>(
 
 export const deviceMap = <T extends object>(devices: T) => ({
   $: 'deviceMap' as const,
-  $noMainReference: true as const,
   ...devices,
   level: Level.NONE as const,
 });
