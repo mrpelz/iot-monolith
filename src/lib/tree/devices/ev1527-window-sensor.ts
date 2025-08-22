@@ -87,6 +87,7 @@ export const ev1527WindowSensor = (
   return {
     $noMainReference: true as const,
     device: ev1527Device(context, device),
+    level: Level.DEVICE as const,
     open: {
       $init: $initOpen,
       isReceivedValue: {

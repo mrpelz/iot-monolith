@@ -6,6 +6,7 @@ import { StatelessMultiValueEvent } from '../../items/event.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
+import { Level } from '../main.js';
 
 export const ev1527ButtonX4 = (
   address: number,
@@ -18,6 +19,7 @@ export const ev1527ButtonX4 = (
 
   return {
     device: ev1527Device(context, device),
+    level: Level.DEVICE as const,
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
       'bottomRight',
@@ -38,6 +40,7 @@ export const ev1527ButtonX1 = (
 
   return {
     device: ev1527Device(context, device),
+    level: Level.DEVICE as const,
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'bottomLeft',
     ]).state.bottomLeft,

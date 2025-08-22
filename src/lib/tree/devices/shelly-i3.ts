@@ -3,6 +3,7 @@
 import { UDPDevice } from '../../device/udp.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
+import { Level } from '../main.js';
 import { button } from '../properties/sensors.js';
 
 export const shellyi3 = (
@@ -21,5 +22,6 @@ export const shellyi3 = (
     button1: button(context, device, 1),
     button2: button(context, device, 2),
     device: ipDevice(context, device, false, undefined, initiallyOnline),
+    level: Level.DEVICE as const,
   };
 };

@@ -85,6 +85,7 @@ export const testDevice = (context: Context) => {
     co2,
     device: ipDevice(context, device, false, undefined, connect),
     humidity,
+    level: Level.DEVICE as const,
     motion: input(context, device, undefined, 'motion'),
     pm025,
     pm10,

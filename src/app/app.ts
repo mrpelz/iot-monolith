@@ -59,14 +59,14 @@ export const app = async (): Promise<void> => {
   //   excludePattern,
   //   system,
   // ).flatMap((child) =>
-  //   match(levelObjectMatch[Level.DEVICE], excludePattern, child),
+  //   match(levelObjectMatch[Level.DEVICE], excludePattern, child, 5),
   // );
 
   // // eslint-disable-next-line no-console
-  // console.log(roomDevices.map((device) => device.$));
+  // console.log(roomDevices.map((device) => device));
 
   // const [testRoom] = match({ $: 'testRoom' as const }, excludePattern, system);
-  // const [lol] = match({ lol: anyBoolean }, undefined, testRoom);
+  // const [lol] = match({ lol: anyBoolean }, undefined, testRoom, 5);
   // // eslint-disable-next-line no-console
   // console.log(testRoom?.$, lol?.lol);
 
@@ -80,7 +80,13 @@ export const app = async (): Promise<void> => {
   //   // eslint-disable-next-line no-console
   //   console.log(
   //     introspection.getObject(sunElevation)?.id,
-  //     introspection.getObject(sunElevation.isDay)?.id,
+  //     (() => {
+  //       const o = introspection.getObject(sunElevation.isDay)?.mainReference
+  //         ?.parent;
+
+  //       if (!o) return undefined;
+  //       return introspection.getObject(o)?.id;
+  //     })(),
   //   );
   // }
 

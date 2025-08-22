@@ -43,6 +43,7 @@ export const espNowWindowSensor = (
       espNow: {
         ...children(context, device),
         device: espNowDevice(context, device, true),
+        level: Level.DEVICE as const,
       },
     };
   })();

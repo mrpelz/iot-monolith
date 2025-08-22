@@ -94,6 +94,7 @@ export const roomSensor = (
     device: ipDevice(context, device, false, undefined, initiallyOnline),
     humidity,
     // motion: input(device, undefined, 'motion'),
+    level: Level.DEVICE as const,
     pressure,
     sensors: {
       bme280,
