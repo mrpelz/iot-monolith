@@ -61,9 +61,11 @@ export const espNowWindowSensor = (
 
   return {
     $: 'espNowWindowSensor' as const,
-    isSubDevice: false as const,
-    level: Level.DEVICE as const,
-    ...espNow,
-    ...wifi,
+    device: {
+      isSubDevice: false,
+      level: Level.DEVICE as const,
+      ...espNow,
+      ...wifi,
+    },
   };
 };

@@ -38,16 +38,16 @@ export const devices = {
 };
 
 export const instances = {
-  espNowButton0: devices.espNowButton.espNow.button0,
-  espNowButton1: devices.espNowButton.espNow.button1,
+  espNowButton0: devices.espNowButton.device.espNow.button0,
+  espNowButton1: devices.espNowButton.device.espNow.button1,
 };
 
 export const properties = {
   brightness: devices.testDevice.brightness,
   co2: devices.testDevice.co2,
-  espNowWindowSensor0: devices.espNowWindowSensor.espNow.input0,
-  espNowWindowSensor1: devices.espNowWindowSensor.espNow.input1,
-  espNowWindowSensor2: devices.espNowWindowSensor.espNow.input2,
+  espNowWindowSensor0: devices.espNowWindowSensor.device.espNow.input0,
+  espNowWindowSensor1: devices.espNowWindowSensor.device.espNow.input1,
+  espNowWindowSensor2: devices.espNowWindowSensor.device.espNow.input2,
   humidity: devices.testDevice.humidity,
   motion: devices.testDevice.motion,
   pm025: devices.testDevice.pm025,
