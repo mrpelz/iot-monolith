@@ -606,13 +606,13 @@ const [espNowTransport, ev1527Transport] = (() => {
     deviceLabel,
     'button',
     new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
-      'bottomLeft',
-      'bottomRight',
-      'topLeft',
-      'topRight',
+      'one',
+      'two',
+      'three',
+      'four',
     ]),
   );
-  button.state.bottomRight.observe(() => on.flip());
+  button.state.two.observe(() => on.flip());
 })();
 
 (() => {
@@ -625,13 +625,13 @@ const [espNowTransport, ev1527Transport] = (() => {
     deviceLabel,
     'button',
     new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
-      'bottomLeft',
-      'bottomRight',
-      'topLeft',
-      'topRight',
+      'one',
+      'two',
+      'three',
+      'four',
     ]),
   );
-  button.state.bottomRight.observe(() => on.flip());
+  button.state.two.observe(() => on.flip());
 })();
 
 (() => {
@@ -644,13 +644,13 @@ const [espNowTransport, ev1527Transport] = (() => {
     deviceLabel,
     'button',
     new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
-      'bottomLeft',
-      'bottomRight',
-      'topLeft',
-      'topRight',
+      'one',
+      'two',
+      'three',
+      'four',
     ]),
   );
-  button.state.bottomRight.observe(() => on.flip());
+  button.state.two.observe(() => on.flip());
 })();
 
 (() => {

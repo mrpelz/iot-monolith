@@ -2,6 +2,7 @@ import { EnumState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import {
+  ev1527ButtonWP07,
   ev1527ButtonX1,
   ev1527ButtonX4,
 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -33,6 +34,7 @@ import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
+  bedButton: ev1527ButtonWP07(529_507, ev1527Transport, context),
   bookshelfLeds: h801('bedroom-bedrgbwleds.lan.wurstsalat.cloud', context),
   button: ev1527ButtonX1(74_160, ev1527Transport, context),
   ceilingLight: shelly1(
@@ -73,6 +75,7 @@ export const devices = {
 };
 
 export const instances = {
+  bedButton: devices.bedButton,
   button: devices.button,
   heatLampButton: devices.heatLamp.button,
   ionGeneratorButton: devices.ionGenerator.button,
@@ -358,6 +361,7 @@ const sceneCycle = new EnumState(
 const $init: InitFunction = (room, introspection) => {
   const { allLights } = groups;
   const {
+    bedButton,
     button,
     heatLampButton,
     ionGeneratorButton,
@@ -394,6 +398,55 @@ const $init: InitFunction = (room, introspection) => {
 
     fn(cause);
   };
+
+  bedButton.state.left.observe(() => {
+    if (!getMain(allLights)) {
+      setMain(onlyNightLight, true, () =>
+        l(
+          `${p(bedButton)} left turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
+        ),
+      );
+
+      return;
+    }
+
+    l(`${p(bedButton)} left triggering sceneCycle to previous`);
+    sceneCycle.previous();
+  });
+
+  bedButton.state.middle.observe(() => {
+    if (getMain(allLights)) {
+      setMain(allLights, false, () =>
+        l(
+          `${p(bedButton)} middle turned off ${p(allLights)}, because ${p(allLights)} was on`,
+        ),
+      );
+
+      return;
+    }
+
+    setMain(moodLight, true, () =>
+      l(
+        `${p(bedButton)} middle turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+      ),
+    );
+  });
+
+  bedButton.state.right.observe(() => {
+    if (!getMain(allLights)) {
+      setMain(ceilingLightPlus, true, () =>
+        l(
+          `${p(bedButton)} right turned on ${p(ceilingLightPlus)}, because ${p(allLights)} was off`,
+        ),
+      );
+
+      return;
+    }
+
+    l(`${p(bedButton)} right triggering sceneCycle to next`);
+
+    sceneCycle.next();
+  });
 
   button.state.observe(
     offOrElse(`${p(button)}`, (cause) =>

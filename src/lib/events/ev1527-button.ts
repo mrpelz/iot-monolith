@@ -8,10 +8,14 @@ const REPEAT_HOLDOFF_TIME = 250;
 const payload = new Bitmap();
 
 export type Ev1527ButtonPayload = {
-  bottomLeft: boolean;
-  bottomRight: boolean;
-  topLeft: boolean;
-  topRight: boolean;
+  eight: boolean;
+  five: boolean;
+  four: boolean;
+  one: boolean;
+  seven: boolean;
+  six: boolean;
+  three: boolean;
+  two: boolean;
 };
 
 export class Ev1527Button extends Event<Ev1527ButtonPayload> {
@@ -25,12 +29,21 @@ export class Ev1527Button extends Event<Ev1527ButtonPayload> {
     if (this._timer.isActive.value) return null;
 
     try {
-      const [bottomLeft, bottomRight, topLeft, topRight] =
+      const [one, two, three, four, five, six, seven, eight] =
         payload.decode(input);
 
       this._timer.start();
 
-      return { bottomLeft, bottomRight, topLeft, topRight };
+      return {
+        eight,
+        five,
+        four,
+        one,
+        seven,
+        six,
+        three,
+        two,
+      };
     } catch {
       return null;
     }
