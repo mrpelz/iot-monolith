@@ -375,7 +375,7 @@ const $init: InitFunction = (room, introspection) => {
   } = instances;
   const { ceilingLight, heatLamp, ionGenerator, nightLight, standingLamp } =
     properties;
-  const { ceilingLightPlus, moodLight, onlyNightLight } = scenes;
+  const { allRed, ceilingLightPlus, moodLight, onlyNightLight } = scenes;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -401,9 +401,9 @@ const $init: InitFunction = (room, introspection) => {
 
   bedButton.state.left.observe(() => {
     if (!getMain(allLights)) {
-      setMain(onlyNightLight, true, () =>
+      setMain(allRed, true, () =>
         l(
-          `${p(bedButton)} left turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
+          `${p(bedButton)} left turned on ${p(allRed)}, because ${p(allLights)} was off`,
         ),
       );
 
@@ -425,18 +425,18 @@ const $init: InitFunction = (room, introspection) => {
       return;
     }
 
-    setMain(moodLight, true, () =>
+    setMain(onlyNightLight, true, () =>
       l(
-        `${p(bedButton)} middle turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+        `${p(bedButton)} middle turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
       ),
     );
   });
 
   bedButton.state.right.observe(() => {
     if (!getMain(allLights)) {
-      setMain(ceilingLightPlus, true, () =>
+      setMain(moodLight, true, () =>
         l(
-          `${p(bedButton)} right turned on ${p(ceilingLightPlus)}, because ${p(allLights)} was off`,
+          `${p(bedButton)} middle turned on ${p(moodLight)}, because ${p(allLights)} was off`,
         ),
       );
 
