@@ -290,6 +290,12 @@ const $init: InitFunction = async (room, introspection) => {
         signal: AbortSignal.timeout(1000),
       }),
     );
+
+    l(
+      `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
+    );
+
+    isTerrariumLedsOverride.value = false;
   });
 
   mediaOnOrSwitch.state.observe(async () => {
@@ -303,6 +309,12 @@ const $init: InitFunction = async (room, introspection) => {
         signal: AbortSignal.timeout(1000),
       }),
     );
+
+    l(
+      `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
+    );
+
+    isTerrariumLedsOverride.value = true;
   });
 };
 
