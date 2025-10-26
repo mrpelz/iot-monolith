@@ -1,5 +1,5 @@
 import {
-  AnyObservable,
+  AnyWritableObservable,
   ObservableGroup,
   ProxyObservable,
   ReadOnlyObservable,
@@ -91,7 +91,7 @@ class MergedBrightness extends ObservableGroup<number | null> {
 export const overriddenLed = (
   context: Context,
   led: ReturnType<typeof led_>,
-  isOverridden: AnyObservable<boolean>,
+  isOverridden: AnyWritableObservable<boolean>,
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 ) => {
   const { $, actuatorStaleness, brightness, level, topic } = led;
@@ -110,7 +110,10 @@ export const overriddenLed = (
   const setBrightness = new ProxyObservable(
     brightness.setState,
     (value) => (isOverridden.value ? value : 0),
-    (value) => (isOverridden.value ? value : ProxyObservable.doNotSet),
+    (value) => {
+      isOverridden.value = Boolean(value);
+      return value;
+    },
   );
 
   const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>

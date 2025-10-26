@@ -30,7 +30,7 @@ import {
 import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
-import { every2Minutes } from '../../timings.js';
+import { every30Seconds } from '../../timings.js';
 import { overriddenLed, sunlightLeds } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 import { groups as hallwayGroups } from './hallway.js';
@@ -236,8 +236,8 @@ const $init: InitFunction = async (room, introspection) => {
       `for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
     );
 
-    terrariumLeds.ledB.brightness.setState.value = brightnessRed;
-    terrariumLeds.ledR.brightness.setState.value = brightnessWhite;
+    terrariumLedRed.automated.led.brightness.setState.value = brightnessRed;
+    terrariumLedTop.automated.led.brightness.setState.value = brightnessWhite;
   };
 
   isTerrariumLedsOverride.observe((value, _observer, changed) => {
@@ -257,12 +257,12 @@ const $init: InitFunction = async (room, introspection) => {
       );
     }
 
-    setMain(devices.terrariumLeds.ledR, false);
-    setMain(devices.terrariumLeds.ledB, false);
+    setMain(terrariumLedRed.automated.led, false);
+    setMain(terrariumLedTop.automated.led, false);
   });
 
   isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
-  every2Minutes.addTask(handleTerrariumLedsAutomation);
+  every30Seconds.addTask(handleTerrariumLedsAutomation);
   devices.terrariumLeds.device.online.main.state.observe((isOnline) => {
     if (!isOnline) return;
 
@@ -290,12 +290,6 @@ const $init: InitFunction = async (room, introspection) => {
         signal: AbortSignal.timeout(1000),
       }),
     );
-
-    l(
-      `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
-    );
-
-    isTerrariumLedsOverride.value = false;
   });
 
   mediaOnOrSwitch.state.observe(async () => {
@@ -309,12 +303,6 @@ const $init: InitFunction = async (room, introspection) => {
         signal: AbortSignal.timeout(1000),
       }),
     );
-
-    l(
-      `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
-    );
-
-    isTerrariumLedsOverride.value = true;
   });
 };
 
