@@ -111,7 +111,8 @@ export const overriddenLed = (
     brightness.setState,
     (value) => (isOverridden.value ? value : 0),
     (value) => {
-      isOverridden.value = Boolean(value);
+      if (value) isOverridden.value = true;
+
       return value;
     },
   );
