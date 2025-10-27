@@ -40,9 +40,10 @@ export const kitchenAdjacentChillax = scene(
     ),
     new SceneMember(
       livingRoomProperties.terrariumLedTop.brightness.setState,
+      0.33,
       0,
     ),
-    new SceneMember(officeProperties.ceilingLight.main.setState, false),
+    new SceneMember(officeProperties.ceilingLight.main.setState, true, false),
     new SceneMember(officeProperties.floodlight.main.setState, false),
   ],
   'lighting',

@@ -61,7 +61,7 @@ export const instances = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
-  overrideTimer: offTimer(context, epochs.hour * 12, true),
+  overrideTimer: offTimer(context, epochs.hour * 6, true),
   standingLamp: devices.standingLamp.relay,
   terrariumLedRed: overriddenLed(
     context,

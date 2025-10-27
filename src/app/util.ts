@@ -113,7 +113,7 @@ export const overriddenLed = (
     (value) => {
       if (value) isOverridden.value = true;
 
-      return value;
+      return isOverridden.value ? value : ProxyObservable.doNotSet;
     },
   );
 
