@@ -356,14 +356,6 @@ const $init: InitFunction = async (room, introspection) => {
     }
 
     allTimer.state[value ? 'start' : 'stop']();
-
-    if (changed) {
-      l(
-        `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
-      );
-    }
-
-    mirrorHeatingTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   allTimer.state.observe(() =>
@@ -371,6 +363,16 @@ const $init: InitFunction = async (room, introspection) => {
       l(`${p(allThings)} was turned off because ${p(allTimer)} ran out`),
     ),
   );
+
+  mirrorHeating.main.setState.observe((value, _observer, changed) => {
+    if (changed) {
+      l(
+        `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(mirrorHeating)} was turned ${value ? 'on' : 'off'}`,
+      );
+    }
+
+    mirrorHeatingTimer.state[value ? 'start' : 'stop']();
+  }, true);
 
   mirrorHeatingTimer.state.observe(() =>
     setMain(mirrorHeating, false, () =>
