@@ -81,6 +81,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorHeating: devices.mirrorHeating.relay,
+  mirrorHeatingTimer: offTimer(context, epochs.minute * 15, true),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
   nightLight: devices.nightLight.relay,
@@ -183,6 +184,7 @@ const $init: InitFunction = async (room, introspection) => {
     allTimer,
     door: door_,
     mirrorHeating,
+    mirrorHeatingTimer,
     mirrorLight,
     nightLight,
   } = properties;
@@ -354,11 +356,27 @@ const $init: InitFunction = async (room, introspection) => {
     }
 
     allTimer.state[value ? 'start' : 'stop']();
+
+    if (changed) {
+      l(
+        `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+      );
+    }
+
+    mirrorHeatingTimer.state[value ? 'start' : 'stop']();
   }, true);
 
   allTimer.state.observe(() =>
     setMain(allThings, false, () =>
       l(`${p(allThings)} was turned off because ${p(allTimer)} ran out`),
+    ),
+  );
+
+  mirrorHeatingTimer.state.observe(() =>
+    setMain(mirrorHeating, false, () =>
+      l(
+        `${p(mirrorHeating)} was turned off because ${p(mirrorHeating)} ran out`,
+      ),
     ),
   );
 
