@@ -348,15 +348,13 @@ const $init: InitFunction = async (room, introspection) => {
     );
   });
 
-  allThings.main.setState.observe((value, _observer, changed) => {
-    if (changed) {
-      l(
-        `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
-      );
-    }
+  allThings.main.setState.observe((value) => {
+    l(
+      `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+    );
 
     allTimer.state[value ? 'start' : 'stop']();
-  }, true);
+  });
 
   allTimer.state.observe(() =>
     setMain(allThings, false, () =>
@@ -364,15 +362,13 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  mirrorHeating.main.setState.observe((value, _observer, changed) => {
-    if (changed) {
-      l(
-        `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(mirrorHeating)} was turned ${value ? 'on' : 'off'}`,
-      );
-    }
+  mirrorHeating.main.setState.observe((value) => {
+    l(
+      `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(mirrorHeating)} was turned ${value ? 'on' : 'off'}`,
+    );
 
     mirrorHeatingTimer.state[value ? 'start' : 'stop']();
-  }, true);
+  });
 
   mirrorHeatingTimer.state.observe(() =>
     setMain(mirrorHeating, false, () =>
