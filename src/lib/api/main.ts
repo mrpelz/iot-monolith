@@ -2,7 +2,7 @@ import { IncomingMessage } from 'node:http';
 import { Socket } from 'node:net';
 import { Duplex } from 'node:stream';
 
-import { Observable } from '@mrpelz/observable';
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
 import { Timer } from '@mrpelz/observable/timer';
 import { stripIndent } from 'proper-tags';
 import webSocket, { WebSocketServer } from 'ws';
@@ -27,6 +27,7 @@ export class WebApi {
   private readonly _log: Input;
   private readonly _streamCount: Observable<number>;
   private readonly _wss: WebSocketServer;
+  readonly streamCount: ReadOnlyObservable<number>;
 
   constructor(
     logger: Logger,
@@ -36,7 +37,9 @@ export class WebApi {
     this._log = logger.getInput({ head: this.constructor.name });
     this._wss = new WebSocketServer({ noServer: true });
     this._hierarchy = JSON.stringify(_serialization.tree);
+
     this._streamCount = new Observable(0);
+    this.streamCount = new ReadOnlyObservable(this._streamCount);
 
     this._httpServer.route(PATH_HIERARCHY, (handle) =>
       this._handleHierarchyGet(handle),

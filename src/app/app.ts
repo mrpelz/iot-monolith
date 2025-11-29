@@ -33,7 +33,7 @@ export const app = async (): Promise<void> => {
 
   init(system, introspection);
 
-  const { attachMetrics } = await import('./metrics.js');
+  const { attachMetrics, metrics } = await import('./metrics.js');
   attachMetrics(introspection);
 
   const serialization = new Serialization(system, introspection);
@@ -103,8 +103,13 @@ export const app = async (): Promise<void> => {
   const httpServer = new HttpServer(logger, 1337);
 
   // @ts-ignore
-  // eslint-disable-next-line no-new
-  new WebApi(logger, httpServer, serialization);
+  const webApi = new WebApi(logger, httpServer, serialization);
+  metrics.addMetric(
+    'webApi_streamCount',
+    webApi.streamCount,
+    undefined,
+    'number of connected clients to webApi stream WebSocket',
+  );
 
   httpHooks(logger, httpServer, serialization);
 

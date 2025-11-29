@@ -99,7 +99,7 @@ export const sunElevation = (schedule: Schedule) => {
       readOnlyIsNauticalTwilight,
       labels,
     );
-    metrics.addMetric(`${$}_isNight`, readOnlyIsNight);
+    metrics.addMetric(`${$}_isNight`, readOnlyIsNight, labels);
   };
 
   return {

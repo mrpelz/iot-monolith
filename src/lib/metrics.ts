@@ -90,7 +90,7 @@ export class Metrics {
 
       value.observe((value_) => {
         gauge.set(labels_, Metrics._cleanValue(value_));
-      });
+      }, true);
 
       gauge.set(labels_, Metrics._cleanValue(value.value));
     } catch (error) {
