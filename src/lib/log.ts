@@ -1,3 +1,5 @@
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+
 export enum Level {
   EMERGENCY,
   ALERT,
@@ -19,9 +21,15 @@ export type LogWithLevel = Log & {
   level: Level | CustomLevel;
 };
 
+export type LogWithLevelAndDate = LogWithLevel & {
+  date: Date;
+};
+
 export type Initiator = () => Log | string;
 
 export type Callback = (log: LogWithLevel) => Promise<void>;
+
+const LOG_UUID_NAMESPACE = '0c688d4f-f0c9-406f-9781-86db3f5f57fb';
 
 const logLevelNames = [
   'EMERGENCY',
@@ -141,16 +149,17 @@ export class JournaldOutput extends Output {
 
 export class VirtualOutput extends Output {
   private static _callback(
-    logs: Map<Date, LogWithLevel>,
+    logs: Map<string, LogWithLevelAndDate>,
     maxEntries: number | undefined,
   ) {
     return (log: LogWithLevel) => {
       const date = new Date();
+      const id = uuidv5(uuidv4(), LOG_UUID_NAMESPACE);
 
-      logs.set(date, log);
+      logs.set(id, { ...log, date });
 
       if (maxEntries) {
-        for (const [key] of logs) {
+        for (const key of logs.keys()) {
           if (logs.size <= maxEntries) break;
 
           logs.delete(key);
@@ -161,21 +170,39 @@ export class VirtualOutput extends Output {
     };
   }
 
-  private readonly _logs: Map<Date, LogWithLevel>;
+  private readonly _logs: Map<string, LogWithLevelAndDate>;
 
   constructor(
     logLevel: Level | CustomLevel = Level.DEBUG,
     maxEntries?: number,
   ) {
-    const logs = new Map<Date, LogWithLevel>();
+    const logs = new Map<string, LogWithLevelAndDate>();
 
     super(logLevel, VirtualOutput._callback(logs, maxEntries));
 
     this._logs = logs;
   }
 
-  get logs(): [Date, Log][] {
+  get logs(): [string, LogWithLevelAndDate][] {
     return Array.from(this._logs);
+  }
+
+  getLogsAfterId(id: string): [string, LogWithLevelAndDate][] {
+    const result: [string, LogWithLevelAndDate][] = [];
+    let reached = false;
+
+    for (const [key, value] of this._logs.entries()) {
+      if (reached) {
+        result.push([key, value] as const);
+        continue;
+      }
+
+      if (key === id) {
+        reached = true;
+      }
+    }
+
+    return result;
   }
 }
 

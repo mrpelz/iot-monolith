@@ -2,6 +2,8 @@
 import { isPlainObject, objectKeys } from '@mrpelz/misc-utils/oop';
 import { v5 as uuidv5 } from 'uuid';
 
+import { PATH_UUID_NAMESPACE } from './paths.js';
+
 export type ObjectReference = {
   parent?: object;
   path: PropertyKey[];
@@ -17,8 +19,6 @@ export type ObjectIntrospection = {
   get longest(): ObjectReference | undefined;
   get shortest(): ObjectReference | undefined;
 };
-
-export const PATH_UUID_NAMESPACE = 'f0f4da2a-7955-43b0-9fe9-02430afad7ef';
 
 export class Introspection {
   private static _pathString(path: PropertyKey[]): string {

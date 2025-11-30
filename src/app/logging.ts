@@ -1,3 +1,4 @@
+import { RouteHandler } from '../lib/http-server.js';
 import {
   CustomLevel,
   DevOutput,
@@ -16,6 +17,32 @@ const primaryOutput = isProd
   : new DevOutput(logLevel ?? Level.DEBUG);
 
 export const virtualOutput = new VirtualOutput(Level.INFO, 5000);
+
+export const httpLogHandler =
+  (output: VirtualOutput): RouteHandler =>
+  ({ response, url, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
+    const cursor = url.searchParams.get('cursor');
+
+    response.setHeader('Content-Type', 'application/json;charset=utf-8');
+    response.end(
+      JSON.stringify(
+        (cursor ? output.getLogsAfterId(cursor) : output.logs).map(
+          ([id, { date, ...log }]) => [
+            id,
+            {
+              date: {
+                date: date.toLocaleString('de-DE'),
+                epoch: date.getTime(),
+              },
+              ...log,
+            },
+          ],
+        ),
+      ),
+    );
+  };
 
 export const logicReasoningLevel = new CustomLevel(Level.INFO);
 export const logicReasoningOutput = new VirtualOutput(

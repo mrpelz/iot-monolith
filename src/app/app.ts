@@ -18,8 +18,14 @@ import { Serialization } from '../lib/tree/operations/serialization.js';
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
-  const { logger, logicReasoningLevel, logicReasoningOutput, virtualOutput } =
-    await import('./logging.js');
+  const { version } = await import('./environment.js');
+  const {
+    httpLogHandler,
+    logger,
+    logicReasoningLevel,
+    logicReasoningOutput,
+    virtualOutput,
+  } = await import('./logging.js');
   const { persistence } = await import('./persistence.js');
 
   const { system: _system } = await import('./tree/system.js');
@@ -115,39 +121,32 @@ export const app = async (): Promise<void> => {
 
   httpServer.listen();
 
-  httpServer.route('/log', async ({ response, utils }) => {
-    if (utils.constrainMethod('GET')) return;
-
-    response.setHeader('Content-Type', 'application/json;charset=utf-8');
-    response.end(
-      JSON.stringify(
-        virtualOutput.logs.map(([date, log_]) => [
-          { date: date.toString(), epoch: date.getTime() },
-          log_,
-        ]),
-      ),
-    );
-  });
-
-  httpServer.route('/logic-reasoning', async ({ response, utils }) => {
-    if (utils.constrainMethod('GET')) return;
-
-    response.setHeader('Content-Type', 'application/json;charset=utf-8');
-    response.end(
-      JSON.stringify(
-        logicReasoningOutput.logs.map(([date, log_]) => [
-          { date: date.toString(), epoch: date.getTime() },
-          log_,
-        ]),
-      ),
-    );
-  });
+  httpServer.route('/log', httpLogHandler(virtualOutput));
+  httpServer.route('/logic-reasoning', httpLogHandler(logicReasoningOutput));
 
   httpServer.route('/metrics', async ({ response, utils }) => {
     if (utils.constrainMethod('GET')) return;
 
     response.setHeader('content-type', 'text/plain;charset=utf-8');
     response.end(await register.metrics());
+  });
+
+  httpServer.route('/version', ({ response, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
+    if (!version) {
+      utils.internalServerError('no version found in package.json');
+      return;
+    }
+
+    response.setHeader('content-type', 'text/plain;charset=utf-8');
+    response.end(version);
+  });
+  httpServer.route('/health', ({ response, utils }) => {
+    if (utils.constrainMethod('GET')) return;
+
+    response.setHeader('content-type', 'text/plain;charset=utf-8');
+    response.end('ok\n');
   });
 
   process.on('exit', () => persistence.persist());

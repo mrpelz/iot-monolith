@@ -2,7 +2,6 @@ import { createRequire } from 'node:module';
 
 import { ensureKeys } from '@mrpelz/misc-utils/oop';
 import { parse } from '@mrpelz/misc-utils/string';
-import { prerelease as semverPrerelease } from 'semver';
 
 const nodeRequire = createRequire(import.meta.url);
 const packageJson = nodeRequire('../../package.json');
@@ -11,10 +10,6 @@ export const { version } = ensureKeys(
   packageJson as Record<string, string>,
   'version',
 );
-
-export const prereleaseTag = version
-  ? (semverPrerelease(version)?.at(0) ?? undefined)
-  : undefined;
 
 const {
   CONNECT,

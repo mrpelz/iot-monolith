@@ -49,7 +49,6 @@
     "@mrpelz/struct": "latest",
     "prom-client": "latest",
     "proper-tags": "latest",
-    "semver": "latest",
     "suncalc": "latest",
     "uuid": "latest",
     "ws": "latest"
@@ -57,7 +56,6 @@
   "devDependencies": {
     "@mrpelz/boilerplate-common": "latest",
     "@mrpelz/boilerplate-node": "latest",
-    "@types/semver": "latest",
     "@types/suncalc": "latest",
     "@types/ws": "latest",
     "undici": "latest"
