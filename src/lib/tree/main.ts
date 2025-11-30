@@ -162,7 +162,7 @@ export const match = <
     match(pattern, exclude, child, nextDepth),
   );
 
-  return [localMatch, childMatch].flat(1) as Match<
+  return [localMatch, childMatch].flat() as Match<
     P,
     E,
     Extract<R, object>,

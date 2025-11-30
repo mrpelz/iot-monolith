@@ -15,7 +15,7 @@ export const allThings = (async () => {
     [
       match({ $: 'output' as const }, excludePattern, wurstHome),
       match({ $: 'led' as const }, excludePattern, wurstHome),
-    ].flat(1),
+    ].flat(),
     undefined,
   );
 })();
@@ -35,7 +35,7 @@ export const allLights = (async () => {
         wurstHome,
       ),
       match({ $: 'led' as const }, excludePattern, wurstHome),
-    ].flat(1),
+    ].flat(),
     'lighting',
   );
 })();

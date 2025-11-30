@@ -82,9 +82,8 @@ export const groups = {
 
 const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentLights } = await import('../../tree/groups.js');
-  const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
-    '../../tree/scenes.js'
-  );
+  const { kitchenAdjacentBright, kitchenAdjacentChillax } =
+    await import('../../tree/scenes.js');
 
   const { allLights, floodlight, worklightWWhite } = groups;
   const {

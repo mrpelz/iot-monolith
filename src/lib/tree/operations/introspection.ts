@@ -141,7 +141,7 @@ export class Introspection {
         this._handleProperty(
           value,
           input,
-          [path, index].flat(1),
+          [path, index].flat(),
           allowChildrenMainReference,
         );
       }
@@ -155,7 +155,7 @@ export class Introspection {
       this._handleProperty(
         value,
         input,
-        [path, key].flat(1),
+        [path, key].flat(),
         allowChildrenMainReference,
       );
     }

@@ -106,7 +106,7 @@ export class RollingAverage extends RollingProduct<number, number> {
 
 export class RollingMedian extends RollingProduct<number, number> {
   private static _fn(input: Map<Date, number>): number {
-    const sorted = Array.from(input.values()).sort((a, b) => a - b);
+    const sorted = Array.from(input.values()).toSorted((a, b) => a - b);
     const middle = Math.floor(input.size / 2);
 
     return input.size % 2 === 0

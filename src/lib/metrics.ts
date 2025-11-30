@@ -68,7 +68,7 @@ export class Metrics {
         Object.entries(labels)
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          .sort(([keyA], [keyB]) => keyA - keyB)
+          .toSorted(([keyA], [keyB]) => keyA - keyB)
           .map(
             ([labelKey, labelValue]) =>
               [

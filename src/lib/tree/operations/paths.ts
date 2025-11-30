@@ -28,7 +28,7 @@ export const getPathFromObject = (
     const propMatch = getPathFromObject(prop, object);
     if (!propMatch) continue;
 
-    return [key, propMatch].flat(1);
+    return [key, propMatch].flat();
   }
 
   return undefined;

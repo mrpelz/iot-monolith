@@ -11,28 +11,28 @@
   "type": "module",
   "exports": {
     ".": {
-      "default": "./dist/main.js",
-      "types": "./dist/main.d.ts"
+      "types": "./dist/main.d.ts",
+      "default": "./dist/main.js"
     },
     "./tree": {
-      "default": "./dist/lib/tree/main.js",
-      "types": "./dist/lib/tree/main.d.ts"
+      "types": "./dist/lib/tree/main.d.ts",
+      "default": "./dist/lib/tree/main.js"
     },
     "./tree-introspection": {
-      "default": "./dist/lib/tree/operations/introspection.js",
-      "types": "./dist/lib/tree/operations/introspection.d.ts"
+      "types": "./dist/lib/tree/operations/introspection.d.ts",
+      "default": "./dist/lib/tree/operations/introspection.js"
     },
     "./tree-parents": {
-      "default": "./dist/lib/tree/operations/parents.js",
-      "types": "./dist/lib/tree/operations/parents.d.ts"
+      "types": "./dist/lib/tree/operations/parents.d.ts",
+      "default": "./dist/lib/tree/operations/parents.js"
     },
     "./tree-paths": {
-      "default": "./dist/lib/tree/operations/paths.js",
-      "types": "./dist/lib/tree/operations/paths.d.ts"
+      "types": "./dist/lib/tree/operations/paths.d.ts",
+      "default": "./dist/lib/tree/operations/paths.js"
     },
     "./tree-serialization": {
-      "default": "./dist/lib/tree/operations/serialization.js",
-      "types": "./dist/lib/tree/operations/serialization.d.ts"
+      "types": "./dist/lib/tree/operations/serialization.d.ts",
+      "default": "./dist/lib/tree/operations/serialization.js"
     }
   },
   "main": "dist/main.js",
@@ -59,7 +59,6 @@
     "@mrpelz/boilerplate-node": "latest",
     "@types/semver": "latest",
     "@types/suncalc": "latest",
-    "@types/uuid": "latest",
     "@types/ws": "latest",
     "undici": "latest"
   }

@@ -99,9 +99,8 @@ export const scenes = {
 
 const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentLights } = await import('../groups.js');
-  const { kitchenAdjacentBright, kitchenAdjacentChillax } = await import(
-    '../scenes.js'
-  );
+  const { kitchenAdjacentBright, kitchenAdjacentChillax } =
+    await import('../scenes.js');
 
   const { couchButton, standingLampButton, wallswitchBottom, wallswitchTop } =
     instances;

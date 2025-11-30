@@ -448,13 +448,13 @@ export const rfReadout = (
         ...state_.value,
         rf433: {
           data: `0b${[...data]
-            .reverse()
+            .toReversed()
             .map((byte) => byte.toString(2).padStart(8, '0'))
             .join('')}`,
           deviceIdentifier: deviceIdentifier.readUIntBE(0, byteLengthAddress),
           protocol,
           value: `0b${[...value]
-            .reverse()
+            .toReversed()
             .map((byte) => byte.toString(2).padStart(8, '0'))
             .join('')}`,
         },

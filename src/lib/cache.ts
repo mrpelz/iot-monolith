@@ -4,17 +4,10 @@ type PromiseResolver<T> = (value: T | PromiseLike<T>) => void;
 type PromiseRejector = (reason: Error) => void;
 
 export class Cache<T> {
-  time: Date | null;
+  time: Date | null = null;
+  value: T | null = null;
 
-  timeout: number;
-
-  value: T | null;
-
-  constructor(timeout = 0) {
-    this.time = null;
-    this.timeout = timeout;
-    this.value = null;
-  }
+  constructor(public readonly timeout = 0) {}
 
   hit(): boolean {
     const now = Date.now();
