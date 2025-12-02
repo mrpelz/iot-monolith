@@ -52,7 +52,7 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton,
+  couchButton: devices.couchButton.state,
   standingLampButton: devices.standingLamp.button,
   wallswitchBottom: devices.wallswitch.button1,
   wallswitchTop: devices.wallswitch.button0,
@@ -152,21 +152,21 @@ const $init: InitFunction = async (room, introspection) => {
     );
   };
 
-  couchButton.state.topLeft.observe(() =>
+  couchButton.topLeft.observe(() =>
     kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(couchButton)} topLeft`),
   );
 
-  couchButton.state.topRight.observe(() =>
+  couchButton.topRight.observe(() =>
     kitchenAdjecentsLightsOffKitchenBrightOn(`${p(couchButton)} topRight`),
   );
 
-  couchButton.state.bottomLeft.observe(() =>
+  couchButton.bottomLeft.observe(() =>
     triggerMain(mediaOnOrSwitch, () =>
       l(`${p(couchButton)} bottomLeft" triggered "${p(mediaOnOrSwitch)}`),
     ),
   );
 
-  couchButton.state.bottomRight.observe(() =>
+  couchButton.bottomRight.observe(() =>
     triggerMain(mediaOff, () =>
       l(`${p(couchButton)} bottomRight" triggered "${p(mediaOff)}`),
     ),

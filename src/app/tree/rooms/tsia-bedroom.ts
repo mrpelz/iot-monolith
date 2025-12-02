@@ -42,7 +42,7 @@ export const devices = {
 };
 
 export const instances = {
-  button: devices.button,
+  button: devices.button.state,
   nightLightButton: devices.nightLight.button,
   standingLampButton: devices.standingLamp.button,
   wallswitchLeft: devices.wallswitch.button0,
@@ -87,7 +87,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  button.state.observe(() => {
+  button.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(

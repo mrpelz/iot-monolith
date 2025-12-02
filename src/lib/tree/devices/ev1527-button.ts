@@ -26,6 +26,7 @@ export const ev1527ButtonX4 = (
   ]);
 
   return {
+    $noMainReference: true as const,
     device: ev1527Device(context, device),
     state: {
       bottomLeft: one,
@@ -54,6 +55,7 @@ export const ev1527ButtonWP07 = (
   ]);
 
   return {
+    $noMainReference: true as const,
     device: ev1527Device(context, device),
     state: {
       left: three,
@@ -73,6 +75,7 @@ export const ev1527ButtonX1 = (
   const device = new Ev1527Device(logger, transport, address);
 
   return {
+    $noMainReference: true as const,
     device: ev1527Device(context, device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'one',

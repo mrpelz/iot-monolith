@@ -62,7 +62,7 @@ export const devices = {
 };
 
 export const instances = {
-  bathtubButton: devices.bathtubButton,
+  bathtubButton: devices.bathtubButton.state,
   mirrorLightButton: devices.mirrorLight.button,
   nightLightButton: devices.nightLight.button,
   wallswitchDoor: devices.ceilingLight.button,
@@ -239,7 +239,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  bathtubButton.state.observe(() => {
+  bathtubButton.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(

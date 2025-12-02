@@ -37,7 +37,7 @@ export const devices = {
 
 export const instances = {
   floodlightButton: devices.floodlight.button,
-  multiButton: devices.multiButton,
+  multiButton: devices.multiButton.state,
   wallswitchBottom: devices.wallswitch.button2,
   wallswitchMiddle: devices.wallswitch.button1,
   wallswitchTop: devices.wallswitch.button0,
@@ -131,23 +131,23 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  multiButton.state.topLeft.observe(() =>
+  multiButton.topLeft.observe(() =>
     flipMain(ceilingLight, () =>
       l(`${p(multiButton)} topLeft flipped ${p(ceilingLight)}`),
     ),
   );
 
-  multiButton.state.topRight.observe(() =>
+  multiButton.topRight.observe(() =>
     flipMain(floodlight, () =>
       l(`${p(multiButton)} topRight flipped ${p(floodlight)}`),
     ),
   );
 
-  multiButton.state.bottomLeft.observe(() =>
+  multiButton.bottomLeft.observe(() =>
     kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(multiButton)} bottomLeft`),
   );
 
-  multiButton.state.bottomRight.observe(() =>
+  multiButton.bottomRight.observe(() =>
     kitchenAdjecentsLightsOffKitchenBrightOn(`${p(multiButton)} bottomRight`),
   );
 

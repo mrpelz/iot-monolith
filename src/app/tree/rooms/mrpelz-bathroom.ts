@@ -70,7 +70,7 @@ export const instances = {
   mirrorHeatingButton: devices.mirrorHeating.button,
   mirrorLightButton: devices.mirrorLight.button,
   nightLightButton: devices.nightLight.button,
-  showerButton: devices.showerButton,
+  showerButton: devices.showerButton.state,
   wallswitchDoor: devices.wallswitchDoor.button0,
   wallswitchMirrorBottom: devices.wallswitchDoor.button2,
   wallswitchMirrorTop: devices.wallswitchDoor.button1,
@@ -253,7 +253,7 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  showerButton.state.observe(() => {
+  showerButton.observe(() => {
     if (getMain(allThings)) {
       setMain(allThings, false, () =>
         l(

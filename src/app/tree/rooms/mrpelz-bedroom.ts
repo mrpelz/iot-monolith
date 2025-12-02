@@ -75,11 +75,11 @@ export const devices = {
 };
 
 export const instances = {
-  bedButton: devices.bedButton,
-  button: devices.button,
+  bedButton: devices.bedButton.state,
+  button: devices.button.state,
   heatLampButton: devices.heatLamp.button,
   ionGeneratorButton: devices.ionGenerator.button,
-  multiButton: devices.multiButton,
+  multiButton: devices.multiButton.state,
   nightLightButton: devices.nightLight.button,
   standingLampButton: devices.standingLamp.button,
   wallswitchBed: devices.ceilingLight.button,
@@ -399,7 +399,7 @@ const $init: InitFunction = (room, introspection) => {
     fn(cause);
   };
 
-  bedButton.state.left.observe(() => {
+  bedButton.left.observe(() => {
     if (!getMain(allLights)) {
       setMain(allRed, true, () =>
         l(
@@ -414,7 +414,7 @@ const $init: InitFunction = (room, introspection) => {
     sceneCycle.previous();
   });
 
-  bedButton.state.middle.observe(() => {
+  bedButton.middle.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(
@@ -432,7 +432,7 @@ const $init: InitFunction = (room, introspection) => {
     );
   });
 
-  bedButton.state.right.observe(() => {
+  bedButton.right.observe(() => {
     if (!getMain(allLights)) {
       setMain(moodLight, true, () =>
         l(
@@ -448,7 +448,7 @@ const $init: InitFunction = (room, introspection) => {
     sceneCycle.next();
   });
 
-  button.state.observe(
+  button.observe(
     offOrElse(`${p(button)}`, (cause) =>
       setMain(onlyNightLight, true, () =>
         l(
@@ -458,7 +458,7 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.state.topLeft.observe(
+  multiButton.topLeft.observe(
     offOrElse(`${p(multiButton)} topLeft`, (cause) =>
       setMain(moodLight, true, () =>
         l(
@@ -468,7 +468,7 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.state.topRight.observe(
+  multiButton.topRight.observe(
     offOrElse(`${p(multiButton)} topRight`, (cause) =>
       setMain(ceilingLightPlus, true, () =>
         l(
@@ -478,12 +478,12 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.state.bottomLeft.observe(() => {
+  multiButton.bottomLeft.observe(() => {
     l(`${p(multiButton)} bottomLeft triggering sceneCycle to previous`);
     sceneCycle.previous();
   });
 
-  multiButton.state.bottomRight.observe(() => {
+  multiButton.bottomRight.observe(() => {
     l(`${p(multiButton)} bottomRight triggering sceneCycle to next`);
     sceneCycle.next();
   });
