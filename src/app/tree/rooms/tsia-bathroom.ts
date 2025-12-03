@@ -239,7 +239,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  bathtubButton.observe(() => {
+  bathtubButton.one.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(

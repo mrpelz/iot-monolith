@@ -87,7 +87,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  button.observe(() => {
+  button.one.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(

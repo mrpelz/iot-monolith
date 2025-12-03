@@ -79,6 +79,6 @@ export const ev1527ButtonX1 = (
     device: ev1527Device(context, device),
     state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
       'one',
-    ]).state.one,
+    ]).state,
   };
 };

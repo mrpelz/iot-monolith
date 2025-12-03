@@ -448,7 +448,7 @@ const $init: InitFunction = (room, introspection) => {
     sceneCycle.next();
   });
 
-  button.observe(
+  button.one.observe(
     offOrElse(`${p(button)}`, (cause) =>
       setMain(onlyNightLight, true, () =>
         l(

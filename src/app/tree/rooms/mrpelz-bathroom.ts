@@ -253,7 +253,7 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  showerButton.observe(() => {
+  showerButton.one.observe(() => {
     if (getMain(allThings)) {
       setMain(allThings, false, () =>
         l(
