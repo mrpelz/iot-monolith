@@ -36,6 +36,8 @@ export const httpLogHandler =
       utils.internalServerError(stripIndents`
         Error retrieving logs: ${error}
       `);
+
+      return;
     }
 
     response.setHeader('Content-Type', 'application/json;charset=utf-8');
