@@ -188,6 +188,10 @@ export class VirtualOutput extends Output {
   }
 
   getLogsAfterId(id: string): [string, LogWithLevelAndDate][] {
+    if (!this._logs.has(id)) {
+      throw new RangeError(`log with id "${id}" out of range`);
+    }
+
     const result: [string, LogWithLevelAndDate][] = [];
     let reached = false;
 

@@ -1,6 +1,6 @@
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
 
-import { stripIndent } from 'proper-tags';
+import { stripIndents } from 'proper-tags';
 
 import { callstack, Input, Logger } from './log.js';
 
@@ -30,7 +30,7 @@ export class HttpServer {
     response.writeHead(400, 'Bad request');
 
     response.end(
-      stripIndent`
+      stripIndents`
         400 Bad request
         The request could not be understood by the server due to malformed syntax.
 
@@ -51,7 +51,7 @@ export class HttpServer {
       response.writeHead(405, 'Method not allowed');
 
       response.end(
-        stripIndent`
+        stripIndents`
           405 Method not allowed
           The resource was requested using a method that is not allowed.
 
@@ -72,7 +72,7 @@ export class HttpServer {
     response.writeHead(500, 'Internal server error');
 
     response.end(
-      stripIndent`
+      stripIndents`
         500 Internal server error
 
         ${body || ''}
@@ -84,7 +84,7 @@ export class HttpServer {
     response.writeHead(404, 'Not found');
 
     response.end(
-      stripIndent`
+      stripIndents`
         404 Not found
         The resource could not be found.
 

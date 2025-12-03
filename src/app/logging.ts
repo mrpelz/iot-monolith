@@ -1,3 +1,5 @@
+import { stripIndents } from 'proper-tags';
+
 import { RouteHandler } from '../lib/http-server.js';
 import {
   CustomLevel,
@@ -5,6 +7,7 @@ import {
   JournaldOutput,
   Level,
   Logger,
+  LogWithLevelAndDate,
   VirtualOutput,
   // TelegramOutput,
 } from '../lib/log.js';
@@ -25,21 +28,29 @@ export const httpLogHandler =
 
     const cursor = url.searchParams.get('cursor');
 
+    let logs: [string, LogWithLevelAndDate][] = [];
+
+    try {
+      logs = cursor ? output.getLogsAfterId(cursor) : output.logs;
+    } catch (error) {
+      utils.internalServerError(stripIndents`
+        Error retrieving logs: ${error}
+      `);
+    }
+
     response.setHeader('Content-Type', 'application/json;charset=utf-8');
     response.end(
       JSON.stringify(
-        (cursor ? output.getLogsAfterId(cursor) : output.logs).map(
-          ([id, { date, ...log }]) => [
-            id,
-            {
-              date: {
-                date: date.toLocaleString('de-DE'),
-                epoch: date.getTime(),
-              },
-              ...log,
+        logs.map(([id, { date, ...log }]) => [
+          id,
+          {
+            date: {
+              date: date.toLocaleString('de-DE'),
+              epoch: date.getTime(),
             },
-          ],
-        ),
+            ...log,
+          },
+        ]),
       ),
     );
   };
