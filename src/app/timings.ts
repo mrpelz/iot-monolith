@@ -6,19 +6,22 @@ import { logger } from './logging.js';
 
 export const every5Seconds = new Schedule(
   logger,
-  () => new ModifiableDate().ceil(Unit.SECOND, 5).date,
+  (last) =>
+    new ModifiableDate(last).add(1, Unit.SECOND).ceil(Unit.SECOND, 5).date,
   false,
 );
 
 export const every30Seconds = new Schedule(
   logger,
-  () => new ModifiableDate().ceil(Unit.SECOND, 30).date,
+  (last) =>
+    new ModifiableDate(last).add(1, Unit.SECOND).ceil(Unit.SECOND, 30).date,
   false,
 );
 
 export const every2Minutes = new Schedule(
   logger,
-  () => new ModifiableDate().ceil(Unit.MINUTE, 2).date,
+  (last) =>
+    new ModifiableDate(last).add(1, Unit.SECOND).ceil(Unit.MINUTE, 2).date,
   false,
 );
 
