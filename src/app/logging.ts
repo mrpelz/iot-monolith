@@ -16,10 +16,10 @@ import { isProd, logLevel } from './environment.js';
 export const logger = new Logger();
 
 const primaryOutput = isProd
-  ? new JournaldOutput(logLevel ?? Level.INFO)
+  ? new JournaldOutput(logLevel ?? Level.NOTICE)
   : new DevOutput(logLevel ?? Level.DEBUG);
 
-export const virtualOutput = new VirtualOutput(Level.INFO, 5000);
+export const virtualOutput = new VirtualOutput(Level.NOTICE, 5000);
 
 export const httpLogHandler =
   (output: VirtualOutput): RouteHandler =>

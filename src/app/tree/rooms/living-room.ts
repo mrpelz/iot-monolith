@@ -231,10 +231,6 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (!getMain(terrariumLeds.device.online)) return;
 
-    l(
-      `for sun-elevation automation, set ${p(terrariumLedRed)} to ${JSON.stringify(brightnessRed)} and ${p(terrariumLedTop)} to ${JSON.stringify(brightnessWhite)}`,
-    );
-
     terrariumLedRed.automated.led.brightness.setState.value = brightnessRed;
     terrariumLedTop.automated.led.brightness.setState.value = brightnessWhite;
   };
