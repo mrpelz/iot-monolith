@@ -61,7 +61,22 @@ export const offTimer = (
     main: setter(ValueType.BOOLEAN, timer.isEnabled, undefined, 'on'),
     runoutTime: { main: getter(ValueType.NUMBER, timer.runoutTime, 'date') },
     state: timer,
-    time: { main: setter(ValueType.NUMBER, timer.time) },
+    time: {
+      initialTime: time,
+      isChanged: {
+        main: getter(
+          ValueType.BOOLEAN,
+          new ReadOnlyProxyObservable(timer.time, (value) => value !== time),
+        ),
+      },
+      main: setter(ValueType.NUMBER, timer.time),
+      reset: {
+        main: trigger(
+          ValueType.NULL,
+          new NullState(() => (timer.time.value = time)),
+        ),
+      },
+    },
     triggerTime: { main: getter(ValueType.NUMBER, timer.triggerTime, 'date') },
   };
 };
