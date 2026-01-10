@@ -1,6 +1,7 @@
 import { epochs } from '@mrpelz/modifiable-date';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
+import { ev1527MotionSensor } from '../../../lib/tree/devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -29,6 +30,7 @@ export const devices = {
     context,
   ),
   doorSensor: ev1527WindowSensor(55_024, ev1527Transport, context),
+  motionSensor: ev1527MotionSensor(708_280, ev1527Transport, context),
   wallswitchBack: shellyi3(
     'hallway-wallswitchback.lan.wurstsalat.cloud',
     context,
@@ -40,6 +42,7 @@ export const devices = {
 };
 
 export const instances = {
+  motion: devices.motionSensor.state,
   wallswitchBack: devices.wallswitchBack.button0,
   wallswitchFrontLeft: devices.wallswitchFront.button0,
   wallswitchFrontMiddle: devices.wallswitchFront.button1,
