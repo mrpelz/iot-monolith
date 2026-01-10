@@ -36,6 +36,7 @@ export const offTimer = (
     if (!mainReference) return;
 
     persistence.observe(mainReference.pathString, timer.isEnabled);
+    persistence.observe(`${mainReference.pathString}.time`, timer.time);
   };
 
   return {
@@ -58,13 +59,10 @@ export const offTimer = (
     },
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, timer.isEnabled, undefined, 'on'),
-    runoutTime: {
-      main: getter(ValueType.NUMBER, timer.runoutTime, 'date'),
-    },
+    runoutTime: { main: getter(ValueType.NUMBER, timer.runoutTime, 'date') },
     state: timer,
-    triggerTime: {
-      main: getter(ValueType.NUMBER, timer.triggerTime, 'date'),
-    },
+    time: { main: setter(ValueType.NUMBER, timer.time) },
+    triggerTime: { main: getter(ValueType.NUMBER, timer.triggerTime, 'date') },
   };
 };
 
