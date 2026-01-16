@@ -41,6 +41,7 @@ import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
 import { Tsl2561 } from '../../services/tsl2561.js';
 import { Veml6070 } from '../../services/veml6070.js';
 import { Context } from '../context.js';
+import { ev1527MotionSensor } from '../devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
@@ -418,6 +419,39 @@ export const mhz19 = (
         state: state.transmittance,
       },
     },
+  };
+};
+
+export const motion = <T extends string | undefined>(
+  context: Context,
+  sensor: ReturnType<typeof ev1527MotionSensor>,
+  topic: T,
+  cooloffTime = 10_000,
+) => {
+  const $ = 'motion' as const;
+
+  const { state: emitter } = sensor;
+
+  const state_ = new BooleanState(false);
+
+  const timer = new Timer(cooloffTime);
+  emitter.observe((value) => {
+    state_.value = value ?? false;
+    if (!value) return;
+
+    timer.start();
+  });
+  timer.observe(() => (state_.value = false));
+
+  const state = new ReadOnlyObservable(state_);
+
+  return {
+    $,
+    lastChange: lastChange(context, state),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.BOOLEAN, state),
+    state,
+    topic,
   };
 };
 

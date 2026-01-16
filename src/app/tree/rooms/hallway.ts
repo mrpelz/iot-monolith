@@ -13,7 +13,10 @@ import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
-import { door } from '../../../lib/tree/properties/sensors.js';
+import {
+  door,
+  motion as motion_,
+} from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
@@ -54,6 +57,7 @@ const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
   entryDoor: door(context, devices.doorSensor, 'security'),
+  motion: motion_(context, devices.motionSensor, 'security'),
 };
 
 export const properties = {
@@ -93,8 +97,13 @@ const $init: InitFunction = async (room, introspection) => {
     wallswitchFrontRight,
     wallswitchMiddle,
   } = instances;
-  const { ceilingLightBack, ceilingLightFront, entryDoor, entryDoorTimer } =
-    properties;
+  const {
+    ceilingLightBack,
+    ceilingLightFront,
+    entryDoor,
+    entryDoorTimer,
+    motion,
+  } = properties;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -193,6 +202,21 @@ const $init: InitFunction = async (room, introspection) => {
       ),
     ),
   );
+
+  motion.state.observe((value) => {
+    // when motion is detected, turn on front ceiling light and (re)start timer
+    if (value) {
+      setMain(ceilingLightFront, true, () => {
+        l(
+          `${p(motion)} was detected and ${p(ceilingLightFront)} was turned on`,
+        );
+      });
+
+      l(`${p(motion)} was detected and ${p(entryDoorTimer)} was (re)started`);
+
+      entryDoorTimer.state.start();
+    }
+  });
 
   entryDoor.open.main.state.observe((open) => {
     const wasOn = getMain(ceilingLight);
