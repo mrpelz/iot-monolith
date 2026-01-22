@@ -3,6 +3,7 @@ import { epochs } from '@mrpelz/modifiable-date';
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527MotionSensor } from '../../../lib/tree/devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
+import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
@@ -33,7 +34,11 @@ export const devices = {
     context,
   ),
   doorSensor: ev1527WindowSensor(55_024, ev1527Transport, context),
-  motionSensor: ev1527MotionSensor(708_280, ev1527Transport, context),
+  motionSensor: motionSensor(
+    'hallwaymotionsensor.lan.wurstsalat.cloud',
+    context,
+  ),
+  motionSensorRf: ev1527MotionSensor(708_280, ev1527Transport, context),
   wallswitchBack: shellyi3(
     'hallway-wallswitchback.lan.wurstsalat.cloud',
     context,
@@ -45,7 +50,8 @@ export const devices = {
 };
 
 export const instances = {
-  motion: devices.motionSensor.state,
+  motion: devices.motionSensor.motion.state,
+  motionRf: devices.motionSensorRf.state,
   wallswitchBack: devices.wallswitchBack.button0,
   wallswitchFrontLeft: devices.wallswitchFront.button0,
   wallswitchFrontMiddle: devices.wallswitchFront.button1,
@@ -57,7 +63,8 @@ const partialProperties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
   entryDoor: door(context, devices.doorSensor, 'security'),
-  motion: motion_(context, devices.motionSensor, 'security'),
+  motion: devices.motionSensor.motion,
+  motionRf: motion_(context, devices.motionSensorRf, 'security'),
 };
 
 export const properties = {
@@ -103,6 +110,7 @@ const $init: InitFunction = async (room, introspection) => {
     entryDoor,
     entryDoorTimer,
     motion,
+    motionRf,
   } = properties;
 
   const p = makePathStringRetriever(introspection);
@@ -213,6 +221,21 @@ const $init: InitFunction = async (room, introspection) => {
       });
 
       l(`${p(motion)} was detected and ${p(entryDoorTimer)} was (re)started`);
+
+      entryDoorTimer.state.start();
+    }
+  });
+
+  motionRf.state.observe((value) => {
+    // when motion is detected, turn on front ceiling light and (re)start timer
+    if (value) {
+      setMain(ceilingLightFront, true, () => {
+        l(
+          `${p(motionRf)} was detected and ${p(ceilingLightFront)} was turned on`,
+        );
+      });
+
+      l(`${p(motionRf)} was detected and ${p(entryDoorTimer)} was (re)started`);
 
       entryDoorTimer.state.start();
     }

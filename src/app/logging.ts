@@ -17,7 +17,7 @@ export const logger = new Logger();
 
 const primaryOutput = isProd
   ? new JournaldOutput(logLevel ?? Level.NOTICE)
-  : new DevOutput(logLevel ?? Level.DEBUG);
+  : new DevOutput(logLevel ?? Level.INFO);
 
 export const virtualOutput = new VirtualOutput(Level.NOTICE, 5000);
 
