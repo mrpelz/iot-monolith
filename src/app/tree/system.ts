@@ -82,15 +82,13 @@ export const system = (async () => {
       logicReasoningLevel,
     );
 
-    allThings.main.setState.observe((value, _observer, changed) => {
-      if (changed) {
-        l(
-          `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
-        );
-      }
+    allThings.main.setState.observe((value) => {
+      l(
+        `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
+      );
 
       allTimer.state[value ? 'start' : 'stop']();
-    }, true);
+    });
 
     allTimer.state.observe(() =>
       setMain(allThings, false, () =>

@@ -19,6 +19,6 @@ export const motionSensor = (
     $: 'motionSensor' as const,
     $noMainReference: true as const,
     device: ipDevice(context, device, false, undefined, initiallyOnline),
-    motion: input(context, device, undefined, 'motion'),
+    motion: input(context, device, undefined, 'security'),
   };
 };

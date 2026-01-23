@@ -1,7 +1,8 @@
-import { epochs } from '@mrpelz/modifiable-date';
+import { epochs, ModifiableDate, Unit } from '@mrpelz/modifiable-date';
+import { BooleanState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { ev1527MotionSensor } from '../../../lib/tree/devices/ev1527-motion-sensor.js';
+import { Schedule } from '../../../lib/schedule.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -12,12 +13,13 @@ import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
-import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
 import {
-  door,
-  motion as motion_,
-} from '../../../lib/tree/properties/sensors.js';
+  outputGrouping,
+  scene,
+  SceneMember,
+} from '../../../lib/tree/properties/actuators.js';
+import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
@@ -38,7 +40,6 @@ export const devices = {
     'hallwaymotionsensor.lan.wurstsalat.cloud',
     context,
   ),
-  motionSensorRf: ev1527MotionSensor(708_280, ev1527Transport, context),
   wallswitchBack: shellyi3(
     'hallway-wallswitchback.lan.wurstsalat.cloud',
     context,
@@ -50,8 +51,6 @@ export const devices = {
 };
 
 export const instances = {
-  motion: devices.motionSensor.motion.state,
-  motionRf: devices.motionSensorRf.state,
   wallswitchBack: devices.wallswitchBack.button0,
   wallswitchFrontLeft: devices.wallswitchFront.button0,
   wallswitchFrontMiddle: devices.wallswitchFront.button1,
@@ -64,11 +63,10 @@ const partialProperties = {
   ceilingLightFront: devices.ceilingLightFront.relay,
   entryDoor: door(context, devices.doorSensor, 'security'),
   motion: devices.motionSensor.motion,
-  motionRf: motion_(context, devices.motionSensorRf, 'security'),
 };
 
 export const properties = {
-  entryDoorTimer: offTimer(context, epochs.minute * 3, undefined),
+  entryDoorTimer: offTimer(context, epochs.second * 30, undefined),
   ...partialProperties,
 };
 
@@ -82,6 +80,16 @@ export const groups = {
     context,
     [properties.ceilingLightBack, properties.ceilingLightFront],
     'lighting',
+  ),
+};
+
+const motionSensorEnableState = new BooleanState(true);
+
+export const scenes = {
+  motionSensorEnable: scene(
+    context,
+    [new SceneMember(motionSensorEnableState, true, false)],
+    'automation',
   ),
 };
 
@@ -110,8 +118,8 @@ const $init: InitFunction = async (room, introspection) => {
     entryDoor,
     entryDoorTimer,
     motion,
-    motionRf,
   } = properties;
+  const { motionSensorEnable } = scenes;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -214,6 +222,13 @@ const $init: InitFunction = async (room, introspection) => {
   motion.state.observe((value) => {
     // when motion is detected, turn on front ceiling light and (re)start timer
     if (value) {
+      if (!motionSensorEnableState.value) {
+        l(
+          `${p(motion)} was detected but resulted in no action because ${p(motionSensorEnable)} logic`,
+        );
+        return;
+      }
+
       setMain(ceilingLightFront, true, () => {
         l(
           `${p(motion)} was detected and ${p(ceilingLightFront)} was turned on`,
@@ -221,21 +236,6 @@ const $init: InitFunction = async (room, introspection) => {
       });
 
       l(`${p(motion)} was detected and ${p(entryDoorTimer)} was (re)started`);
-
-      entryDoorTimer.state.start();
-    }
-  });
-
-  motionRf.state.observe((value) => {
-    // when motion is detected, turn on front ceiling light and (re)start timer
-    if (value) {
-      setMain(ceilingLightFront, true, () => {
-        l(
-          `${p(motionRf)} was detected and ${p(ceilingLightFront)} was turned on`,
-        );
-      });
-
-      l(`${p(motionRf)} was detected and ${p(entryDoorTimer)} was (re)started`);
 
       entryDoorTimer.state.start();
     }
@@ -284,6 +284,24 @@ const $init: InitFunction = async (room, introspection) => {
       ),
     ),
   );
+
+  new Schedule(
+    context.logger,
+    (last) => new ModifiableDate(last).forwardUntil({ [Unit.HOUR]: 0 }).date,
+    true,
+  ).addTask(() => {
+    l(`time-based deactivation of ${p(motionSensorEnable)} logic`);
+    motionSensorEnableState.value = false;
+  });
+
+  new Schedule(
+    context.logger,
+    (last) => new ModifiableDate(last).forwardUntil({ [Unit.HOUR]: 7 }).date,
+    true,
+  ).addTask(() => {
+    l(`time-based activation of ${p(motionSensorEnable)} logic`);
+    motionSensorEnableState.value = true;
+  });
 };
 
 export const hallway = {
@@ -294,4 +312,5 @@ export const hallway = {
   ...groups,
   ...instances,
   ...properties,
+  ...scenes,
 };

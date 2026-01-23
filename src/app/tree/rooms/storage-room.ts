@@ -1,6 +1,7 @@
 import { epochs } from '@mrpelz/modifiable-date';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
+import { ev1527MotionSensor } from '../../../lib/tree/devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
@@ -10,7 +11,10 @@ import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { offTimer } from '../../../lib/tree/properties/logic.js';
-import { door } from '../../../lib/tree/properties/sensors.js';
+import {
+  door as door_,
+  motion as motion_,
+} from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
@@ -23,6 +27,7 @@ export const devices = {
     context,
   ),
   doorSensor: ev1527WindowSensor(55_632, ev1527Transport, context),
+  motionSensor: ev1527MotionSensor(708_280, ev1527Transport, context),
   rfBridge,
 };
 
@@ -32,8 +37,9 @@ export const instances = {
 
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
-  door: door(context, devices.doorSensor, undefined),
-  lightTimer: offTimer(context, epochs.minute * 5, undefined),
+  door: door_(context, devices.doorSensor, undefined),
+  lightTimer: offTimer(context, epochs.minute, undefined),
+  motion: motion_(context, devices.motionSensor, 'security'),
 };
 
 export const groups = {
@@ -42,7 +48,7 @@ export const groups = {
 
 const $init: InitFunction = (room, introspection) => {
   const { wallswitch } = instances;
-  const { ceilingLight, door: door_, lightTimer } = properties;
+  const { ceilingLight, door, lightTimer, motion } = properties;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -86,12 +92,21 @@ const $init: InitFunction = (room, introspection) => {
     );
   });
 
-  door_.open.main.state.observe((open) => {
+  door.open.main.state.observe((open) => {
     if (!open) return;
 
     setMain(ceilingLight, true, () =>
-      l(`${p(door_)} was opened and turned on ${p(ceilingLight)}`),
+      l(`${p(door)} was opened and turned on ${p(ceilingLight)}`),
     );
+  });
+
+  motion.state.observe((value) => {
+    // when motion is detected, turn on front ceiling light and (re)start timer
+    if (value) {
+      setMain(ceilingLight, true, () => {
+        l(`${p(motion)} was detected and ${p(ceilingLight)} was turned on`);
+      });
+    }
   });
 
   ceilingLight.main.setState.observe((value, _observer, changed) => {
