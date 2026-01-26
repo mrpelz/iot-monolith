@@ -287,8 +287,11 @@ const $init: InitFunction = async (room, introspection) => {
 
   new Schedule(
     context.logger,
-    (last) => new ModifiableDate(last).forwardUntil({ [Unit.HOUR]: 0 }).date,
-    true,
+    (last) =>
+      new ModifiableDate(last)
+        //                           UTC
+        .forwardUntil({ [Unit.HOUR]: 23 })
+        .truncateTo(Unit.HOUR).date,
   ).addTask(() => {
     l(`time-based deactivation of ${p(motionSensorEnable)} logic`);
     motionSensorEnableState.value = false;
@@ -296,8 +299,11 @@ const $init: InitFunction = async (room, introspection) => {
 
   new Schedule(
     context.logger,
-    (last) => new ModifiableDate(last).forwardUntil({ [Unit.HOUR]: 7 }).date,
-    true,
+    (last) =>
+      new ModifiableDate(last)
+        //                           UTC
+        .forwardUntil({ [Unit.HOUR]: 6 })
+        .truncateTo(Unit.HOUR).date,
   ).addTask(() => {
     l(`time-based activation of ${p(motionSensorEnable)} logic`);
     motionSensorEnableState.value = true;
