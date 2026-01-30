@@ -51,10 +51,7 @@ export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
 };
 
-export const lastChange = <T>(
-  context: Context,
-  state: AnyReadOnlyObservable<T>,
-) => {
+export const lastChange = <T>(_: Context, state: AnyReadOnlyObservable<T>) => {
   const $ = 'lastChange' as const;
 
   const changed_ = new Observable<number | null>(null);
@@ -78,8 +75,11 @@ export const lastChange = <T>(
 };
 
 export const lastSeen = <T>(
-  context: Context,
-  state: ReadOnlyObservable<T> | ReadOnlyNullState<T>,
+  _: Context,
+  state:
+    | ReadOnlyObservable<T>
+    | ReadOnlyNullState<T>
+    | AnyReadOnlyObservable<T>,
 ) => {
   const $ = 'lastSeen' as const;
 
@@ -128,6 +128,7 @@ export const metricStaleness = <T>(
   return {
     $,
     $init,
+    lastChange: lastChange(context, state),
     lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, stale),
@@ -299,6 +300,7 @@ export const input = <T extends string | undefined>(
   return {
     $,
     lastChange: lastChange(context, state),
+    lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     state,
@@ -337,6 +339,7 @@ export const inputGrouping = <T extends string | undefined>(
     $noMainReference: true as const,
     inputs: inputs_,
     lastChange: lastChange(context, state),
+    lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, new ReadOnlyObservable(state)),
     state,
@@ -448,6 +451,7 @@ export const motion = <T extends string | undefined>(
   return {
     $,
     lastChange: lastChange(context, state),
+    lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     state,
@@ -498,6 +502,7 @@ export const rfReadout = (
 
   return {
     $: 'rfReadout' as const,
+    lastChange: lastChange(context, state),
     lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: getter(ValueType.RAW, state),

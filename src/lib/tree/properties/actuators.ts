@@ -28,7 +28,7 @@ import { setter } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
-import { lastChange } from './sensors.js';
+import { lastChange, lastSeen } from './sensors.js';
 
 const actuatorStaleness = <T>(
   context: Context,
@@ -42,8 +42,8 @@ const actuatorStaleness = <T>(
   const loading = new BooleanState(true);
 
   const $init: InitFunction = () => {
-    state.observe((value) => {
-      if (setState.value === value) return;
+    setState.observe((value) => {
+      if (state.value === value) return;
       loading.value = true;
     }, true);
 
@@ -58,6 +58,8 @@ const actuatorStaleness = <T>(
   return {
     $,
     $init,
+    lastChange: lastChange(context, state),
+    lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     loading: getter(ValueType.BOOLEAN, new ReadOnlyObservable(loading)),
     stale: getter(
@@ -148,10 +150,7 @@ export const output = <T extends string | undefined>(
   };
 };
 
-export const ledGrouping = (
-  context: Context,
-  lights: ReturnType<typeof led>[],
-) => {
+export const ledGrouping = (_: Context, lights: ReturnType<typeof led>[]) => {
   const $ = 'ledGrouping' as const;
 
   const lights_ = Array.from(new Set(lights));
@@ -321,7 +320,7 @@ export class SceneMember<T> {
 }
 
 export const scene = <T extends string>(
-  context: Context,
+  _: Context,
   members: readonly SceneMember<unknown>[],
   topic: T,
 ) => {
