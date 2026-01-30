@@ -206,7 +206,7 @@ export const ledGrouping = (
 };
 
 export const outputGrouping = <T extends string | undefined>(
-  context: Context,
+  _: Context,
   outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
   topic: T,
 ) => {

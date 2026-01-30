@@ -1,7 +1,6 @@
 import {
   AnyWritableObservable,
-  ObservableGroup,
-  ProxyObservable,
+  Observable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
@@ -78,16 +77,6 @@ export const isAstronomicalTwilight = (elevation?: number): boolean =>
 export const isNight = (elevation?: number): boolean =>
   isTwilightPhase(undefined, -18, elevation);
 
-class MergedBrightness extends ObservableGroup<number | null> {
-  protected _merge(): number | null {
-    const validValues = this.values.filter(
-      (value): value is number => typeof value === 'number',
-    );
-
-    return validValues.length > 0 ? Math.min(...validValues) : null;
-  }
-}
-
 export const overriddenLed = (
   context: Context,
   led: ReturnType<typeof led_>,
@@ -96,26 +85,43 @@ export const overriddenLed = (
 ) => {
   const { $, actuatorStaleness, brightness, level, topic } = led;
 
-  const actualBrightness = new ReadOnlyObservable(
-    new MergedBrightness(0, [
-      brightness.state,
-      new ReadOnlyProxyObservable(isOverridden, (value) => {
-        if (brightness.state.value === null) return null;
+  const actualBrightness_ = new Observable(brightness.state.value);
+  const actualBrightness = new ReadOnlyObservable(actualBrightness_);
+  brightness.state.observe((value) => {
+    if (!isOverridden.value) return;
 
-        return value ? 1 : 0;
-      }),
-    ]),
-  );
+    actualBrightness_.value = value;
+  }, true);
 
-  const setBrightness = new ProxyObservable(
-    brightness.setState,
-    (value) => (isOverridden.value ? value : 0),
+  const setBrightness = new Observable(
+    brightness.setState.value,
     (value) => {
-      if (value) isOverridden.value = true;
+      if (value === brightness.setState.value) return;
 
-      return isOverridden.value ? value : ProxyObservable.doNotSet;
+      if (!isOverridden.value) {
+        setBrightness.value = 0;
+        return;
+      }
+
+      brightness.setState.value = value;
     },
+    true,
   );
+  brightness.setState.observe((value) => {
+    if (value === setBrightness.value) return;
+    if (!isOverridden.value) return;
+
+    setBrightness.value = value;
+  }, true);
+
+  isOverridden.observe((value) => {
+    if (value) {
+      brightness.setState.value = setBrightness.value;
+      return;
+    }
+
+    setBrightness.value = 0;
+  });
 
   const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>
     value === null ? value : Boolean(value),

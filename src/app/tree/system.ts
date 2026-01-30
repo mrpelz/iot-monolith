@@ -88,7 +88,7 @@ export const system = (async () => {
       );
 
       allTimer.state[value ? 'start' : 'stop']();
-    });
+    }, true);
 
     allTimer.state.observe(() =>
       setMain(allThings, false, () =>
