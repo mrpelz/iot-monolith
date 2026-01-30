@@ -59,7 +59,7 @@ const actuatorStaleness = <T>(
     $,
     $init,
     lastChange: lastChange(context, state),
-    lastSeen: lastSeen(context, state),
+    lastSeen: lastSeen(context, setState),
     level: Level.PROPERTY as const,
     loading: getter(ValueType.BOOLEAN, new ReadOnlyObservable(loading)),
     stale: getter(

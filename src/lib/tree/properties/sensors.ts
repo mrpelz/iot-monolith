@@ -2,16 +2,16 @@
 
 import { epochs } from '@mrpelz/modifiable-date';
 import {
-  AnyReadOnlyObservable,
+  AnyObservable,
   Observable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
 import {
+  AnyNullState,
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
-  ReadOnlyNullState,
 } from '@mrpelz/observable/state';
 import { Timer } from '@mrpelz/observable/timer';
 
@@ -51,7 +51,7 @@ export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
 };
 
-export const lastChange = <T>(_: Context, state: AnyReadOnlyObservable<T>) => {
+export const lastChange = <T>(_: Context, state: AnyObservable<T>) => {
   const $ = 'lastChange' as const;
 
   const changed_ = new Observable<number | null>(null);
@@ -76,10 +76,7 @@ export const lastChange = <T>(_: Context, state: AnyReadOnlyObservable<T>) => {
 
 export const lastSeen = <T>(
   _: Context,
-  state:
-    | ReadOnlyObservable<T>
-    | ReadOnlyNullState<T>
-    | AnyReadOnlyObservable<T>,
+  state: AnyObservable<T> | AnyNullState<T>,
 ) => {
   const $ = 'lastSeen' as const;
 
