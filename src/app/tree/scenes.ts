@@ -33,16 +33,6 @@ export const kitchenAdjacentChillax = scene(
       0,
     ),
     new SceneMember(livingRoomProperties.standingLamp.main.setState, false),
-    new SceneMember(
-      livingRoomProperties.terrariumLedRed.brightness.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      livingRoomProperties.terrariumLedTop.brightness.setState,
-      0.33,
-      0,
-    ),
     new SceneMember(officeProperties.ceilingLight.main.setState, true, false),
     new SceneMember(officeProperties.floodlight.main.setState, false),
   ],
@@ -80,16 +70,6 @@ export const kitchenAdjacentBright = scene(
       livingRoomProperties.standingLamp.main.setState,
       true,
       false,
-    ),
-    new SceneMember(
-      livingRoomProperties.terrariumLedRed.brightness.setState,
-      1,
-      0,
-    ),
-    new SceneMember(
-      livingRoomProperties.terrariumLedTop.brightness.setState,
-      1,
-      0,
     ),
     new SceneMember(officeProperties.ceilingLight.main.setState, true, false),
     new SceneMember(officeProperties.floodlight.main.setState, true, false),
