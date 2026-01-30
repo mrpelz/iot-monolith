@@ -13,6 +13,7 @@ import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
 import { InitFunction } from '../lib/tree/operations/init.js';
 import { led as led_ } from '../lib/tree/properties/actuators.js';
+import { every5Seconds } from './timings.js';
 
 export const LATITUDE = 53.547_47;
 export const LONGITUDE = 10.015_98;
@@ -117,6 +118,15 @@ export const overriddenLed = (
     }
 
     setBrightness.value = 0;
+    actualBrightness_.value = 0;
+  });
+
+  every5Seconds.addTask(() => {
+    if (isOverridden.value) return;
+    if (setBrightness.value === 0) return;
+
+    setBrightness.value = 0;
+    actualBrightness_.value = 0;
   });
 
   const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>
