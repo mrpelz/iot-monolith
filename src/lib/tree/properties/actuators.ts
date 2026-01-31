@@ -150,7 +150,10 @@ export const output = <T extends string | undefined>(
   };
 };
 
-export const ledGrouping = (_: Context, lights: ReturnType<typeof led>[]) => {
+export const ledGrouping = (
+  context: Context,
+  lights: ReturnType<typeof led>[],
+) => {
   const $ = 'ledGrouping' as const;
 
   const lights_ = Array.from(new Set(lights));
@@ -197,6 +200,8 @@ export const ledGrouping = (_: Context, lights: ReturnType<typeof led>[]) => {
     $noMainReference: true as const,
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
+    lastChange: lastChange(context, actualBrightness),
+    lastSeen: lastSeen(context, setBrightness),
     level: Level.PROPERTY as const,
     lights: lights_,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
@@ -205,7 +210,7 @@ export const ledGrouping = (_: Context, lights: ReturnType<typeof led>[]) => {
 };
 
 export const outputGrouping = <T extends string | undefined>(
-  _: Context,
+  context: Context,
   outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
   topic: T,
 ) => {
@@ -229,6 +234,8 @@ export const outputGrouping = <T extends string | undefined>(
     $,
     $noMainReference: true as const,
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
+    lastChange: lastChange(context, actualState),
+    lastSeen: lastSeen(context, setState),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
     outputs: outputs_,
@@ -296,7 +303,7 @@ export const identifyDevice = (_: Context, indicator: Indicator) => ({
 });
 
 export const triggerElement = <T extends string>(
-  _: Context,
+  context: Context,
   topic: T,
   handler?: () => void,
 ) => {
@@ -304,6 +311,7 @@ export const triggerElement = <T extends string>(
 
   return {
     $: 'triggerElement' as const,
+    lastSeen: lastSeen(context, state),
     level: Level.PROPERTY as const,
     main: trigger(ValueType.NULL, state, 'trigger'),
     state,
@@ -320,7 +328,7 @@ export class SceneMember<T> {
 }
 
 export const scene = <T extends string>(
-  _: Context,
+  context: Context,
   members: readonly SceneMember<unknown>[],
   topic: T,
 ) => {
@@ -343,6 +351,8 @@ export const scene = <T extends string>(
   return {
     $,
     flip: trigger(ValueType.NULL, new NullState(() => set.flip())),
+    lastChange: lastChange(context, set),
+    lastSeen: lastSeen(context, set),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, set, undefined, 'scene'),
     state: set,

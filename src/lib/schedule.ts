@@ -1,3 +1,4 @@
+import { epochs } from '@mrpelz/modifiable-date';
 import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
 
 import { callstack, Input, Logger } from './log.js';
@@ -14,7 +15,11 @@ type NextExecutionProvider = (
   previousExecution: Date | undefined,
 ) => Date | null;
 
+/**
+ * 3.55 weeks
+ */
 const MAX_TIMEOUT = 2_147_483_647;
+const ERROR_HOLDOFF_TIMEOUT = epochs.minute * 5;
 
 export class Schedule {
   private readonly _log: Input;
@@ -64,15 +69,14 @@ export class Schedule {
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
-      this._log.error(
-        () => ({
-          body: 'next execution missing or not in the future, stopping execution',
-        }),
-        callstack(),
-      );
+      this._log.notice(() => ({
+        body: 'next execution missing or not in the future, rescheduling to run again in five minutes',
+      }));
 
-      this._previousExecution = null;
-      this.stop();
+      this._timeout = setTimeout(
+        () => this._scheduleNextExecution(),
+        ERROR_HOLDOFF_TIMEOUT,
+      );
 
       return;
     }

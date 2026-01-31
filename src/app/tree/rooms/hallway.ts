@@ -22,6 +22,7 @@ import { offTimer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
+import { persistence } from '../../persistence.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
@@ -308,6 +309,14 @@ const $init: InitFunction = async (room, introspection) => {
     l(`time-based activation of ${p(motionSensorEnable)} logic`);
     motionSensorEnableState.value = true;
   });
+
+  const motionSensorEnablePersistenceIdentifier = p(motionSensorEnable);
+  if (motionSensorEnablePersistenceIdentifier) {
+    persistence.observe(
+      motionSensorEnablePersistenceIdentifier,
+      motionSensorEnableState,
+    );
+  }
 };
 
 export const hallway = {
