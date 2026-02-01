@@ -230,7 +230,7 @@ export const automatedInputLogic = (
   const timerAutomation = timer(context, timeoutAutomation);
 
   const $init: InitFunction = async (object, introspection) => {
-    let isAutomated = false;
+    let overrideEnable = false;
 
     const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
@@ -247,26 +247,17 @@ export const automatedInputLogic = (
     }
 
     output.main.setState.observe((value) => {
-      if (automationEnableState.value && !isAutomated) {
-        l(
-          `${p(output)} was set from a manual input and ${p(automationEnable)} is true, disabling automation and (re)starting ${p(timerAutomation)}`,
-        );
-
-        automationEnableStateManual.value = false;
-        timerAutomation.state.start();
-      }
-
-      isAutomated = false;
-
       if (value) return;
 
-      l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
+      overrideEnable = true;
+      automationEnableStateManual.value = false;
+      overrideEnable = false;
 
+      l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
       timerOutput.state.stop();
     }, true);
 
     for (const input of inputsAutomated) {
-      // eslint-disable-next-line no-loop-func
       const fn = (value: boolean | null) => {
         l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
@@ -283,7 +274,6 @@ export const automatedInputLogic = (
             `${p(input)} turned ${JSON.stringify(value)}, turning on ${p(output)}`,
           );
 
-          isAutomated = true;
           output.main.setState.value = true;
 
           return;
@@ -313,13 +303,22 @@ export const automatedInputLogic = (
       }
     }
 
-    automationEnableState.observe(() => {
-      l(
-        `${p(automationEnable)} triggered, stopping ${p(timerOutput)} and ${p(timerAutomation)}`,
-      );
+    automationEnableState.observe((value) => {
+      l(`${p(automationEnable)} triggered, stopping ${p(timerOutput)}`);
 
       timerOutput.state.stop();
-      timerAutomation.state.stop();
+
+      if (overrideEnable) return;
+
+      if (value) {
+        l(`${p(automationEnable)} turned on, stopping ${p(timerAutomation)}`);
+        timerAutomation.state.stop();
+      } else {
+        l(
+          `${p(automationEnable)} turned off, (re)starting ${p(timerAutomation)}`,
+        );
+        timerAutomation.state.start();
+      }
     }, true);
 
     timerOutput.state.observe(() => {
