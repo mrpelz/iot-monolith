@@ -7,8 +7,10 @@ import {
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
 import {
+  BooleanGroupStrategy,
   BooleanProxyState,
   BooleanState,
+  BooleanStateGroup,
   NullState,
 } from '@mrpelz/observable/state';
 import sunCalc from 'suncalc';
@@ -211,10 +213,16 @@ export const automatedInputLogic = (
 ) => {
   const $ = 'automatedInputLogic' as const;
 
-  const automationEnableState = new BooleanState(true);
+  const automationEnableStateManual = new BooleanState(true);
+  const automationEnableStateScheduled = new BooleanState(true);
+  const automationEnableState = new BooleanStateGroup(
+    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+    [automationEnableStateManual, automationEnableStateScheduled],
+  );
+
   const automationEnable = scene(
     context,
-    [new SceneMember(automationEnableState, true, false)],
+    [new SceneMember(automationEnableStateManual, true, false)],
     'automation',
   );
 
@@ -222,6 +230,8 @@ export const automatedInputLogic = (
   const timerAutomation = timer(context, timeoutAutomation);
 
   const $init: InitFunction = async (object, introspection) => {
+    let isAutomated = false;
+
     const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
     const l = makeCustomStringLogger(
@@ -231,12 +241,23 @@ export const automatedInputLogic = (
       logicReasoningLevel,
     );
 
-    const automationEnablePath = p(automationEnableState);
+    const automationEnablePath = p(automationEnable);
     if (automationEnablePath) {
-      persistence.observe(automationEnablePath, automationEnableState);
+      persistence.observe(automationEnablePath, automationEnableStateScheduled);
     }
 
     output.main.setState.observe((value) => {
+      if (automationEnableState.value && !isAutomated) {
+        l(
+          `${p(output)} was set from a manual input and ${p(automationEnable)} is true, disabling automation and (re)starting ${p(timerAutomation)}`,
+        );
+
+        automationEnableStateManual.value = false;
+        timerAutomation.state.start();
+      }
+
+      isAutomated = false;
+
       if (value) return;
 
       l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
@@ -245,6 +266,7 @@ export const automatedInputLogic = (
     }, true);
 
     for (const input of inputsAutomated) {
+      // eslint-disable-next-line no-loop-func
       const fn = (value: boolean | null) => {
         l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
@@ -261,6 +283,7 @@ export const automatedInputLogic = (
             `${p(input)} turned ${JSON.stringify(value)}, turning on ${p(output)}`,
           );
 
+          isAutomated = true;
           output.main.setState.value = true;
 
           return;
@@ -307,17 +330,6 @@ export const automatedInputLogic = (
 
     for (const input of inputsManual) {
       const fn = () => {
-        l(`${p(input)} was triggered…`);
-
-        if (automationEnableState.value) {
-          l(
-            `${p(input)} was triggered and ${p(automationEnable)} is true, disabling automation and (re)starting ${p(timerAutomation)}`,
-          );
-
-          automationEnableState.value = false;
-          timerAutomation.state.start();
-        }
-
         l(`${p(input)} was triggered, flipping ${p(output)}`);
 
         output.flip.setState.trigger();
@@ -339,19 +351,19 @@ export const automatedInputLogic = (
     timerAutomation.state.observe(() => {
       l(`${p(timerAutomation)} ran out, turning on ${p(automationEnable)}`);
 
-      automationEnableState.value = true;
+      automationEnableStateManual.value = true;
     });
 
     automationEnableSchedule?.addTask(() => {
       l(`scheduled activation of ${p(automationEnable)} logic`);
 
-      automationEnableState.value = true;
+      automationEnableStateScheduled.value = true;
     });
 
     automationDisableSchedule?.addTask(() => {
       l(`scheduled deactivation of ${p(automationEnable)} logic`);
 
-      automationEnableState.value = false;
+      automationEnableStateScheduled.value = false;
     });
   };
 
