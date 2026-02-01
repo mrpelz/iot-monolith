@@ -32,8 +32,10 @@ import { timer } from '../lib/tree/properties/logic.js';
 import {
   button,
   buttonPrimitive,
+  door,
   input as input_,
   motion,
+  window,
 } from '../lib/tree/properties/sensors.js';
 import { context } from './context.js';
 import { logger, logicReasoningLevel } from './logging.js';
@@ -187,13 +189,17 @@ export const overriddenLed = (
 };
 
 export const automatedInputLogic = (
-  parent: object,
   output:
     | ReturnType<typeof output_>
     | ReturnType<typeof led_>
     | ReturnType<typeof outputGrouping>
     | ReturnType<typeof ledGrouping>,
-  inputsAutomated: (ReturnType<typeof input_> | ReturnType<typeof motion>)[],
+  inputsAutomated: (
+    | ReturnType<typeof input_>
+    | ReturnType<typeof motion>
+    | ReturnType<typeof door>
+    | ReturnType<typeof window>
+  )[],
   inputsManual: (
     | ReturnType<typeof button>
     | ReturnType<typeof buttonPrimitive>
@@ -215,11 +221,12 @@ export const automatedInputLogic = (
   const timerOutput = timer(context, timeoutOutput);
   const timerAutomation = timer(context, timeoutAutomation);
 
-  const $init: InitFunction = async (_, introspection) => {
+  const $init: InitFunction = async (object, introspection) => {
+    const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
     const l = makeCustomStringLogger(
       logger.getInput({
-        head: p(parent),
+        head: p(parent ?? object),
       }),
       logicReasoningLevel,
     );
@@ -238,7 +245,7 @@ export const automatedInputLogic = (
     }, true);
 
     for (const input of inputsAutomated) {
-      input.state.observe((value) => {
+      const fn = (value: boolean | null) => {
         l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
         if (!automationEnableState.value) {
@@ -266,7 +273,21 @@ export const automatedInputLogic = (
 
           timerOutput.state.start();
         }
-      });
+      };
+
+      // eslint-disable-next-line default-case
+      switch (input.$) {
+        case 'door':
+        case 'window': {
+          input.open.state.observe(fn);
+          break;
+        }
+        case 'input':
+        case 'motion': {
+          input.state.observe(fn);
+          break;
+        }
+      }
     }
 
     automationEnableState.observe(() => {
@@ -346,5 +367,57 @@ export const automatedInputLogic = (
     },
     timerAutomation,
     timerOutput,
+  };
+};
+
+export const manualInputLogic = (
+  output:
+    | ReturnType<typeof output_>
+    | ReturnType<typeof led_>
+    | ReturnType<typeof outputGrouping>
+    | ReturnType<typeof ledGrouping>,
+  inputs: (ReturnType<typeof button> | ReturnType<typeof buttonPrimitive>)[],
+) => {
+  const $ = 'manualInputLogic' as const;
+
+  const $init: InitFunction = async (object, introspection) => {
+    const parent = introspection.getObject(object)?.mainReference?.parent;
+    const p = makePathStringRetriever(introspection);
+    const l = makeCustomStringLogger(
+      logger.getInput({
+        head: p(parent ?? object),
+      }),
+      logicReasoningLevel,
+    );
+
+    for (const input of inputs) {
+      const fn = () => {
+        l(`${p(input)} was triggered, flipping ${p(output)}`);
+
+        output.flip.setState.trigger();
+      };
+
+      // eslint-disable-next-line default-case
+      switch (input.$) {
+        case 'button': {
+          input.state.up(fn);
+          break;
+        }
+        case 'buttonPrimitive': {
+          input.state.observe(fn);
+          break;
+        }
+      }
+    }
+  };
+
+  return {
+    $,
+    $init,
+    internal: {
+      $noMainReference: true as const,
+      inputs,
+      output,
+    },
   };
 };
