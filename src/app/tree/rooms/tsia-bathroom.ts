@@ -23,7 +23,7 @@ import {
   SceneMember,
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
@@ -62,7 +62,7 @@ export const devices = {
 };
 
 export const instances = {
-  bathtubButton: devices.bathtubButton.state,
+  bathtubButton: devices.bathtubButton.button,
   mirrorLightButton: devices.mirrorLight.button,
   nightLightButton: devices.nightLight.button,
   wallswitchDoor: devices.ceilingLight.button,
@@ -70,7 +70,7 @@ export const instances = {
 };
 
 export const properties = {
-  allLightsTimer: offTimer(context, epochs.minute * 30, true),
+  allLightsTimer: timer(context, epochs.minute * 30, true),
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorLed: devices.leds.ledR,
@@ -239,7 +239,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  bathtubButton.one.observe(() => {
+  bathtubButton.state.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(

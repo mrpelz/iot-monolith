@@ -1,18 +1,43 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { epochs } from '@mrpelz/modifiable-date';
 import {
   AnyWritableObservable,
   Observable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
-import { BooleanProxyState, NullState } from '@mrpelz/observable/state';
+import {
+  BooleanProxyState,
+  BooleanState,
+  NullState,
+} from '@mrpelz/observable/state';
 import sunCalc from 'suncalc';
 
-import { Context } from '../lib/tree/context.js';
+import { makeCustomStringLogger } from '../lib/log.js';
+import { Schedule } from '../lib/schedule.js';
 import { setter } from '../lib/tree/elements/setter.js';
 import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
 import { InitFunction } from '../lib/tree/operations/init.js';
-import { led as led_ } from '../lib/tree/properties/actuators.js';
+import { makePathStringRetriever } from '../lib/tree/operations/introspection.js';
+import {
+  led as led_,
+  ledGrouping,
+  output as output_,
+  outputGrouping,
+  scene,
+  SceneMember,
+} from '../lib/tree/properties/actuators.js';
+import { timer } from '../lib/tree/properties/logic.js';
+import {
+  button,
+  buttonPrimitive,
+  input as input_,
+  motion,
+} from '../lib/tree/properties/sensors.js';
+import { context } from './context.js';
+import { logger, logicReasoningLevel } from './logging.js';
+import { persistence } from './persistence.js';
 import { every5Seconds } from './timings.js';
 
 export const LATITUDE = 53.547_47;
@@ -79,10 +104,8 @@ export const isNight = (elevation?: number): boolean =>
   isTwilightPhase(undefined, -18, elevation);
 
 export const overriddenLed = (
-  context: Context,
   led: ReturnType<typeof led_>,
   isOverridden: AnyWritableObservable<boolean>,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 ) => {
   const { $, actuatorStaleness, brightness, level, topic } = led;
 
@@ -160,5 +183,168 @@ export const overriddenLed = (
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     overridden: isOverridden,
     topic,
+  };
+};
+
+export const automatedInputLogic = (
+  parent: object,
+  output:
+    | ReturnType<typeof output_>
+    | ReturnType<typeof led_>
+    | ReturnType<typeof outputGrouping>
+    | ReturnType<typeof ledGrouping>,
+  inputsAutomated: (ReturnType<typeof input_> | ReturnType<typeof motion>)[],
+  inputsManual: (
+    | ReturnType<typeof button>
+    | ReturnType<typeof buttonPrimitive>
+  )[],
+  timeoutOutput = epochs.minute * 3,
+  timeoutAutomation = epochs.minute * 10,
+  automationEnableSchedule?: Schedule,
+  automationDisableSchedule?: Schedule,
+) => {
+  const $ = 'automatedInputLogic' as const;
+
+  const automationEnableState = new BooleanState(true);
+  const automationEnable = scene(
+    context,
+    [new SceneMember(automationEnableState, true, false)],
+    'automation',
+  );
+
+  const timerOutput = timer(context, timeoutOutput);
+  const timerAutomation = timer(context, timeoutAutomation);
+
+  const $init: InitFunction = async (_, introspection) => {
+    const p = makePathStringRetriever(introspection);
+    const l = makeCustomStringLogger(
+      logger.getInput({
+        head: p(parent),
+      }),
+      logicReasoningLevel,
+    );
+
+    const automationEnablePath = p(automationEnableState);
+    if (automationEnablePath) {
+      persistence.observe(automationEnablePath, automationEnableState);
+    }
+
+    output.main.setState.observe((value) => {
+      if (value) return;
+
+      l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
+
+      timerOutput.state.stop();
+    }, true);
+
+    for (const input of inputsAutomated) {
+      input.state.observe((value) => {
+        l(`${p(input)} turned ${JSON.stringify(value)}…`);
+
+        if (!automationEnableState.value) {
+          l(
+            `${p(input)} turned ${JSON.stringify(value)} and ${p(automationEnable)} is false, not doing anything`,
+          );
+
+          return;
+        }
+
+        if (value) {
+          l(
+            `${p(input)} turned ${JSON.stringify(value)}, turning on ${p(output)}`,
+          );
+
+          output.main.setState.value = true;
+
+          return;
+        }
+
+        if (output.main.setState.value) {
+          l(
+            `${p(input)} turned ${JSON.stringify(value)} and ${p(output)} is on, (re)starting ${p(timerOutput)}`,
+          );
+
+          timerOutput.state.start();
+        }
+      });
+    }
+
+    automationEnableState.observe(() => {
+      l(
+        `${p(automationEnable)} triggered, stopping ${p(timerOutput)} and ${p(timerAutomation)}`,
+      );
+
+      timerOutput.state.stop();
+      timerAutomation.state.stop();
+    }, true);
+
+    timerOutput.state.observe(() => {
+      l(`${p(timerOutput)} ran out, turning off ${p(output)}`);
+
+      output.main.setState.value = false;
+    });
+
+    for (const input of inputsManual) {
+      const fn = () => {
+        l(`${p(input)} was triggered…`);
+
+        if (automationEnableState.value) {
+          l(
+            `${p(input)} was triggered and ${p(automationEnable)} is true, disabling automation and (re)starting ${p(timerAutomation)}`,
+          );
+
+          automationEnableState.value = false;
+          timerAutomation.state.start();
+        }
+
+        l(`${p(input)} was triggered, flipping ${p(output)}`);
+
+        output.flip.setState.trigger();
+      };
+
+      // eslint-disable-next-line default-case
+      switch (input.$) {
+        case 'button': {
+          input.state.up(fn);
+          break;
+        }
+        case 'buttonPrimitive': {
+          input.state.observe(fn);
+          break;
+        }
+      }
+    }
+
+    timerAutomation.state.observe(() => {
+      l(`${p(timerAutomation)} ran out, turning on ${p(automationEnable)}`);
+
+      automationEnableState.value = true;
+    });
+
+    automationEnableSchedule?.addTask(() => {
+      l(`scheduled activation of ${p(automationEnable)} logic`);
+
+      automationEnableState.value = true;
+    });
+
+    automationDisableSchedule?.addTask(() => {
+      l(`scheduled deactivation of ${p(automationEnable)} logic`);
+
+      automationEnableState.value = false;
+    });
+  };
+
+  return {
+    $,
+    $init,
+    automationEnable,
+    internal: {
+      $noMainReference: true as const,
+      inputsAutomated,
+      inputsManual,
+      output,
+    },
+    timerAutomation,
+    timerOutput,
   };
 };

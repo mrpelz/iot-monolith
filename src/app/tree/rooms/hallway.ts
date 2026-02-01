@@ -18,7 +18,7 @@ import {
   scene,
   SceneMember,
 } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
@@ -67,7 +67,7 @@ const partialProperties = {
 };
 
 export const properties = {
-  entryDoorTimer: offTimer(context, epochs.second * 30, undefined),
+  entryDoorTimer: timer(context, epochs.second * 30, undefined),
   ...partialProperties,
 };
 

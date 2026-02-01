@@ -23,7 +23,7 @@ import {
   SceneMember,
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
@@ -70,18 +70,18 @@ export const instances = {
   mirrorHeatingButton: devices.mirrorHeating.button,
   mirrorLightButton: devices.mirrorLight.button,
   nightLightButton: devices.nightLight.button,
-  showerButton: devices.showerButton.state,
+  showerButton: devices.showerButton.button,
   wallswitchDoor: devices.wallswitchDoor.button0,
   wallswitchMirrorBottom: devices.wallswitchDoor.button2,
   wallswitchMirrorTop: devices.wallswitchDoor.button1,
 };
 
 export const properties = {
-  allTimer: offTimer(context, epochs.minute * 30, true),
+  allTimer: timer(context, epochs.minute * 30, true),
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorHeating: devices.mirrorHeating.relay,
-  mirrorHeatingTimer: offTimer(context, epochs.minute * 15, true),
+  mirrorHeatingTimer: timer(context, epochs.minute * 15, true),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
   nightLight: devices.nightLight.relay,
@@ -253,7 +253,7 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  showerButton.one.observe(() => {
+  showerButton.state.observe(() => {
     if (getMain(allThings)) {
       setMain(allThings, false, () =>
         l(

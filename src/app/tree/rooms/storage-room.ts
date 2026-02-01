@@ -10,7 +10,7 @@ import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import {
   door as door_,
   motion as motion_,
@@ -38,7 +38,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: door_(context, devices.doorSensor, undefined),
-  lightTimer: offTimer(context, epochs.minute, undefined),
+  lightTimer: timer(context, epochs.minute, undefined),
   motion: motion_(context, devices.motionSensor, 'security'),
 };
 

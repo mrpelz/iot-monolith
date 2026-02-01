@@ -12,7 +12,7 @@ import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
@@ -37,7 +37,10 @@ export const devices = {
 
 export const instances = {
   floodlightButton: devices.floodlight.button,
-  multiButton: devices.multiButton.state,
+  multiButtonBottomLeft: devices.multiButton.bottomLeft,
+  multiButtonBottomRight: devices.multiButton.bottomRight,
+  multiButtonTopLeft: devices.multiButton.topLeft,
+  multiButtonTopRight: devices.multiButton.topRight,
   wallswitchBottom: devices.wallswitch.button2,
   wallswitchMiddle: devices.wallswitch.button1,
   wallswitchTop: devices.wallswitch.button0,
@@ -46,7 +49,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   floodlight: devices.floodlight.relay,
-  floodlightTimer: offTimer(context, epochs.hour, undefined),
+  floodlightTimer: timer(context, epochs.hour, undefined),
   window: window(context, devices.windowSensor, 'security'),
 };
 
@@ -66,7 +69,10 @@ const $init: InitFunction = async (room, introspection) => {
 
   const {
     floodlightButton,
-    multiButton,
+    multiButtonBottomLeft,
+    multiButtonBottomRight,
+    multiButtonTopLeft,
+    multiButtonTopRight,
     wallswitchBottom,
     wallswitchMiddle,
     wallswitchTop,
@@ -131,24 +137,24 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  multiButton.topLeft.observe(() =>
+  multiButtonTopLeft.state.observe(() =>
     flipMain(ceilingLight, () =>
-      l(`${p(multiButton)} topLeft flipped ${p(ceilingLight)}`),
+      l(`${p(multiButtonTopLeft)} flipped ${p(ceilingLight)}`),
     ),
   );
 
-  multiButton.topRight.observe(() =>
+  multiButtonTopRight.state.observe(() =>
     flipMain(floodlight, () =>
-      l(`${p(multiButton)} topRight flipped ${p(floodlight)}`),
+      l(`${p(multiButtonTopRight)} flipped ${p(floodlight)}`),
     ),
   );
 
-  multiButton.bottomLeft.observe(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(multiButton)} bottomLeft`),
+  multiButtonBottomLeft.state.observe(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(multiButtonBottomLeft)}`),
   );
 
-  multiButton.bottomRight.observe(() =>
-    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(multiButton)} bottomRight`),
+  multiButtonBottomRight.state.observe(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(multiButtonBottomRight)}`),
   );
 
   wallswitchBottom.state.up(() =>

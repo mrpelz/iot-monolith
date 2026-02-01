@@ -12,6 +12,7 @@ import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
+  ReadOnlyNullState,
 } from '@mrpelz/observable/state';
 import { Timer } from '@mrpelz/observable/timer';
 
@@ -245,6 +246,16 @@ export const button = (context: Context, device: Device, index = 0) => {
     state: new Button(buttonEvent),
   };
 };
+
+export const buttonPrimitive = (
+  context: Context,
+  state: ReadOnlyNullState<unknown>,
+) => ({
+  $: 'buttonPrimitive' as const,
+  lastSeen: lastSeen(context, state),
+  level: Level.PROPERTY as const,
+  state,
+});
 
 export const door = <T extends string | undefined>(
   _: Context,

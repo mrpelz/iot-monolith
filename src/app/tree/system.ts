@@ -5,7 +5,7 @@ import { setMain } from '../../lib/tree/logic.js';
 import { Level } from '../../lib/tree/main.js';
 import { InitFunction } from '../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../lib/tree/operations/introspection.js';
-import { offTimer } from '../../lib/tree/properties/logic.js';
+import { timer } from '../../lib/tree/properties/logic.js';
 import { context } from '../context.js';
 import { logger, logicReasoningLevel } from '../logging.js';
 import { every5Seconds } from '../timings.js';
@@ -71,7 +71,7 @@ export const system = (async () => {
   const allLights = await allLights_;
   const allWindows = await allWindows_;
 
-  const allTimer = offTimer(context, epochs.day, true);
+  const allTimer = timer(context, epochs.day, true);
 
   const $init: InitFunction = (self, introspection) => {
     const p = makePathStringRetriever(introspection);

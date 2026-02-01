@@ -75,11 +75,16 @@ export const devices = {
 };
 
 export const instances = {
-  bedButton: devices.bedButton.state,
-  button: devices.button.state,
+  bedButtonLeft: devices.bedButton.left,
+  bedButtonMiddle: devices.bedButton.middle,
+  bedButtonRight: devices.bedButton.right,
+  button: devices.button.button,
   heatLampButton: devices.heatLamp.button,
   ionGeneratorButton: devices.ionGenerator.button,
-  multiButton: devices.multiButton.state,
+  multiButtonBottomLeft: devices.multiButton.bottomLeft,
+  multiButtonBottomRight: devices.multiButton.bottomRight,
+  multiButtonTopLeft: devices.multiButton.topLeft,
+  multiButtonTopRight: devices.multiButton.topRight,
   nightLightButton: devices.nightLight.button,
   standingLampButton: devices.standingLamp.button,
   wallswitchBed: devices.ceilingLight.button,
@@ -361,11 +366,16 @@ const sceneCycle = new EnumState(
 const $init: InitFunction = (room, introspection) => {
   const { allLights } = groups;
   const {
-    bedButton,
+    bedButtonLeft,
+    bedButtonMiddle,
+    bedButtonRight,
     button,
     heatLampButton,
     ionGeneratorButton,
-    multiButton,
+    multiButtonBottomLeft,
+    multiButtonBottomRight,
+    multiButtonTopLeft,
+    multiButtonTopRight,
     nightLightButton,
     standingLampButton,
     wallswitchBed,
@@ -399,26 +409,26 @@ const $init: InitFunction = (room, introspection) => {
     fn(cause);
   };
 
-  bedButton.left.observe(() => {
+  bedButtonLeft.state.observe(() => {
     if (!getMain(allLights)) {
       setMain(allRed, true, () =>
         l(
-          `${p(bedButton)} left turned on ${p(allRed)}, because ${p(allLights)} was off`,
+          `${p(bedButtonLeft)} turned on ${p(allRed)}, because ${p(allLights)} was off`,
         ),
       );
 
       return;
     }
 
-    l(`${p(bedButton)} left triggering sceneCycle to previous`);
+    l(`${p(bedButtonLeft)} triggering sceneCycle to previous`);
     sceneCycle.previous();
   });
 
-  bedButton.middle.observe(() => {
+  bedButtonMiddle.state.observe(() => {
     if (getMain(allLights)) {
       setMain(allLights, false, () =>
         l(
-          `${p(bedButton)} middle turned off ${p(allLights)}, because ${p(allLights)} was on`,
+          `${p(bedButtonMiddle)} turned off ${p(allLights)}, because ${p(allLights)} was on`,
         ),
       );
 
@@ -427,28 +437,28 @@ const $init: InitFunction = (room, introspection) => {
 
     setMain(onlyNightLight, true, () =>
       l(
-        `${p(bedButton)} middle turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
+        `${p(bedButtonMiddle)} turned on ${p(onlyNightLight)}, because ${p(allLights)} was off`,
       ),
     );
   });
 
-  bedButton.right.observe(() => {
+  bedButtonRight.state.observe(() => {
     if (!getMain(allLights)) {
       setMain(moodLight, true, () =>
         l(
-          `${p(bedButton)} middle turned on ${p(moodLight)}, because ${p(allLights)} was off`,
+          `${p(bedButtonRight)} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
         ),
       );
 
       return;
     }
 
-    l(`${p(bedButton)} right triggering sceneCycle to next`);
+    l(`${p(bedButtonRight)} triggering sceneCycle to next`);
 
     sceneCycle.next();
   });
 
-  button.one.observe(
+  button.state.observe(
     offOrElse(`${p(button)}`, (cause) =>
       setMain(onlyNightLight, true, () =>
         l(
@@ -458,8 +468,8 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.topLeft.observe(
-    offOrElse(`${p(multiButton)} topLeft`, (cause) =>
+  multiButtonTopLeft.state.observe(
+    offOrElse(`${p(multiButtonTopLeft)}`, (cause) =>
       setMain(moodLight, true, () =>
         l(
           `${cause} turned on ${p(moodLight)}, because ${p(allLights)} was off`,
@@ -468,8 +478,8 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.topRight.observe(
-    offOrElse(`${p(multiButton)} topRight`, (cause) =>
+  multiButtonTopRight.state.observe(
+    offOrElse(`${p(multiButtonTopRight)}`, (cause) =>
       setMain(ceilingLightPlus, true, () =>
         l(
           `${cause} turned on ${p(ceilingLightPlus)}, because ${p(allLights)} was off`,
@@ -478,13 +488,13 @@ const $init: InitFunction = (room, introspection) => {
     ),
   );
 
-  multiButton.bottomLeft.observe(() => {
-    l(`${p(multiButton)} bottomLeft triggering sceneCycle to previous`);
+  multiButtonBottomLeft.state.observe(() => {
+    l(`${p(multiButtonBottomLeft)} triggering sceneCycle to previous`);
     sceneCycle.previous();
   });
 
-  multiButton.bottomRight.observe(() => {
-    l(`${p(multiButton)} bottomRight triggering sceneCycle to next`);
+  multiButtonBottomRight.state.observe(() => {
+    l(`${p(multiButtonBottomRight)} triggering sceneCycle to next`);
     sceneCycle.next();
   });
 

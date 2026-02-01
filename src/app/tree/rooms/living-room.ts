@@ -27,7 +27,7 @@ import {
   SceneMember,
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
-import { offTimer } from '../../../lib/tree/properties/logic.js';
+import { timer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { every30Seconds } from '../../timings.js';
@@ -52,7 +52,10 @@ export const devices = {
 };
 
 export const instances = {
-  couchButton: devices.couchButton.state,
+  couchButtonBottomLeft: devices.couchButton.bottomLeft,
+  couchButtonBottomRight: devices.couchButton.bottomRight,
+  couchButtonTopLeft: devices.couchButton.topLeft,
+  couchButtonTopRight: devices.couchButton.topRight,
   standingLampButton: devices.standingLamp.button,
   wallswitchBottom: devices.wallswitch.button1,
   wallswitchTop: devices.wallswitch.button0,
@@ -61,15 +64,13 @@ export const instances = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
-  overrideTimer: offTimer(context, epochs.hour * 3, true),
+  overrideTimer: timer(context, epochs.hour * 3, true),
   standingLamp: devices.standingLamp.relay,
   terrariumLedRed: overriddenLed(
-    context,
     devices.terrariumLeds.ledB,
     isTerrariumLedsOverride,
   ),
   terrariumLedTop: overriddenLed(
-    context,
     devices.terrariumLeds.ledR,
     isTerrariumLedsOverride,
   ),
@@ -102,8 +103,15 @@ const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentBright, kitchenAdjacentChillax } =
     await import('../scenes.js');
 
-  const { couchButton, standingLampButton, wallswitchBottom, wallswitchTop } =
-    instances;
+  const {
+    couchButtonBottomLeft,
+    couchButtonBottomRight,
+    couchButtonTopLeft,
+    couchButtonTopRight,
+    standingLampButton,
+    wallswitchBottom,
+    wallswitchTop,
+  } = instances;
   const { standingLamp, overrideTimer, terrariumLedRed, terrariumLedTop } =
     properties;
   const { mediaOnOrSwitch, mediaOff, terrariumLedsOverride } = scenes;
@@ -152,23 +160,23 @@ const $init: InitFunction = async (room, introspection) => {
     );
   };
 
-  couchButton.topLeft.observe(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(couchButton)} topLeft`),
+  couchButtonTopLeft.state.observe(() =>
+    kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(couchButtonTopLeft)}`),
   );
 
-  couchButton.topRight.observe(() =>
-    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(couchButton)} topRight`),
+  couchButtonTopRight.state.observe(() =>
+    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(couchButtonTopRight)}`),
   );
 
-  couchButton.bottomLeft.observe(() =>
+  couchButtonBottomLeft.state.observe(() =>
     triggerMain(mediaOnOrSwitch, () =>
-      l(`${p(couchButton)} bottomLeft" triggered "${p(mediaOnOrSwitch)}`),
+      l(`${p(couchButtonBottomLeft)} triggered ${p(mediaOnOrSwitch)}`),
     ),
   );
 
-  couchButton.bottomRight.observe(() =>
+  couchButtonBottomRight.state.observe(() =>
     triggerMain(mediaOff, () =>
-      l(`${p(couchButton)} bottomRight" triggered "${p(mediaOff)}`),
+      l(`${p(couchButtonBottomRight)} bottomRight triggered ${p(mediaOff)}`),
     ),
   );
 

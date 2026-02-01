@@ -6,6 +6,7 @@ import { StatelessMultiValueEvent } from '../../items/event.js';
 import { Ev1527Transport } from '../../transport/ev1527.js';
 import { Context } from '../context.js';
 import { ev1527Device } from '../elements/device.js';
+import { buttonPrimitive } from '../properties/sensors.js';
 
 export const ev1527ButtonX4 = (
   address: number,
@@ -26,14 +27,13 @@ export const ev1527ButtonX4 = (
   ]);
 
   return {
+    $: 'ev1527ButtonX4' as const,
     $noMainReference: true as const,
+    bottomLeft: buttonPrimitive(context, one),
+    bottomRight: buttonPrimitive(context, two),
     device: ev1527Device(context, device),
-    state: {
-      bottomLeft: one,
-      bottomRight: two,
-      topLeft: three,
-      topRight: four,
-    },
+    topLeft: buttonPrimitive(context, three),
+    topRight: buttonPrimitive(context, four),
   };
 };
 
@@ -55,13 +55,12 @@ export const ev1527ButtonWP07 = (
   ]);
 
   return {
+    $: 'ev1527ButtonWP07' as const,
     $noMainReference: true as const,
     device: ev1527Device(context, device),
-    state: {
-      left: three,
-      middle: four,
-      right: two,
-    },
+    left: buttonPrimitive(context, three),
+    middle: buttonPrimitive(context, four),
+    right: buttonPrimitive(context, two),
   };
 };
 
@@ -75,10 +74,13 @@ export const ev1527ButtonX1 = (
   const device = new Ev1527Device(logger, transport, address);
 
   return {
+    $: 'ev1527ButtonX1' as const,
     $noMainReference: true as const,
+    button: buttonPrimitive(
+      context,
+      new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), ['one'])
+        .state.one,
+    ),
     device: ev1527Device(context, device),
-    state: new StatelessMultiValueEvent(device.addEvent(new Ev1527Button()), [
-      'one',
-    ]).state,
   };
 };

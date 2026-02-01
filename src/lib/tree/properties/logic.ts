@@ -18,7 +18,7 @@ import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 
-export const offTimer = (
+export const timer = (
   context: Context,
   time: number,
   enableFromStart = true,
@@ -27,7 +27,7 @@ export const offTimer = (
 
   const { persistence } = context;
 
-  const timer = new Timer(time, enableFromStart);
+  const timer_ = new Timer(time, enableFromStart);
 
   const $init: InitFunction = (self, introspection) => {
     if (!persistence) return;
@@ -35,8 +35,8 @@ export const offTimer = (
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
 
-    persistence.observe(mainReference.pathString, timer.isEnabled);
-    persistence.observe(`${mainReference.pathString}.time`, timer.time);
+    persistence.observe(mainReference.pathString, timer_.isEnabled);
+    persistence.observe(`${mainReference.pathString}.time`, timer_.time);
   };
 
   return {
@@ -44,40 +44,40 @@ export const offTimer = (
     $init,
     active: {
       cancel: {
-        main: trigger(ValueType.NULL, new NullState(() => timer.stop())),
+        main: trigger(ValueType.NULL, new NullState(() => timer_.stop())),
       },
-      main: getter(ValueType.BOOLEAN, timer.isActive),
+      main: getter(ValueType.BOOLEAN, timer_.isActive),
       reset: {
-        main: trigger(ValueType.NULL, new NullState(() => timer.start())),
+        main: trigger(ValueType.NULL, new NullState(() => timer_.start())),
       },
     },
     flip: {
       main: trigger(
         ValueType.NULL,
-        new NullState(() => timer.isEnabled.flip()),
+        new NullState(() => timer_.isEnabled.flip()),
       ),
     },
     level: Level.PROPERTY as const,
-    main: setter(ValueType.BOOLEAN, timer.isEnabled, undefined, 'on'),
-    runoutTime: { main: getter(ValueType.NUMBER, timer.runoutTime, 'date') },
-    state: timer,
+    main: setter(ValueType.BOOLEAN, timer_.isEnabled, undefined, 'on'),
+    runoutTime: { main: getter(ValueType.NUMBER, timer_.runoutTime, 'date') },
+    state: timer_,
     time: {
       initialTime: time,
       isChanged: {
         main: getter(
           ValueType.BOOLEAN,
-          new ReadOnlyProxyObservable(timer.time, (value) => value !== time),
+          new ReadOnlyProxyObservable(timer_.time, (value) => value !== time),
         ),
       },
-      main: setter(ValueType.NUMBER, timer.time),
+      main: setter(ValueType.NUMBER, timer_.time),
       reset: {
         main: trigger(
           ValueType.NULL,
-          new NullState(() => (timer.time.value = time)),
+          new NullState(() => (timer_.time.value = time)),
         ),
       },
     },
-    triggerTime: { main: getter(ValueType.NUMBER, timer.triggerTime, 'date') },
+    triggerTime: { main: getter(ValueType.NUMBER, timer_.triggerTime, 'date') },
   };
 };
 
@@ -93,11 +93,11 @@ export const scheduledRamp = (
   const progress = new Observable(0);
 
   let startTime = 0;
-  let timer: NodeJS.Timeout | null = null;
+  let timer_: NodeJS.Timeout | null = null;
 
   const handleStop = () => {
-    if (timer) {
-      clearInterval(timer);
+    if (timer_) {
+      clearInterval(timer_);
     }
 
     startTime = 0;
@@ -122,7 +122,7 @@ export const scheduledRamp = (
 
   schedule.addTask(() => {
     startTime = Date.now();
-    timer = setInterval(handleRefresh, refresh);
+    timer_ = setInterval(handleRefresh, refresh);
 
     handleRefresh();
   });
