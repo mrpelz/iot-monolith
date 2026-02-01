@@ -230,8 +230,6 @@ export const automatedInputLogic = (
   const timerAutomation = timer(context, timeoutAutomation);
 
   const $init: InitFunction = async (object, introspection) => {
-    let overrideEnable = false;
-
     const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
     const l = makeCustomStringLogger(
@@ -249,9 +247,7 @@ export const automatedInputLogic = (
     output.main.setState.observe((value) => {
       if (value) return;
 
-      overrideEnable = true;
       automationEnableStateManual.value = false;
-      overrideEnable = false;
 
       l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
       timerOutput.state.stop();
@@ -308,17 +304,10 @@ export const automatedInputLogic = (
 
       timerOutput.state.stop();
 
-      if (overrideEnable) return;
+      if (!value) return;
 
-      if (value) {
-        l(`${p(automationEnable)} turned on, stopping ${p(timerAutomation)}`);
-        timerAutomation.state.stop();
-      } else {
-        l(
-          `${p(automationEnable)} turned off, (re)starting ${p(timerAutomation)}`,
-        );
-        timerAutomation.state.start();
-      }
+      l(`${p(automationEnable)} turned on, stopping ${p(timerAutomation)}`);
+      timerAutomation.state.stop();
     }, true);
 
     timerOutput.state.observe(() => {
