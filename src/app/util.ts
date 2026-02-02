@@ -296,23 +296,13 @@ export const automatedInputLogic = (
         }
 
         if (value) {
-          l(`${p(input)} turned true, priming`);
-          prime = true;
-
           if (!output.main.state.value) {
             l(
-              `${p(input)} turned true with output off, turning on ${p(output)}`,
+              `${p(input)} turned true with output off, turning on ${p(output)} and priming`,
             );
 
+            prime = true;
             output.main.setState.value = true;
-          }
-
-          if (timerOutput.state.isActive.value) {
-            l(
-              `${p(input)} turned true with timer running, stopping ${p(timerOutput)}`,
-            );
-
-            timerOutput.state.stop();
           }
 
           return;
