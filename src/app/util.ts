@@ -239,7 +239,7 @@ export const automatedInputLogic = (
 
   const $init: InitFunction = async (object, introspection) => {
     let upstart = true;
-    sleep(1000).then(() => (upstart = false));
+    sleep(5000).then(() => (upstart = false));
 
     let outputSetterSourceIsTimerRunningOut = false;
 
@@ -308,7 +308,17 @@ export const automatedInputLogic = (
           return;
         }
 
-        if (!prime) return;
+        if (!prime) {
+          if (output.main.setState.value && timerOutput.state.isActive.value) {
+            l(
+              `${p(input)} turned false, ${p(output)} is on and is timer is running, restarting ${p(timerOutput)}`,
+            );
+
+            timerOutput.state.start();
+          }
+
+          return;
+        }
         prime = false;
 
         if (output.main.setState.value && timerOutput.state.isEnabled.value) {
