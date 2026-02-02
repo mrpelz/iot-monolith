@@ -289,10 +289,18 @@ export const automatedInputLogic = (
         if (value) {
           if (!output.main.state.value) {
             l(
-              `${p(input)} turned ${JSON.stringify(value)} with output off, turning on ${p(output)}`,
+              `${p(input)} turned true with output off, turning on ${p(output)}`,
             );
 
             output.main.setState.value = true;
+          }
+
+          if (timerOutput.state.isActive.value) {
+            l(
+              `${p(input)} turned true with timer running, stopping ${p(timerOutput)}`,
+            );
+
+            timerOutput.state.stop();
           }
 
           return;
@@ -300,7 +308,7 @@ export const automatedInputLogic = (
 
         if (output.main.setState.value && timerOutput.state.isEnabled.value) {
           l(
-            `${p(input)} turned ${JSON.stringify(value)}, ${p(output)} is on and timer is enabled, (re)starting ${p(timerOutput)}`,
+            `${p(input)} turned false, ${p(output)} is on and timer is enabled, (re)starting ${p(timerOutput)}`,
           );
 
           timerOutput.state.start();
@@ -325,7 +333,7 @@ export const automatedInputLogic = (
     automationEnableState.observe((value) => {
       if (timerOutput.state.isActive.value) {
         l(
-          `${p(automationEnable)} triggered with timer active, stopping ${p(timerOutput)}`,
+          `${p(automationEnable)} triggered with timer running, stopping ${p(timerOutput)}`,
         );
 
         timerOutput.state.stop();
@@ -345,7 +353,7 @@ export const automatedInputLogic = (
 
       if (timerAutomation.state.isActive.value) {
         l(
-          `${p(automationEnable)} turned on with timer active, stopping ${p(timerAutomation)}`,
+          `${p(automationEnable)} turned on with timer running, stopping ${p(timerAutomation)}`,
         );
         timerAutomation.state.stop();
       }
