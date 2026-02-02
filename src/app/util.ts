@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
 import {
   AnyWritableObservable,
@@ -230,6 +231,11 @@ export const automatedInputLogic = (
   const timerAutomation = timer(context, timeoutAutomation);
 
   const $init: InitFunction = async (object, introspection) => {
+    let upstart = true;
+    sleep(1000).then(() => (upstart = false));
+
+    let outputSetterSourceIsTimerRunningOut = false;
+
     const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
     const l = makeCustomStringLogger(
@@ -247,10 +253,25 @@ export const automatedInputLogic = (
     output.main.setState.observe((value) => {
       if (value) return;
 
-      automationEnableStateManual.value = false;
+      if (
+        !upstart &&
+        !outputSetterSourceIsTimerRunningOut &&
+        automationEnableState.value
+      ) {
+        l(
+          `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnable)}`,
+        );
+        automationEnableStateManual.value = false;
+      }
 
-      l(`${p(output)} was turned off, stopping ${p(timerOutput)}`);
-      timerOutput.state.stop();
+      outputSetterSourceIsTimerRunningOut = false;
+
+      if (timerOutput.state.isActive.value) {
+        l(
+          `${p(output)} was turned off with timer running, stopping ${p(timerOutput)}`,
+        );
+        timerOutput.state.stop();
+      }
     }, true);
 
     for (const input of inputsAutomated) {
@@ -266,18 +287,20 @@ export const automatedInputLogic = (
         }
 
         if (value) {
-          l(
-            `${p(input)} turned ${JSON.stringify(value)}, turning on ${p(output)}`,
-          );
+          if (!output.main.state.value) {
+            l(
+              `${p(input)} turned ${JSON.stringify(value)} with output off, turning on ${p(output)}`,
+            );
 
-          output.main.setState.value = true;
+            output.main.setState.value = true;
+          }
 
           return;
         }
 
-        if (output.main.setState.value) {
+        if (output.main.setState.value && timerOutput.state.isEnabled.value) {
           l(
-            `${p(input)} turned ${JSON.stringify(value)} and ${p(output)} is on, (re)starting ${p(timerOutput)}`,
+            `${p(input)} turned ${JSON.stringify(value)}, ${p(output)} is on and timer is enabled, (re)starting ${p(timerOutput)}`,
           );
 
           timerOutput.state.start();
@@ -300,20 +323,41 @@ export const automatedInputLogic = (
     }
 
     automationEnableState.observe((value) => {
-      l(`${p(automationEnable)} triggered, stopping ${p(timerOutput)}`);
+      if (timerOutput.state.isActive.value) {
+        l(
+          `${p(automationEnable)} triggered with timer active, stopping ${p(timerOutput)}`,
+        );
 
-      timerOutput.state.stop();
+        timerOutput.state.stop();
+      }
 
-      if (!value) return;
+      if (!value) {
+        if (timerAutomation.state.isEnabled) {
+          l(
+            `${p(automationEnable)} turned off with timer enabled, (re)starting ${p(timerAutomation)}`,
+          );
 
-      l(`${p(automationEnable)} turned on, stopping ${p(timerAutomation)}`);
-      timerAutomation.state.stop();
+          timerAutomation.state.start();
+        }
+
+        return;
+      }
+
+      if (timerAutomation.state.isActive.value) {
+        l(
+          `${p(automationEnable)} turned on with timer active, stopping ${p(timerAutomation)}`,
+        );
+        timerAutomation.state.stop();
+      }
     }, true);
 
     timerOutput.state.observe(() => {
-      l(`${p(timerOutput)} ran out, turning off ${p(output)}`);
+      if (output.main.state.value) {
+        l(`${p(timerOutput)} ran out with output on, turning off ${p(output)}`);
 
-      output.main.setState.value = false;
+        outputSetterSourceIsTimerRunningOut = true;
+        output.main.setState.value = false;
+      }
     });
 
     for (const input of inputsManual) {
@@ -337,9 +381,13 @@ export const automatedInputLogic = (
     }
 
     timerAutomation.state.observe(() => {
-      l(`${p(timerAutomation)} ran out, turning on ${p(automationEnable)}`);
+      if (!automationEnableStateManual.value) {
+        l(
+          `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnable)}`,
+        );
 
-      automationEnableStateManual.value = true;
+        automationEnableStateManual.value = true;
+      }
     });
 
     automationEnableSchedule?.addTask(() => {

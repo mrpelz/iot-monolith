@@ -17,6 +17,7 @@ export class Persistence {
     AnyWritableObservable<unknown>
   >();
 
+  private _pastPersistValues = {} as Record<string, unknown>;
   private readonly _path: string;
 
   constructor(path: string, schedule: Schedule, logger: Logger) {
@@ -52,10 +53,14 @@ export class Persistence {
         for (const [identifier, observable] of this._observables.entries()) {
           const value = observable.value;
 
-          this._log.info(
-            () =>
-              `persisting "${identifier}" with value ${JSON.stringify(value)}`,
-          );
+          const past = this._pastPersistValues[identifier];
+
+          if (past !== value) {
+            this._log.info(
+              () =>
+                `persisting "${identifier}" with value ${JSON.stringify(value)}`,
+            );
+          }
 
           result[identifier] = value;
         }
@@ -70,6 +75,8 @@ export class Persistence {
       }
     })();
     if (!persistValues) return;
+
+    this._pastPersistValues = persistValues;
 
     const persistPayload = (() => {
       try {
@@ -89,6 +96,8 @@ export class Persistence {
     try {
       mkdirSync(dirname(this._path), { recursive: true });
       writeFileSync(this._path, persistPayload);
+
+      this._log.info(() => 'persisted values');
     } catch (_error) {
       const error = new Error('cannot persist on file system', {
         cause: _error,
@@ -133,5 +142,7 @@ export class Persistence {
 
       observable.value = value;
     }
+
+    this._pastPersistValues = restoreValues;
   }
 }
