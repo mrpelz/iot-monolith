@@ -266,7 +266,7 @@ export const automatedInputLogic = (
         automationEnableState.value
       ) {
         l(
-          `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnable)}`,
+          `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnableManual)}`,
         );
         automationEnableManualState.value = false;
       }
