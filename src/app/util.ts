@@ -406,7 +406,7 @@ export const automatedInputLogic = (
     timerAutomation.state.observe(() => {
       if (!automationEnableManualState.value) {
         l(
-          `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnable)}`,
+          `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnableManual)}`,
         );
 
         automationEnableManualState.value = true;
