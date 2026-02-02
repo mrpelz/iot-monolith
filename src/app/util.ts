@@ -18,6 +18,7 @@ import sunCalc from 'suncalc';
 
 import { makeCustomStringLogger } from '../lib/log.js';
 import { Schedule } from '../lib/schedule.js';
+import { getter } from '../lib/tree/elements/getter.js';
 import { setter } from '../lib/tree/elements/setter.js';
 import { trigger } from '../lib/tree/elements/trigger.js';
 import { ValueType } from '../lib/tree/main.js';
@@ -28,8 +29,6 @@ import {
   ledGrouping,
   output as output_,
   outputGrouping,
-  scene,
-  SceneMember,
 } from '../lib/tree/properties/actuators.js';
 import { timer } from '../lib/tree/properties/logic.js';
 import {
@@ -214,17 +213,25 @@ export const automatedInputLogic = (
 ) => {
   const $ = 'automatedInputLogic' as const;
 
-  const automationEnableStateManual = new BooleanState(true);
-  const automationEnableStateScheduled = new BooleanState(true);
-  const automationEnableState = new BooleanStateGroup(
-    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-    [automationEnableStateManual, automationEnableStateScheduled],
+  const automationEnableManualState = new BooleanState(true);
+  const automationEnableManual = setter(
+    ValueType.BOOLEAN,
+    automationEnableManualState,
   );
 
-  const automationEnable = scene(
-    context,
-    [new SceneMember(automationEnableStateManual, true, false)],
-    'automation',
+  const automationEnableScheduledState = new BooleanState(true);
+  const automationEnableScheduled = getter(
+    ValueType.BOOLEAN,
+    new ReadOnlyObservable(automationEnableScheduledState),
+  );
+
+  const automationEnableState = new BooleanStateGroup(
+    BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+    [automationEnableManualState, automationEnableScheduledState],
+  );
+  const automationEnable = getter(
+    ValueType.BOOLEAN,
+    new ReadOnlyObservable(automationEnableState),
   );
 
   const timerOutput = timer(context, timeoutOutput);
@@ -247,7 +254,7 @@ export const automatedInputLogic = (
 
     const automationEnablePath = p(automationEnable);
     if (automationEnablePath) {
-      persistence.observe(automationEnablePath, automationEnableStateScheduled);
+      persistence.observe(automationEnablePath, automationEnableManualState);
     }
 
     output.main.setState.observe((value) => {
@@ -261,7 +268,7 @@ export const automatedInputLogic = (
         l(
           `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnable)}`,
         );
-        automationEnableStateManual.value = false;
+        automationEnableManualState.value = false;
       }
 
       outputSetterSourceIsTimerRunningOut = false;
@@ -275,6 +282,8 @@ export const automatedInputLogic = (
     }, true);
 
     for (const input of inputsAutomated) {
+      let prime = false;
+
       const fn = (value: boolean | null) => {
         l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
@@ -287,6 +296,9 @@ export const automatedInputLogic = (
         }
 
         if (value) {
+          l(`${p(input)} turned true, priming`);
+          prime = true;
+
           if (!output.main.state.value) {
             l(
               `${p(input)} turned true with output off, turning on ${p(output)}`,
@@ -306,9 +318,12 @@ export const automatedInputLogic = (
           return;
         }
 
+        if (!prime) return;
+        prime = false;
+
         if (output.main.setState.value && timerOutput.state.isEnabled.value) {
           l(
-            `${p(input)} turned false, ${p(output)} is on and timer is enabled, (re)starting ${p(timerOutput)}`,
+            `${p(input)} turned false, ${p(output)} is on, timer is enabled and this logic was primed by true state from the same input before, (re)starting ${p(timerOutput)}`,
           );
 
           timerOutput.state.start();
@@ -389,32 +404,36 @@ export const automatedInputLogic = (
     }
 
     timerAutomation.state.observe(() => {
-      if (!automationEnableStateManual.value) {
+      if (!automationEnableManualState.value) {
         l(
           `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnable)}`,
         );
 
-        automationEnableStateManual.value = true;
+        automationEnableManualState.value = true;
       }
     });
 
     automationEnableSchedule?.addTask(() => {
       l(`scheduled activation of ${p(automationEnable)} logic`);
 
-      automationEnableStateScheduled.value = true;
+      automationEnableScheduledState.value = true;
     });
 
     automationDisableSchedule?.addTask(() => {
       l(`scheduled deactivation of ${p(automationEnable)} logic`);
 
-      automationEnableStateScheduled.value = false;
+      automationEnableScheduledState.value = false;
     });
   };
 
   return {
     $,
     $init,
-    automationEnable,
+    automationEnable: {
+      main: automationEnable,
+      manual: automationEnableManual,
+      scheduled: automationEnableScheduled,
+    },
     internal: {
       $noMainReference: true as const,
       inputsAutomated,
