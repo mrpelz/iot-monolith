@@ -4,6 +4,7 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
+import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
@@ -54,6 +55,10 @@ export const devices = {
     'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud',
     context,
   ),
+  motionSensor: motionSensor(
+    'mrpelzbathroommotionsensor.lan.wurstsalat.cloud',
+    context,
+  ),
   nightLight: sonoffBasic(
     'lighting' as const,
     'mrpelzbathroom-nightlight.lan.wurstsalat.cloud',
@@ -84,7 +89,7 @@ export const properties = {
   mirrorHeatingTimer: timer(context, epochs.minute * 15, true),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
-  motion: devices.ceilingLight.input,
+  motion: devices.motionSensor.motion,
   nightLight: devices.nightLight.relay,
 };
 
