@@ -298,7 +298,7 @@ export const hello = (
 export const input = <T extends string | undefined>(
   context: Context,
   device: Device,
-  index = 0,
+  index: number,
   topic: T,
 ) => {
   const $ = 'input' as const;

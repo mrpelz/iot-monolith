@@ -4,7 +4,7 @@ import { UDPDevice } from '../../device/udp.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
 import { output } from '../properties/actuators.js';
-import { button } from '../properties/sensors.js';
+import { button, input } from '../properties/sensors.js';
 
 export const shelly1 = <T extends string>(
   topic: T,
@@ -21,6 +21,7 @@ export const shelly1 = <T extends string>(
     $noMainReference: true as const,
     button: button(context, device, 0),
     device: ipDevice(context, device, false, undefined, initiallyOnline),
+    input: input(context, device, 0, 'input'),
     relay: output(context, device, 0, topic, undefined),
   };
 };

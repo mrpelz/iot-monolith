@@ -84,6 +84,7 @@ export const properties = {
   mirrorHeatingTimer: timer(context, epochs.minute * 15, true),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
+  motion: devices.ceilingLight.input,
   nightLight: devices.nightLight.relay,
 };
 
