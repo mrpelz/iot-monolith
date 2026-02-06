@@ -170,7 +170,7 @@ export const scenes = {
 };
 
 export const logic = {
-  automatedLightLogic: (() => {
+  autoLightLogic: (() => {
     const $ = 'automatedInputLogic' as const;
 
     const { allThings: output } = groups;

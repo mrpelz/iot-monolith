@@ -339,7 +339,12 @@ export const scene = <T extends string>(
       new ProxyObservable<U, boolean>(
         observable,
         (value) => value === onValue,
-        (on) => (on ? onValue : offValue),
+        (on) => {
+          const target = on ? onValue : offValue;
+
+          if (observable.value === target) return ProxyObservable.doNotSet;
+          return target;
+        },
       ),
   );
 
