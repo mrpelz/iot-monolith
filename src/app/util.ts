@@ -252,7 +252,7 @@ export const automatedInputLogic = (
       logicReasoningLevel,
     );
 
-    const automationEnablePath = p(automationEnable);
+    const automationEnablePath = p(automationEnableManual);
     if (automationEnablePath) {
       persistence.observe(automationEnablePath, automationEnableManualState);
     }
@@ -296,7 +296,7 @@ export const automatedInputLogic = (
         }
 
         if (value) {
-          if (!output.main.state.value) {
+          if (!output.main.setState.value) {
             l(
               `${p(input)} turned true with output off, turning on ${p(output)} and priming`,
             );
@@ -375,7 +375,7 @@ export const automatedInputLogic = (
     }, true);
 
     timerOutput.state.observe(() => {
-      if (output.main.state.value) {
+      if (output.main.setState.value) {
         l(`${p(timerOutput)} ran out with output on, turning off ${p(output)}`);
 
         outputSetterSourceIsTimerRunningOut = true;

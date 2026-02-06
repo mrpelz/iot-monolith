@@ -3,9 +3,8 @@ import { ModifiableDate, Unit } from '@mrpelz/modifiable-date';
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { Schedule } from '../../../lib/schedule.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
+import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
@@ -25,16 +24,12 @@ export const devices = {
     'hallway-ceilinglightback.lan.wurstsalat.cloud',
     context,
   ),
-  ceilingLightFront: shelly1(
+  ceilingLightFront: shelly1WithInput(
     'lighting' as const,
     'hallway-ceilinglightfront.lan.wurstsalat.cloud',
     context,
   ),
   doorSensor: ev1527WindowSensor(55_024, ev1527Transport, context),
-  motionSensor: motionSensor(
-    'hallwaymotionsensor.lan.wurstsalat.cloud',
-    context,
-  ),
   wallswitchBack: shellyi3(
     'hallway-wallswitchback.lan.wurstsalat.cloud',
     context,
@@ -57,7 +52,7 @@ export const properties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
   entryDoor: door(context, devices.doorSensor, 'security'),
-  motion: devices.motionSensor.motion,
+  motion: devices.ceilingLightFront.input,
 };
 
 export const groups = {
