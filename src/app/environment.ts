@@ -12,6 +12,7 @@ export const { version } = ensureKeys(
 );
 
 const {
+  CONNECT_EXCEPT,
   CONNECT,
   LOG_LEVEL,
   LOG_TELEGRAM,
@@ -27,6 +28,7 @@ if (!PERSISTENCE_PATH) {
   process.exit(1);
 }
 
+export const connectExcept = CONNECT_EXCEPT ? CONNECT_EXCEPT.split(',') : [];
 export const connect = CONNECT ? Boolean(parse(CONNECT)) : false;
 export const isProd = NODE_ENV === 'production';
 export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : undefined;

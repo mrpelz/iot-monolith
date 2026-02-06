@@ -5,6 +5,7 @@ import { Timings } from './properties/sensors.js';
 
 export type Context = {
   connect: boolean;
+  connectExcept: string[];
   logger: Logger;
   metrics: Metrics;
   persistence: Persistence;

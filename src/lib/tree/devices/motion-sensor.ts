@@ -9,7 +9,7 @@ export const motionSensor = (
   host: string,
   context: Context,
   port = 1337,
-  initiallyOnline = context.connect,
+  initiallyOnline?: boolean,
 ) => {
   const { logger } = context;
 

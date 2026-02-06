@@ -46,7 +46,8 @@ export const ipDevice = <S extends boolean>(
   device: TCPDevice | UDPDevice,
   isSubDevice: S,
   indicator?: Indicator,
-  initiallyOnline = false,
+  initiallyOnline = context.connect &&
+    !context.connectExcept.includes(device.transport.host),
 ) => {
   const { timings } = context;
 

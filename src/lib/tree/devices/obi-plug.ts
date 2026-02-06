@@ -12,7 +12,7 @@ export const obiPlug = <T extends string>(
   host: string,
   context: Context,
   port = 1337,
-  initiallyOnline = context.connect,
+  initiallyOnline?: boolean,
 ) => {
   const { logger } = context;
 
