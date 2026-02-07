@@ -332,10 +332,10 @@ export const logic = {
         }
       }
 
-      automationEnableState.observe((value) => {
+      automationEnableManualState.observe((value) => {
         if (timerOutput.state.isActive.value) {
           l(
-            `${p(automationEnable)} triggered with timer running, stopping ${p(timerOutput)}`,
+            `${p(automationEnableManual)} triggered with timer running, stopping ${p(timerOutput)}`,
           );
 
           timerOutput.state.stop();
@@ -344,7 +344,7 @@ export const logic = {
         if (!value) {
           if (timerAutomation.state.isEnabled) {
             l(
-              `${p(automationEnable)} turned off with timer enabled, (re)starting ${p(timerAutomation)}`,
+              `${p(automationEnableManual)} turned off with timer enabled, (re)starting ${p(timerAutomation)}`,
             );
 
             timerAutomation.state.start();
@@ -355,7 +355,7 @@ export const logic = {
 
         if (timerAutomation.state.isActive.value) {
           l(
-            `${p(automationEnable)} turned on with timer running, stopping ${p(timerAutomation)}`,
+            `${p(automationEnableManual)} turned on with timer running, stopping ${p(timerAutomation)}`,
           );
           timerAutomation.state.stop();
         }
