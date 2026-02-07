@@ -32,6 +32,7 @@ import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { persistence } from '../../persistence.js';
+import { epoch30Seconds } from '../../timings.js';
 import {
   isAstronomicalTwilight,
   isCivilTwilight,
@@ -248,8 +249,8 @@ export const logic = {
       new ReadOnlyObservable(automationEnableState),
     );
 
-    const timerOutput = timer(context, epochs.minute * 3);
-    const timerAutomation = timer(context, epochs.minute * 10);
+    const timerOutput = timer(context, epochs.minute * 15);
+    const timerAutomation = timer(context, epoch30Seconds);
 
     const $init: InitFunction = async (object, introspection) => {
       let upstart = true;

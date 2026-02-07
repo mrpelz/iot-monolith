@@ -42,7 +42,7 @@ import {
 import { context } from './context.js';
 import { logger, logicReasoningLevel } from './logging.js';
 import { persistence } from './persistence.js';
-import { every5Seconds } from './timings.js';
+import { epoch30Seconds, every5Seconds } from './timings.js';
 
 export const LATITUDE = 53.547_47;
 export const LONGITUDE = 10.015_98;
@@ -206,8 +206,8 @@ export const automatedInputLogic = (
     | ReturnType<typeof button>
     | ReturnType<typeof buttonPrimitive>
   )[],
-  timeoutOutput = epochs.minute * 3,
-  timeoutAutomation = epochs.minute * 10,
+  timeoutOutput = epochs.minute * 15,
+  timeoutAutomation = epoch30Seconds,
   automationEnableSchedule?: Schedule,
   automationDisableSchedule?: Schedule,
 ) => {
