@@ -1,6 +1,11 @@
 import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
-import { BooleanState } from '@mrpelz/observable/state';
+import { ReadOnlyObservable } from '@mrpelz/observable';
+import {
+  BooleanGroupStrategy,
+  BooleanState,
+  BooleanStateGroup,
+} from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -10,6 +15,7 @@ import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { getter } from '../../../lib/tree/elements/getter.js';
 import { setter } from '../../../lib/tree/elements/setter.js';
 import { flipMain, setMain } from '../../../lib/tree/logic.js';
 import { Level, ValueType } from '../../../lib/tree/main.js';
@@ -182,8 +188,26 @@ export const logic = {
       instances.wallswitchMirrorBottom,
     ];
 
-    const automationEnableState = new BooleanState(true);
-    const automationEnable = setter(ValueType.BOOLEAN, automationEnableState);
+    const automationEnableManualState = new BooleanState(true);
+    const automationEnableManual = setter(
+      ValueType.BOOLEAN,
+      automationEnableManualState,
+    );
+
+    const automationEnablePermanentState = new BooleanState(true);
+    const automationEnablePermanent = setter(
+      ValueType.BOOLEAN,
+      automationEnablePermanentState,
+    );
+
+    const automationEnableState = new BooleanStateGroup(
+      BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
+      [automationEnableManualState, automationEnablePermanentState],
+    );
+    const automationEnable = getter(
+      ValueType.BOOLEAN,
+      new ReadOnlyObservable(automationEnableState),
+    );
 
     const timerOutput = timer(context, epochs.minute * 3);
     const timerAutomation = timer(context, epochs.minute * 10);
@@ -203,9 +227,20 @@ export const logic = {
         logicReasoningLevel,
       );
 
-      const automationEnablePath = p(automationEnable);
-      if (automationEnablePath) {
-        persistence.observe(automationEnablePath, automationEnableState);
+      const automationEnableManualPath = p(automationEnableManual);
+      if (automationEnableManualPath) {
+        persistence.observe(
+          automationEnableManualPath,
+          automationEnableManualState,
+        );
+      }
+
+      const automationEnablePermanentPath = p(automationEnablePermanent);
+      if (automationEnablePermanentPath) {
+        persistence.observe(
+          automationEnablePermanentPath,
+          automationEnablePermanentState,
+        );
       }
 
       output.main.setState.observe((value) => {
@@ -219,7 +254,7 @@ export const logic = {
           l(
             `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnable)}`,
           );
-          automationEnableState.value = false;
+          automationEnableManualState.value = false;
         }
 
         outputSetterSourceIsTimerRunningOut = false;
@@ -372,12 +407,12 @@ export const logic = {
       }
 
       timerAutomation.state.observe(() => {
-        if (!automationEnableState.value) {
+        if (!automationEnableManualState.value) {
           l(
             `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnable)}`,
           );
 
-          automationEnableState.value = true;
+          automationEnableManualState.value = true;
         }
       });
     };
@@ -387,6 +422,8 @@ export const logic = {
       $init,
       automationEnable: {
         main: automationEnable,
+        manual: automationEnableManual,
+        permanent: automationEnablePermanent,
       },
       internal: {
         $noMainReference: true as const,

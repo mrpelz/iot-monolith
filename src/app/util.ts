@@ -219,6 +219,12 @@ export const automatedInputLogic = (
     automationEnableManualState,
   );
 
+  const automationEnablePermanentState = new BooleanState(true);
+  const automationEnablePermanent = setter(
+    ValueType.BOOLEAN,
+    automationEnablePermanentState,
+  );
+
   const automationEnableScheduledState = new BooleanState(true);
   const automationEnableScheduled = getter(
     ValueType.BOOLEAN,
@@ -227,7 +233,11 @@ export const automatedInputLogic = (
 
   const automationEnableState = new BooleanStateGroup(
     BooleanGroupStrategy.IS_TRUE_IF_ALL_TRUE,
-    [automationEnableManualState, automationEnableScheduledState],
+    [
+      automationEnableManualState,
+      automationEnablePermanentState,
+      automationEnableScheduledState,
+    ],
   );
   const automationEnable = getter(
     ValueType.BOOLEAN,
@@ -252,9 +262,20 @@ export const automatedInputLogic = (
       logicReasoningLevel,
     );
 
-    const automationEnablePath = p(automationEnableManual);
-    if (automationEnablePath) {
-      persistence.observe(automationEnablePath, automationEnableManualState);
+    const automationEnableManualPath = p(automationEnableManual);
+    if (automationEnableManualPath) {
+      persistence.observe(
+        automationEnableManualPath,
+        automationEnableManualState,
+      );
+    }
+
+    const automationEnablePermanentPath = p(automationEnablePermanent);
+    if (automationEnablePermanentPath) {
+      persistence.observe(
+        automationEnablePermanentPath,
+        automationEnablePermanentState,
+      );
     }
 
     output.main.setState.observe((value) => {
@@ -432,6 +453,7 @@ export const automatedInputLogic = (
     automationEnable: {
       main: automationEnable,
       manual: automationEnableManual,
+      permanent: automationEnablePermanent,
       scheduled: automationEnableScheduled,
     },
     internal: {
