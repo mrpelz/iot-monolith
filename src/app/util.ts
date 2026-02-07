@@ -279,7 +279,7 @@ export const automatedInputLogic = (
         );
         timerOutput.state.stop();
       }
-    }, true);
+    });
 
     for (const input of inputsAutomated) {
       let prime = false;
