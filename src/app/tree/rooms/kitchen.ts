@@ -41,7 +41,7 @@ export const properties = {
   ledRightCWhite: devices.ledsRight.ledB,
   ledRightFloodlight: devices.ledsRight.ledW1,
   ledRightWWhite: devices.ledsRight.ledG,
-  window: window(context, devices.windowSensor, 'security'),
+  window: window(context, devices.windowSensor, 'open'),
 };
 
 export const groups = {
@@ -53,7 +53,7 @@ export const groups = {
     properties.ledRightFloodlight,
     properties.ledRightWWhite,
   ]),
-  allWindows: inputGrouping(context, [properties.window], 'security'),
+  allWindows: inputGrouping(context, [properties.window], 'open'),
   cWhite: ledGrouping(context, [
     properties.ledLeftCWhite,
     properties.ledRightCWhite,

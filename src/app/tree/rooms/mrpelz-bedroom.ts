@@ -112,8 +112,8 @@ export const properties = {
   standingLamp: devices.standingLamp.relay,
   temperature: devices.roomSensor.temperature,
   tvoc: devices.roomSensor.tvoc,
-  windowLeft: window(context, devices.windowSensorLeft, 'security'),
-  windowRight: window(context, devices.windowSensorRight, 'security'),
+  windowLeft: window(context, devices.windowSensorLeft, 'open'),
+  windowRight: window(context, devices.windowSensorRight, 'open'),
 };
 
 export const groups = {
@@ -155,7 +155,7 @@ export const groups = {
   allWindows: inputGrouping(
     context,
     [properties.windowLeft, properties.windowRight],
-    'security',
+    'open',
   ),
   bookshelfLedWWhite: ledGrouping(context, [
     properties.bookshelfLedDown,

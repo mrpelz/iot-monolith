@@ -50,7 +50,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   floodlight: devices.floodlight.relay,
   floodlightTimer: timer(context, epochs.hour, undefined),
-  window: window(context, devices.windowSensor, 'security'),
+  window: window(context, devices.windowSensor, 'open'),
 };
 
 export const groups = {
@@ -59,7 +59,7 @@ export const groups = {
     [properties.ceilingLight, properties.floodlight],
     'lighting',
   ),
-  allWindows: inputGrouping(context, [properties.window], 'security'),
+  allWindows: inputGrouping(context, [properties.window], 'open'),
 };
 
 const $init: InitFunction = async (room, introspection) => {

@@ -55,7 +55,7 @@ export const properties = {
   door: door(context, devices.doorSensor, undefined),
   nightLight: devices.nightLight.relay,
   standingLamp: devices.standingLamp.relay,
-  windowRight: window(context, devices.windowSensorRight, 'security'),
+  windowRight: window(context, devices.windowSensorRight, 'open'),
 };
 
 export const groups = {
@@ -64,7 +64,7 @@ export const groups = {
     [properties.ceilingLight, properties.nightLight, properties.standingLamp],
     'lighting',
   ),
-  allWindows: inputGrouping(context, [properties.windowRight], 'security'),
+  allWindows: inputGrouping(context, [properties.windowRight], 'open'),
 };
 
 const $init: InitFunction = (room, introspection) => {
