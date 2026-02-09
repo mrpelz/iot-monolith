@@ -52,7 +52,7 @@ export const instances = {
 export const properties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
-  entryDoor: door(context, devices.doorSensor, 'security'),
+  entryDoor: door(context, devices.doorSensor, 'open'),
   motion: devices.ceilingLightFront.input,
 };
 
