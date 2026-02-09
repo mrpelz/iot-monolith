@@ -25,8 +25,9 @@ export const shelly1 = <T extends string>(
   };
 };
 
-export const shelly1WithInput = <T extends string>(
+export const shelly1WithInput = <T extends string, I extends string>(
   topic: T,
+  inputTopic: I,
   host: string,
   context: Context,
   port = 1337,
@@ -40,7 +41,7 @@ export const shelly1WithInput = <T extends string>(
     $noMainReference: true as const,
     button: button(context, device, 0),
     device: ipDevice(context, device, false, undefined, initiallyOnline),
-    input: input(context, device, 0, undefined),
+    input: input(context, device, 0, inputTopic),
     relay: output(context, device, 0, topic, undefined),
   };
 };

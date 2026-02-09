@@ -26,6 +26,7 @@ export const devices = {
   ),
   ceilingLightFront: shelly1WithInput(
     'lighting' as const,
+    'motion' as const,
     'hallway-ceilinglightfront.lan.wurstsalat.cloud',
     context,
   ),

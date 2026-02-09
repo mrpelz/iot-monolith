@@ -47,6 +47,7 @@ export const devices = {
   bathtubButton: ev1527ButtonX1(823_914, ev1527Transport, context),
   ceilingLight: shelly1WithInput(
     'lighting' as const,
+    'motion' as const,
     'tsiabathroom-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),

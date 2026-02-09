@@ -46,6 +46,7 @@ import { ev1527Transport } from '../bridges.js';
 export const devices = {
   ceilingLight: shelly1WithInput(
     'lighting' as const,
+    'motion' as const,
     'mrpelzbathroom-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),
