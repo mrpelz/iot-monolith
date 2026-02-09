@@ -354,7 +354,12 @@ export const attachMetrics = async (
     });
   }
 
-  for (const item of match({ $: 'mhz19' as const }, excludePattern, system_)) {
+  for (const item of match(
+    { $: 'mhz19' as const },
+    excludePattern,
+    system_,
+    8,
+  )) {
     const labels = Metrics.hierarchyLabels(introspection, item);
     if (!labels) continue;
 
@@ -376,7 +381,12 @@ export const attachMetrics = async (
     });
   }
 
-  for (const item of match({ $: 'sgp30' as const }, excludePattern, system_)) {
+  for (const item of match(
+    { $: 'sgp30' as const },
+    excludePattern,
+    system_,
+    8,
+  )) {
     const labels = Metrics.hierarchyLabels(introspection, item);
     if (!labels) continue;
 

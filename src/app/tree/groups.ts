@@ -56,6 +56,23 @@ export const allWindows = (async () => {
   );
 })();
 
+export const allMotion = (async () => {
+  const { wurstHome } = await import('./system.js');
+
+  return inputGrouping(
+    context,
+    match(
+      {
+        $: 'input' as const,
+        topic: 'motion' as const,
+      },
+      excludePattern,
+      wurstHome,
+    ),
+    'motion',
+  );
+})();
+
 export const kitchenAdjacentLights = outputGrouping(
   context,
   [

@@ -9,7 +9,7 @@ import {
 } from '@mrpelz/misc-utils/oop';
 
 // convince TypeScript to iterate while searching deeper at runtime 😅
-export const DEFAULT_MATCH_DEPTH = 50 as 8;
+export const DEFAULT_MATCH_DEPTH = 50 as 7;
 
 export const excludePattern = { $exclude: true as const };
 export type TExclude = typeof excludePattern;

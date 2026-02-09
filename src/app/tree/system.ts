@@ -11,6 +11,7 @@ import { logger, logicReasoningLevel } from '../logging.js';
 import { every5Seconds } from '../timings.js';
 import {
   allLights as allLights_,
+  allMotion as allMotion_,
   allThings as allThings_,
   allWindows as allWindows_,
   kitchenAdjacentLights,
@@ -67,8 +68,9 @@ export const wurstHome = {
 };
 
 export const system = (async () => {
-  const allThings = await allThings_;
   const allLights = await allLights_;
+  const allMotion = await allMotion_;
+  const allThings = await allThings_;
   const allWindows = await allWindows_;
 
   const allTimer = timer(context, epochs.day, true);
@@ -102,6 +104,7 @@ export const system = (async () => {
     $init,
     allLights,
     allLightsOff,
+    allMotion,
     allOff,
     allThings,
     allTimer,
