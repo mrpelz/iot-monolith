@@ -52,7 +52,7 @@ export const allWindows = (async () => {
       excludePattern,
       wurstHome,
     ),
-    'security',
+    'open',
   );
 })();
 

@@ -205,7 +205,7 @@ export const ledGrouping = (
     level: Level.PROPERTY as const,
     lights: lights_,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
-    topic: 'lighting',
+    topic: 'lighting' as const,
   };
 };
 
