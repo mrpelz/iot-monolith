@@ -358,7 +358,7 @@ export const attachMetrics = async (
     { $: 'mhz19' as const },
     excludePattern,
     system_,
-    8,
+    50 as 8,
   )) {
     const labels = Metrics.hierarchyLabels(introspection, item);
     if (!labels) continue;
@@ -385,7 +385,7 @@ export const attachMetrics = async (
     { $: 'sgp30' as const },
     excludePattern,
     system_,
-    8,
+    50 as 8,
   )) {
     const labels = Metrics.hierarchyLabels(introspection, item);
     if (!labels) continue;
