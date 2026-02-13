@@ -1,4 +1,4 @@
-import { ModifiableDate, Unit } from '@mrpelz/modifiable-date';
+import { epochs, ModifiableDate, Unit } from '@mrpelz/modifiable-date';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { Schedule } from '../../../lib/schedule.js';
@@ -74,7 +74,7 @@ export const logic = {
     properties.ceilingLightFront,
     [properties.motion, properties.entryDoor],
     [instances.wallswitchFrontLeft],
-    undefined,
+    epochs.minute * 5,
     undefined,
     new Schedule(
       context.logger,

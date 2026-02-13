@@ -210,6 +210,7 @@ export const automatedInputLogic = (
   timeoutAutomation = epoch30Seconds,
   automationEnableSchedule?: Schedule,
   automationDisableSchedule?: Schedule,
+  startTimerFromManualOn = false,
 ) => {
   const $ = 'automatedInputLogic' as const;
 
@@ -409,6 +410,18 @@ export const automatedInputLogic = (
         l(`${p(input)} was triggered, flipping ${p(output)}`);
 
         output.flip.setState.trigger();
+
+        if (
+          startTimerFromManualOn &&
+          output.main.setState.value &&
+          timerOutput.state.isEnabled.value
+        ) {
+          l(
+            `${p(input)} turned ${output} on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
+          );
+
+          timerOutput.state.start();
+        }
       };
 
       // eslint-disable-next-line default-case
@@ -462,6 +475,7 @@ export const automatedInputLogic = (
       inputsManual,
       output,
     },
+    startTimerFromManualOn,
     timerAutomation,
     timerOutput,
   };

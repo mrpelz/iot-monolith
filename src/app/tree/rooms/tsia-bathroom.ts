@@ -432,6 +432,14 @@ export const logic = {
           );
 
           autoLight.state.trigger();
+
+          if (output.main.setState.value && timerOutput.state.isEnabled.value) {
+            l(
+              `${p(input)} turned ${output} on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
+            );
+
+            timerOutput.state.start();
+          }
         };
 
         // eslint-disable-next-line default-case
@@ -472,6 +480,7 @@ export const logic = {
         inputsManual,
         output,
       },
+      startTimerFromManualOn: true,
       timerAutomation,
       timerOutput,
     };
