@@ -88,7 +88,6 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorHeating: devices.mirrorHeating.relay,
-  mirrorHeatingTimer: timer(context, epochs.minute * 15, true),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
   motion: devices.ceilingLight.input,
@@ -118,6 +117,8 @@ export const groups = {
     undefined,
   ),
 };
+
+const isMirrorHeatingLinked = new BooleanState(true);
 
 const scenesPartial = {
   astronomicalTwilightLighting: scene(
@@ -149,6 +150,11 @@ const scenesPartial = {
       new SceneMember(properties.nightLight.main.setState, false),
     ],
     'light',
+  ),
+  enableMirrorHeatingLinkage: scene(
+    context,
+    [new SceneMember(isMirrorHeatingLinked, true, false)],
+    'automation',
   ),
   nauticalTwilightLighting: scene(
     context,
@@ -472,13 +478,13 @@ const $init: InitFunction = async (room, introspection) => {
     wallswitchMirrorTop,
   } = instances;
   const { allLights, allThings } = groups;
-  const { mirrorHeating, mirrorHeatingTimer, mirrorLight, nightLight } =
-    properties;
+  const { mirrorHeating, mirrorLight, nightLight } = properties;
   const {
     astronomicalTwilightLighting,
     autoLight,
     civilTwilightLighting,
     dayLighting,
+    enableMirrorHeatingLinkage,
     nauticalTwilightLighting,
     nightLighting,
   } = scenes;
@@ -563,29 +569,21 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  mirrorHeating.main.setState.observe((value) => {
-    l(
-      `${p(mirrorHeatingTimer)} was ${value ? 'started' : 'stopped'} because ${p(mirrorHeating)} was turned ${value ? 'on' : 'off'}`,
-    );
-
-    mirrorHeatingTimer.state[value ? 'start' : 'stop']();
-  }, true);
-
-  mirrorHeatingTimer.state.observe(() =>
-    setMain(mirrorHeating, false, () =>
-      l(
-        `${p(mirrorHeating)} was turned off because ${p(mirrorHeating)} ran out`,
-      ),
-    ),
-  );
-
   allLights.main.setState.observe((value) => {
-    setMain(mirrorHeating, value, () =>
-      l(
-        `${p(mirrorHeating)} was turned ${value ? 'on' : 'off'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
-      ),
+    if (enableMirrorHeatingLinkage.state.value) {
+      setMain(mirrorHeating, value, () =>
+        l(
+          `${p(allLights)} was turned ${value ? 'on' : 'off'} → ${p(mirrorHeating)} was turned ${value ? 'on' : 'off'} because ${p(enableMirrorHeatingLinkage)} is true`,
+        ),
+      );
+
+      return;
+    }
+
+    l(
+      `${p(allLights)} was turned ${value ? 'on' : 'off'} → ${p(mirrorHeating)} wasn’t turned ${value ? 'on' : 'off'} and ${p(enableMirrorHeatingLinkage)} is false`,
     );
-  }, true);
+  });
 
   autoLight.state.observe(() => {
     let failover = false;
