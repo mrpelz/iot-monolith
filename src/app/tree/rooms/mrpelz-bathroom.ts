@@ -218,6 +218,7 @@ export const logic = {
       let upstart = true;
       sleep(5000).then(() => (upstart = false));
 
+      let outputSetterSourceIsAutomatedInput = false;
       let outputSetterSourceIsTimerRunningOut = false;
 
       const parent = introspection.getObject(object)?.mainReference?.parent;
@@ -247,13 +248,18 @@ export const logic = {
 
       output.main.setState.observe((value) => {
         if (value) {
-          if (timerOutput.state.isEnabled.value) {
+          if (
+            timerOutput.state.isEnabled.value &&
+            !outputSetterSourceIsAutomatedInput
+          ) {
             l(
               `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
             );
 
             timerOutput.state.start();
           }
+
+          outputSetterSourceIsAutomatedInput = false;
 
           return;
         }
@@ -282,6 +288,7 @@ export const logic = {
       for (const input of inputsAutomated) {
         let prime = false;
 
+        // eslint-disable-next-line no-loop-func
         const fn = (value: boolean | null) => {
           l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
@@ -300,8 +307,10 @@ export const logic = {
               );
 
               prime = true;
-              autoLight.state.trigger();
+              outputSetterSourceIsAutomatedInput = true;
             }
+
+            autoLight.state.trigger();
 
             return;
           }
