@@ -246,7 +246,17 @@ export const logic = {
       }
 
       output.main.setState.observe((value) => {
-        if (value) return;
+        if (value) {
+          if (timerOutput.state.isEnabled.value) {
+            l(
+              `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
+            );
+
+            timerOutput.state.start();
+          }
+
+          return;
+        }
 
         if (
           !upstart &&
@@ -393,14 +403,6 @@ export const logic = {
           );
 
           autoLight.state.trigger();
-
-          if (output.main.setState.value && timerOutput.state.isEnabled.value) {
-            l(
-              `${p(input)} turned ${output} on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
-            );
-
-            timerOutput.state.start();
-          }
         };
 
         // eslint-disable-next-line default-case
@@ -419,7 +421,7 @@ export const logic = {
       timerAutomation.state.observe(() => {
         if (!automationEnableManualState.value) {
           l(
-            `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnable)}`,
+            `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnableManual)}`,
           );
 
           automationEnableManualState.value = true;
@@ -558,7 +560,7 @@ const $init: InitFunction = async (room, introspection) => {
     );
 
     mirrorHeatingTimer.state[value ? 'start' : 'stop']();
-  });
+  }, true);
 
   mirrorHeatingTimer.state.observe(() =>
     setMain(mirrorHeating, false, () =>
@@ -574,7 +576,7 @@ const $init: InitFunction = async (room, introspection) => {
         `${p(mirrorHeating)} was turned ${value ? 'on' : 'off'} because ${p(allLights)} was turned ${value ? 'on' : 'off'}`,
       ),
     );
-  });
+  }, true);
 
   autoLight.state.observe(() => {
     let failover = false;
