@@ -314,9 +314,9 @@ export const logic = {
 
               prime = true;
               outputSetterSourceIsAutomatedInput = true;
-            }
 
-            autoLight.state.trigger();
+              autoLight.state.trigger();
+            }
 
             return;
           }

@@ -288,7 +288,11 @@ export const automatedInputLogic = (
           !outputSetterSourceIsAutomatedInput
         ) {
           l(
-            `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
+            `${p(
+              output,
+            )} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(
+              timerOutput,
+            )}`,
           );
 
           timerOutput.state.start();
@@ -305,7 +309,9 @@ export const automatedInputLogic = (
         automationEnableState.value
       ) {
         l(
-          `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnableManual)}`,
+          `${p(output)} was turned off from source that is not ${p(
+            timerOutput,
+          )} and automation is active, disabling ${p(automationEnableManual)}`,
         );
         automationEnableManualState.value = false;
       }
@@ -314,7 +320,9 @@ export const automatedInputLogic = (
 
       if (timerOutput.state.isActive.value) {
         l(
-          `${p(output)} was turned off with timer running, stopping ${p(timerOutput)}`,
+          `${p(output)} was turned off with timer running, stopping ${p(
+            timerOutput,
+          )}`,
         );
         timerOutput.state.stop();
       }
@@ -329,7 +337,9 @@ export const automatedInputLogic = (
 
         if (!automationEnableState.value) {
           l(
-            `${p(input)} turned ${JSON.stringify(value)} and ${p(automationEnable)} is false, not doing anything`,
+            `${p(input)} turned ${JSON.stringify(value)} and ${p(
+              automationEnable,
+            )} is false, not doing anything`,
           );
 
           return;
@@ -338,14 +348,16 @@ export const automatedInputLogic = (
         if (value) {
           if (!output.main.setState.value) {
             l(
-              `${p(input)} turned true with output off, turning on ${p(output)} and priming`,
+              `${p(input)} turned true with output off, turning on ${p(
+                output,
+              )} and priming`,
             );
 
             prime = true;
             outputSetterSourceIsAutomatedInput = true;
-          }
 
-          output.main.setState.value = true;
+            output.main.setState.value = true;
+          }
 
           return;
         }
@@ -353,7 +365,9 @@ export const automatedInputLogic = (
         if (!prime) {
           if (output.main.setState.value && timerOutput.state.isActive.value) {
             l(
-              `${p(input)} turned false, ${p(output)} is on and is timer is running, restarting ${p(timerOutput)}`,
+              `${p(input)} turned false, ${p(
+                output,
+              )} is on and is timer is running, restarting ${p(timerOutput)}`,
             );
 
             timerOutput.state.start();
@@ -365,7 +379,11 @@ export const automatedInputLogic = (
 
         if (output.main.setState.value && timerOutput.state.isEnabled.value) {
           l(
-            `${p(input)} turned false, ${p(output)} is on, timer is enabled and this logic was primed by true state from the same input before, (re)starting ${p(timerOutput)}`,
+            `${p(input)} turned false, ${p(
+              output,
+            )} is on, timer is enabled and this logic was primed by true state from the same input before, (re)starting ${p(
+              timerOutput,
+            )}`,
           );
 
           timerOutput.state.start();
@@ -390,7 +408,9 @@ export const automatedInputLogic = (
     automationEnableManualState.observe((value) => {
       if (timerOutput.state.isActive.value) {
         l(
-          `${p(automationEnableManual)} triggered with timer running, stopping ${p(timerOutput)}`,
+          `${p(
+            automationEnableManual,
+          )} triggered with timer running, stopping ${p(timerOutput)}`,
         );
 
         timerOutput.state.stop();
@@ -399,7 +419,11 @@ export const automatedInputLogic = (
       if (!value) {
         if (timerAutomation.state.isEnabled) {
           l(
-            `${p(automationEnableManual)} turned off with timer enabled, (re)starting ${p(timerAutomation)}`,
+            `${p(
+              automationEnableManual,
+            )} turned off with timer enabled, (re)starting ${p(
+              timerAutomation,
+            )}`,
           );
 
           timerAutomation.state.start();
@@ -410,7 +434,9 @@ export const automatedInputLogic = (
 
       if (timerAutomation.state.isActive.value) {
         l(
-          `${p(automationEnableManual)} turned on with timer running, stopping ${p(timerAutomation)}`,
+          `${p(
+            automationEnableManual,
+          )} turned on with timer running, stopping ${p(timerAutomation)}`,
         );
         timerAutomation.state.stop();
       }
@@ -448,7 +474,11 @@ export const automatedInputLogic = (
     timerAutomation.state.observe(() => {
       if (!automationEnableManualState.value) {
         l(
-          `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnableManual)}`,
+          `${p(
+            timerAutomation,
+          )} ran out with automation disabled, turning on ${p(
+            automationEnableManual,
+          )}`,
         );
 
         automationEnableManualState.value = true;
