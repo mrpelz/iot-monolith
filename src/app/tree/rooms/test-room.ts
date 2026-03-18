@@ -1,5 +1,6 @@
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
+import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
@@ -34,6 +35,10 @@ export const devices = {
     },
     context,
   ),
+  motionSensor: motionSensor(
+    'hallwaymotionsensor.lan.wurstsalat.cloud',
+    context,
+  ),
   testDevice: testDevice(context),
 };
 
@@ -50,6 +55,12 @@ export const properties = {
   espNowWindowSensor2: devices.espNowWindowSensor.device.espNow.input2,
   humidity: devices.testDevice.humidity,
   motion: devices.testDevice.motion,
+  motionPir0: devices.motionSensor.motionPir0,
+  motionPir1: devices.motionSensor.motionPir1,
+  motionPir2: devices.motionSensor.motionPir2,
+  motionRadar0: devices.motionSensor.motionRadar0,
+  motionRadar1: devices.motionSensor.motionRadar1,
+  motionRadar2: devices.motionSensor.motionRadar2,
   pm025: devices.testDevice.pm025,
   pm10: devices.testDevice.pm10,
   pressure: devices.testDevice.pressure,
