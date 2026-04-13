@@ -1,10 +1,11 @@
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
-import { motionSensor } from '../../../lib/tree/devices/motion-sensor.js';
+import { motionSensorX6 } from '../../../lib/tree/devices/motion-sensor.js';
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
+import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
@@ -35,7 +36,7 @@ export const devices = {
     },
     context,
   ),
-  motionSensor: motionSensor(
+  motionSensor: motionSensorX6(
     'hallwaymotionsensor.lan.wurstsalat.cloud',
     context,
   ),
@@ -54,7 +55,7 @@ export const properties = {
   espNowWindowSensor1: devices.espNowWindowSensor.device.espNow.input1,
   espNowWindowSensor2: devices.espNowWindowSensor.device.espNow.input2,
   humidity: devices.testDevice.humidity,
-  motion: devices.testDevice.motion,
+  motion0: devices.testDevice.motion,
   motionPir0: devices.motionSensor.motionPir0,
   motionPir1: devices.motionSensor.motionPir1,
   motionPir2: devices.motionSensor.motionPir2,
@@ -68,7 +69,21 @@ export const properties = {
   uvIndex: devices.testDevice.uvIndex,
 };
 
-export const groups = {};
+export const groups = {
+  motion: inputGrouping(
+    context,
+    [
+      properties.motion0,
+      properties.motionPir0,
+      properties.motionPir1,
+      properties.motionPir2,
+      properties.motionRadar0,
+      properties.motionRadar1,
+      properties.motionRadar2,
+    ],
+    'motion',
+  ),
+};
 
 const $init: InitFunction = () => {
   // noop

@@ -11,6 +11,7 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
+import { motionSensorHMMD } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
@@ -43,6 +44,8 @@ import {
 } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 
+const LIGHT_TIMER_DURATION = epochs.minute * 2;
+
 export const devices = {
   ceilingLight: shelly1WithInput(
     'lighting' as const,
@@ -60,6 +63,10 @@ export const devices = {
   mirrorLight: sonoffBasic(
     'lighting' as const,
     'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud',
+    context,
+  ),
+  motionSensor: motionSensorHMMD(
+    'mrpelzbathroommotionsensor.lan.wurstsalat.cloud',
     context,
   ),
   nightLight: sonoffBasic(
@@ -90,7 +97,8 @@ export const properties = {
   mirrorHeating: devices.mirrorHeating.relay,
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
-  motion: devices.ceilingLight.input,
+  motion: devices.motionSensor.motion,
+  motionSecondary: devices.ceilingLight.input,
   nightLight: devices.nightLight.relay,
 };
 
@@ -217,7 +225,7 @@ export const logic = {
       new ReadOnlyObservable(automationEnableState),
     );
 
-    const timerOutput = timer(context, epochs.minute * 15);
+    const timerOutput = timer(context, LIGHT_TIMER_DURATION);
     const timerAutomation = timer(context, epoch30Seconds);
 
     const $init: InitFunction = async (object, introspection) => {
@@ -352,7 +360,7 @@ export const logic = {
             input.open.state.observe(fn);
             break;
           }
-          case 'input': {
+          case 'hmmdMotion': {
             input.state.observe(fn);
             break;
           }

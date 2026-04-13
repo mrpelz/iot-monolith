@@ -20,11 +20,12 @@ import { byteLengthAddress } from '../../device/ev1527.js';
 import { Device } from '../../device/main.js';
 import { Button as ButtonEvent } from '../../events/button.js';
 import { ESPNow } from '../../events/esp-now.js';
+import { HmmdMotion } from '../../events/hmmd-motion.js';
 import { Input } from '../../events/input.js';
 import { Rf433 } from '../../events/rf433.js';
 import { VCC } from '../../events/vcc.js';
 import { Button } from '../../items/button.js';
-import { SingleValueEvent } from '../../items/event.js';
+import { MultiValueEvent, SingleValueEvent } from '../../items/event.js';
 import {
   MeasurementInputGetter,
   MultiValueSensor,
@@ -295,6 +296,31 @@ export const hello = (
   };
 };
 
+export const hmmdMotion = (context: Context, device: Device, index: number) => {
+  const $ = 'hmmdMotion' as const;
+
+  const { state } = new MultiValueEvent(
+    device.addEvent(new HmmdMotion(index)),
+    ['targetDetected', 'distance'],
+  );
+
+  return {
+    $,
+    distance: {
+      lastChange: lastChange(context, state.distance),
+      lastSeen: lastSeen(context, state.distance),
+      main: getter(ValueType.NUMBER, state.distance),
+      state: state.distance,
+    },
+    lastChange: lastChange(context, state.targetDetected),
+    lastSeen: lastSeen(context, state.targetDetected),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.BOOLEAN, state.targetDetected),
+    state: state.targetDetected,
+    topic: 'motion' as const,
+  };
+};
+
 export const input = <T extends string | undefined>(
   context: Context,
   device: Device,
@@ -320,6 +346,8 @@ export const inputGrouping = <T extends string | undefined>(
   context: Context,
   inputs: (
     | ReturnType<typeof input>
+    | ReturnType<typeof motion>
+    | ReturnType<typeof hmmdMotion>
     | ReturnType<typeof door>
     | ReturnType<typeof window>
   )[],
@@ -334,7 +362,17 @@ export const inputGrouping = <T extends string | undefined>(
     inputs_.map(
       (anInput) =>
         new ReadOnlyProxyObservable(
-          anInput.$ === 'input' ? anInput.main.state : anInput.open.main.state,
+          (() => {
+            switch (anInput.$) {
+              case 'door':
+              case 'window': {
+                return anInput.open.main.state;
+              }
+              default: {
+                return anInput.main.state;
+              }
+            }
+          })(),
           (value) => Boolean(value),
         ),
     ),

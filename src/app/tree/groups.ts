@@ -61,14 +61,24 @@ export const allMotion = (async () => {
 
   return inputGrouping(
     context,
-    match(
-      {
-        $: 'input' as const,
-        topic: 'motion' as const,
-      },
-      excludePattern,
-      wurstHome,
-    ),
+    [
+      match(
+        {
+          $: 'input' as const,
+          topic: 'motion' as const,
+        },
+        excludePattern,
+        wurstHome,
+      ),
+      match(
+        {
+          $: 'hmmdMotion' as const,
+          topic: 'motion' as const,
+        },
+        excludePattern,
+        wurstHome,
+      ),
+    ].flat(),
     'motion',
   );
 })();

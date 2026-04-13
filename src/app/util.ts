@@ -35,6 +35,7 @@ import {
   button,
   buttonPrimitive,
   door,
+  hmmdMotion,
   input as input_,
   motion,
   window,
@@ -199,6 +200,7 @@ export const automatedInputLogic = (
   inputsAutomated: (
     | ReturnType<typeof input_>
     | ReturnType<typeof motion>
+    | ReturnType<typeof hmmdMotion>
     | ReturnType<typeof door>
     | ReturnType<typeof window>
   )[],
@@ -398,7 +400,8 @@ export const automatedInputLogic = (
           break;
         }
         case 'input':
-        case 'motion': {
+        case 'motion':
+        case 'hmmdMotion': {
           input.state.observe(fn);
           break;
         }
