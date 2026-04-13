@@ -34,8 +34,8 @@ const { lookup } = promises;
 //
 
 export class TCPTransport extends Transport {
-  private _connectionTime: number;
-  private _currentLength: number;
+  private _connectionTime = 0;
+  private _currentLength = 0;
   private readonly _keepAlive: number;
   private readonly _lengthPreamble: number;
   private readonly _log: Input;

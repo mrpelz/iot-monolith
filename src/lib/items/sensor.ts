@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { promiseGuard } from '@mrpelz/misc-utils/promise';
 import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
 
@@ -6,7 +7,7 @@ import { Schedule } from '../schedule.js';
 
 export type MeasurementInputGetter<T> = () => T | null | Promise<T | null>;
 
-export class SingleValueSensor<T = unknown, S = void> {
+export class SingleValueSensor<T = any, S = void> {
   private readonly _measurementInputGetter: S extends void
     ? undefined
     : MeasurementInputGetter<S>;
@@ -88,7 +89,7 @@ export class SingleValueSensor<T = unknown, S = void> {
 }
 
 export class MultiValueSensor<
-  T extends Record<string, unknown>,
+  T extends Record<string, any>,
   K extends keyof T,
   S = void,
 > {

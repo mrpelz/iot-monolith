@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { objectKeys } from '@mrpelz/misc-utils/oop';
 import { ModifiableDate, Unit } from '@mrpelz/modifiable-date';
 import {
   BooleanGroupStrategy,
@@ -91,7 +93,7 @@ const every2Minutes = new Schedule(
 );
 every2Minutes.start();
 
-const doLog = (label: string, path: string[], value: unknown) => {
+const doLog = (label: string, path: PropertyKey[], value: unknown) => {
   log.info(() => `${label} => ${path.join('/')}: ${JSON.stringify(value)}`);
 };
 
@@ -103,22 +105,19 @@ const doDevice = (deviceLabel: string, device: Device) => {
   return [deviceLabel, device] as const;
 };
 
-const doService = <T extends Service<unknown, unknown>>(
-  service: T,
-  device: Device,
-) => {
+const doService = <T extends Service<any, any>>(service: T, device: Device) => {
   device.addService(service);
 
   return service;
 };
 
-const doEvent = <T extends Event<unknown>>(event: T, device: Device) => {
+const doEvent = <T extends Event<any>>(event: T, device: Device) => {
   device.addEvent(event);
 
   return event;
 };
 
-const doEventWithLog = <T extends Event<unknown>>(
+const doEventWithLog = <T extends Event<any>>(
   deviceLabel: string,
   eventLabel: string,
   event: T,
@@ -133,19 +132,7 @@ const doEventWithLog = <T extends Event<unknown>>(
   return event;
 };
 
-const doItem = <
-  T extends
-    | SingleValueSensor
-    | SingleValueEvent
-    | StatelessSingleValueEvent
-    | MultiValueSensor<Record<string, unknown>, string>
-    | MultiValueEvent<Record<string, unknown>, string>
-    | StatelessMultiValueEvent<Record<string, unknown>, string>,
->(
-  deviceLabel: string,
-  itemLabel: string,
-  item: T,
-): T => {
+const doItem = <T>(deviceLabel: string, itemLabel: string, item: T): T => {
   if (item instanceof SingleValueSensor) {
     item.state.observe((value) =>
       doLog('singleValueSensor', [deviceLabel, itemLabel], value),
@@ -171,8 +158,8 @@ const doItem = <
   }
 
   if (item instanceof MultiValueSensor) {
-    for (const [property, value] of Object.entries(item.state)) {
-      value.observe((_value) =>
+    for (const property of objectKeys(item.state)) {
+      item.state[property]?.observe((_value) =>
         doLog('multiValueSensor', [deviceLabel, itemLabel, property], _value),
       );
     }
@@ -181,8 +168,8 @@ const doItem = <
   }
 
   if (item instanceof MultiValueEvent) {
-    for (const [property, value] of Object.entries(item.state)) {
-      value.observe((_value) =>
+    for (const property of objectKeys(item.state)) {
+      item.state[property]?.observe((_value) =>
         doLog('multiValueEvent', [deviceLabel, itemLabel, property], _value),
       );
     }
@@ -190,14 +177,16 @@ const doItem = <
     return item;
   }
 
-  for (const [property, value] of Object.entries(item.state)) {
-    value.observe((_value) =>
-      doLog(
-        'statelessMultiValueEvent',
-        [deviceLabel, itemLabel, property],
-        _value,
-      ),
-    );
+  if (item instanceof StatelessMultiValueEvent) {
+    for (const property of objectKeys(item.state)) {
+      item.state[property]?.observe((_value) =>
+        doLog(
+          'statelessMultiValueEvent',
+          [deviceLabel, itemLabel, property],
+          _value,
+        ),
+      );
+    }
   }
 
   return item;
@@ -605,16 +594,12 @@ const [espNowTransport, ev1527Transport] = (() => {
     new Ev1527Device(logger, ev1527Transport, 74_160),
   );
 
-  const button = doItem(
-    deviceLabel,
-    'button',
-    new StatelessMultiValueEvent(doEvent(new Ev1527Button(), device), [
-      'one',
-      'two',
-      'three',
-      'four',
-    ]),
+  const event = new StatelessMultiValueEvent(
+    doEvent(new Ev1527Button(), device),
+    ['one', 'two', 'three', 'four'],
   );
+
+  const button = doItem(deviceLabel, 'button', event);
   button.state.two.observe(() => on.flip());
 })();
 

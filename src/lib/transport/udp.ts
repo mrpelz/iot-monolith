@@ -287,7 +287,6 @@ export class UDPTransport extends Transport {
           ])
         : payload;
 
-      // eslint-disable-next-line unicorn/consistent-function-scoping
       const send = () => this._socket?.send(data, this.port, this.host);
 
       if (index) {

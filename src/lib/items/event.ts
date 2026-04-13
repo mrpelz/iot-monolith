@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
 import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 import { Event } from '../device/main.js';
 
-export class SingleValueEvent<T = unknown> {
+export class SingleValueEvent<T = any> {
   private readonly _event: Event<T>;
   private readonly _state = new Observable<T | null>(null);
 
@@ -20,10 +21,7 @@ export class SingleValueEvent<T = unknown> {
   }
 }
 
-export class MultiValueEvent<
-  T extends Record<string, unknown>,
-  K extends keyof T,
-> {
+export class MultiValueEvent<T extends Record<string, any>, K extends keyof T> {
   private readonly _event: Event<T>;
   private readonly _properties: K[];
   private readonly _state = {} as { [P in K]: Observable<T[P] | null> };
@@ -50,7 +48,7 @@ export class MultiValueEvent<
   }
 }
 
-export class StatelessSingleValueEvent<T = unknown> {
+export class StatelessSingleValueEvent<T = any> {
   private readonly _event: Event<T>;
   private readonly _state = new NullState<T | null>();
 
@@ -70,7 +68,7 @@ export class StatelessSingleValueEvent<T = unknown> {
 }
 
 export class StatelessMultiValueEvent<
-  T extends Record<string, unknown>,
+  T extends Record<string, any>,
   K extends keyof T,
 > {
   private readonly _event: Event<T>;

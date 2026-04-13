@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { emptyBuffer } from '@mrpelz/misc-utils/data';
 import { NUMBER_RANGES } from '@mrpelz/misc-utils/number';
 import { RollingNumber } from '@mrpelz/misc-utils/rolling-number';
@@ -80,7 +81,7 @@ export class Property {
     }
   }
 
-  protected _device: Device | null;
+  protected _device: Device | null = null;
 
   constructor(public readonly identifier: Buffer) {
     this.identifier = identifier;
@@ -205,7 +206,7 @@ export class Device<T extends Transport = Transport> {
   private readonly _isOnline = new BooleanState(false);
   private readonly _keepalive?: Service<void, void>;
   private _keepaliveMissedPackets = 0;
-  private readonly _keepaliveTolerateMissedPackets: number;
+  private readonly _keepaliveTolerateMissedPackets: number = 0;
   private readonly _log: Input;
 
   private readonly _requestIdentifier = new RollingNumber(
@@ -325,7 +326,7 @@ export class Device<T extends Transport = Transport> {
   /**
    * add an instance of Event to this device
    */
-  addEvent<E extends Event<unknown>>(event: E): E {
+  addEvent<E extends Event<any>>(event: E): E {
     Event.isValidPropertyIdentifier(this._events, event.identifier);
 
     event._setDevice(this);
@@ -337,7 +338,7 @@ export class Device<T extends Transport = Transport> {
   /**
    * add an instance of Service to this device
    */
-  addService<S extends Service<unknown, unknown>>(service: S): S {
+  addService<S extends Service<any, any>>(service: S): S {
     Service.isValidPropertyIdentifier(this._services, service.identifier);
 
     service._setDevice(this);

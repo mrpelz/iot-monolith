@@ -94,7 +94,9 @@ export class Metrics {
 
       gauge.set(labels_, Metrics._cleanValue(value.value));
     } catch (error) {
-      this._log.error(() => error.message, error.stack);
+      if (error instanceof Error) {
+        this._log.error(() => error.message, error.stack);
+      }
     }
   }
 }
