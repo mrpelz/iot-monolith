@@ -16,7 +16,6 @@ import {
 import { hello, lastSeen, vcc } from '../properties/sensors.js';
 
 const deviceMeta = <S extends boolean>(device: Device, isSubDevice: S) => ({
-  ...(device.identifier ? { identifier: [...device.identifier.values()] } : {}),
   $allowMainReference: true as const,
   isSubDevice,
   level: Level.DEVICE as const,
@@ -30,6 +29,7 @@ export const espNowDevice = <S extends boolean>(
   isSubDevice: S,
 ) => ({
   $: 'espNowDevice' as const,
+  identifier: [...(device.identifier ? device.identifier.values() : [])],
   lastSeen: lastSeen(context, device.seen),
   vcc: vcc(context, device),
   ...deviceMeta(device, isSubDevice),
@@ -37,6 +37,7 @@ export const espNowDevice = <S extends boolean>(
 
 export const ev1527Device = (context: Context, device: Ev1527Device) => ({
   $: 'ev1527Device' as const,
+  identifier: [...(device.identifier ? device.identifier.values() : [])],
   lastSeen: lastSeen(context, device.seen),
   ...deviceMeta(device, false),
 });

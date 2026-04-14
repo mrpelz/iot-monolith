@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+// import { ensureKeys } from '@mrpelz/misc-utils/oop';
 import { collectDefaultMetrics, register } from 'prom-client';
 
 import { WebApi } from '../lib/api/main.js';
@@ -59,7 +60,7 @@ export const app = async (): Promise<void> => {
 
   // const roomDevices = match(
   //   {
-  //     $: 'testRoom' as const,
+  //     $: 'livingRoom' as const,
   //     level: Level.ROOM as const,
   //   },
   //   excludePattern,
@@ -67,6 +68,12 @@ export const app = async (): Promise<void> => {
   // ).flatMap((child) =>
   //   match(levelObjectMatch[Level.DEVICE], excludePattern, child, 5),
   // );
+
+  // const [firstDevice] = roomDevices;
+  // if (firstDevice) {
+  //   // eslint-disable-next-line no-console
+  //   console.log(ensureKeys(firstDevice, 'identifier').$);
+  // }
 
   // // eslint-disable-next-line no-console
   // console.log(roomDevices.map((device) => device));
