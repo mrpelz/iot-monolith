@@ -257,7 +257,7 @@ export const logic = {
       let upstart = true;
       sleep(5000).then(() => (upstart = false));
 
-      let outputSetterSourceIsAutomatedInput = false;
+      // let outputSetterSourceIsAutomatedInput = false;
       let outputSetterSourceIsTimerRunningOut = false;
 
       const parent = introspection.getObject(object)?.mainReference?.parent;
@@ -287,18 +287,18 @@ export const logic = {
 
       output.main.setState.observe((value) => {
         if (value) {
-          if (
-            timerOutput.state.isEnabled.value &&
-            !outputSetterSourceIsAutomatedInput
-          ) {
-            l(
-              `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
-            );
+          // if (
+          //   timerOutput.state.isEnabled.value &&
+          //   !outputSetterSourceIsAutomatedInput
+          // ) {
+          //   l(
+          //     `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
+          //   );
 
-            timerOutput.state.start();
-          }
+          //   timerOutput.state.start();
+          // }
 
-          outputSetterSourceIsAutomatedInput = false;
+          // outputSetterSourceIsAutomatedInput = false;
 
           return;
         }
@@ -327,7 +327,6 @@ export const logic = {
       for (const input of inputsAutomated) {
         let prime = false;
 
-        // eslint-disable-next-line no-loop-func
         const fn = (value: boolean | null) => {
           l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
@@ -346,9 +345,15 @@ export const logic = {
               );
 
               prime = true;
-              outputSetterSourceIsAutomatedInput = true;
+              // outputSetterSourceIsAutomatedInput = true;
 
               autoLight.state.trigger();
+            }
+
+            if (timerOutput.state.isActive.value) {
+              l(`${p(input)} turned true, stopping ${p(timerOutput)}`);
+
+              timerOutput.state.stop();
             }
 
             return;
@@ -382,11 +387,11 @@ export const logic = {
         // eslint-disable-next-line default-case
         switch (input.$) {
           case 'door': {
-            input.open.state.observe(fn);
+            input.open.state.observe(fn, true);
             break;
           }
           case 'input': {
-            input.state.observe(fn);
+            input.state.observe(fn, true);
             break;
           }
         }

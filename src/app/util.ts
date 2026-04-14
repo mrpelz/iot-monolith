@@ -361,6 +361,12 @@ export const automatedInputLogic = (
             output.main.setState.value = true;
           }
 
+          if (timerOutput.state.isActive.value) {
+            l(`${p(input)} turned true, stopping ${p(timerOutput)}`);
+
+            timerOutput.state.stop();
+          }
+
           return;
         }
 
@@ -396,13 +402,13 @@ export const automatedInputLogic = (
       switch (input.$) {
         case 'door':
         case 'window': {
-          input.open.state.observe(fn);
+          input.open.state.observe(fn, true);
           break;
         }
         case 'input':
         case 'motion':
         case 'hmmdMotion': {
-          input.state.observe(fn);
+          input.state.observe(fn, true);
           break;
         }
       }
