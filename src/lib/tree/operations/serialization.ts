@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EmptyObject,
   isPlainObject,
@@ -41,10 +42,7 @@ export type Interaction<T extends ValueType = ValueType> =
       valueType: T;
     };
 
-export type Values = Record<
-  string,
-  AnyObservable<unknown> | NullState<unknown>
->;
+export type Values = Record<string, AnyObservable<any> | NullState<any>>;
 
 export const REFERENCE_UUID_NAMESPACE = 'fa18a966-3d78-463a-9a7c-4c8d0d07a948';
 
@@ -83,9 +81,9 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
     : T extends object
       ? T extends Array<TElementSerializationPrimitive>
         ? T
-        : T extends AnyReadOnlyObservable<unknown>
+        : T extends AnyReadOnlyObservable<any>
           ? InteractionReference<string, InteractionType.EMIT>
-          : T extends AnyWritableObservable<unknown> | NullState<unknown>
+          : T extends AnyWritableObservable<any> | NullState<any>
             ? InteractionReference<string, InteractionType.COLLECT>
             : {
                 [K in keyof T as ElementSerialization<T[K]> extends never
@@ -104,7 +102,7 @@ const makeInteractionReference = <R extends string, T extends InteractionType>(
 });
 
 export const isInteractionReference = <T extends InteractionType>(
-  input: unknown,
+  input: any,
   type?: T,
 ): input is InteractionReference<string, T> => {
   if (typeof input !== 'object') return false;
@@ -171,7 +169,7 @@ export class Serialization<T extends object> {
 
   private _registerCollector<V extends ValueType>(
     id: string,
-    state: AnyWritableObservable<unknown> | NullState<unknown>,
+    state: AnyWritableObservable<any> | NullState<any>,
     valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
@@ -190,7 +188,7 @@ export class Serialization<T extends object> {
 
   private _registerEmitter<V extends ValueType>(
     id: string,
-    state: AnyReadOnlyObservable<unknown>,
+    state: AnyReadOnlyObservable<any>,
     valueType: V,
   ) {
     state.observe((value) => this._updates.trigger([id, value]));
@@ -275,11 +273,9 @@ export class Serialization<T extends object> {
 
     this._serializations.set(object, result);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return result as any;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _serializeProperty(property: any): any {
     if (Array.isArray(property)) {
       return property.map((child) => this._serializeProperty(child));
