@@ -44,7 +44,7 @@ import {
 } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 
-const LIGHT_TIMER_DURATION = epochs.minute * 2;
+const LIGHT_TIMER_DURATION = epochs.minute;
 
 export const devices = {
   ceilingLight: shelly1WithInput(
@@ -314,12 +314,14 @@ export const logic = {
           }
 
           if (value) {
+            l(`${p(input)} turned true, priming`);
+            prime = true;
+
             if (!output.main.setState.value) {
               l(
-                `${p(input)} turned true with output off, triggering ${p(autoLight)} and priming`,
+                `${p(input)} turned true with output off, triggering ${p(autoLight)}`,
               );
 
-              prime = true;
               // outputSetterSourceIsAutomatedInput = true;
 
               autoLight.state.trigger();

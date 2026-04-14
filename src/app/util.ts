@@ -348,6 +348,9 @@ export const automatedInputLogic = (
         }
 
         if (value) {
+          l(`${p(input)} turned true, priming`);
+          prime = true;
+
           if (!output.main.setState.value) {
             l(
               `${p(input)} turned true with output off, turning on ${p(
@@ -355,7 +358,6 @@ export const automatedInputLogic = (
               )} and priming`,
             );
 
-            prime = true;
             outputSetterSourceIsAutomatedInput = true;
 
             output.main.setState.value = true;

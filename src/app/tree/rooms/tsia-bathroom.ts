@@ -339,12 +339,14 @@ export const logic = {
           }
 
           if (value) {
+            l(`${p(input)} turned true, priming`);
+            prime = true;
+
             if (!output.main.setState.value) {
               l(
-                `${p(input)} turned true with output off, triggering ${p(autoLight)} and priming`,
+                `${p(input)} turned true with output off, triggering ${p(autoLight)}`,
               );
 
-              prime = true;
               // outputSetterSourceIsAutomatedInput = true;
 
               autoLight.state.trigger();
