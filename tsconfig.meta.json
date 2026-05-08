@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "tsBuildInfoFile": "dist/tsconfig.meta.tsbuildinfo"
   },
   "exclude": ["dist/**/*", "node_modules/**/*", "packages/**/*", "src/**/*"],
   "extends": "@mrpelz/boilerplate-node/tsconfig.meta.json",
