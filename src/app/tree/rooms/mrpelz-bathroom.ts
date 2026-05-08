@@ -13,7 +13,7 @@ import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sens
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { motionSensorHMMD } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { getter } from '../../../lib/tree/elements/getter.js';
@@ -47,9 +47,8 @@ import { ev1527Transport } from '../bridges.js';
 const LIGHT_TIMER_DURATION = epochs.minute;
 
 export const devices = {
-  ceilingLight: shelly1WithInput(
+  ceilingLight: shelly1(
     'lighting' as const,
-    'motion' as const,
     'mrpelzbathroom-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),
@@ -98,7 +97,6 @@ export const properties = {
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
   motion: devices.motionSensor.motion,
-  motionSecondary: devices.ceilingLight.input,
   nightLight: devices.nightLight.relay,
 };
 

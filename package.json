@@ -59,5 +59,12 @@
     "@types/suncalc": "latest",
     "@types/ws": "latest",
     "undici": "latest"
+  },
+  "packageManager": "npm@11.14.0+sha512.ea37d9cea2bc11f5869d379941ef9b80cc78220884667ee4d5e338184f1213cd41de261c879d9d55230ed610b63a735b14b230cefc14914c6c38e7143c6d9723",
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "onFail": "warn"
+    }
   }
 }

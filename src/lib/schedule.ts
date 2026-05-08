@@ -19,7 +19,7 @@ type NextExecutionProvider = (
  * 3.55 weeks
  */
 const MAX_TIMEOUT = 2_147_483_647;
-const ERROR_HOLDOFF_TIMEOUT = epochs.minute * 5;
+const ERROR_HOLDOFF_TIMEOUT = epochs.minute;
 
 export class Schedule {
   private readonly _log: Input;
