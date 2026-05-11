@@ -11,6 +11,7 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
+import { motionSensorHMMD } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
@@ -28,7 +29,10 @@ import {
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
-import { door } from '../../../lib/tree/properties/sensors.js';
+import {
+  door,
+  motionHMMDGuarded,
+} from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { persistence } from '../../persistence.js';
@@ -58,6 +62,10 @@ export const devices = {
     'tsiabathroom-mirrorlight.lan.wurstsalat.cloud',
     context,
   ),
+  motionSensor: motionSensorHMMD(
+    'mrpelzbathroommotionsensor.lan.wurstsalat.cloud',
+    context,
+  ),
   nightLight: sonoffBasic(
     'lighting' as const,
     'tsiabathroom-nightlight.lan.wurstsalat.cloud',
@@ -77,13 +85,24 @@ export const instances = {
   wallswitchMirror: devices.wallswitchMirror.button0,
 };
 
-export const properties = {
+const propertiesPartial = {
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
-  motion: devices.ceilingLight.input,
+  motionHMMD: devices.motionSensor.motion,
+  motionPir: devices.ceilingLight.input,
   nightLight: devices.nightLight.relay,
+};
+
+export const properties = {
+  ...propertiesPartial,
+  motion: motionHMMDGuarded(
+    context,
+    epochs.second * 10,
+    propertiesPartial.motionHMMD,
+    propertiesPartial.motionPir,
+  ),
 };
 
 export const groups = {
@@ -392,7 +411,7 @@ export const logic = {
             input.open.state.observe(fn, true);
             break;
           }
-          case 'input': {
+          case 'hmmdMotion': {
             input.state.observe(fn, true);
             break;
           }

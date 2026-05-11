@@ -296,31 +296,6 @@ export const hello = (
   };
 };
 
-export const hmmdMotion = (context: Context, device: Device, index: number) => {
-  const $ = 'hmmdMotion' as const;
-
-  const { state } = new MultiValueEvent(
-    device.addEvent(new HmmdMotion(index)),
-    ['targetDetected', 'distance'],
-  );
-
-  return {
-    $,
-    distance: {
-      lastChange: lastChange(context, state.distance),
-      lastSeen: lastSeen(context, state.distance),
-      main: getter(ValueType.NUMBER, state.distance),
-      state: state.distance,
-    },
-    lastChange: lastChange(context, state.targetDetected),
-    lastSeen: lastSeen(context, state.targetDetected),
-    level: Level.PROPERTY as const,
-    main: getter(ValueType.BOOLEAN, state.targetDetected),
-    state: state.targetDetected,
-    topic: 'motion' as const,
-  };
-};
-
 export const input = <T extends string | undefined>(
   context: Context,
   device: Device,
@@ -347,7 +322,7 @@ export const inputGrouping = <T extends string | undefined>(
   inputs: (
     | ReturnType<typeof input>
     | ReturnType<typeof motion>
-    | ReturnType<typeof hmmdMotion>
+    | ReturnType<typeof motionHMMD>
     | ReturnType<typeof door>
     | ReturnType<typeof window>
   )[],
@@ -502,6 +477,73 @@ export const motion = <T extends string | undefined>(
     main: getter(ValueType.BOOLEAN, state),
     state,
     topic,
+  };
+};
+
+export const motionHMMDGuarded = (
+  context: Context,
+  time: number,
+  motionHMMD_: ReturnType<typeof motionHMMD>,
+  guard:
+    | ReturnType<typeof input>
+    | ReturnType<typeof inputGrouping>
+    | ReturnType<typeof motion>,
+) => {
+  const $ = 'hmmdMotion' as const;
+
+  const timer = new Timer(time);
+
+  motionHMMD_.state.observe(() => {
+    if (!timer.isActive.value) return;
+    timer.start();
+  }, true);
+  guard.state.observe(() => {
+    timer.start();
+  }, true);
+
+  const state_ = new BooleanState(false);
+  motionHMMD_.state.observe((value) => {
+    if (value && !timer.isActive.value) return;
+
+    state_.value = Boolean(value);
+  }, true);
+
+  const state = new ReadOnlyObservable(state_);
+
+  return {
+    $,
+    distance: motionHMMD_.distance,
+    lastChange: lastChange(context, state),
+    lastSeen: lastSeen(context, state),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.BOOLEAN, state),
+    state,
+    topic: 'motion' as const,
+  };
+};
+
+export const motionHMMD = (context: Context, device: Device, index: number) => {
+  const $ = 'hmmdMotion' as const;
+
+  const { state } = new MultiValueEvent(
+    device.addEvent(new HmmdMotion(index)),
+    ['targetDetected', 'distance'],
+  );
+
+  return {
+    $,
+    distance: {
+      lastChange: lastChange(context, state.distance),
+      lastSeen: lastSeen(context, state.distance),
+      main: getter(ValueType.NUMBER, state.distance),
+      state: state.distance,
+    },
+    lastChange: lastChange(context, state.targetDetected),
+    lastSeen: lastSeen(context, state.targetDetected),
+    level: Level.PROPERTY as const,
+    main: getter(ValueType.BOOLEAN, state.targetDetected),
+    state: state.targetDetected,
+    topic: 'motion' as const,
   };
 };
 

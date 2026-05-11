@@ -1,9 +1,8 @@
 import { epochs } from '@mrpelz/modifiable-date';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { ev1527MotionSensor } from '../../../lib/tree/devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
+import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
@@ -11,23 +10,22 @@ import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
-import {
-  door as door_,
-  motion as motion_,
-} from '../../../lib/tree/properties/sensors.js';
+import { door as door_ } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 
 export const devices = {
-  ceilingLight: shelly1(
+  ceilingLight: shelly1WithInput(
     'lighting' as const,
+    'motion' as const,
     'storage-ceilinglight.lan.wurstsalat.cloud',
     context,
+    undefined,
+    true,
   ),
   doorSensor: ev1527WindowSensor(55_632, ev1527Transport, context),
-  motionSensor: ev1527MotionSensor(708_280, ev1527Transport, context),
   rfBridge,
 };
 
@@ -39,7 +37,7 @@ export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: door_(context, devices.doorSensor, undefined),
   lightTimer: timer(context, epochs.minute, undefined),
-  motion: motion_(context, devices.motionSensor, 'security'),
+  motion: devices.ceilingLight.input,
 };
 
 export const groups = {

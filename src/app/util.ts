@@ -35,9 +35,9 @@ import {
   button,
   buttonPrimitive,
   door,
-  hmmdMotion,
   input as input_,
   motion,
+  motionHMMD,
   window,
 } from '../lib/tree/properties/sensors.js';
 import { context } from './context.js';
@@ -200,7 +200,7 @@ export const automatedInputLogic = (
   inputsAutomated: (
     | ReturnType<typeof input_>
     | ReturnType<typeof motion>
-    | ReturnType<typeof hmmdMotion>
+    | ReturnType<typeof motionHMMD>
     | ReturnType<typeof door>
     | ReturnType<typeof window>
   )[],

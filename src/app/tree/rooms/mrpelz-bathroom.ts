@@ -11,7 +11,7 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
-import { motionSensorHMMD } from '../../../lib/tree/devices/motion-sensor.js';
+import { motionSensorHMMDX3 } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
@@ -29,7 +29,11 @@ import {
   triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
-import { door } from '../../../lib/tree/properties/sensors.js';
+import {
+  door,
+  inputGrouping,
+  motionHMMDGuarded,
+} from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { persistence } from '../../persistence.js';
@@ -64,9 +68,11 @@ export const devices = {
     'mrpelzbathroom-mirrorlight.lan.wurstsalat.cloud',
     context,
   ),
-  motionSensor: motionSensorHMMD(
-    'mrpelzbathroommotionsensor.lan.wurstsalat.cloud',
+  motionSensor: motionSensorHMMDX3(
+    'hallwaymotionsensor.lan.wurstsalat.cloud',
     context,
+    undefined,
+    true,
   ),
   nightLight: sonoffBasic(
     'lighting' as const,
@@ -90,13 +96,16 @@ export const instances = {
   wallswitchMirrorTop: devices.wallswitchDoor.button1,
 };
 
-export const properties = {
+const propertiesPartial = {
   ceilingLight: devices.ceilingLight.relay,
   door: door(context, devices.doorSensor, undefined),
   mirrorHeating: devices.mirrorHeating.relay,
   mirrorLed: devices.leds.ledR,
   mirrorLight: devices.mirrorLight.relay,
-  motion: devices.motionSensor.motion,
+  motionHMMD: devices.motionSensor.motionHMMD,
+  motionPir0: devices.motionSensor.motionPir0,
+  motionPir1: devices.motionSensor.motionPir1,
+  motionPir2: devices.motionSensor.motionPir2,
   nightLight: devices.nightLight.relay,
 };
 
@@ -104,23 +113,42 @@ export const groups = {
   allLights: outputGrouping(
     context,
     [
-      properties.ceilingLight,
-      properties.mirrorLed,
-      properties.mirrorLight,
-      properties.nightLight,
+      propertiesPartial.ceilingLight,
+      propertiesPartial.mirrorLed,
+      propertiesPartial.mirrorLight,
+      propertiesPartial.nightLight,
     ],
     'lighting',
   ),
   allThings: outputGrouping(
     context,
     [
-      properties.ceilingLight,
-      properties.mirrorHeating,
-      properties.mirrorLed,
-      properties.mirrorLight,
-      properties.nightLight,
+      propertiesPartial.ceilingLight,
+      propertiesPartial.mirrorHeating,
+      propertiesPartial.mirrorLed,
+      propertiesPartial.mirrorLight,
+      propertiesPartial.nightLight,
     ],
     undefined,
+  ),
+  motionPir: inputGrouping(
+    context,
+    [
+      propertiesPartial.motionPir0,
+      propertiesPartial.motionPir1,
+      propertiesPartial.motionPir2,
+    ],
+    'motion' as const,
+  ),
+};
+
+export const properties = {
+  ...propertiesPartial,
+  motion: motionHMMDGuarded(
+    context,
+    epochs.second * 10,
+    propertiesPartial.motionHMMD,
+    groups.motionPir,
   ),
 };
 

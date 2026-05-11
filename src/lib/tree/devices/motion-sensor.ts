@@ -3,7 +3,7 @@
 import { UDPDevice } from '../../device/udp.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
-import { hmmdMotion, input } from '../properties/sensors.js';
+import { input, motionHMMD } from '../properties/sensors.js';
 
 export const motionSensorX1 = (
   host: string,
@@ -60,6 +60,27 @@ export const motionSensorHMMD = (
     $: 'motionSensor' as const,
     $noMainReference: true as const,
     device: ipDevice(context, device, false, undefined, initiallyOnline),
-    motion: hmmdMotion(context, device, 0),
+    motion: motionHMMD(context, device, 0),
+  };
+};
+
+export const motionSensorHMMDX3 = (
+  host: string,
+  context: Context,
+  port = 1337,
+  initiallyOnline?: boolean,
+) => {
+  const { logger } = context;
+
+  const device = new UDPDevice(logger, host, port);
+
+  return {
+    $: 'motionSensor' as const,
+    $noMainReference: true as const,
+    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    motionHMMD: motionHMMD(context, device, 0),
+    motionPir0: input(context, device, 0, 'motion'),
+    motionPir1: input(context, device, 1, 'motion'),
+    motionPir2: input(context, device, 2, 'motion'),
   };
 };
