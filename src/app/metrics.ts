@@ -172,6 +172,20 @@ export const attachMetrics = async (
       labels_,
       'is device set to online?',
     );
+
+    metrics.addMetric(
+      'device_wifi_rssi',
+      item.hello.fields.wifiRssi.state,
+      labels_,
+      'device wifi RSSI (dB)',
+    );
+
+    metrics.addMetric(
+      'device_die_temp',
+      item.hello.fields.dieTemp.state,
+      { ...labels_, unit: item.hello.fields.dieTemp.unit },
+      'device on-die temperature',
+    );
   }
 
   for (const item of match({ $: 'scene' as const }, excludePattern, system_)) {

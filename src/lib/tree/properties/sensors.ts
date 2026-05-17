@@ -287,8 +287,134 @@ export const hello = (
     schedule,
   );
 
+  /* eslint-disable sort-keys */
+  const fields = {
+    nodeName: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(1) ?? null,
+      ),
+    ),
+    boardName: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(2) ?? null,
+      ),
+    ),
+    hardwareName: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(3) ?? null,
+      ),
+    ),
+    gitRevision: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(4) ?? null,
+      ),
+    ),
+    pioEnvironment: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(5) ?? null,
+      ),
+    ),
+    pioPlatform: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(6) ?? null,
+      ),
+    ),
+    pioFramework: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(7) ?? null,
+      ),
+    ),
+    chipId: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(8) ?? null,
+      ),
+    ),
+    flashId: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(9) ?? null,
+      ),
+    ),
+    ethMacAddress: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(10) ?? null,
+      ),
+    ),
+    wifiMacAddress: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(11) ?? null,
+      ),
+    ),
+    wifiBssid: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(12) ?? null,
+      ),
+    ),
+    wifiChannel: getter(
+      ValueType.NUMBER,
+      new ReadOnlyProxyObservable(state, (value) => {
+        const part = value?.split(',').at(13);
+        return part ? Number.parseInt(part, 10) : null;
+      }),
+    ),
+    wifiRssi: getter(
+      ValueType.NUMBER,
+      new ReadOnlyProxyObservable(state, (value) => {
+        const part = value?.split(',').at(14);
+        return part ? Number.parseFloat(part) : null;
+      }),
+    ),
+    wifiPhyMode: getter(
+      ValueType.NUMBER,
+      new ReadOnlyProxyObservable(state, (value) => {
+        const part = value?.split(',').at(15);
+        return part ? Number.parseInt(part, 10) : null;
+      }),
+    ),
+    wifiSsid: getter(
+      ValueType.STRING,
+      new ReadOnlyProxyObservable(
+        state,
+        (value) => value?.split(',').at(16) ?? null,
+      ),
+    ),
+    dieTemp: getter(
+      ValueType.NUMBER,
+      new ReadOnlyProxyObservable(state, (value) => {
+        const part = value?.split(',').at(17);
+        return part ? Number.parseFloat(part) : null;
+      }),
+      'deg-c' as const,
+    ),
+  };
+  /* eslint-enable sort-keys */
+
   return {
     $,
+    fields,
     level: Level.PROPERTY as const,
     main: getter(ValueType.STRING, state),
     metricStaleness: metricStaleness(context, state, epoch),

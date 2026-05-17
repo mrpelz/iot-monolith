@@ -71,8 +71,6 @@ export const devices = {
   motionSensor: motionSensorHMMDX3(
     'hallwaymotionsensor.lan.wurstsalat.cloud',
     context,
-    undefined,
-    true,
   ),
   nightLight: sonoffBasic(
     'lighting' as const,

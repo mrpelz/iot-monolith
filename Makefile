@@ -3,3 +3,5 @@ BASE_FILE := $(shell npm ls --parseable --silent "@mrpelz/boilerplate-node" 2>/d
 export PERSISTENCE_PATH = ./tmp.json
 
 include $(BASE_FILE)/Makefile
+
+PACKAGE_LOCK_LINT_ARGS := $(PACKAGE_LOCK_LINT_ARGS) git.i.wurstsalat.cloud

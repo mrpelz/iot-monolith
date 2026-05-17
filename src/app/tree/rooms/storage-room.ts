@@ -22,8 +22,6 @@ export const devices = {
     'motion' as const,
     'storage-ceilinglight.lan.wurstsalat.cloud',
     context,
-    undefined,
-    true,
   ),
   doorSensor: ev1527WindowSensor(55_632, ev1527Transport, context),
   rfBridge,

@@ -67,7 +67,19 @@ export const wurstHome = {
   sonninstraße16,
 };
 
-export const system = (async () => {
+export const system: Promise<{
+  $: 'system';
+  $init: InitFunction;
+  allLights: Awaited<typeof allLights_>;
+  allLightsOff: typeof allLightsOff;
+  allMotion: Awaited<typeof allMotion_>;
+  allOff: typeof allOff;
+  allThings: Awaited<typeof allThings_>;
+  allTimer: ReturnType<typeof timer>;
+  allWindows: Awaited<typeof allWindows_>;
+  level: Level.SYSTEM;
+  wurstHome: typeof wurstHome;
+}> = (async () => {
   const allLights = await allLights_;
   const allMotion = await allMotion_;
   const allThings = await allThings_;

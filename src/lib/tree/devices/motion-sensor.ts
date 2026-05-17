@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
 import { UDPDevice } from '../../device/udp.js';
+import { Indicator } from '../../services/indicator.js';
 import { Context } from '../context.js';
 import { ipDevice } from '../elements/device.js';
 import { input, motionHMMD } from '../properties/sensors.js';
@@ -15,10 +16,17 @@ export const motionSensorX1 = (
 
   const device = new UDPDevice(logger, host, port);
 
+  const indicatorR = device.addService(new Indicator(0));
+  const indicatorG = device.addService(new Indicator(1));
+  const indicatorB = device.addService(new Indicator(2));
+
   return {
     $: 'motionSensor' as const,
     $noMainReference: true as const,
-    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    device: ipDevice(context, device, false, indicatorB, initiallyOnline),
+    indicatorB,
+    indicatorG,
+    indicatorR,
     motion: input(context, device, 0, 'motion'),
   };
 };
@@ -33,10 +41,17 @@ export const motionSensorX6 = (
 
   const device = new UDPDevice(logger, host, port);
 
+  const indicatorR = device.addService(new Indicator(0));
+  const indicatorG = device.addService(new Indicator(1));
+  const indicatorB = device.addService(new Indicator(2));
+
   return {
     $: 'motionSensor' as const,
     $noMainReference: true as const,
-    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    device: ipDevice(context, device, false, indicatorB, initiallyOnline),
+    indicatorB,
+    indicatorG,
+    indicatorR,
     motionPir0: input(context, device, 0, 'motion'),
     motionPir1: input(context, device, 1, 'motion'),
     motionPir2: input(context, device, 2, 'motion'),
@@ -56,10 +71,17 @@ export const motionSensorHMMD = (
 
   const device = new UDPDevice(logger, host, port);
 
+  const indicatorR = device.addService(new Indicator(0));
+  const indicatorG = device.addService(new Indicator(1));
+  const indicatorB = device.addService(new Indicator(2));
+
   return {
     $: 'motionSensor' as const,
     $noMainReference: true as const,
-    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    device: ipDevice(context, device, false, indicatorB, initiallyOnline),
+    indicatorB,
+    indicatorG,
+    indicatorR,
     motion: motionHMMD(context, device, 0),
   };
 };
@@ -74,10 +96,17 @@ export const motionSensorHMMDX3 = (
 
   const device = new UDPDevice(logger, host, port);
 
+  const indicatorR = device.addService(new Indicator(0));
+  const indicatorG = device.addService(new Indicator(1));
+  const indicatorB = device.addService(new Indicator(2));
+
   return {
     $: 'motionSensor' as const,
     $noMainReference: true as const,
-    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    device: ipDevice(context, device, false, indicatorB, initiallyOnline),
+    indicatorB,
+    indicatorG,
+    indicatorR,
     motionHMMD: motionHMMD(context, device, 0),
     motionPir0: input(context, device, 0, 'motion'),
     motionPir1: input(context, device, 1, 'motion'),
