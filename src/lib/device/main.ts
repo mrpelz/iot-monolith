@@ -450,11 +450,12 @@ export class Device<T extends Transport = Transport> {
           `could not complete request "${id}": "${(result as Error).message}"`,
         );
 
-        if (!suppressErrors) {
+        if (suppressErrors) {
+          resolve(emptyBuffer);
+        } else {
           this._log.error(() => error.message, callstack(error));
+          reject(error);
         }
-
-        reject(error);
       };
 
       observer = timer?.observe(() =>

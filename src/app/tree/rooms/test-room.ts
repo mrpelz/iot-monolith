@@ -1,5 +1,9 @@
+import { sleep } from '@mrpelz/misc-utils/sleep';
+
+import { off } from '../../../lib/services/output-ng-dimmable.js';
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
+import { esp32s3zero } from '../../../lib/tree/devices/esp32-s3-zero.js';
 import { testDevice } from '../../../lib/tree/devices/test-device.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { Level } from '../../../lib/tree/main.js';
@@ -9,6 +13,7 @@ import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
 export const devices = {
+  esp32s3zero: esp32s3zero('10.97.1.227', context),
   espNowButton: espNowButton(
     {
       espNow: {
@@ -62,8 +67,141 @@ export const groups = {
   motion: inputGrouping(context, [properties.motion0], 'motion'),
 };
 
-const $init: InitFunction = () => {
-  // noop
+const $init: InitFunction = async () => {
+  let _case: 0 | 1 | 2 = 0;
+  while (true) {
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(5000);
+
+    // eslint-disable-next-line default-case
+    switch (_case) {
+      case 0: {
+        devices.esp32s3zero.output0.request(off(), true);
+
+        devices.esp32s3zero.output1.request(
+          {
+            iterations: 1,
+            sequence: [
+              {
+                holdTime: 0,
+                value: {
+                  b: 0,
+                  g: 0,
+                  r: 0,
+                  rampTime: 0,
+                },
+              },
+            ],
+          },
+          true,
+        );
+
+        _case += 1;
+        break;
+      }
+      case 1: {
+        devices.esp32s3zero.output0.request(
+          {
+            iterations: 1,
+            sequence: [{ holdTime: 2000, value: { rampTime: 2000, value: 1 } }],
+          },
+          true,
+        );
+
+        devices.esp32s3zero.output3.request(
+          {
+            iterations: 1,
+            sequence: [
+              { holdTime: 10, value: { rampTime: 0, value: 3750 } },
+              { holdTime: 5, value: { rampTime: 0, value: 0 } },
+              { holdTime: 10, value: { rampTime: 0, value: 3750 * 1.5 } },
+              { holdTime: 5, value: { rampTime: 0, value: 0 } },
+              { holdTime: 10, value: { rampTime: 0, value: 3750 * 2 } },
+              { holdTime: 0, value: { rampTime: 0, value: 0 } },
+            ],
+          },
+          true,
+        );
+
+        devices.esp32s3zero.output1.request(
+          {
+            iterations: 1,
+            sequence: [
+              {
+                holdTime: 1000,
+                value: {
+                  b: 0,
+                  g: 0,
+                  r: 1,
+                  rampTime: 1000,
+                },
+              },
+              {
+                holdTime: 1000,
+                value: {
+                  b: 0,
+                  g: 1,
+                  r: 0,
+                  rampTime: 1000,
+                },
+              },
+              {
+                holdTime: 1000,
+                value: {
+                  b: 1,
+                  g: 0,
+                  r: 0,
+                  rampTime: 1000,
+                },
+              },
+              {
+                holdTime: 1000,
+                value: {
+                  b: 1,
+                  g: 1,
+                  r: 1,
+                  rampTime: 1000,
+                },
+              },
+            ],
+          },
+          true,
+        );
+
+        _case += 1;
+        break;
+      }
+      case 2: {
+        devices.esp32s3zero.output0.request(
+          {
+            iterations: 1,
+            sequence: [{ holdTime: 2000, value: { rampTime: 2000, value: 0 } }],
+          },
+          true,
+        );
+
+        devices.esp32s3zero.output1.request(
+          {
+            iterations: 1,
+            sequence: [
+              {
+                holdTime: 2000,
+                value: {
+                  b: 0,
+                  g: 0,
+                  r: 0,
+                  rampTime: 2000,
+                },
+              },
+            ],
+          },
+          true,
+        );
+
+        _case = 0;
+      }
+    }
+  }
 };
 
 export const testRoom = {
