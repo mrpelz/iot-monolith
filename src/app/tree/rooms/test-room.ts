@@ -12,6 +12,22 @@ import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
+// const b = {
+//   DEFAULT_FREQUENCY: 3750,
+//   C_FREQUENCY: 4186,
+//   C_SHARP_FREQUENCY: 4435,
+//   D_FREQUENCY: 4699,
+//   E_FLAT_FREQUENCY: 4978,
+//   E_FREQUENCY: 5274,
+//   F_FREQUENCY: 5588,
+//   F_SHARP_FREQUENCY: 5920,
+//   G_FREQUENCY: 6272,
+//   G_SHARP_FREQUENCY: 6645,
+//   A_FREQUENCY: 7040,
+//   B_FLAT_FREQUENCY: 7459,
+//   B_FREQUENCY: 7902,
+// };
+
 export const devices = {
   esp32s3zero: esp32s3zero('10.97.1.227', context, undefined, false),
   espNowButton: espNowButton(
@@ -108,20 +124,30 @@ const $init: InitFunction = async () => {
           true,
         );
 
-        devices.esp32s3zero.output3.request(
-          {
-            iterations: 1,
-            sequence: [
-              { holdTime: 10, value: { rampTime: 0, value: 3750 } },
-              { holdTime: 5, value: { rampTime: 0, value: 0 } },
-              { holdTime: 10, value: { rampTime: 0, value: 3750 * 1.5 } },
-              { holdTime: 5, value: { rampTime: 0, value: 0 } },
-              { holdTime: 10, value: { rampTime: 0, value: 3750 * 2 } },
-              { holdTime: 0, value: { rampTime: 0, value: 0 } },
-            ],
-          },
-          true,
-        );
+        // devices.esp32s3zero.output3.request(
+        //   {
+        //     iterations: 1,
+        //     sequence: [
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 / 2 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 1.5 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 100, value: { rampTime: 0, value: 3750 * 2 } },
+        //       { holdTime: 100, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 2 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 1.5 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 3750 } },
+        //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
+        //       { holdTime: 100, value: { rampTime: 0, value: 3750 / 2 } },
+        //       { holdTime: 0, value: { rampTime: 0, value: 0 } },
+        //     ],
+        //   },
+        //   true,
+        // );
 
         devices.esp32s3zero.output1.request(
           {
