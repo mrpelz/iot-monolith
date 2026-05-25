@@ -13,7 +13,7 @@ import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
 export const devices = {
-  esp32s3zero: esp32s3zero('10.97.1.227', context),
+  esp32s3zero: esp32s3zero('10.97.1.227', context, undefined, false),
   espNowButton: espNowButton(
     {
       espNow: {

@@ -52,7 +52,7 @@ export const instances = {
 export const properties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
-  entryDoor: door(context, devices.doorSensor, 'open'),
+  door: door(context, devices.doorSensor, 'open'),
   motion: devices.ceilingLightFront.input,
 };
 
@@ -72,7 +72,7 @@ export const groups = {
 export const logic = {
   ceilingLightFrontLogic: automatedInputLogic(
     properties.ceilingLightFront,
-    [properties.motion, properties.entryDoor],
+    [properties.motion, properties.door],
     [instances.wallswitchFrontLeft],
     epochs.minute * 5,
     undefined,

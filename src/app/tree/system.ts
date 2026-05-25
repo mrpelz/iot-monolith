@@ -34,7 +34,23 @@ import {
   kitchenAdjacentChillax,
 } from './scenes.js';
 
-const firstFloor = {
+const firstFloor: {
+  $: 'firstFloor';
+  hallway: typeof hallway;
+  kitchen: typeof kitchen;
+  kitchenAdjacentBright: typeof kitchenAdjacentBright;
+  kitchenAdjacentChillax: typeof kitchenAdjacentChillax;
+  kitchenAdjacentLights: typeof kitchenAdjacentLights;
+  level: Level.FLOOR;
+  livingRoom: typeof livingRoom;
+  mrpelzBathroom: typeof mrpelzBathroom;
+  mrpelzBedroom: typeof mrpelzBedroom;
+  office: typeof office;
+  storageRoom: typeof storageRoom;
+  testRoom: typeof testRoom;
+  tsiaBathroom: typeof tsiaBathroom;
+  tsiaBedroom: typeof tsiaBedroom;
+} = {
   $: 'firstFloor' as const,
   hallway,
   kitchen,
@@ -52,16 +68,25 @@ const firstFloor = {
   tsiaBedroom,
 };
 
-const sonninstraße16 = {
+const sonninstraße16: {
+  $: 'sonninstraße16';
+  entryDoor: typeof hallwayProperties.door;
+  firstFloor: typeof firstFloor;
+  level: Level.BUILDING;
+} & ReturnType<typeof sunElevation> = {
   $: 'sonninstraße16' as const,
   firstFloor,
   // eslint-disable-next-line sort-keys
-  entryDoor: hallwayProperties.entryDoor,
+  entryDoor: hallwayProperties.door,
   level: Level.BUILDING as const,
   ...sunElevation(every5Seconds),
 };
 
-export const wurstHome = {
+export const wurstHome: {
+  $: 'wurstHome';
+  level: Level.HOME;
+  sonninstraße16: typeof sonninstraße16;
+} = {
   $: 'wurstHome' as const,
   level: Level.HOME as const,
   sonninstraße16,

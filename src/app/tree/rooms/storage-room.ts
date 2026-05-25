@@ -1,20 +1,15 @@
 import { epochs } from '@mrpelz/modifiable-date';
 
-import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
-import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
 import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
-import { timer } from '../../../lib/tree/properties/logic.js';
 import { door as door_ } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
-import { logger, logicReasoningLevel } from '../../logging.js';
-import { ackBlinkFromOff, ackBlinkFromOn } from '../../orchestrations.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
+import { automatedInputLogic } from '../../util.js';
 
 export const devices = {
   ceilingLight: shelly1WithInput(
@@ -34,7 +29,6 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   door: door_(context, devices.doorSensor, undefined),
-  lightTimer: timer(context, epochs.minute, undefined),
   motion: devices.ceilingLight.input,
 };
 
@@ -42,86 +36,23 @@ export const groups = {
   allLights: outputGrouping(context, [properties.ceilingLight], 'lighting'),
 };
 
-const $init: InitFunction = (room, introspection) => {
-  const { wallswitch } = instances;
-  const { ceilingLight, door, lightTimer, motion } = properties;
+export const logic = {
+  ceilingLightLogic: automatedInputLogic(
+    properties.ceilingLight,
+    [properties.motion, properties.door],
+    [instances.wallswitch],
+    epochs.minute,
+  ),
+};
 
-  const p = makePathStringRetriever(introspection);
-  const l = makeCustomStringLogger(
-    logger.getInput({
-      head: p(room),
-    }),
-    logicReasoningLevel,
-  );
-
-  let indicatorInProgress = false;
-
-  wallswitch.state.up(() =>
-    flipMain(ceilingLight, () =>
-      l(
-        `${p(wallswitch)} ${wallswitch.state.up.name} flipped ${p(ceilingLight)}`,
-      ),
-    ),
-  );
-
-  wallswitch.state.longPress(async () => {
-    if (!lightTimer.state.isEnabled.value) {
-      l(
-        `${p(wallswitch)} ${wallswitch.state.longPress.name} didn’t do anything, because ${p(lightTimer)} is disabled`,
-      );
-
-      return;
-    }
-
-    indicatorInProgress = true;
-
-    await (getMain(ceilingLight)
-      ? ackBlinkFromOn(ceilingLight.main.setState)
-      : ackBlinkFromOff(ceilingLight.main.setState));
-
-    indicatorInProgress = false;
-
-    lightTimer.state.stop();
-
-    l(
-      `${p(wallswitch)} ${wallswitch.state.longPress.name} triggered blink-orchestration and stopped ${p(lightTimer)}`,
-    );
-  });
-
-  door.open.main.state.observe((open) => {
-    if (!open) return;
-
-    setMain(ceilingLight, true, () =>
-      l(`${p(door)} was opened and turned on ${p(ceilingLight)}`),
-    );
-  });
-
-  motion.state.observe((value) => {
-    // when motion is detected, turn on front ceiling light and (re)start timer
-    if (value) {
-      setMain(ceilingLight, true, () => {
-        l(`${p(motion)} was detected and ${p(ceilingLight)} was turned on`);
-      });
-    }
-  });
-
-  ceilingLight.main.setState.observe((value, _observer, changed) => {
-    if (indicatorInProgress) return;
-
-    if (changed) {
-      l(
-        `${p(lightTimer)} was ${value ? 'started' : 'stopped'} because ${p(ceilingLight)} was turned ${value ? 'on' : 'off'}`,
-      );
-    }
-
-    lightTimer.state[value ? 'start' : 'stop']();
-  }, true);
-
-  lightTimer.state.observe(() =>
-    setMain(ceilingLight, false, () =>
-      l(`${p(ceilingLight)} was turned off because ${p(lightTimer)} ran out`),
-    ),
-  );
+const $init: InitFunction = () => {
+  // const p = makePathStringRetriever(introspection);
+  // const l = makeCustomStringLogger(
+  //   logger.getInput({
+  //     head: p(room),
+  //   }),
+  //   logicReasoningLevel,
+  // );
 };
 
 export const storageRoom = {
@@ -131,5 +62,6 @@ export const storageRoom = {
   level: Level.ROOM as const,
   ...groups,
   ...instances,
+  ...logic,
   ...properties,
 };
