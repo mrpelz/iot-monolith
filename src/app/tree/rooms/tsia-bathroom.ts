@@ -99,9 +99,10 @@ export const properties = {
   ...propertiesPartial,
   motion: motionHMMDGuarded(
     context,
-    epochs.second * 10,
     propertiesPartial.motionHMMD,
     propertiesPartial.motionPir,
+    epochs.second * 10,
+    50,
   ),
 };
 

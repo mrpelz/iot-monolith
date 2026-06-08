@@ -48,6 +48,7 @@ import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
+import { timer as timer_ } from './logic.js';
 
 export type Timings = Record<string, ScheduleEpochPair | undefined> & {
   default: ScheduleEpochPair;
@@ -608,31 +609,49 @@ export const motion = <T extends string | undefined>(
 
 export const motionHMMDGuarded = (
   context: Context,
-  time: number,
   motionHMMD_: ReturnType<typeof motionHMMD>,
   guard:
     | ReturnType<typeof input>
     | ReturnType<typeof inputGrouping>
     | ReturnType<typeof motion>,
+  cooloffTime: number,
+  triggerAfterCumulativeHMMDTriggers?: number,
 ) => {
   const $ = 'hmmdMotion' as const;
 
-  const timer = new Timer(time);
-
-  motionHMMD_.state.observe(() => {
-    if (!timer.isActive.value) return;
-    timer.start();
-  }, true);
-  guard.state.observe(() => {
-    timer.start();
-  }, true);
-
+  const timer = timer_(context, cooloffTime);
   const state_ = new BooleanState(false);
+  let cumulativeHMMDTriggers = 0;
+
   motionHMMD_.state.observe((value) => {
-    if (value && !timer.isActive.value) return;
+    if (value) {
+      if (triggerAfterCumulativeHMMDTriggers) {
+        cumulativeHMMDTriggers += 1;
+
+        if (cumulativeHMMDTriggers < triggerAfterCumulativeHMMDTriggers) return;
+      }
+
+      if (!timer.state.isActive.value) return;
+    }
+
+    if (
+      timer.state.isActive.value ||
+      cumulativeHMMDTriggers === triggerAfterCumulativeHMMDTriggers
+    ) {
+      timer.state.start();
+      cumulativeHMMDTriggers = 0;
+    }
 
     state_.value = Boolean(value);
   }, true);
+
+  guard.state.observe(() => timer.state.start(), true);
+
+  if (triggerAfterCumulativeHMMDTriggers) {
+    timer.state.observe(() => {
+      cumulativeHMMDTriggers = 0;
+    });
+  }
 
   const state = new ReadOnlyObservable(state_);
 
@@ -644,6 +663,7 @@ export const motionHMMDGuarded = (
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     state,
+    timer,
     topic: 'motion' as const,
   };
 };
