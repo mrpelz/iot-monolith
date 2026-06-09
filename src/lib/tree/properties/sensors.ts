@@ -624,18 +624,18 @@ export const motionHMMDGuarded = (
   let cumulativeHMMDTriggers = 0;
 
   motionHMMD_.state.observe((value) => {
-    if (
-      timer.state.isActive.value ||
-      cumulativeHMMDTriggers === triggerAfterCumulativeHMMDTriggers
-    ) {
-      state_.value = true;
-      timer.state.start();
-      cumulativeHMMDTriggers = 0;
+    if (triggerAfterCumulativeHMMDTriggers) {
+      cumulativeHMMDTriggers += 1;
     }
 
     if (value) {
-      if (triggerAfterCumulativeHMMDTriggers) {
-        cumulativeHMMDTriggers += 1;
+      if (
+        timer.state.isActive.value ||
+        cumulativeHMMDTriggers === triggerAfterCumulativeHMMDTriggers
+      ) {
+        state_.value = true;
+        timer.state.start();
+        cumulativeHMMDTriggers = 0;
       }
 
       return;
