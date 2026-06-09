@@ -631,7 +631,8 @@ export const motionHMMDGuarded = (
     if (value) {
       if (
         timer.state.isActive.value ||
-        cumulativeHMMDTriggers === triggerAfterCumulativeHMMDTriggers
+        (triggerAfterCumulativeHMMDTriggers &&
+          cumulativeHMMDTriggers >= triggerAfterCumulativeHMMDTriggers)
       ) {
         state_.value = true;
         timer.state.start();
