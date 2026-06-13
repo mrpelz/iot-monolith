@@ -21,17 +21,17 @@ import { properties as livingRoomProperties } from './living-room.js';
 
 export const devices = {
   ceilingLight: sonoffBasic(
-    'lighting',
-    'livingroom-ceilinglight.lan.wurstsalat.cloud',
+    'lighting' as const,
+    'office-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),
   floodlight: obiPlug(
-    'lighting',
-    'mrpelzbedroom-floodlight.lan.wurstsalat.cloud',
+    'lighting' as const,
+    'office-floodlight.lan.wurstsalat.cloud',
     context,
   ),
   multiButton: ev1527ButtonX4(714_410, ev1527Transport, context),
-  wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
+  wallswitch: shellyi3('office-wallswitch.lan.wurstsalat.cloud', context),
   windowSensor: ev1527WindowSensor(670_496, ev1527Transport, context),
 };
 

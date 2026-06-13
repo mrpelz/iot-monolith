@@ -4,8 +4,10 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { Schedule } from '../../../lib/schedule.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
-import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
-import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
+import {
+  shelly1,
+  shelly1WithInput,
+} from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
@@ -19,7 +21,7 @@ import { automatedInputLogic, manualInputLogic } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
-  ceilingLightBack: sonoffBasic(
+  ceilingLightBack: shelly1(
     'lighting' as const,
     'hallway-ceilinglightback.lan.wurstsalat.cloud',
     context,
@@ -28,6 +30,11 @@ export const devices = {
     'lighting' as const,
     'motion' as const,
     'hallway-ceilinglightfront.lan.wurstsalat.cloud',
+    context,
+  ),
+  ceilingLightMiddle: shelly1(
+    'lighting' as const,
+    'hallway-ceilinglightmiddle.lan.wurstsalat.cloud',
     context,
   ),
   doorSensor: ev1527WindowSensor(55_024, ev1527Transport, context),
@@ -52,6 +59,7 @@ export const instances = {
 export const properties = {
   ceilingLightBack: devices.ceilingLightBack.relay,
   ceilingLightFront: devices.ceilingLightFront.relay,
+  ceilingLightMiddle: devices.ceilingLightMiddle.relay,
   door: door(context, devices.doorSensor, 'open'),
   motion: devices.ceilingLightFront.input,
 };
@@ -59,12 +67,20 @@ export const properties = {
 export const groups = {
   allLights: outputGrouping(
     context,
-    [properties.ceilingLightBack, properties.ceilingLightFront],
+    [
+      properties.ceilingLightBack,
+      properties.ceilingLightFront,
+      properties.ceilingLightMiddle,
+    ],
     'lighting',
   ),
   ceilingLight: outputGrouping(
     context,
-    [properties.ceilingLightBack, properties.ceilingLightFront],
+    [
+      properties.ceilingLightBack,
+      properties.ceilingLightFront,
+      properties.ceilingLightMiddle,
+    ],
     'lighting',
   ),
 };

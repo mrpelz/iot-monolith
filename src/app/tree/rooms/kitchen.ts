@@ -2,18 +2,27 @@ import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import { Level } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
-import { ledGrouping } from '../../../lib/tree/properties/actuators.js';
+import {
+  ledGrouping,
+  outputGrouping,
+} from '../../../lib/tree/properties/actuators.js';
 import { inputGrouping, window } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
+  ceilingLight: sonoffBasic(
+    'lighting' as const,
+    'kitchen-ceilinglight.lan.wurstsalat.cloud',
+    context,
+  ),
   ledsLeft: h801('kitchen-ledsleft.lan.wurstsalat.cloud', context),
   ledsRight: h801('kitchen-ledsright.lan.wurstsalat.cloud', context),
   wallswitchBack: shellyi3(
@@ -35,6 +44,7 @@ export const instances = {
 };
 
 export const properties = {
+  ceilingLight: devices.ceilingLight.relay,
   ledLeftCWhite: devices.ledsLeft.ledG,
   ledLeftFloodlight: devices.ledsLeft.ledB,
   ledLeftWWhite: devices.ledsLeft.ledR,
@@ -45,14 +55,19 @@ export const properties = {
 };
 
 export const groups = {
-  allLights: ledGrouping(context, [
-    properties.ledLeftCWhite,
-    properties.ledLeftFloodlight,
-    properties.ledLeftWWhite,
-    properties.ledRightCWhite,
-    properties.ledRightFloodlight,
-    properties.ledRightWWhite,
-  ]),
+  allLights: outputGrouping(
+    context,
+    [
+      properties.ceilingLight,
+      properties.ledLeftCWhite,
+      properties.ledLeftFloodlight,
+      properties.ledLeftWWhite,
+      properties.ledRightCWhite,
+      properties.ledRightFloodlight,
+      properties.ledRightWWhite,
+    ],
+    'lighting' as const,
+  ),
   allWindows: inputGrouping(context, [properties.window], 'open'),
   cWhite: ledGrouping(context, [
     properties.ledLeftCWhite,

@@ -15,7 +15,7 @@ export const devices = {
   ceilingLight: shelly1WithInput(
     'lighting' as const,
     'motion' as const,
-    'storage-ceilinglight.lan.wurstsalat.cloud',
+    'storageroom-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),
   doorSensor: ev1527WindowSensor(55_632, ev1527Transport, context),

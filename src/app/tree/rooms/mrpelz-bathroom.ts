@@ -69,7 +69,7 @@ export const devices = {
     context,
   ),
   motionSensor: motionSensorHMMDX3(
-    'hallwaymotionsensor.lan.wurstsalat.cloud',
+    'mrpelzbathroom-motionsensor.lan.wurstsalat.cloud',
     context,
   ),
   nightLight: sonoffBasic(

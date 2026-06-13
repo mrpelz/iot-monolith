@@ -8,6 +8,7 @@ import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
 import { h801 } from '../../../lib/tree/devices/h801.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
+import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import {
   flipMain,
@@ -36,6 +37,11 @@ import { ev1527Transport } from '../bridges.js';
 import { groups as hallwayGroups } from './hallway.js';
 
 export const devices = {
+  ceilingLight: shelly1(
+    'lighting' as const,
+    'livingroom-ceilinglight.lan.wurstsalat.cloud',
+    context,
+  ),
   couchButton: ev1527ButtonX4(822_302, ev1527Transport, context),
   standingLamp: obiPlug(
     'lighting' as const,
@@ -44,11 +50,11 @@ export const devices = {
   ),
   terrariumLeds: markObjectKeysExcludedFromMatch(
     // prevent automated leds from appearing in groups
-    h801('office-workbenchleds.lan.wurstsalat.cloud', context),
+    h801('livingroom-terrariumleds.lan.wurstsalat.cloud', context),
     'ledB',
     'ledR',
   ),
-  wallswitch: shellyi3('diningroom-wallswitch.lan.wurstsalat.cloud', context),
+  wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
 };
 
 export const instances = {
@@ -64,6 +70,7 @@ export const instances = {
 const isTerrariumLedsOverride = new BooleanState(false);
 
 export const properties = {
+  ceilingLight: devices.ceilingLight.relay,
   overrideTimer: timer(context, epochs.hour * 3, true),
   standingLamp: devices.standingLamp.relay,
   terrariumLedRed: overriddenLed(
@@ -80,6 +87,7 @@ export const groups = {
   allLights: outputGrouping(
     context,
     [
+      properties.ceilingLight,
       properties.standingLamp,
       properties.terrariumLedRed,
       properties.terrariumLedTop,

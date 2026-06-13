@@ -29,7 +29,7 @@ export const devices = {
   doorSensor: ev1527WindowSensor(55_696, ev1527Transport, context),
   nightLight: sonoffBasic(
     'lighting' as const,
-    'mrpelzbedroom-nightlight.lan.wurstsalat.cloud',
+    'tsiabedroom-nightlight.lan.wurstsalat.cloud',
     context,
   ),
   standingLamp: obiPlug(
