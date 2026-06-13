@@ -34,7 +34,6 @@ import { logger, logicReasoningLevel } from '../../logging.js';
 import { every30Seconds } from '../../timings.js';
 import { overriddenLed, sunlightLeds } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
-import { groups as hallwayGroups } from './hallway.js';
 
 export const devices = {
   ceilingLight: shelly1(
@@ -120,8 +119,13 @@ const $init: InitFunction = async (room, introspection) => {
     wallswitchBottom,
     wallswitchTop,
   } = instances;
-  const { standingLamp, overrideTimer, terrariumLedRed, terrariumLedTop } =
-    properties;
+  const {
+    ceilingLight,
+    standingLamp,
+    overrideTimer,
+    terrariumLedRed,
+    terrariumLedTop,
+  } = properties;
   const { mediaOnOrSwitch, mediaOff, terrariumLedsOverride } = scenes;
 
   const p = makePathStringRetriever(introspection);
@@ -217,9 +221,9 @@ const $init: InitFunction = async (room, introspection) => {
   );
 
   wallswitchTop.state.up(() =>
-    flipMain(hallwayGroups.ceilingLight, () =>
+    flipMain(ceilingLight, () =>
       l(
-        `${p(wallswitchTop)} ${wallswitchTop.state.up.name} flipped ${p(hallwayGroups.ceilingLight)}`,
+        `${p(wallswitchTop)} ${wallswitchTop.state.up.name} flipped ${p(ceilingLight)}`,
       ),
     ),
   );
