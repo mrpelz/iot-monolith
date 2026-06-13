@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { safeAsync } from '@mrpelz/misc-utils/async';
 import { emptyBuffer } from '@mrpelz/misc-utils/data';
 import { NUMBER_RANGES } from '@mrpelz/misc-utils/number';
 import { RollingNumber } from '@mrpelz/misc-utils/rolling-number';
@@ -294,12 +295,11 @@ export class Device<T extends Transport = Transport> {
     if (!this._transport.isConnected.value) return;
     if (!this._keepalive) return;
 
-    try {
-      await this._keepalive.request(undefined, true, true);
+    const [error] = await safeAsync(
+      this._keepalive.request(undefined, false, true),
+    );
 
-      this._keepaliveMissedPackets = 0;
-      this._isOnline.value = true;
-    } catch {
+    if (error) {
       if (!this.isOnline.value) return;
 
       this._log.info(() => 'missed keepalive response');
@@ -320,7 +320,12 @@ export class Device<T extends Transport = Transport> {
 
       this._keepaliveMissedPackets = 0;
       this._isOnline.value = false;
+
+      return;
     }
+
+    this._keepaliveMissedPackets = 0;
+    this._isOnline.value = true;
   }
 
   /**
@@ -423,14 +428,24 @@ export class Device<T extends Transport = Transport> {
     }
 
     return new Promise((resolve, reject) => {
-      this._transport._writeToTransport(
-        payloadOutgoing.encode({
-          header: {
-            requestIdentifier: id,
-          },
-          message,
-        }),
-      );
+      try {
+        this._transport._writeToTransport(
+          payloadOutgoing.encode({
+            header: {
+              requestIdentifier: id,
+            },
+            message,
+          }),
+        );
+      } catch (error) {
+        if (suppressErrors) {
+          resolve(emptyBuffer);
+        } else {
+          reject(error);
+        }
+
+        return;
+      }
 
       const timer = timeout ? new Timer(timeout) : null;
       let observer: Observer | undefined;

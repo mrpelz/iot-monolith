@@ -35,7 +35,10 @@ import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   bedButton: ev1527ButtonWP07(529_507, ev1527Transport, context),
-  bookshelfLeds: h801('bedroom-bedrgbwleds.lan.wurstsalat.cloud', context),
+  bookshelfLeds: h801(
+    'mrpelzbedroom-bookshelfleds.lan.wurstsalat.cloud',
+    context,
+  ),
   button: ev1527ButtonX1(74_160, ev1527Transport, context),
   ceilingLight: shelly1(
     'lighting' as const,
