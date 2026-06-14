@@ -36,7 +36,7 @@ export const kitchenAdjacentChillax = scene(
     ),
     new SceneMember(livingRoomProperties.ceilingLight.main.setState, false),
     new SceneMember(livingRoomProperties.standingLamp.main.setState, false),
-    new SceneMember(officeProperties.ceilingLight.main.setState, true, false),
+    new SceneMember(officeProperties.ceilingLight.main.setState, false),
     new SceneMember(officeProperties.floodlight.main.setState, false),
   ],
   'lighting',
