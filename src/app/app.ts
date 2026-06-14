@@ -16,6 +16,8 @@ import { init } from '../lib/tree/operations/init.js';
 import { Introspection } from '../lib/tree/operations/introspection.js';
 import { Serialization } from '../lib/tree/operations/serialization.js';
 
+export let cleanup: (() => Promise<void>) | undefined;
+
 export const app = async (): Promise<void> => {
   collectDefaultMetrics();
 
@@ -156,7 +158,12 @@ export const app = async (): Promise<void> => {
     response.end('ok\n');
   });
 
-  process.on('exit', () => persistence.persist());
+  cleanup = async () => {
+    persistence.persist();
+
+    log.info(() => 'cleaned up successfully');
+  };
+
   await persistence.restore();
 
   log.info(() => 'started up successfully');
