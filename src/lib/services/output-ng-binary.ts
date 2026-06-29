@@ -48,3 +48,41 @@ export class OutputBinary extends Service<null, OutputBinaryRequest> {
     return result;
   }
 }
+
+export const on = (): OutputBinaryRequest => ({
+  iterations: 1,
+  sequence: [
+    {
+      holdTime: 0,
+      value: true,
+    },
+  ],
+});
+
+export const off = (): OutputBinaryRequest => ({
+  iterations: 1,
+  sequence: [
+    {
+      holdTime: 0,
+      value: false,
+    },
+  ],
+});
+
+export const blink = (
+  count = 1,
+  onTime = 64,
+  offTime = 128,
+): OutputBinaryRequest => ({
+  iterations: count,
+  sequence: [
+    {
+      holdTime: onTime,
+      value: true,
+    },
+    {
+      holdTime: offTime,
+      value: false,
+    },
+  ],
+});

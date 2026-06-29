@@ -65,7 +65,7 @@ export class SingleValueSensor<T = any, S = void> {
 
     const result = await (async () => {
       try {
-        return promiseGuard(this._service.request(input as S, true));
+        return promiseGuard(this._service.request(input as S, undefined, true));
       } catch {
         return null;
       }
@@ -163,7 +163,7 @@ export class MultiValueSensor<
 
     const result = await (async () => {
       try {
-        return promiseGuard(this._service.request(input as S, true));
+        return promiseGuard(this._service.request(input as S, undefined, true));
       } catch {
         return null;
       }

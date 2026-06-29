@@ -182,6 +182,7 @@ export class Service<T = void, S = void> extends Property {
    */
   request(
     data: S,
+    timeout = this._timeout,
     suppressErrors = false,
     ignoreOffline = false,
   ): Request<T | null> {
@@ -194,7 +195,7 @@ export class Service<T = void, S = void> extends Property {
         this._headerOutgoing.encode({
           message: this.encode(data),
         }),
-        this._timeout,
+        timeout,
         suppressErrors,
         ignoreOffline,
       )
@@ -296,7 +297,7 @@ export class Device<T extends Transport = Transport> {
     if (!this._keepalive) return;
 
     const [error] = await safeAsync(
-      this._keepalive.request(undefined, false, true),
+      this._keepalive.request(undefined, undefined, false, true),
     );
 
     if (error) {

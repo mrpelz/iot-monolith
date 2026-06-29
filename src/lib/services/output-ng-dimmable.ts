@@ -1,5 +1,3 @@
-/* eslint-disable sort-keys */
-
 import { DoubleLE, MappedStruct, TStruct, UIntLE } from '@mrpelz/struct';
 
 import { Service } from '../device/main.js';
@@ -48,8 +46,8 @@ export const on = (): OutputDimmableRequest => ({
   iterations: 1,
   sequence: [
     {
-      value: { rampTime: 0, value: 1 },
       holdTime: 0,
+      value: { rampTime: 0, value: 1 },
     },
   ],
 });
@@ -58,8 +56,8 @@ export const off = (): OutputDimmableRequest => ({
   iterations: 1,
   sequence: [
     {
-      value: { rampTime: 0, value: 0 },
       holdTime: 0,
+      value: { rampTime: 0, value: 0 },
     },
   ],
 });
@@ -72,12 +70,12 @@ export const blink = (
   iterations: count,
   sequence: [
     {
-      value: { rampTime: 0, value: 1 },
       holdTime: onTime,
+      value: { rampTime: 0, value: 1 },
     },
     {
-      value: { rampTime: 0, value: 0 },
       holdTime: offTime,
+      value: { rampTime: 0, value: 0 },
     },
   ],
 });
