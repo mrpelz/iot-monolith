@@ -1,3 +1,4 @@
+import { NUMBER_RANGES } from '@mrpelz/misc-utils/number';
 import {
   Bool,
   DynamicBuffer,
@@ -69,19 +70,23 @@ export const off = (): OutputBinaryRequest => ({
   ],
 });
 
+export const [, ITERATE_INFINITE] = NUMBER_RANGES.uint[4];
+export const BLINK_PERIOD_ON = 100;
+export const BLINK_PERIOD_OFF = 100;
+
 export const blink = (
-  count = 1,
-  onTime = 64,
-  offTime = 128,
+  count = ITERATE_INFINITE,
+  timeOn = BLINK_PERIOD_ON,
+  timeOff = BLINK_PERIOD_OFF,
 ): OutputBinaryRequest => ({
   iterations: count,
   sequence: [
     {
-      holdTime: onTime,
+      holdTime: timeOn,
       value: true,
     },
     {
-      holdTime: offTime,
+      holdTime: timeOff,
       value: false,
     },
   ],

@@ -12,11 +12,11 @@ const payloadStageTwo = new MappedStruct({
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-export type OutputNgProgressPayload = TStruct<typeof payloadStageOne> &
+export type OutputProgressPayload = TStruct<typeof payloadStageOne> &
   Partial<TStruct<typeof payloadStageTwo>>;
 
-export class OutputNgProgress extends Event<OutputNgProgressPayload> {
-  protected decode(input: Buffer): OutputNgProgressPayload | null {
+class OutputProgress extends Event<OutputProgressPayload> {
+  protected decode(input: Buffer): OutputProgressPayload | null {
     try {
       const [{ isIterating }, rest] = payloadStageOne.decodeOpenended(input);
       const { remainingIterations } =
@@ -29,25 +29,27 @@ export class OutputNgProgress extends Event<OutputNgProgressPayload> {
   }
 }
 
-export class OutputNgBinaryProgress extends OutputNgProgress {
+export type TOutputProgress = OutputProgress;
+
+export class OutputBinaryProgress extends OutputProgress {
   constructor(index: number) {
     super(Buffer.from([0x0c, index]));
   }
 }
 
-export class OutputNgBuzzerProgress extends OutputNgProgress {
+export class OutputBuzzerProgress extends OutputProgress {
   constructor(index: number) {
     super(Buffer.from([0x0d, index]));
   }
 }
 
-export class OutputNgDimmableProgress extends OutputNgProgress {
+export class OutputDimmableProgress extends OutputProgress {
   constructor(index: number) {
     super(Buffer.from([0x0e, index]));
   }
 }
 
-export class OutputNgDimmableRGBProgress extends OutputNgProgress {
+export class OutputDimmableRGBProgress extends OutputProgress {
   constructor(index: number) {
     super(Buffer.from([0x0f, index]));
   }

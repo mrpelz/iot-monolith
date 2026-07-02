@@ -1,3 +1,10 @@
+/* eslint-disable sort-keys */
+/* eslint-disable @typescript-eslint/naming-convention */
+import { sleep } from '@mrpelz/misc-utils/sleep';
+
+import { melody } from '../../../lib/services/output-ng-buzzer.js';
+import { blink } from '../../../lib/services/output-ng-dimmable.js';
+import { blinkRGBInclusive } from '../../../lib/services/output-ng-dimmable-rgb.js';
 import { espNowButton } from '../../../lib/tree/devices/esp-now-button.js';
 import { espNowWindowSensor } from '../../../lib/tree/devices/esp-now-window-sensor.js';
 import { esp32s3zero } from '../../../lib/tree/devices/esp32-s3-zero.js';
@@ -9,28 +16,27 @@ import { inputGrouping } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { espNowTransport } from '../bridges.js';
 
-// const b = {
-//   DEFAULT_FREQUENCY: 3750,
-//   C_FREQUENCY: 4186,
-//   C_SHARP_FREQUENCY: 4435,
-//   D_FREQUENCY: 4699,
-//   E_FLAT_FREQUENCY: 4978,
-//   E_FREQUENCY: 5274,
-//   F_FREQUENCY: 5588,
-//   F_SHARP_FREQUENCY: 5920,
-//   G_FREQUENCY: 6272,
-//   G_SHARP_FREQUENCY: 6645,
-//   A_FREQUENCY: 7040,
-//   B_FLAT_FREQUENCY: 7459,
-//   B_FREQUENCY: 7902,
-// };
+const b = {
+  DEFAULT_FREQUENCY: 3750,
+  C_FREQUENCY: 4186,
+  C_SHARP_FREQUENCY: 4435,
+  D_FREQUENCY: 4699,
+  E_FLAT_FREQUENCY: 4978,
+  E_FREQUENCY: 5274,
+  F_FREQUENCY: 5588,
+  F_SHARP_FREQUENCY: 5920,
+  G_FREQUENCY: 6272,
+  G_SHARP_FREQUENCY: 6645,
+  A_FREQUENCY: 7040,
+  B_FLAT_FREQUENCY: 7459,
+  B_FREQUENCY: 7902,
+};
 
 export const devices = {
   esp32s3zero: esp32s3zero(
     'testroom-esp32s3zero.lan.wurstsalat.cloud',
     context,
     undefined,
-    false,
   ),
   espNowButton: espNowButton(
     {
@@ -41,6 +47,7 @@ export const devices = {
       },
       wifi: {
         host: 'esp-now-test-button.iot-ng.lan.wurstsalat.cloud',
+        initiallyOnline: false,
       },
     },
     context,
@@ -54,6 +61,7 @@ export const devices = {
       },
       wifi: {
         host: 'esp-now-test-window-sensor.iot-ng.lan.wurstsalat.cloud',
+        initiallyOnline: false,
       },
     },
     context,
@@ -86,142 +94,52 @@ export const groups = {
 };
 
 const $init: InitFunction = async () => {
-  // let _case: 0 | 1 | 2 = 0;
-  // while (true) {
-  //   // eslint-disable-next-line no-await-in-loop
-  //   await sleep(5000);
-  //   // eslint-disable-next-line default-case
-  //   switch (_case) {
-  //     case 0: {
-  //       devices.esp32s3zero.output0.request(off(), true);
-  //       devices.esp32s3zero.output1.request(
-  //         {
-  //           iterations: 1,
-  //           sequence: [
-  //             {
-  //               holdTime: 0,
-  //               value: {
-  //                 b: 0,
-  //                 g: 0,
-  //                 r: 0,
-  //                 rampTime: 0,
-  //               },
-  //             },
-  //           ],
-  //         },
-  //         true,
-  //       );
-  //       _case += 1;
-  //       break;
-  //     }
-  //     case 1: {
-  //       devices.esp32s3zero.output0.request(
-  //         {
-  //           iterations: 1,
-  //           sequence: [{ holdTime: 2000, value: { rampTime: 2000, value: 1 } }],
-  //         },
-  //         true,
-  //       );
-  //       // devices.esp32s3zero.output3.request(
-  //       //   {
-  //       //     iterations: 1,
-  //       //     sequence: [
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 / 2 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 1.5 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 100, value: { rampTime: 0, value: 3750 * 2 } },
-  //       //       { holdTime: 100, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 2 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 * 1.5 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 3750 } },
-  //       //       { holdTime: 50, value: { rampTime: 0, value: 0 } },
-  //       //       { holdTime: 100, value: { rampTime: 0, value: 3750 / 2 } },
-  //       //       { holdTime: 0, value: { rampTime: 0, value: 0 } },
-  //       //     ],
-  //       //   },
-  //       //   true,
-  //       // );
-  //       devices.esp32s3zero.output1.request(
-  //         {
-  //           iterations: 1,
-  //           sequence: [
-  //             {
-  //               holdTime: 1000,
-  //               value: {
-  //                 b: 0,
-  //                 g: 0,
-  //                 r: 1,
-  //                 rampTime: 1000,
-  //               },
-  //             },
-  //             {
-  //               holdTime: 1000,
-  //               value: {
-  //                 b: 0,
-  //                 g: 1,
-  //                 r: 0,
-  //                 rampTime: 1000,
-  //               },
-  //             },
-  //             {
-  //               holdTime: 1000,
-  //               value: {
-  //                 b: 1,
-  //                 g: 0,
-  //                 r: 0,
-  //                 rampTime: 1000,
-  //               },
-  //             },
-  //             {
-  //               holdTime: 1000,
-  //               value: {
-  //                 b: 1,
-  //                 g: 1,
-  //                 r: 1,
-  //                 rampTime: 1000,
-  //               },
-  //             },
-  //           ],
-  //         },
-  //         true,
-  //       );
-  //       _case += 1;
-  //       break;
-  //     }
-  //     case 2: {
-  //       devices.esp32s3zero.output0.request(
-  //         {
-  //           iterations: 1,
-  //           sequence: [{ holdTime: 2000, value: { rampTime: 2000, value: 0 } }],
-  //         },
-  //         true,
-  //       );
-  //       devices.esp32s3zero.output1.request(
-  //         {
-  //           iterations: 1,
-  //           sequence: [
-  //             {
-  //               holdTime: 2000,
-  //               value: {
-  //                 b: 0,
-  //                 g: 0,
-  //                 r: 0,
-  //                 rampTime: 2000,
-  //               },
-  //             },
-  //           ],
-  //         },
-  //         true,
-  //       );
-  //       _case = 0;
-  //     }
-  //   }
-  // }
+  devices.esp32s3zero.device.online.main.state.observe(async (isOnline) => {
+    if (!isOnline) return;
+    await sleep(3000);
+
+    devices.esp32s3zero.ledRGB1.state.set(
+      blinkRGBInclusive(undefined, 0, 3000),
+    );
+    devices.esp32s3zero.led0.state.set(blink(undefined, 0, 0, 30_000));
+    devices.esp32s3zero.buzzer0.state.set(
+      melody([
+        b.C_FREQUENCY,
+        b.D_FREQUENCY,
+        b.E_FREQUENCY,
+        b.F_FREQUENCY,
+        b.G_FREQUENCY,
+        0,
+        b.G_FREQUENCY,
+        0,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.G_FREQUENCY,
+        0,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.E_FREQUENCY,
+        b.G_FREQUENCY,
+        0,
+        b.F_FREQUENCY,
+        b.F_FREQUENCY,
+        b.F_FREQUENCY,
+        b.F_FREQUENCY,
+        b.E_FREQUENCY,
+        0,
+        b.E_FREQUENCY,
+        0,
+        b.D_FREQUENCY,
+        b.D_FREQUENCY,
+        b.D_FREQUENCY,
+        b.D_FREQUENCY,
+        b.C_FREQUENCY,
+      ]),
+    );
+  });
 };
 
 export const testRoom = {

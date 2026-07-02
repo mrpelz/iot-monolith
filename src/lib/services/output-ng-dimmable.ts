@@ -1,7 +1,12 @@
 import { DoubleLE, MappedStruct, TStruct, UIntLE } from '@mrpelz/struct';
 
 import { Service } from '../device/main.js';
-import { request } from './output-ng-binary.js';
+import {
+  BLINK_PERIOD_OFF,
+  BLINK_PERIOD_ON,
+  ITERATE_INFINITE,
+  request,
+} from './output-ng-binary.js';
 
 const sequenceItemRequest = new MappedStruct({
   holdTime: new UIntLE(4),
@@ -62,20 +67,23 @@ export const off = (): OutputDimmableRequest => ({
   ],
 });
 
+export const RAMP_TIME = 300;
+
 export const blink = (
-  count = 1,
-  onTime = 64,
-  offTime = 128,
+  count = ITERATE_INFINITE,
+  timeOn = BLINK_PERIOD_ON,
+  timeOff = BLINK_PERIOD_OFF,
+  rampTime = RAMP_TIME,
 ): OutputDimmableRequest => ({
   iterations: count,
   sequence: [
     {
-      holdTime: onTime,
-      value: { rampTime: 0, value: 1 },
+      holdTime: timeOn + rampTime,
+      value: { rampTime, value: 1 },
     },
     {
-      holdTime: offTime,
-      value: { rampTime: 0, value: 0 },
+      holdTime: timeOff + rampTime,
+      value: { rampTime, value: 0 },
     },
   ],
 });

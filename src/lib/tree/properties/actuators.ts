@@ -17,11 +17,25 @@ import {
 } from '@mrpelz/observable/state';
 
 import { Device, IpDevice } from '../../device/main.js';
+import {
+  OutputBinaryProgress,
+  OutputBuzzerProgress,
+  OutputDimmableProgress,
+  OutputDimmableRGBProgress,
+} from '../../events/output-ng-progress.js';
 import { Led } from '../../items/led.js';
 import { Output } from '../../items/output.js';
+import { OutputBinary, OutputIndicator } from '../../items/output-ng-binary.js';
+import { OutputBuzzer } from '../../items/output-ng-buzzer.js';
+import { OutputDimmable } from '../../items/output-ng-dimmable.js';
+import { OutputDimmableRGB } from '../../items/output-ng-dimmable-rgb.js';
 import { Indicator, IndicatorMode } from '../../services/indicator.js';
 import { Led as LedService } from '../../services/led.js';
 import { Output as OutputService } from '../../services/output.js';
+import { OutputBinary as OutputBinaryService } from '../../services/output-ng-binary.js';
+import { OutputBuzzer as OutputBuzzerService } from '../../services/output-ng-buzzer.js';
+import { OutputDimmable as OutputDimmableService } from '../../services/output-ng-dimmable.js';
+import { OutputDimmableRGB as OutputDimmableRGBService } from '../../services/output-ng-dimmable-rgb.js';
 import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
 import { setter } from '../elements/setter.js';
@@ -113,6 +127,174 @@ export const led = (
   };
 };
 
+export const outputNg = <T extends string | undefined>(
+  context: Context,
+  device: IpDevice,
+  index = 0,
+  topic: T,
+  indicator?: OutputIndicator,
+) => {
+  const $ = 'output' as const;
+
+  const state = new OutputBinary(
+    device.addService(new OutputBinaryService(index)),
+    device.addEvent(new OutputBinaryProgress(index)),
+    indicator,
+  );
+
+  const { actualState, animationState, setState } = state;
+
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    context.persistence.observe(mainReference.pathString, setState);
+  };
+
+  return {
+    $,
+    $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualState,
+      setState,
+      device,
+    ),
+    animationState: getter(ValueType.STRING, animationState),
+    flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
+    state,
+    topic,
+  };
+};
+
+export const outputNgBuzzer = <T extends string | undefined>(
+  context: Context,
+  device: IpDevice,
+  index = 0,
+  topic: T,
+  indicator?: OutputIndicator,
+) => {
+  const $ = 'buzzer' as const;
+
+  const state = new OutputBuzzer(
+    device.addService(new OutputBuzzerService(index)),
+    device.addEvent(new OutputBuzzerProgress(index)),
+    indicator,
+  );
+
+  const { actualState, animationState, setState } = state;
+
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    context.persistence.observe(mainReference.pathString, setState);
+  };
+
+  return {
+    $,
+    $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualState,
+      setState,
+      device,
+    ),
+    animationState: getter(ValueType.STRING, animationState),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.NUMBER, setState, actualState, 'frequency'),
+    state,
+    topic,
+  };
+};
+
+export const outputNgDimmable = (
+  context: Context,
+  device: IpDevice,
+  index = 0,
+  indicator?: OutputIndicator,
+) => {
+  const $ = 'led' as const;
+
+  const state = new OutputDimmable(
+    device.addService(new OutputDimmableService(index)),
+    device.addEvent(new OutputDimmableProgress(index)),
+    indicator,
+  );
+
+  const { actualBrightness, actualOn, animationState, setBrightness, setOn } =
+    state;
+
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+
+    if (!mainReference) return;
+
+    context.persistence.observe(mainReference.pathString, setBrightness);
+  };
+
+  return {
+    $,
+    $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualBrightness,
+      setBrightness,
+      device,
+    ),
+    animationState: getter(ValueType.STRING, animationState),
+    brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
+    flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    state,
+    topic: 'lighting' as const,
+  };
+};
+
+export const outputNgDimmableRGB = (
+  context: Context,
+  device: IpDevice,
+  index = 0,
+  indicator?: OutputIndicator,
+) => {
+  const $ = 'ledRGB' as const;
+
+  const state = new OutputDimmableRGB(
+    device.addService(new OutputDimmableRGBService(index)),
+    device.addEvent(new OutputDimmableRGBProgress(index)),
+    indicator,
+  );
+
+  const { actualState, animationState, setState } = state;
+
+  const $init: InitFunction = (self, introspection) => {
+    const { mainReference } = introspection.getObject(self) ?? {};
+
+    if (!mainReference) return;
+
+    context.persistence.observe(mainReference.pathString, setState);
+  };
+
+  return {
+    $,
+    $init,
+    actuatorStaleness: actuatorStaleness(
+      context,
+      actualState,
+      setState,
+      device,
+    ),
+    animationState: getter(ValueType.STRING, animationState),
+    level: Level.PROPERTY as const,
+    main: setter(ValueType.RAW, setState, actualState, 'rgb'),
+    state,
+    topic: 'lighting' as const,
+  };
+};
+
 export const output = <T extends string | undefined>(
   context: Context,
   device: IpDevice,
@@ -152,7 +334,7 @@ export const output = <T extends string | undefined>(
 
 export const ledGrouping = (
   context: Context,
-  lights: ReturnType<typeof led>[],
+  lights: (ReturnType<typeof led> | ReturnType<typeof outputNgDimmable>)[],
 ) => {
   const $ = 'ledGrouping' as const;
 
@@ -211,7 +393,12 @@ export const ledGrouping = (
 
 export const outputGrouping = <T extends string | undefined>(
   context: Context,
-  outputs: (ReturnType<typeof output> | ReturnType<typeof led>)[],
+  outputs: (
+    | ReturnType<typeof output>
+    | ReturnType<typeof outputNg>
+    | ReturnType<typeof led>
+    | ReturnType<typeof outputNgDimmable>
+  )[],
   topic: T,
 ) => {
   const $ = 'outputGrouping' as const;
