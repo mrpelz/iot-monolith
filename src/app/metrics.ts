@@ -358,42 +358,42 @@ export const attachMetrics = async (
     metrics.addMetric('inputGrouping', item.state, labels);
   }
 
-  for (const item of match({ $: 'co2' as const }, excludePattern, system_)) {
-    const labels = Metrics.hierarchyLabels(introspection, item);
-    if (!labels) continue;
+  // for (const item of match({ $: 'co2' as const }, excludePattern, system_)) {
+  //   const labels = Metrics.hierarchyLabels(introspection, item);
+  //   if (!labels) continue;
 
-    metrics.addMetric('co2', item.state, {
-      ...labels,
-      unit: 'ppm',
-    });
-  }
+  //   metrics.addMetric('co2', item.state, {
+  //     ...labels,
+  //     unit: 'ppm',
+  //   });
+  // }
 
-  for (const item of match(
-    { $: 'mhz19' as const },
-    excludePattern,
-    system_,
-    50 as 8,
-  )) {
-    const labels = Metrics.hierarchyLabels(introspection, item);
-    if (!labels) continue;
+  // for (const item of match(
+  //   { $: 'mhz19' as const },
+  //   excludePattern,
+  //   system_,
+  //   50 as 8,
+  // )) {
+  //   const labels = Metrics.hierarchyLabels(introspection, item);
+  //   if (!labels) continue;
 
-    metrics.addMetric('mhz19_abc', item.co2.abc.state, labels);
+  //   metrics.addMetric('mhz19_abc', item.co2.abc.state, labels);
 
-    metrics.addMetric('mhz19_accuracy', item.co2.accuracy.state, {
-      ...labels,
-      unit: 'percent',
-    });
+  //   metrics.addMetric('mhz19_accuracy', item.co2.accuracy.state, {
+  //     ...labels,
+  //     unit: 'percent',
+  //   });
 
-    metrics.addMetric('mhz19_temperature', item.co2.temperature.state, {
-      ...labels,
-      unit: 'deg-c',
-    });
+  //   metrics.addMetric('mhz19_temperature', item.co2.temperature.state, {
+  //     ...labels,
+  //     unit: 'deg-c',
+  //   });
 
-    metrics.addMetric('mhz19_transmittance', item.co2.transmittance.state, {
-      ...labels,
-      unit: 'percent',
-    });
-  }
+  //   metrics.addMetric('mhz19_transmittance', item.co2.transmittance.state, {
+  //     ...labels,
+  //     unit: 'percent',
+  //   });
+  // }
 
   for (const item of match(
     { $: 'sgp30' as const },
@@ -420,25 +420,25 @@ export const attachMetrics = async (
     });
   }
 
-  for (const item of match({ $: 'pm025' as const }, excludePattern, system_)) {
-    const labels = Metrics.hierarchyLabels(introspection, item);
-    if (!labels) continue;
+  // for (const item of match({ $: 'pm025' as const }, excludePattern, system_)) {
+  //   const labels = Metrics.hierarchyLabels(introspection, item);
+  //   if (!labels) continue;
 
-    metrics.addMetric('pm025', item.state, {
-      ...labels,
-      unit: 'micrograms/m3',
-    });
-  }
+  //   metrics.addMetric('pm025', item.state, {
+  //     ...labels,
+  //     unit: 'micrograms/m3',
+  //   });
+  // }
 
-  for (const item of match({ $: 'pm10' as const }, excludePattern, system_)) {
-    const labels = Metrics.hierarchyLabels(introspection, item);
-    if (!labels) continue;
+  // for (const item of match({ $: 'pm10' as const }, excludePattern, system_)) {
+  //   const labels = Metrics.hierarchyLabels(introspection, item);
+  //   if (!labels) continue;
 
-    metrics.addMetric('pm10', item.state, {
-      ...labels,
-      unit: 'micrograms/m3',
-    });
-  }
+  //   metrics.addMetric('pm10', item.state, {
+  //     ...labels,
+  //     unit: 'micrograms/m3',
+  //   });
+  // }
 
   for (const item of match(
     { $: 'brightness' as const },
@@ -454,16 +454,16 @@ export const attachMetrics = async (
     });
   }
 
-  for (const item of match(
-    { $: 'uvIndex' as const },
-    excludePattern,
-    system_,
-  )) {
-    const labels = Metrics.hierarchyLabels(introspection, item);
-    if (!labels) continue;
+  // for (const item of match(
+  //   { $: 'uvIndex' as const },
+  //   excludePattern,
+  //   system_,
+  // )) {
+  //   const labels = Metrics.hierarchyLabels(introspection, item);
+  //   if (!labels) continue;
 
-    metrics.addMetric('uvIndex', item.state, labels);
-  }
+  //   metrics.addMetric('uvIndex', item.state, labels);
+  // }
 
   for (const item of match({ $: 'door' as const }, excludePattern, system_)) {
     const labels = Metrics.hierarchyLabels(introspection, item);
