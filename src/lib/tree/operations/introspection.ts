@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-reduce */
 import { isPlainObject, objectKeys } from '@mrpelz/misc-utils/oop';
 import { v5 as uuidv5 } from 'uuid';
 

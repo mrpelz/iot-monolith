@@ -86,9 +86,11 @@ export type ElementSerialization<T, D extends number = 50> = [D] extends [never]
           : T extends AnyWritableObservable<any> | NullState<any>
             ? InteractionReference<string, InteractionType.COLLECT>
             : {
-                [K in keyof T as ElementSerialization<T[K]> extends never
-                  ? never
-                  : K]: ElementSerialization<T[K], Prev[D]>;
+                [
+                  K in keyof T as ElementSerialization<T[K]> extends never
+                    ? never
+                    : K
+                ]: ElementSerialization<T[K], Prev[D]>;
               } & ObjectAmendments
       : T;
 

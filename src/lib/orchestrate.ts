@@ -7,8 +7,7 @@ export type OrchestrationTimedSteps<T> = OrchestrationTimedStep<T>[];
 export type OrchestrationUniformSteps<T> = [number, T[]];
 
 export type Orchestration<T> =
-  | OrchestrationTimedSteps<T>
-  | OrchestrationUniformSteps<T>;
+  OrchestrationTimedSteps<T> | OrchestrationUniformSteps<T>;
 
 const isOrchestrationTimedSteps = <T>(
   orchestration: Orchestration<T>,

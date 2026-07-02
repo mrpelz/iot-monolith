@@ -14,7 +14,7 @@ import {
   BooleanStateGroup,
   NullState,
 } from '@mrpelz/observable/state';
-import sunCalc from 'suncalc';
+import * as sunCalc from 'suncalc';
 
 import { makeCustomStringLogger } from '../lib/log.js';
 import { Schedule } from '../lib/schedule.js';
@@ -205,8 +205,7 @@ export const automatedInputLogic = (
     | ReturnType<typeof window>
   )[],
   inputsManual: (
-    | ReturnType<typeof button>
-    | ReturnType<typeof buttonPrimitive>
+    ReturnType<typeof button> | ReturnType<typeof buttonPrimitive>
   )[],
   timeoutOutput = epochs.minute * 15,
   timeoutAutomation = epoch30Seconds,
