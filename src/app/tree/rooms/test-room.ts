@@ -28,11 +28,14 @@ const b = {
 };
 
 export const devices = {
-  esp32s3zero: esp32s3zero(
-    'testroom-esp32s3zero.lan.wurstsalat.cloud',
-    context,
-    undefined,
-  ),
+  esp32s3zero: {
+    $exclude: true as const,
+    ...esp32s3zero(
+      'testroom-esp32s3zero.lan.wurstsalat.cloud',
+      context,
+      undefined,
+    ),
+  },
 };
 
 export const instances = {};
