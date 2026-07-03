@@ -26,6 +26,7 @@ if (config.rules) {
   config.rules['unicorn/numeric-separators-style'] = 'off';
   config.rules['unicorn/prefer-array-from-map'] = 'off';
   config.rules['unicorn/prefer-await'] = 'off';
+  config.rules['unicorn/prefer-block-statement-over-iife'] = 'off';
   config.rules['unicorn/prefer-boolean-return'] = 'off';
   config.rules['unicorn/prefer-direct-iteration'] = 'off';
   config.rules['unicorn/prefer-early-return'] = 'off';
