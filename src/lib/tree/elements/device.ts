@@ -5,6 +5,7 @@ import { Ev1527Device } from '../../device/ev1527.js';
 import { Device } from '../../device/main.js';
 import { TCPDevice } from '../../device/tcp.js';
 import { UDPDevice } from '../../device/udp.js';
+import { OutputIndicator } from '../../items/output-ng-binary.js';
 import { Indicator } from '../../services/indicator.js';
 import { Context } from '../context.js';
 import { Level } from '../main.js';
@@ -46,7 +47,7 @@ export const ipDevice = <S extends boolean>(
   context: Context,
   device: TCPDevice | UDPDevice,
   isSubDevice: S,
-  indicator?: Indicator,
+  indicator?: Indicator | OutputIndicator,
   initiallyOnline = context.connect &&
     !context.connectExcept.includes(device.transport.host),
 ) => {

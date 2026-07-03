@@ -10,7 +10,7 @@ import {
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX1 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../../lib/tree/devices/h801.js';
+import { h801Ng } from '../../../lib/tree/devices/h801.js';
 import { motionSensorHMMDX3 } from '../../../lib/tree/devices/motion-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -57,7 +57,7 @@ export const devices = {
     context,
   ),
   doorSensor: ev1527WindowSensor(720_256, ev1527Transport, context),
-  leds: h801('mrpelzbathroom-leds.lan.wurstsalat.cloud', context),
+  leds: h801Ng('mrpelzbathroom-leds.lan.wurstsalat.cloud', context),
   mirrorHeating: sonoffBasic(
     'heating' as const,
     'mrpelzbathroom-mirrorheating.lan.wurstsalat.cloud',

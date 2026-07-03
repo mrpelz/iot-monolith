@@ -1,14 +1,17 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable unicorn/no-nested-ternary */
 import { safeAsync } from '@mrpelz/misc-utils/async';
-import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+import {
+  Observable,
+  ProxyObservable,
+  ReadOnlyObservable,
+} from '@mrpelz/observable';
 import { EnumState } from '@mrpelz/observable/state';
 
 import { TOutputProgress as OutputNgProgressEvent } from '../events/output-ng-progress.js';
 import { ITERATE_INFINITE } from '../services/output-ng-binary.js';
 import {
   blink,
-  isRGB,
   OutputDimmableRGB as OutputDimmableRGBService,
   OutputDimmableRGBRequest,
   RGB,
@@ -23,16 +26,13 @@ import {
 export class OutputDimmableRGB {
   private readonly _actualState = new Observable<RGB | null>(null);
   private readonly _animationState = new EnumState(AnimationState, 'STATIC');
-
-  private _isSequenceRequestInProgress = false;
+  private readonly _setState: Observable<RGB | null>;
 
   readonly $exclude = true as const;
 
   readonly actualState = new ReadOnlyObservable(this._actualState);
-
   readonly animationState = new ReadOnlyObservable(this._animationState);
-
-  readonly setState: Observable<RGB>;
+  readonly setState: ProxyObservable<RGB | null, RGB>;
 
   constructor(
     private readonly _service: OutputDimmableRGBService,
@@ -45,7 +45,7 @@ export class OutputDimmableRGB {
         return;
       }
 
-      this._set(this.setState.value, true);
+      this._set(setRGB(this.setState.value), true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -53,29 +53,22 @@ export class OutputDimmableRGB {
       this._animationState.value = 'STATIC';
     });
 
-    this.setState = new Observable({ b: 0, g: 0, r: 0 }, (value) =>
-      this._set(value),
+    this._setState = new Observable<RGB | null>(
+      { b: 0, g: 0, r: 0 },
+      (value) => {
+        if (value === null) return;
+
+        this._set(setRGB(value));
+      },
+    );
+    this.setState = new ProxyObservable(
+      this._setState,
+      (value) => (value === null ? { b: 0, g: 0, r: 0 } : value),
+      (value) => value,
     );
   }
 
-  private async _set(
-    value: RGB | OutputDimmableRGBRequest,
-    skipIndicator = false,
-  ) {
-    if (this._isSequenceRequestInProgress) return;
-    this._isSequenceRequestInProgress = true;
-
-    const request = isRGB(value) ? setRGB(value) : value;
-
-    const { b, g, r } = request.sequence.at(-1)?.value ?? {};
-    if (r === undefined || g === undefined || b === undefined) {
-      this._isSequenceRequestInProgress = false;
-      return;
-    }
-
-    this.setState.value = { b, g, r };
-    this._isSequenceRequestInProgress = false;
-
+  private async _set(request: OutputDimmableRGBRequest, skipIndicator = false) {
     this._animationState.value =
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
@@ -108,7 +101,7 @@ export class OutputDimmableRGB {
   }
 
   async blink(count?: number): Promise<void> {
-    await this.set(blink(count));
+    await this.set(blink(count, undefined, undefined, 0));
   }
 
   async set(value: OutputDimmableRGBRequest): Promise<void> {
@@ -121,6 +114,7 @@ export class OutputDimmableRGB {
       observer.remove();
     }, true);
 
+    this._setState.value = null;
     await this._set(value);
 
     return promise;

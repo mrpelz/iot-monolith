@@ -1,3 +1,4 @@
+import { sleep } from '@mrpelz/misc-utils/sleep';
 import { EnumState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
@@ -7,7 +8,7 @@ import {
   ev1527ButtonX4,
 } from '../../../lib/tree/devices/ev1527-button.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../../lib/tree/devices/h801.js';
+import { h801Ng } from '../../../lib/tree/devices/h801.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { roomSensor } from '../../../lib/tree/devices/room-sensor.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
@@ -35,7 +36,7 @@ import { ev1527Transport } from '../bridges.js';
 
 export const devices = {
   bedButton: ev1527ButtonWP07(529_507, ev1527Transport, context),
-  bookshelfLeds: h801(
+  bookshelfLeds: h801Ng(
     'mrpelzbedroom-bookshelfleds.lan.wurstsalat.cloud',
     context,
   ),
@@ -67,7 +68,7 @@ export const devices = {
     'mrpelzbedroom-nightlight.lan.wurstsalat.cloud',
     context,
   ),
-  nightstandLeds: h801(
+  nightstandLeds: h801Ng(
     'mrpelzbedroom-nightstandleds.lan.wurstsalat.cloud',
     context,
   ),
@@ -387,6 +388,13 @@ const sceneCycle = new EnumState(
 );
 
 const $init: InitFunction = (room, introspection) => {
+  devices.bookshelfLeds.device.online.main.state.observe(async (isOnline) => {
+    if (!isOnline) return;
+    await sleep(5000);
+
+    properties.bookshelfLedDown.brightness.setState.value = 0.5;
+  });
+
   const { allLights } = groups;
   const {
     bedButtonLeft,

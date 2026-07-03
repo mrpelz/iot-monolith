@@ -5,7 +5,7 @@ import { BooleanState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
-import { h801 } from '../../../lib/tree/devices/h801.js';
+import { h801Ng } from '../../../lib/tree/devices/h801.js';
 import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
@@ -49,7 +49,7 @@ export const devices = {
   ),
   terrariumLeds: markObjectKeysExcludedFromMatch(
     // prevent automated leds from appearing in groups
-    h801('livingroom-terrariumleds.lan.wurstsalat.cloud', context),
+    h801Ng('livingroom-terrariumleds.lan.wurstsalat.cloud', context),
     'ledB',
     'ledR',
   ),

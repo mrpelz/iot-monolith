@@ -24,7 +24,13 @@ export const esp32s3zero = (
   return {
     $noMainReference: true as const,
     buzzer0: outputNgBuzzer(context, device, 0, undefined, indicatorRGB0.state),
-    device: ipDevice(context, device, false, undefined, initiallyOnline),
+    device: ipDevice(
+      context,
+      device,
+      false,
+      indicatorRGB0.state,
+      initiallyOnline,
+    ),
     indicatorRGB0,
     led0: outputNgDimmable(context, device, 0, indicatorRGB0.state),
     ledRGB1: outputNgDimmableRGB(context, device, 1, indicatorRGB0.state),

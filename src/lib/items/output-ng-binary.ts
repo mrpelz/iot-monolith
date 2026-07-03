@@ -1,9 +1,8 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable unicorn/no-nested-ternary */
 import { safeAsync } from '@mrpelz/misc-utils/async';
-import { isPlainObject } from '@mrpelz/misc-utils/oop';
 import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
-import { BooleanState, EnumState } from '@mrpelz/observable/state';
+import { BooleanProxyState, EnumState } from '@mrpelz/observable/state';
 
 import { TOutputProgress as OutputNgProgressEvent } from '../events/output-ng-progress.js';
 import {
@@ -41,15 +40,13 @@ export const universalIndicatorBlink = async (
 export class OutputBinary {
   private readonly _actualState = new Observable<boolean | null>(null);
   private readonly _animationState = new EnumState(AnimationState, 'STATIC');
-
-  private _isSequenceRequestInProgress = false;
+  private readonly _setState: Observable<boolean | null>;
 
   readonly $exclude = true as const;
 
   readonly actualState = new ReadOnlyObservable(this._actualState);
   readonly animationState = new ReadOnlyObservable(this._animationState);
-
-  readonly setState: BooleanState;
+  readonly setState: BooleanProxyState<boolean | null>;
 
   constructor(
     private readonly _service: OutputBinaryService,
@@ -62,7 +59,7 @@ export class OutputBinary {
         return;
       }
 
-      this._set(this.setState.value, true);
+      this._set(this.setState.value ? on() : off(), true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -70,27 +67,19 @@ export class OutputBinary {
       this._animationState.value = 'STATIC';
     });
 
-    this.setState = new BooleanState(false, (value) => this._set(value));
+    this._setState = new Observable<boolean | null>(false, (value) => {
+      if (value === null) return;
+
+      this._set(value ? on() : off());
+    });
+    this.setState = new BooleanProxyState(
+      this._setState,
+      (value) => (value === null ? false : value),
+      (value) => value,
+    );
   }
 
-  private async _set(
-    value: boolean | OutputBinaryRequest,
-    skipIndicator = false,
-  ) {
-    if (this._isSequenceRequestInProgress) return;
-    this._isSequenceRequestInProgress = true;
-
-    const request = isPlainObject(value) ? value : value ? on() : off();
-
-    const endState = request.sequence.at(-1)?.value;
-    if (endState === undefined) {
-      this._isSequenceRequestInProgress = false;
-      return;
-    }
-
-    this.setState.value = endState;
-    this._isSequenceRequestInProgress = false;
-
+  private async _set(request: OutputBinaryRequest, skipIndicator = false) {
     this._animationState.value =
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
@@ -136,6 +125,7 @@ export class OutputBinary {
       observer.remove();
     }, true);
 
+    this._setState.value = null;
     await this._set(value);
 
     return promise;

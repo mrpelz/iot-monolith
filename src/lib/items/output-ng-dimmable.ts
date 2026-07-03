@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable unicorn/no-nested-ternary */
 import { safeAsync } from '@mrpelz/misc-utils/async';
-import { isPlainObject } from '@mrpelz/misc-utils/oop';
 import {
   Observable,
+  ProxyObservable,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
@@ -13,8 +13,7 @@ import { TOutputProgress as OutputNgProgressEvent } from '../events/output-ng-pr
 import { ITERATE_INFINITE } from '../services/output-ng-binary.js';
 import {
   blink,
-  off,
-  on,
+  brightness,
   OutputDimmable as OutputDimmableService,
   OutputDimmableRequest,
 } from '../services/output-ng-dimmable.js';
@@ -37,8 +36,7 @@ export const coerceSetOnToBrightness = (value: boolean): number =>
 export class OutputDimmable {
   private readonly _actualBrightness = new Observable<number | null>(null);
   private readonly _animationState = new EnumState(AnimationState, 'STATIC');
-
-  private _isSequenceRequestInProgress = false;
+  private readonly _setBrightness: Observable<number | null>;
 
   readonly $exclude = true as const;
 
@@ -49,8 +47,7 @@ export class OutputDimmable {
   );
 
   readonly animationState = new ReadOnlyObservable(this._animationState);
-
-  readonly setBrightness: Observable<number>;
+  readonly setBrightness: ProxyObservable<number | null, number>;
   readonly setOn: BooleanProxyState<number>;
 
   constructor(
@@ -64,7 +61,7 @@ export class OutputDimmable {
         return;
       }
 
-      this._set(this.setBrightness.value, true);
+      this._set(brightness(this.setBrightness.value), true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -72,7 +69,16 @@ export class OutputDimmable {
       this._animationState.value = 'STATIC';
     });
 
-    this.setBrightness = new Observable(0, (value) => this._set(value));
+    this._setBrightness = new Observable<number | null>(0, (value) => {
+      if (value === null) return;
+
+      this._set(brightness(value));
+    });
+    this.setBrightness = new ProxyObservable(
+      this._setBrightness,
+      (value) => (value === null ? 0 : value),
+      (value) => value,
+    );
     this.setOn = new BooleanProxyState(
       this.setBrightness,
       Boolean,
@@ -80,24 +86,7 @@ export class OutputDimmable {
     );
   }
 
-  private async _set(
-    value: number | OutputDimmableRequest,
-    skipIndicator = false,
-  ) {
-    if (this._isSequenceRequestInProgress) return;
-    this._isSequenceRequestInProgress = true;
-
-    const request = isPlainObject(value) ? value : value ? on() : off();
-
-    const endState = request.sequence.at(-1)?.value.value;
-    if (endState === undefined) {
-      this._isSequenceRequestInProgress = false;
-      return;
-    }
-
-    this.setBrightness.value = endState;
-    this._isSequenceRequestInProgress = false;
-
+  private async _set(request: OutputDimmableRequest, skipIndicator = false) {
     this._animationState.value =
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
@@ -130,7 +119,7 @@ export class OutputDimmable {
   }
 
   async blink(count?: number): Promise<void> {
-    await this.set(blink(count));
+    await this.set(blink(count, undefined, undefined, 0));
   }
 
   async set(value: OutputDimmableRequest): Promise<void> {
@@ -143,6 +132,7 @@ export class OutputDimmable {
       observer.remove();
     }, true);
 
+    this._setBrightness.value = null;
     await this._set(value);
 
     return promise;

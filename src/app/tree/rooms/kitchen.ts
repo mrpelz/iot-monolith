@@ -1,6 +1,6 @@
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
-import { h801 } from '../../../lib/tree/devices/h801.js';
+import { h801Ng } from '../../../lib/tree/devices/h801.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { sonoffBasic } from '../../../lib/tree/devices/sonoff-basic.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
@@ -23,8 +23,8 @@ export const devices = {
     'kitchen-ceilinglight.lan.wurstsalat.cloud',
     context,
   ),
-  ledsLeft: h801('kitchen-ledsleft.lan.wurstsalat.cloud', context),
-  ledsRight: h801('kitchen-ledsright.lan.wurstsalat.cloud', context),
+  ledsLeft: h801Ng('kitchen-ledsleft.lan.wurstsalat.cloud', context),
+  ledsRight: h801Ng('kitchen-ledsright.lan.wurstsalat.cloud', context),
   wallswitchBack: shellyi3(
     'kitchen-wallswitchback.lan.wurstsalat.cloud',
     context,

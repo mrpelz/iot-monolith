@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { safeAsync } from '@mrpelz/misc-utils/async';
 import {
   AnyReadOnlyObservable,
   AnyWritableObservable,
@@ -25,7 +26,11 @@ import {
 } from '../../events/output-ng-progress.js';
 import { Led } from '../../items/led.js';
 import { Output } from '../../items/output.js';
-import { OutputBinary, OutputIndicator } from '../../items/output-ng-binary.js';
+import {
+  OutputBinary,
+  OutputIndicator,
+  universalIndicatorBlink,
+} from '../../items/output-ng-binary.js';
 import { OutputBuzzer } from '../../items/output-ng-buzzer.js';
 import { OutputDimmable } from '../../items/output-ng-dimmable.js';
 import { OutputDimmableRGB } from '../../items/output-ng-dimmable-rgb.js';
@@ -471,21 +476,32 @@ export const resetDevice = (_: Context, device: Device) => ({
   main: trigger(ValueType.NULL, new NullState(() => device.triggerReset())),
 });
 
-export const identifyDevice = (_: Context, indicator: Indicator) => ({
+export const identifyDevice = (
+  _: Context,
+  indicator: Indicator | OutputIndicator,
+) => ({
   $: 'identifyDevice' as const,
   level: Level.PROPERTY as const,
   main: trigger(
     ValueType.NULL,
-    new NullState(() =>
-      indicator
-        .request({
-          blink: 10,
-          mode: IndicatorMode.BLINK,
-        })
-        .catch(() => {
-          // noop
-        }),
-    ),
+    new NullState(() => {
+      safeAsync(async () => {
+        if (indicator instanceof Indicator) {
+          await indicator
+            .request({
+              blink: 10,
+              mode: IndicatorMode.BLINK,
+            })
+            .catch(() => {
+              // noop
+            });
+
+          return;
+        }
+
+        await universalIndicatorBlink(indicator, 10);
+      });
+    }),
   ),
 });
 

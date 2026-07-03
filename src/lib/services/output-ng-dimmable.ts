@@ -67,7 +67,20 @@ export const off = (): OutputDimmableRequest => ({
   ],
 });
 
-export const RAMP_TIME = 300;
+export const RAMP_TIME = 600;
+
+export const brightness = (
+  value: number,
+  rampTime = RAMP_TIME,
+): OutputDimmableRequest => ({
+  iterations: 1,
+  sequence: [
+    {
+      holdTime: 0,
+      value: { rampTime, value },
+    },
+  ],
+});
 
 export const blink = (
   count = ITERATE_INFINITE,

@@ -127,6 +127,19 @@ export const setRGB = ({ b, g, r }: RGB): OutputDimmableRGBRequest => ({
   sequence: [{ holdTime: 0, value: { rampTime: 0, b, g, r } }],
 });
 
+export const brightness = (
+  value: number,
+  rampTime = RAMP_TIME,
+): OutputDimmableRGBRequest => ({
+  iterations: 1,
+  sequence: [
+    {
+      holdTime: 0,
+      value: { rampTime, b: value, g: value, r: value },
+    },
+  ],
+});
+
 export const blink = (
   count = ITERATE_INFINITE,
   timeOn = BLINK_PERIOD_ON,

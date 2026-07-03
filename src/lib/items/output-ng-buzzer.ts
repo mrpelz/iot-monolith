@@ -1,8 +1,11 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable unicorn/no-nested-ternary */
 import { safeAsync } from '@mrpelz/misc-utils/async';
-import { isPlainObject } from '@mrpelz/misc-utils/oop';
-import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+import {
+  Observable,
+  ProxyObservable,
+  ReadOnlyObservable,
+} from '@mrpelz/observable';
 import { EnumState } from '@mrpelz/observable/state';
 
 import { TOutputProgress as OutputNgProgressEvent } from '../events/output-ng-progress.js';
@@ -22,16 +25,13 @@ import {
 export class OutputBuzzer {
   private readonly _actualState = new Observable<number | null>(null);
   private readonly _animationState = new EnumState(AnimationState, 'STATIC');
-
-  private _isSequenceRequestInProgress = false;
+  private readonly _setState: Observable<number | null>;
 
   readonly $exclude = true as const;
 
   readonly actualState = new ReadOnlyObservable(this._actualState);
-
   readonly animationState = new ReadOnlyObservable(this._animationState);
-
-  readonly setState: Observable<number>;
+  readonly setState: ProxyObservable<number | null, number>;
 
   constructor(
     private readonly _service: OutputBuzzerService,
@@ -44,7 +44,7 @@ export class OutputBuzzer {
         return;
       }
 
-      this._set(this.setState.value, true);
+      this._set(tone(this.setState.value), true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -52,27 +52,19 @@ export class OutputBuzzer {
       this._animationState.value = 'STATIC';
     });
 
-    this.setState = new Observable(0, (value) => this._set(value));
+    this._setState = new Observable<number | null>(0, (value) => {
+      if (value === null) return;
+
+      this._set(tone(value));
+    });
+    this.setState = new ProxyObservable(
+      this._setState,
+      (value) => (value === null ? 0 : value),
+      (value) => value,
+    );
   }
 
-  private async _set(
-    value: number | OutputBuzzerRequest,
-    skipIndicator = false,
-  ) {
-    if (this._isSequenceRequestInProgress) return;
-    this._isSequenceRequestInProgress = true;
-
-    const request = isPlainObject(value) ? value : tone(value);
-
-    const endState = request.sequence.at(-1)?.value.value;
-    if (endState === undefined) {
-      this._isSequenceRequestInProgress = false;
-      return;
-    }
-
-    this.setState.value = endState;
-    this._isSequenceRequestInProgress = false;
-
+  private async _set(request: OutputBuzzerRequest, skipIndicator = false) {
     this._animationState.value =
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
@@ -118,6 +110,7 @@ export class OutputBuzzer {
       observer.remove();
     }, true);
 
+    this._setState.value = null;
     await this._set(value);
 
     return promise;
