@@ -1,4 +1,3 @@
-import { sleep } from '@mrpelz/misc-utils/sleep';
 import { EnumState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
@@ -388,13 +387,6 @@ const sceneCycle = new EnumState(
 );
 
 const $init: InitFunction = (room, introspection) => {
-  devices.bookshelfLeds.device.online.main.state.observe(async (isOnline) => {
-    if (!isOnline) return;
-    await sleep(5000);
-
-    properties.bookshelfLedDown.brightness.setState.value = 0.5;
-  });
-
   const { allLights } = groups;
   const {
     bedButtonLeft,
