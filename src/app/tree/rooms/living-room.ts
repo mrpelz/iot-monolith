@@ -1,6 +1,7 @@
 import { Socket } from 'node:net';
 import { createInterface } from 'node:readline/promises';
 
+import { safeAsync } from '@mrpelz/misc-utils/async';
 import { maxmin, round } from '@mrpelz/misc-utils/number';
 import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
@@ -104,7 +105,7 @@ export const groups = {
 
 export const scenes = {
   mediaOff: triggerElement(context, 'media'),
-  mediaOnOrSwitch: triggerElement(context, 'media'),
+  mediaOn: triggerElement(context, 'media'),
   terrariumLedsOverride: scene(
     context,
     [new SceneMember(isTerrariumLedsOverride, true, false)],
@@ -126,7 +127,7 @@ const askAVR = (command: string) => {
     resolve(response);
   });
 
-  return Promise.race([promise, sleep(5000)]);
+  return Promise.race([promise, sleep(epochs.second * 5)]);
 };
 
 const $init: InitFunction = async (room, introspection) => {
@@ -150,7 +151,7 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLedRed,
     terrariumLedTop,
   } = properties;
-  const { mediaOnOrSwitch, mediaOff, terrariumLedsOverride } = scenes;
+  const { mediaOn, mediaOff, terrariumLedsOverride } = scenes;
 
   const projector = pjlinkPassword
     ? new Projector('beamer.lan.wurstsalat.cloud', pjlinkPassword)
@@ -209,8 +210,8 @@ const $init: InitFunction = async (room, introspection) => {
   );
 
   couchButtonBottomLeft.state.observe(() =>
-    triggerMain(mediaOnOrSwitch, () =>
-      l(`${p(couchButtonBottomLeft)} triggered ${p(mediaOnOrSwitch)}`),
+    triggerMain(mediaOn, () =>
+      l(`${p(couchButtonBottomLeft)} triggered ${p(mediaOn)}`),
     ),
   );
 
@@ -323,12 +324,15 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOff.state.observe(async () => {
-    await projector?.power('off');
-
-    const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
-    if (!isAVROff) {
-      await askAVR('ZMOFF');
-    }
+    await Promise.allSettled([
+      projector?.power('off'),
+      (async () => {
+        const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
+        if (!isAVROff) {
+          await askAVR('ZMOFF');
+        }
+      })(),
+    ]);
 
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
@@ -337,16 +341,25 @@ const $init: InitFunction = async (room, introspection) => {
     isTerrariumLedsOverride.value = false;
   });
 
-  mediaOnOrSwitch.state.observe(async () => {
-    await projector?.power('on');
-
-    const isAVROn = (await askAVR('ZM?')) === 'ZMON';
-    if (!isAVROn) {
-      await askAVR('ZMON');
-    }
+  mediaOn.state.observe(async () => {
+    await safeAsync(
+      Promise.allSettled([
+        projector?.power('on'),
+        (async () => {
+          const isAVROn = (await askAVR('ZM?')) === 'ZMON';
+          if (!isAVROn) {
+            await askAVR('ZMON');
+          }
+        })(),
+        fetch('http://infoscreen.lan.wurstsalat.cloud:8080/off', {
+          method: 'POST',
+          signal: AbortSignal.timeout(epochs.second),
+        }),
+      ]),
+    );
 
     l(
-      `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
+      `${p(terrariumLedsOverride)} was set true because ${p(mediaOn)} was triggered`,
     );
 
     isTerrariumLedsOverride.value = true;
