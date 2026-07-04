@@ -1,5 +1,8 @@
+import { Socket } from 'node:net';
+import { createInterface } from 'node:readline/promises';
+
 import { maxmin, round } from '@mrpelz/misc-utils/number';
-import { promiseGuard } from '@mrpelz/misc-utils/promise';
+import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
 import { BooleanState } from '@mrpelz/observable/state';
 import pjlink from 'pjlink-control';
@@ -107,6 +110,23 @@ export const scenes = {
     [new SceneMember(isTerrariumLedsOverride, true, false)],
     'automation',
   ),
+};
+
+const askAVR = (command: string) => {
+  const { promise, resolve } = Promise.withResolvers<string>();
+
+  const socket = new Socket({ noDelay: true });
+  const readline = createInterface({ input: socket, output: socket });
+  socket.connect(23, 'bender.lan.wurstsalat.cloud', async () => {
+    const response = await readline.question(command);
+
+    socket.end();
+    socket.destroy();
+
+    resolve(response);
+  });
+
+  return Promise.race([promise, sleep(5000)]);
 };
 
 const $init: InitFunction = async (room, introspection) => {
@@ -303,18 +323,12 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOff.state.observe(async () => {
-    projector?.power('off');
+    await projector?.power('off');
 
-    const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/off';
-
-    l(`${url} was sent because ${p(mediaOff)} was triggered`);
-
-    await promiseGuard(
-      fetch(url, {
-        method: 'POST',
-        signal: AbortSignal.timeout(1000),
-      }),
-    );
+    const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
+    if (!isAVROff) {
+      await askAVR('ZMOFF');
+    }
 
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
@@ -324,18 +338,12 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOnOrSwitch.state.observe(async () => {
-    projector?.power('on');
+    await projector?.power('on');
 
-    const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch';
-
-    l(`${url} was sent because ${p(mediaOnOrSwitch)} was triggered`);
-
-    await promiseGuard(
-      fetch(url, {
-        method: 'POST',
-        signal: AbortSignal.timeout(1000),
-      }),
-    );
+    const isAVROn = (await askAVR('ZM?')) === 'ZMON';
+    if (!isAVROn) {
+      await askAVR('ZMON');
+    }
 
     l(
       `${p(terrariumLedsOverride)} was set true because ${p(mediaOnOrSwitch)} was triggered`,
