@@ -2,6 +2,7 @@ import { maxmin, round } from '@mrpelz/misc-utils/number';
 import { promiseGuard } from '@mrpelz/misc-utils/promise';
 import { epochs } from '@mrpelz/modifiable-date';
 import { BooleanState } from '@mrpelz/observable/state';
+import pjlink from 'pjlink-control';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { ev1527ButtonX4 } from '../../../lib/tree/devices/ev1527-button.js';
@@ -30,10 +31,13 @@ import {
 } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
 import { context } from '../../context.js';
+import { pjlinkPassword } from '../../environment.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { every30Seconds } from '../../timings.js';
 import { overriddenLed, sunlightLeds } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
+
+const { default: Projector } = pjlink;
 
 export const devices = {
   ceilingLight: shelly1(
@@ -127,6 +131,10 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLedTop,
   } = properties;
   const { mediaOnOrSwitch, mediaOff, terrariumLedsOverride } = scenes;
+
+  const projector = pjlinkPassword
+    ? new Projector('beamer.lan.wurstsalat.cloud', pjlinkPassword)
+    : undefined;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -295,6 +303,8 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOff.state.observe(async () => {
+    projector?.power('off');
+
     const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/off';
 
     l(`${url} was sent because ${p(mediaOff)} was triggered`);
@@ -314,6 +324,8 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOnOrSwitch.state.observe(async () => {
+    projector?.power('on');
+
     const url = 'http://node-red.lan.wurstsalat.cloud:1880/media/on-or-switch';
 
     l(`${url} was sent because ${p(mediaOnOrSwitch)} was triggered`);

@@ -18,6 +18,7 @@ const {
   LOG_TELEGRAM,
   NODE_ENV,
   PERSISTENCE_PATH,
+  PJLINK_PASSWORD,
   TELEGRAM_TOKEN,
 } = process.env;
 
@@ -28,10 +29,11 @@ if (!PERSISTENCE_PATH) {
   process.exit(1);
 }
 
-export const connectExcept = CONNECT_EXCEPT ? CONNECT_EXCEPT.split(',') : [];
 export const connect = CONNECT ? Boolean(parse(CONNECT)) : false;
+export const connectExcept = CONNECT_EXCEPT ? CONNECT_EXCEPT.split(',') : [];
 export const isProd = NODE_ENV === 'production';
 export const logLevel = LOG_LEVEL ? Number(parse(LOG_LEVEL)) : undefined;
 export const logTelegram = LOG_TELEGRAM ? Boolean(parse(LOG_TELEGRAM)) : false;
-export const telegramToken = TELEGRAM_TOKEN;
 export const peristencePath = PERSISTENCE_PATH;
+export const pjlinkPassword = PJLINK_PASSWORD;
+export const telegramToken = TELEGRAM_TOKEN;

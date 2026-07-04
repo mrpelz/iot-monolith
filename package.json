@@ -48,6 +48,7 @@
     "@mrpelz/modifiable-date": "latest",
     "@mrpelz/observable": "latest",
     "@mrpelz/struct": "latest",
+    "pjlink-control": "latest",
     "prom-client": "latest",
     "proper-tags": "latest",
     "suncalc": "latest",

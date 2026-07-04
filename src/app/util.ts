@@ -29,6 +29,7 @@ import {
   ledGrouping,
   output as output_,
   outputGrouping,
+  outputNgDimmable,
 } from '../lib/tree/properties/actuators.js';
 import { timer } from '../lib/tree/properties/logic.js';
 import {
@@ -109,7 +110,7 @@ export const isNight = (elevation?: number): boolean =>
   isTwilightPhase(undefined, -18, elevation);
 
 export const overriddenLed = (
-  led: ReturnType<typeof led_>,
+  led: ReturnType<typeof led_> | ReturnType<typeof outputNgDimmable>,
   isOverridden: AnyWritableObservable<boolean>,
 ) => {
   const { $, actuatorStaleness, brightness, level, topic } = led;
