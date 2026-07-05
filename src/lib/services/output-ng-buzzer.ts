@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import { MappedStruct, TStruct, UIntLE } from '@mrpelz/struct';
 
 import { Service } from '../device/main.js';
@@ -56,6 +57,22 @@ export const BUZZER_DEFAULT_FREQUENCY = 3750;
 export const BUZZER_DEFAULT_HOLD_TIME = 125;
 export const BUZZER_DEFAULT_PAUSE_TIME = 375;
 
+export const buzzerNotes = {
+  defaultFrequency: BUZZER_DEFAULT_FREQUENCY,
+  cFrequency: 4186,
+  cSharpFrequency: 4435,
+  dFrequency: 4699,
+  eFlatFrequency: 4978,
+  eFrequency: 5274,
+  fFrequency: 5588,
+  fSharpFrequency: 5920,
+  gFrequency: 6272,
+  gSharpFrequency: 6645,
+  aFrequency: 7040,
+  bFlatFrequency: 7459,
+  bFrequency: 7902,
+};
+
 export const beep = (
   count = ITERATE_INFINITE,
   frequency = BUZZER_DEFAULT_FREQUENCY,
@@ -96,3 +113,39 @@ export const melody = (
     sequence,
   };
 };
+
+export const alleMeineEntchen = melody([
+  buzzerNotes.cFrequency,
+  buzzerNotes.dFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.fFrequency,
+  buzzerNotes.gFrequency,
+  0,
+  buzzerNotes.gFrequency,
+  0,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.gFrequency,
+  0,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.eFrequency,
+  buzzerNotes.gFrequency,
+  0,
+  buzzerNotes.fFrequency,
+  buzzerNotes.fFrequency,
+  buzzerNotes.fFrequency,
+  buzzerNotes.fFrequency,
+  buzzerNotes.eFrequency,
+  0,
+  buzzerNotes.eFrequency,
+  0,
+  buzzerNotes.dFrequency,
+  buzzerNotes.dFrequency,
+  buzzerNotes.dFrequency,
+  buzzerNotes.dFrequency,
+  buzzerNotes.cFrequency,
+]);

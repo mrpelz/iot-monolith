@@ -47,6 +47,7 @@ export class OutputDimmable {
   );
 
   readonly animationState = new ReadOnlyObservable(this._animationState);
+  readonly customRampTime = new Observable<number | null>(null);
   readonly setBrightness: ProxyObservable<number | null, number>;
   readonly setOn: BooleanProxyState<number>;
 
@@ -61,7 +62,7 @@ export class OutputDimmable {
         return;
       }
 
-      this._set(brightness(this.setBrightness.value), true);
+      this._setFromBrightness(this.setBrightness.value, true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -72,7 +73,7 @@ export class OutputDimmable {
     this._setBrightness = new Observable<number | null>(0, (value) => {
       if (value === null) return;
 
-      this._set(brightness(value));
+      this._setFromBrightness(value);
     });
     this.setBrightness = new ProxyObservable(
       this._setBrightness,
@@ -102,6 +103,13 @@ export class OutputDimmable {
     }
 
     await this._success(skipIndicator);
+  }
+
+  private async _setFromBrightness(value: number, skipIndicator?: boolean) {
+    return this._set(
+      brightness(value, this.customRampTime.value ?? undefined),
+      skipIndicator,
+    );
   }
 
   private async _success(skipIndicator: boolean) {

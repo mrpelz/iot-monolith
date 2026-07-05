@@ -122,9 +122,12 @@ export const isRGB = (value: unknown): value is RGB => {
   return true;
 };
 
-export const setRGB = ({ b, g, r }: RGB): OutputDimmableRGBRequest => ({
+export const setRGB = (
+  { b, g, r }: RGB,
+  rampTime = RAMP_TIME,
+): OutputDimmableRGBRequest => ({
   iterations: 1,
-  sequence: [{ holdTime: 0, value: { rampTime: 0, b, g, r } }],
+  sequence: [{ holdTime: 0, value: { rampTime, b, g, r } }],
 });
 
 export const brightness = (

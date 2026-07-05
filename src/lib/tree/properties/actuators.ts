@@ -43,7 +43,7 @@ import { OutputDimmable as OutputDimmableService } from '../../services/output-n
 import { OutputDimmableRGB as OutputDimmableRGBService } from '../../services/output-ng-dimmable-rgb.js';
 import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
-import { setter } from '../elements/setter.js';
+import { setter, setterNullable } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
@@ -229,8 +229,14 @@ export const outputNgDimmable = (
     indicator,
   );
 
-  const { actualBrightness, actualOn, animationState, setBrightness, setOn } =
-    state;
+  const {
+    actualBrightness,
+    actualOn,
+    animationState,
+    customRampTime,
+    setBrightness,
+    setOn,
+  } = state;
 
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
@@ -251,6 +257,7 @@ export const outputNgDimmable = (
     ),
     animationState: getter(ValueType.STRING, animationState),
     brightness: setter(ValueType.NUMBER, setBrightness, actualBrightness),
+    customRampTime: setterNullable(ValueType.NUMBER, customRampTime),
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
@@ -273,7 +280,7 @@ export const outputNgDimmableRGB = (
     indicator,
   );
 
-  const { actualState, animationState, setState } = state;
+  const { actualState, animationState, customRampTime, setState } = state;
 
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
@@ -293,6 +300,7 @@ export const outputNgDimmableRGB = (
       device,
     ),
     animationState: getter(ValueType.STRING, animationState),
+    customRampTime: setterNullable(ValueType.NUMBER, customRampTime),
     level: Level.PROPERTY as const,
     main: setter(ValueType.RAW, setState, actualState, 'rgb'),
     state,

@@ -32,6 +32,7 @@ export class OutputDimmableRGB {
 
   readonly actualState = new ReadOnlyObservable(this._actualState);
   readonly animationState = new ReadOnlyObservable(this._animationState);
+  readonly customRampTime = new Observable<number | null>(null);
   readonly setState: ProxyObservable<RGB | null, RGB>;
 
   constructor(
@@ -45,7 +46,7 @@ export class OutputDimmableRGB {
         return;
       }
 
-      this._set(setRGB(this.setState.value), true);
+      this._setFromRGB(this.setState.value, true);
     });
 
     this._progressEvent.observable.observe(({ isIterating }) => {
@@ -58,7 +59,7 @@ export class OutputDimmableRGB {
       (value) => {
         if (value === null) return;
 
-        this._set(setRGB(value));
+        this._setFromRGB(value);
       },
     );
     this.setState = new ProxyObservable(
@@ -84,6 +85,13 @@ export class OutputDimmableRGB {
     }
 
     await this._success(skipIndicator);
+  }
+
+  private async _setFromRGB(value: RGB, skipIndicator?: boolean) {
+    return this._set(
+      setRGB(value, this.customRampTime.value ?? undefined),
+      skipIndicator,
+    );
   }
 
   private async _success(skipIndicator: boolean) {
