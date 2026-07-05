@@ -343,6 +343,10 @@ const $init: InitFunction = async (room, introspection) => {
             await askAVR('ZMOFF');
           }
         })(),
+        fetch('http://infoscreen.lan.wurstsalat.cloud:8080/on', {
+          method: 'POST',
+          signal: AbortSignal.timeout(epochs.second),
+        }),
       ]),
     );
 
