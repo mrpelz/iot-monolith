@@ -130,10 +130,17 @@ const askAVR = (command: string) => {
   return Promise.race([promise, sleep(epochs.second * 5)]);
 };
 
+const infoScreenOff = () =>
+  fetch('http://infoscreen.lan.wurstsalat.cloud:8080/off', {
+    method: 'POST',
+    signal: AbortSignal.timeout(epochs.second),
+  });
+
 const $init: InitFunction = async (room, introspection) => {
   const { kitchenAdjacentLights } = await import('../groups.js');
   const { kitchenAdjacentBright, kitchenAdjacentChillax } =
     await import('../scenes.js');
+  const { instances: hallwayInstances } = await import('../rooms/hallway.js');
 
   const {
     couchButtonBottomLeft,
@@ -152,6 +159,9 @@ const $init: InitFunction = async (room, introspection) => {
     terrariumLedTop,
   } = properties;
   const { mediaOn, mediaOff, terrariumLedsOverride } = scenes;
+
+  const { wallswitchFrontRight: hallwayWallswitchFrontRight } =
+    hallwayInstances;
 
   const projector = pjlinkPassword
     ? new Projector('beamer.lan.wurstsalat.cloud', pjlinkPassword)
@@ -324,15 +334,17 @@ const $init: InitFunction = async (room, introspection) => {
   });
 
   mediaOff.state.observe(async () => {
-    await Promise.allSettled([
-      projector?.power('off'),
-      (async () => {
-        const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
-        if (!isAVROff) {
-          await askAVR('ZMOFF');
-        }
-      })(),
-    ]);
+    await safeAsync(
+      Promise.allSettled([
+        projector?.power('off'),
+        (async () => {
+          const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
+          if (!isAVROff) {
+            await askAVR('ZMOFF');
+          }
+        })(),
+      ]),
+    );
 
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
@@ -351,10 +363,7 @@ const $init: InitFunction = async (room, introspection) => {
             await askAVR('ZMON');
           }
         })(),
-        fetch('http://infoscreen.lan.wurstsalat.cloud:8080/off', {
-          method: 'POST',
-          signal: AbortSignal.timeout(epochs.second),
-        }),
+        infoScreenOff(),
       ]),
     );
 
@@ -363,6 +372,21 @@ const $init: InitFunction = async (room, introspection) => {
     );
 
     isTerrariumLedsOverride.value = true;
+  });
+
+  hallwayWallswitchFrontRight.state.up(async () => {
+    await safeAsync(
+      Promise.allSettled([
+        projector?.power('off'),
+        (async () => {
+          const isAVROff = (await askAVR('ZM?')) === 'ZMOFF';
+          if (!isAVROff) {
+            await askAVR('ZMOFF');
+          }
+        })(),
+        infoScreenOff(),
+      ]),
+    );
   });
 };
 
