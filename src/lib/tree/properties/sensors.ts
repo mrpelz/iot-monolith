@@ -27,6 +27,10 @@ import { VCC } from '../../events/vcc.js';
 import { Button } from '../../items/button.js';
 import { MultiValueEvent, SingleValueEvent } from '../../items/event.js';
 import {
+  ExternalState,
+  ExternalStateScheduled,
+} from '../../items/external-state.js';
+import {
   MeasurementInputGetter,
   MultiValueSensor,
   SingleValueSensor,
@@ -46,7 +50,7 @@ import { Context } from '../context.js';
 import { ev1527MotionSensor } from '../devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
-import { Level, ValueType } from '../main.js';
+import { Level, TValueType, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 import { timer as timer_ } from './logic.js';
 
@@ -275,6 +279,49 @@ export const door = <T extends string | undefined>(
     topic,
   };
 };
+
+export const externalState = <
+  V extends ValueType,
+  I extends string,
+  T extends string,
+>(
+  context: Context,
+  valueType: V,
+  identifier: I,
+  topic: T,
+) => {
+  const state = new ExternalState<TValueType[V]>();
+
+  return {
+    $: identifier,
+    lastChange: lastChange(context, state.actualState),
+    lastSeen: lastSeen(context, state.actualState),
+    level: Level.PROPERTY as const,
+    main: getter(valueType, state.actualState),
+    state,
+    topic,
+  };
+};
+
+export const externalStateScheduled = <
+  V extends ValueType,
+  I extends string,
+  T extends string,
+>(
+  context: Context,
+  valueType: V,
+  state: ExternalStateScheduled<TValueType[V]>,
+  identifier: I,
+  topic: T,
+) => ({
+  $: identifier,
+  lastChange: lastChange(context, state.actualState),
+  lastSeen: lastSeen(context, state.actualState),
+  level: Level.PROPERTY as const,
+  main: getter(valueType, state.actualState),
+  state,
+  topic,
+});
 
 export const hello = (
   context: Context,

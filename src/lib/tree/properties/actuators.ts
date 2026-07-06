@@ -24,6 +24,10 @@ import {
   OutputDimmableProgress,
   OutputDimmableRGBProgress,
 } from '../../events/output-ng-progress.js';
+import {
+  ExternalStateSettable,
+  ExternalStateSettableScheduled,
+} from '../../items/external-state.js';
 import { Led } from '../../items/led.js';
 import { Output } from '../../items/output.js';
 import {
@@ -45,7 +49,7 @@ import { Context } from '../context.js';
 import { getter } from '../elements/getter.js';
 import { setter, setterNullable } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
-import { Level, ValueType } from '../main.js';
+import { Level, TValueType, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 import { lastChange, lastSeen } from './sensors.js';
 
@@ -93,6 +97,28 @@ const actuatorStaleness = <T>(
     ),
   };
 };
+
+export const externalStateSettable = <
+  V extends ValueType,
+  I extends string,
+  T extends string,
+>(
+  context: Context,
+  valueType: V,
+  state:
+    | ExternalStateSettable<TValueType[V]>
+    | ExternalStateSettableScheduled<TValueType[V]>,
+  identifier: I,
+  topic: T,
+) => ({
+  $: identifier,
+  lastChange: lastChange(context, state.actualState),
+  lastSeen: lastSeen(context, state.actualState),
+  level: Level.PROPERTY as const,
+  main: setter(valueType, state.setState, state.actualState),
+  state,
+  topic,
+});
 
 export const led = (
   context: Context,
@@ -411,6 +437,9 @@ export const outputGrouping = <T extends string | undefined>(
     | ReturnType<typeof outputNg>
     | ReturnType<typeof led>
     | ReturnType<typeof outputNgDimmable>
+    | ReturnType<
+        typeof externalStateSettable<ValueType.BOOLEAN, 'output', string>
+      >
   )[],
   topic: T,
 ) => {
