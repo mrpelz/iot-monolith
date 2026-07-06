@@ -26,8 +26,15 @@ export class TCPClient extends Socket {
 
     this.on('data', () => this._onData());
 
-    this.on('end', () => this._onEnd());
-    this.on('error', () => this._onEnd());
+    this.on('close', () => this._onClose());
+    this.on('error', () => this._onClose());
+  }
+
+  private _onClose() {
+    clearTimeout(this._reconnectTimeout);
+    if (!this._shouldConnect) return;
+
+    this._reconnectTimeout = setTimeout(() => this.connect(), this._backoff);
   }
 
   private _onConnect() {
@@ -44,13 +51,6 @@ export class TCPClient extends Socket {
       () => this.reconnect(),
       this._reconnectAfterRxSilence,
     );
-  }
-
-  private _onEnd() {
-    clearTimeout(this._reconnectTimeout);
-    if (!this._shouldConnect) return;
-
-    this._reconnectTimeout = setTimeout(() => this.connect(), this._backoff);
   }
 
   connect(): this {
