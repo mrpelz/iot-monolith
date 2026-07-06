@@ -17,12 +17,7 @@ import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
-import {
-  flipMain,
-  getMain,
-  setMain,
-  triggerMain,
-} from '../../../lib/tree/logic.js';
+import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import {
   Level,
   markObjectKeysExcludedFromMatch,
@@ -35,7 +30,6 @@ import {
   outputGrouping,
   scene,
   SceneMember,
-  triggerElement,
 } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
 import { externalStateScheduled } from '../../../lib/tree/properties/sensors.js';
@@ -247,11 +241,14 @@ export const groups = {
     ],
     'lighting',
   ),
+  media: outputGrouping(
+    context,
+    [properties.avr.power, properties.projector.power],
+    'media',
+  ),
 };
 
 export const scenes = {
-  mediaOff: triggerElement(context, 'media'),
-  mediaOn: triggerElement(context, 'media'),
   terrariumLedsOverride: scene(
     context,
     [new SceneMember(isTerrariumLedsOverride, true, false)],
@@ -278,12 +275,12 @@ const $init: InitFunction = async (room, introspection) => {
     ceilingLight,
     infoscreen,
     overrideTimer,
-    projector,
     standingLamp,
     terrariumLedRed,
     terrariumLedTop,
   } = properties;
-  const { mediaOn, mediaOff, terrariumLedsOverride } = scenes;
+  const { media } = groups;
+  const { terrariumLedsOverride } = scenes;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -366,14 +363,14 @@ const $init: InitFunction = async (room, introspection) => {
   );
 
   couchButtonBottomLeft.state.observe(() =>
-    triggerMain(mediaOn, () =>
-      l(`${p(couchButtonBottomLeft)} triggered ${p(mediaOn)}`),
+    setMain(media, true, () =>
+      l(`${p(couchButtonBottomLeft)} turned on ${p(media)}`),
     ),
   );
 
   couchButtonBottomRight.state.observe(() =>
-    triggerMain(mediaOff, () =>
-      l(`${p(couchButtonBottomRight)} bottomRight triggered ${p(mediaOff)}`),
+    setMain(media, false, () =>
+      l(`${p(couchButtonBottomRight)} turned off ${p(media)}`),
     ),
   );
 
@@ -479,38 +476,16 @@ const $init: InitFunction = async (room, introspection) => {
     isTerrariumLedsOverride.value = false;
   });
 
-  mediaOff.state.observe(async () => {
-    l(`${p(avr.power)} was set false because ${p(mediaOff)} was triggered`);
-    avr.power.state.setState.value = false;
-
-    l(`${p(infoscreen.on)} was set true because ${p(mediaOff)} was triggered`);
-    infoscreen.on.state.setState.value = true;
+  media.main.setState.observe(async (value) => {
+    l(
+      `${p(infoscreen.on)} was set ${value ? 'false' : 'true'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
+    );
+    infoscreen.on.state.setState.value = !value;
 
     l(
-      `${p(projector.power)} was set false because ${p(mediaOff)} was triggered`,
+      `${p(terrariumLedsOverride)} was set ${value ? 'true' : 'false'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
     );
-    projector.power.state.setState.value = false;
-
-    l(
-      `${p(terrariumLedsOverride)} was set false because ${p(mediaOff)} was triggered`,
-    );
-    isTerrariumLedsOverride.value = false;
-  });
-
-  mediaOn.state.observe(async () => {
-    l(`${p(avr.power)} was set true because ${p(mediaOn)} was triggered`);
-    avr.power.state.setState.value = true;
-
-    l(`${p(infoscreen.on)} was set false because ${p(mediaOn)} was triggered`);
-    infoscreen.on.state.setState.value = false;
-
-    l(`${p(projector.power)} was set true because ${p(mediaOn)} was triggered`);
-    projector.power.state.setState.value = true;
-
-    l(
-      `${p(terrariumLedsOverride)} was set true because ${p(mediaOn)} was triggered`,
-    );
-    isTerrariumLedsOverride.value = true;
+    isTerrariumLedsOverride.value = value;
   });
 };
 
