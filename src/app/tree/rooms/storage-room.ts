@@ -20,6 +20,9 @@ import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 import { automatedInputLogic } from '../../util.js';
 
+const WASHER_DRYER_DEBUG_CONNECT = false;
+const WASHER_DRYER_MESSAGE_SEPARATOR = Buffer.from([0x00, 0x09]);
+
 export const devices = {
   ceilingLight: shelly1WithInput(
     'lighting' as const,
@@ -54,9 +57,6 @@ export const logic = {
   ),
 };
 
-const WASHER_DRYER_CONNECT = false;
-const WASHER_DRYER_MESSAGE_SEPARATOR = Buffer.from([0x00, 0x09]);
-
 const washerSocket = new TCPClient(
   'storageroom-washerdryerbridge.lan.wurstsalat.cloud',
   1338,
@@ -87,7 +87,7 @@ const $init: InitFunction = (room, introspection) => {
     logicReasoningLevel,
   );
 
-  if (context.connect || WASHER_DRYER_CONNECT) {
+  if (WASHER_DRYER_DEBUG_CONNECT) {
     washerSocket.connect();
     dryerSocket.connect();
   }
