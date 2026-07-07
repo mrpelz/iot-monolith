@@ -17,6 +17,7 @@ import { obiPlug } from '../../../lib/tree/devices/obi-plug.js';
 import { shellyi3 } from '../../../lib/tree/devices/shelly-i3.js';
 import { shelly1 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
+import { getter } from '../../../lib/tree/elements/getter.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
 import {
   Level,
@@ -32,7 +33,10 @@ import {
   SceneMember,
 } from '../../../lib/tree/properties/actuators.js';
 import { timer } from '../../../lib/tree/properties/logic.js';
-import { externalStateScheduled } from '../../../lib/tree/properties/sensors.js';
+import {
+  externalStateScheduled,
+  lastChange,
+} from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { pjlinkPassword } from '../../environment.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
@@ -79,7 +83,12 @@ export const instances = {
   wallswitchTop: devices.wallswitch.button0,
 };
 
-const avrSocket = new TCPClient('bender.lan.wurstsalat.cloud', 23);
+const avrSocket = new TCPClient(
+  'bender.lan.wurstsalat.cloud',
+  23,
+  undefined,
+  epochs.second * 30,
+);
 
 let pjlinkProjector: Projector | undefined;
 
@@ -88,13 +97,17 @@ const isTerrariumLedsOverride = new BooleanState(false);
 export const properties = {
   avr: {
     $: 'avr' as const,
+    isSocketConnected: {
+      lastChange: lastChange(context, avrSocket.isConnected),
+      main: getter(ValueType.BOOLEAN, avrSocket.isConnected),
+    },
     power: externalStateSettable(
       context,
       ValueType.BOOLEAN,
       new ExternalStateSettable(
         false,
         async (value, actualValue) => {
-          if (!avrSocket.writable) return;
+          if (!avrSocket.isConnected.value) return;
           if (value === actualValue) return;
 
           avrSocket.write(value ? 'ZMON\r' : 'ZMOFF\r', 'ascii');
@@ -294,10 +307,11 @@ const $init: InitFunction = async (room, introspection) => {
     avrSocket.connect();
   }
 
-  avrSocket.on('connect', () => l('avr connected'));
-  avrSocket.on('close', () => l('avr disconnected'));
+  avrSocket.isConnected.observe((online) =>
+    l(`avrSocket ${online ? '' : 'dis'}connected`),
+  );
   every5Seconds.addTask(() => {
-    if (!avrSocket.writable) return;
+    if (!avrSocket.isConnected.value) return;
     avrSocket.write('ZM?\r', 'ascii');
   });
 

@@ -1,75 +1,193 @@
 import { Socket } from 'node:net';
-import { Transform, TransformCallback, TransformOptions } from 'node:stream';
+import {
+  Duplex,
+  Transform,
+  TransformCallback,
+  TransformOptions,
+} from 'node:stream';
 
 import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
+import { Observable, ReadOnlyObservable } from '@mrpelz/observable';
+
+type WriteQueueItem = {
+  callback: (error?: Error | null) => void;
+  chunk: Buffer;
+  encoding: BufferEncoding;
+};
 
 export const DEFAULT_BACKOFF_MS = epochs.second;
 
-export class TCPClient extends Socket {
-  private _reconnectTimeout?: NodeJS.Timeout;
-  private _rxSilenceTimeout?: NodeJS.Timeout;
-  private _shouldConnect = false;
+export class TCPClient extends Duplex {
+  private readonly _isConnected = new Observable<boolean>(false);
+  private _isConnecting = false;
+  private _isDisconnecting = false;
+  private readonly _lastInteraction = new Observable<number>(0);
+  private _reconnectionInterval?: NodeJS.Timeout;
+  private _shouldBeConnected = false;
+  private _socket?: Socket;
+  private _writeQueue: WriteQueueItem[] = [];
+
+  readonly isConnected = new ReadOnlyObservable(this._isConnected);
+  readonly lastRx = new ReadOnlyObservable(this._lastInteraction);
 
   constructor(
     private readonly _host: string,
     private readonly _port: number,
-    private readonly _backoff = DEFAULT_BACKOFF_MS,
-    private readonly _reconnectAfterRxSilence = _backoff * 100,
+    private readonly _reconnectionDelay: number = DEFAULT_BACKOFF_MS,
+    private readonly _reconnectAfterInteractionSilence = 0,
   ) {
     super();
-
-    this.setNoDelay(true);
-    this.setKeepAlive(true);
-
-    this.on('connect', () => this._onConnect());
-
-    this.on('data', () => this._onData());
-
-    this.on('close', () => this._onClose());
-    this.on('error', () => this._onClose());
   }
 
-  private _onClose() {
-    clearTimeout(this._reconnectTimeout);
-    if (!this._shouldConnect) return;
+  private _cleanupSocket(): void {
+    this._socket?.removeAllListeners();
+    this._socket?.resetAndDestroy();
+    this._socket?.unref();
+    this._socket = undefined;
 
-    this._reconnectTimeout = setTimeout(() => this.connect(), this._backoff);
+    this._isDisconnecting = false;
+    this._isConnected.value = false;
+
+    this._lastInteraction.value = 0;
   }
 
-  private _onConnect() {
-    clearTimeout(this._reconnectTimeout);
-    this._onData();
+  private async _connect(): Promise<void> {
+    if (!this._shouldBeConnected) return;
+    if (this._isConnected.value) return;
+
+    if (this._isConnecting || this._isDisconnecting) return;
+    this._isConnecting = true;
+
+    const { promise, resolve } = Promise.withResolvers<void>();
+
+    this._socket = new Socket({ keepAlive: true, noDelay: true });
+
+    this._socket.on('connect', () => {
+      this._isConnecting = false;
+      this._isConnected.value = true;
+
+      this._lastInteraction.value = Date.now();
+
+      resolve();
+
+      this._flushWriteQueue();
+    });
+
+    this._socket.on('data', (chunk: Buffer) => {
+      this._lastInteraction.value = Date.now();
+
+      const ok = this.push(chunk);
+      if (!ok) this._socket?.pause();
+    });
+
+    this._socket.on('error', () => {
+      this._isConnecting = false;
+
+      resolve();
+    });
+
+    this._socket.once('close', () => {
+      this._disconnect();
+    });
+
+    this._socket.connect(this._port, this._host);
+
+    await promise;
   }
 
-  private _onData() {
-    if (!this._reconnectAfterRxSilence) return;
+  private _disconnect(): void {
+    if (!this._isConnected.value) return;
 
-    clearTimeout(this._rxSilenceTimeout);
+    if (this._isDisconnecting) return;
+    this._isDisconnecting = true;
 
-    this._rxSilenceTimeout = setTimeout(
-      () => this.reconnect(),
-      this._reconnectAfterRxSilence,
-    );
+    this._cleanupSocket();
   }
 
-  connect(): this {
-    this._shouldConnect = true;
-    super.connect(this._port, this._host);
+  private _disconnectIfSilent() {
+    if (!this._reconnectAfterInteractionSilence) return;
+    if (!this._lastInteraction.value) return;
+    if (
+      Date.now() - this._lastInteraction.value <
+      this._reconnectAfterInteractionSilence
+    ) {
+      return;
+    }
 
-    return this;
+    this._disconnect();
+    this._connect();
+  }
+
+  private _flushWriteQueue(): void {
+    const queue = this._writeQueue;
+    this._writeQueue = [];
+    for (const { chunk, encoding, callback } of queue) {
+      this._write(chunk, encoding, callback);
+    }
+  }
+
+  override _destroy(
+    err: Error | null,
+    callback: (error?: Error | null) => void,
+  ): void {
+    this._disconnect();
+
+    callback(err);
+  }
+
+  override _final(callback: (error?: Error | null) => void): void {
+    if (this._socket) this._socket.end(callback);
+    // eslint-disable-next-line callback-return
+    callback();
+
+    this._disconnect();
+  }
+
+  override _read(): void {
+    if (this._socket && this._socket.isPaused()) {
+      this._socket.resume();
+    }
+  }
+
+  override _write(
+    chunk: Buffer,
+    encoding: BufferEncoding,
+    callback: (error?: Error | null) => void,
+  ): void {
+    if (this._socket && this._socket.writable) {
+      this._socket.write(chunk, encoding, callback);
+      this._lastInteraction.value = Date.now();
+    } else {
+      this._writeQueue.push({ callback, chunk, encoding });
+    }
+  }
+
+  async connect(): Promise<void> {
+    this._shouldBeConnected = true;
+
+    clearInterval(this._reconnectionInterval);
+    this._reconnectionInterval = setInterval(() => {
+      this._connect();
+      this._disconnectIfSilent();
+    }, this._reconnectionDelay);
+
+    await this._connect();
   }
 
   disconnect(): void {
-    this._shouldConnect = false;
-    this.end();
+    this._shouldBeConnected = false;
+
+    clearInterval(this._reconnectionInterval);
+
+    this._disconnect();
   }
 
   async reconnect(): Promise<void> {
     this.disconnect();
-    await sleep(this._backoff);
+    await sleep(this._reconnectionDelay);
 
-    this.connect();
+    await this.connect();
   }
 }
 
