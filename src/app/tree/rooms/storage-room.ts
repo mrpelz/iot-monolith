@@ -90,7 +90,7 @@ export const devices = {
     'storageroom-washerdryerbridge.lan.wurstsalat.cloud',
     context,
     undefined,
-    WASHER_DRYER_DEBUG_CONNECT ?? undefined,
+    WASHER_DRYER_DEBUG_CONNECT || undefined,
   ),
 };
 

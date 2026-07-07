@@ -48,7 +48,7 @@ import {
 } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 
-const LIGHT_TIMER_DURATION = epochs.minute;
+const LIGHT_TIMER_DURATION = epochs.minute * 5;
 
 export const devices = {
   ceilingLight: shelly1(
