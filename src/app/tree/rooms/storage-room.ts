@@ -243,6 +243,10 @@ const $init: InitFunction = (room, introspection) => {
     // do not set notification when ceiling light is on and machine transitions to stopped
     if (ceilingLight.main.setState.value && !value) return;
 
+    // do not run if night
+    const now = new Date();
+    if (now.getHours() > 23 || now.getHours() < 6) return;
+
     washerDryerNotification.value = !value;
   });
 
@@ -255,6 +259,10 @@ const $init: InitFunction = (room, introspection) => {
 
     // do not set notification when ceiling light is on and machine transitions to stopped
     if (ceilingLight.main.setState.value && !value) return;
+
+    // do not run if night
+    const now = new Date();
+    if (now.getHours() > 23 || now.getHours() < 6) return;
 
     washerDryerNotification.value = !value;
   });
