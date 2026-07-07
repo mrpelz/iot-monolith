@@ -110,15 +110,30 @@ export const externalStateSettable = <
     | ExternalStateSettableScheduled<TValueType[V]>,
   identifier: I,
   topic: T,
-) => ({
-  $: identifier,
-  lastChange: lastChange(context, state.actualState),
-  lastSeen: lastSeen(context, state.actualState),
-  level: Level.PROPERTY as const,
-  main: setter(valueType, state.setState, state.actualState),
-  state,
-  topic,
-});
+) => {
+  const flip =
+    valueType === ValueType.BOOLEAN
+      ? trigger(
+          ValueType.NULL,
+          new NullState(
+            () => ((state.setState.value as boolean) = !state.setState.value),
+          ),
+        )
+      : undefined;
+
+  return {
+    $: identifier,
+    flip: flip as V extends ValueType.BOOLEAN
+      ? Exclude<typeof flip, undefined>
+      : undefined,
+    lastChange: lastChange(context, state.actualState),
+    lastSeen: lastSeen(context, state.actualState),
+    level: Level.PROPERTY as const,
+    main: setter(valueType, state.setState, state.actualState),
+    state,
+    topic,
+  };
+};
 
 export const led = (
   context: Context,
