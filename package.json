@@ -44,23 +44,23 @@
     "npm-shrinkwrap.json"
   ],
   "dependencies": {
-    "@mrpelz/misc-utils": "latest",
-    "@mrpelz/modifiable-date": "latest",
-    "@mrpelz/observable": "latest",
-    "@mrpelz/struct": "latest",
-    "pjlink-control": "latest",
-    "prom-client": "latest",
-    "proper-tags": "latest",
-    "suncalc": "latest",
-    "uuid": "latest",
-    "ws": "latest"
+    "@mrpelz/misc-utils": "6.1.0",
+    "@mrpelz/modifiable-date": "6.1.0",
+    "@mrpelz/observable": "6.1.0",
+    "@mrpelz/struct": "6.1.0",
+    "pjlink-control": "1.1.0",
+    "prom-client": "15.1.3",
+    "proper-tags": "2.0.2",
+    "suncalc": "2.0.0",
+    "uuid": "14.0.1",
+    "ws": "8.21.0"
   },
   "devDependencies": {
-    "@mrpelz/boilerplate-common": "latest",
-    "@mrpelz/boilerplate-node": "latest",
-    "@types/suncalc": "latest",
-    "@types/ws": "latest",
-    "undici": "latest"
+    "@mrpelz/boilerplate-common": "16.2.0",
+    "@mrpelz/boilerplate-node": "16.2.0",
+    "@types/suncalc": "1.9.2",
+    "@types/ws": "8.18.1",
+    "undici": "8.7.0"
   },
   "packageManager": "npm@11.14.1+sha512.6a8a4d67478497a2dbc6815cad72e64c43f33413717e242756047d466241ab39bee61e691683a64658e94496ec5f1a1c05e4a5ec62dcc773280dfd949443a367",
   "devEngines": {
