@@ -1,12 +1,12 @@
 {
   "name": "@iot/iot-monolith",
-  "version": "8.8.3",
+  "version": "8.9.0",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@iot/iot-monolith",
-      "version": "8.8.3",
+      "version": "8.9.0",
       "license": "UNLICENSED",
       "dependencies": {
         "@mrpelz/misc-utils": "6.1.0",
