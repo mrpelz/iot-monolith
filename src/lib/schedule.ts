@@ -65,7 +65,7 @@ export class Schedule {
       carriedOverExecution ||
       this._nextExecutionProvider(this._previousExecution || undefined);
 
-    this._nextExecution.value = nextExecution;
+    this._nextExecution.set(nextExecution);
     const now = Date.now();
 
     if (!nextExecution || nextExecution.getTime() < now) {
@@ -120,7 +120,7 @@ export class Schedule {
     if (this._timeout) {
       clearTimeout(this._timeout);
       this._timeout = null;
-      this._nextExecution.value = null;
+      this._nextExecution.set(null);
     }
   }
 }

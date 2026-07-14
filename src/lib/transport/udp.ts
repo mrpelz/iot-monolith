@@ -183,7 +183,7 @@ export class UDPTransport extends Transport {
 
     this._log.info(() => 'is connected');
 
-    this._isConnected.value = true;
+    this._isConnected.set(true);
   }
 
   /**
@@ -196,7 +196,7 @@ export class UDPTransport extends Transport {
 
     this._log.info(() => 'is disconnected');
 
-    this._isConnected.value = false;
+    this._isConnected.set(false);
   }
 
   /**
@@ -243,7 +243,7 @@ export class UDPTransport extends Transport {
    * connect UDPTransport instance
    */
   connect(): void {
-    this._shouldBeConnected.value = true;
+    this._shouldBeConnected.set(true);
 
     this._log.info(() => 'set connect');
   }
@@ -252,7 +252,7 @@ export class UDPTransport extends Transport {
    * disconnect UDPTransport instance
    */
   disconnect(): void {
-    this._shouldBeConnected.value = false;
+    this._shouldBeConnected.set(false);
 
     this._log.info(() => 'set disconnect');
   }

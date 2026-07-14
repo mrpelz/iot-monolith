@@ -88,7 +88,7 @@ export class WebApi {
         ws.send(JSON.stringify(entry));
       });
 
-      if (countConnection) this._streamCount.value += 1;
+      if (countConnection) this._streamCount.set(this._streamCount.value + 1);
 
       const pingPong = setInterval(() => ws.ping(), WEBSOCKET_PING_INTERVAL);
       const pingPongTimer = new Timer(WEBSOCKET_PING_INTERVAL * 5);
@@ -135,7 +135,9 @@ export class WebApi {
         observer.remove();
 
         if (countConnection) {
-          this._streamCount.value -= Math.max(0, this._streamCount.value - 1);
+          this._streamCount.set(
+            this._streamCount.value - Math.max(0, this._streamCount.value - 1),
+          );
         }
 
         ws.close();

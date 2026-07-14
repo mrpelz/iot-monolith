@@ -80,11 +80,11 @@ export class SingleValueSensor<T = any, S = void> {
   }
 
   private _success(result: T) {
-    this._state.value = result;
+    this._state.set(result);
   }
 
   private _unknown() {
-    this._state.value = null;
+    this._state.set(null);
   }
 }
 
@@ -179,13 +179,13 @@ export class MultiValueSensor<
 
   private _success(result: T) {
     for (const property of this._properties) {
-      this._state[property].value = result[property];
+      this._state[property].set(result[property]);
     }
   }
 
   private _unknown() {
     for (const property of this._properties) {
-      this._state[property].value = null;
+      this._state[property].set(null);
     }
   }
 }

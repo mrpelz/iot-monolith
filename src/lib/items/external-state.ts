@@ -11,7 +11,7 @@ export class ExternalState<T> {
   readonly actualState = new ReadOnlyObservable(this._actualState);
 
   inject(value: T | null): void {
-    this._actualState.value = value;
+    this._actualState.set(value);
   }
 }
 
@@ -43,7 +43,7 @@ export class ExternalStateSettable<T> extends ExternalState<T> {
     if (value === null) return;
 
     this._isInProgressSetter = true;
-    this.setState.value = value;
+    this.setState.set(value);
     this._isInProgressSetter = false;
   }
 
@@ -81,7 +81,7 @@ export class ExternalStateScheduled<T> extends ExternalState<T> {
     const [error, nextValue] = await safeAsync(this._getter());
 
     if (nextValue !== ExternalStateScheduled.doNotSet) {
-      this._actualState.value = error ? null : nextValue;
+      this._actualState.set(error ? null : nextValue);
     }
 
     this._isInProgress = false;
@@ -122,7 +122,7 @@ export class ExternalStateSettableScheduled<
     if (value === null) return;
 
     this._isInProgressSetter = true;
-    this.setState.value = value;
+    this.setState.set(value);
     this._isInProgressSetter = false;
   }
 

@@ -59,13 +59,13 @@ export const sunElevation = (schedule: Schedule) => {
   schedule.addTask(() => {
     const state = getValues();
 
-    elevation.value = state.elevation;
+    elevation.set(state.elevation);
 
-    isAstronomicalTwilight.value = state.isAstronomicalTwilight;
-    isCivilTwilight.value = state.isCivilTwilight;
-    isDay.value = state.isDay;
-    isNauticalTwilight.value = state.isNauticalTwilight;
-    isNight.value = state.isNight;
+    isAstronomicalTwilight.set(state.isAstronomicalTwilight);
+    isCivilTwilight.set(state.isCivilTwilight);
+    isDay.set(state.isDay);
+    isNauticalTwilight.set(state.isNauticalTwilight);
+    isNight.set(state.isNight);
   });
 
   const $init: InitFunction = (self, introspection) => {

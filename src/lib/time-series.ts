@@ -83,7 +83,9 @@ export class RollingProduct<T, S> extends ReadOnlyProxyObservable<
   constructor(timeseries: Timeseries<T>, get: ProxyFn<Map<Date, T>, S>) {
     const observable = new Observable<Map<Date, T>>(timeseries.history);
 
-    timeseries.updated.observe((history) => (observable.value = history));
+    timeseries.updated.observe((history, _observer, _changed, origin) =>
+      observable.set(history, origin),
+    );
 
     super(observable, get);
   }

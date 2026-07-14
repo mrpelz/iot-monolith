@@ -51,7 +51,7 @@ export class Output {
   }
 
   private _success(on: boolean, skipIndicator: boolean) {
-    this._actualState.value = on;
+    this._actualState.set(on);
 
     if (!this._indicator || skipIndicator) return;
     this._indicator
@@ -65,6 +65,6 @@ export class Output {
   }
 
   private _unknown() {
-    this._actualState.value = null;
+    this._actualState.set(null);
   }
 }

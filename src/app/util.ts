@@ -2,8 +2,10 @@
 import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
 import {
+  AnyObservableOrNullState,
   AnyWritableObservable,
   Observable,
+  ObserverCallback,
   ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
@@ -56,28 +58,25 @@ export const radiansToDegrees = (input: number): number =>
 
 export const sunElevation = (): number => {
   const { altitude } = sunCalc.getPosition(new Date(), LATITUDE, LONGITUDE);
-  return radiansToDegrees(altitude);
+  return altitude;
 };
 
 export const sunlightLeds = (): { red: number; white: number } => {
   const now = new Date();
 
-  const { altitude: solarNoonAltitude_ } = sunCalc.getPosition(
+  const { altitude: solarNoonAltitude } = sunCalc.getPosition(
     sunCalc.getTimes(now, LATITUDE, LONGITUDE).solarNoon,
     LATITUDE,
     LONGITUDE,
   );
-  const solarNoonAltitude = radiansToDegrees(solarNoonAltitude_);
 
-  const { altitude: nadirAltitude_ } = sunCalc.getPosition(
+  const { altitude: nadirAltitude } = sunCalc.getPosition(
     sunCalc.getTimes(now, LATITUDE, LONGITUDE).nadir,
     LATITUDE,
     LONGITUDE,
   );
-  const nadirAltitude = radiansToDegrees(nadirAltitude_);
 
-  const { altitude: altitude_ } = sunCalc.getPosition(now, LATITUDE, LONGITUDE);
-  const altitude = radiansToDegrees(altitude_);
+  const { altitude } = sunCalc.getPosition(now, LATITUDE, LONGITUDE);
 
   const normalizedTheta =
     ((altitude - nadirAltitude) / (solarNoonAltitude - nadirAltitude)) * 2 - 1;
@@ -117,45 +116,45 @@ export const overriddenLed = (
 
   const actualBrightness_ = new Observable(brightness.state.value);
   const actualBrightness = new ReadOnlyObservable(actualBrightness_);
-  brightness.state.observe((value) => {
+  brightness.state.observe((value, _observer, _changed, origin) => {
     if (!isOverridden.value) return;
 
-    actualBrightness_.value = value;
+    actualBrightness_.set(value, origin);
   }, true);
 
   const setBrightness = new Observable(
     brightness.setState.value,
-    (value) => {
+    (value, _changed, origin) => {
       if (value === brightness.setState.value) return;
       if (!isOverridden.value) return;
 
-      brightness.setState.value = value;
+      brightness.setState.set(value, origin);
     },
     true,
   );
-  brightness.setState.observe((value) => {
+  brightness.setState.observe((value, _observer, _changed, origin) => {
     if (value === setBrightness.value) return;
     if (!isOverridden.value) return;
 
-    setBrightness.value = value;
+    setBrightness.set(value, origin);
   }, true);
 
-  isOverridden.observe((value) => {
+  isOverridden.observe((value, _observer, _changed, origin) => {
     if (value) {
-      brightness.setState.value = setBrightness.value;
+      brightness.setState.set(setBrightness.value, origin);
       return;
     }
 
-    setBrightness.value = 0;
-    actualBrightness_.value = 0;
+    setBrightness.set(0, origin);
+    actualBrightness_.set(0, origin);
   });
 
   every5Seconds.addTask(() => {
     if (isOverridden.value) return;
     if (setBrightness.value === 0) return;
 
-    setBrightness.value = 0;
-    actualBrightness_.value = 0;
+    setBrightness.set(0);
+    actualBrightness_.set(0);
   });
 
   const actualOn = new ReadOnlyProxyObservable(actualBrightness, (value) =>
@@ -254,9 +253,6 @@ export const automatedInputLogic = (
     let upstart = true;
     sleep(5000).then(() => (upstart = false));
 
-    let outputSetterSourceIsAutomatedInput = false;
-    let outputSetterSourceIsTimerRunningOut = false;
-
     const parent = introspection.getObject(object)?.mainReference?.parent;
     const p = makePathStringRetriever(introspection);
     const l = makeCustomStringLogger(
@@ -282,12 +278,14 @@ export const automatedInputLogic = (
       );
     }
 
-    output.main.setState.observe((value) => {
+    const inputsAutomatedStates: AnyObservableOrNullState[] = [];
+
+    output.main.setState.observe((value, _observer, _changed, origin) => {
       if (value) {
         if (
           startTimerFromManualOn &&
           timerOutput.state.isEnabled.value &&
-          !outputSetterSourceIsAutomatedInput
+          !inputsAutomatedStates.includes(origin)
         ) {
           l(
             `${p(
@@ -300,25 +298,19 @@ export const automatedInputLogic = (
           timerOutput.state.start();
         }
 
-        outputSetterSourceIsAutomatedInput = false;
+        automationEnableManualState.set(true, origin);
 
         return;
       }
 
-      if (
-        !upstart &&
-        !outputSetterSourceIsTimerRunningOut &&
-        automationEnableState.value
-      ) {
+      if (!upstart && origin !== timerOutput.state) {
         l(
           `${p(output)} was turned off from source that is not ${p(
             timerOutput,
-          )} and automation is active, disabling ${p(automationEnableManual)}`,
+          )}, disabling ${p(automationEnableManual)}`,
         );
-        automationEnableManualState.value = false;
+        automationEnableManualState.set(false, origin);
       }
-
-      outputSetterSourceIsTimerRunningOut = false;
 
       if (timerOutput.state.isActive.value) {
         l(
@@ -328,13 +320,17 @@ export const automatedInputLogic = (
         );
         timerOutput.state.stop();
       }
-    });
+    }, true);
 
     for (const input of inputsAutomated) {
       let prime = false;
 
-      // eslint-disable-next-line no-loop-func
-      const fn = (value: boolean | null) => {
+      const fn: ObserverCallback<boolean | null> = (
+        value,
+        _observer,
+        _changed,
+        origin,
+      ) => {
         l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
         if (!automationEnableState.value) {
@@ -358,9 +354,7 @@ export const automatedInputLogic = (
               )} and priming`,
             );
 
-            outputSetterSourceIsAutomatedInput = true;
-
-            output.main.setState.value = true;
+            output.main.setState.set(true, origin);
           }
 
           if (timerOutput.state.isActive.value) {
@@ -404,12 +398,14 @@ export const automatedInputLogic = (
       switch (input.$) {
         case 'door':
         case 'window': {
+          inputsAutomatedStates.push(input.open.state);
           input.open.state.observe(fn, true);
           break;
         }
         case 'input':
         case 'motion':
         case 'hmmdMotion': {
+          inputsAutomatedStates.push(input.state);
           input.state.observe(fn, true);
           break;
         }
@@ -417,16 +413,6 @@ export const automatedInputLogic = (
     }
 
     automationEnableManualState.observe((value) => {
-      if (timerOutput.state.isActive.value) {
-        l(
-          `${p(
-            automationEnableManual,
-          )} triggered with timer running, stopping ${p(timerOutput)}`,
-        );
-
-        timerOutput.state.stop();
-      }
-
       if (!value) {
         if (timerAutomation.state.isEnabled) {
           l(
@@ -453,12 +439,11 @@ export const automatedInputLogic = (
       }
     }, true);
 
-    timerOutput.state.observe(() => {
+    timerOutput.state.observe((_value, _observer, _changed, origin) => {
       if (output.main.setState.value) {
         l(`${p(timerOutput)} ran out with output on, turning off ${p(output)}`);
 
-        outputSetterSourceIsTimerRunningOut = true;
-        output.main.setState.value = false;
+        output.main.setState.set(false, origin);
       }
     });
 
@@ -482,7 +467,7 @@ export const automatedInputLogic = (
       }
     }
 
-    timerAutomation.state.observe(() => {
+    timerAutomation.state.observe((_value, _observer, _changed, origin) => {
       if (!automationEnableManualState.value) {
         l(
           `${p(
@@ -492,20 +477,20 @@ export const automatedInputLogic = (
           )}`,
         );
 
-        automationEnableManualState.value = true;
+        automationEnableManualState.set(true, origin);
       }
     });
 
     automationEnableSchedule?.addTask(() => {
       l(`scheduled activation of ${p(automationEnable)} logic`);
 
-      automationEnableScheduledState.value = true;
+      automationEnableScheduledState.set(true);
     });
 
     automationDisableSchedule?.addTask(() => {
       l(`scheduled deactivation of ${p(automationEnable)} logic`);
 
-      automationEnableScheduledState.value = false;
+      automationEnableScheduledState.set(false);
     });
   };
 

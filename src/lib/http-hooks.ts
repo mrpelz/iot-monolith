@@ -130,8 +130,9 @@ export const httpHooks = (
         return;
       }
 
-      (state as AnyWritableObservable<unknown> | NullState<unknown>).value =
-        result;
+      (state as AnyWritableObservable<unknown> | NullState<unknown>).set(
+        result,
+      );
     }
 
     response.write(`${JSON.stringify(state.value)}\n`);

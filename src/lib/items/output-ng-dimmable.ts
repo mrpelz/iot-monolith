@@ -67,7 +67,7 @@ export class OutputDimmable {
 
     this._progressEvent.observable.observe(({ isIterating }) => {
       if (isIterating) return;
-      this._animationState.value = 'STATIC';
+      this._animationState.set('STATIC');
     });
 
     this._setBrightness = new Observable<number | null>(0, (value) => {
@@ -88,12 +88,13 @@ export class OutputDimmable {
   }
 
   private async _set(request: OutputDimmableRequest, skipIndicator = false) {
-    this._animationState.value =
+    this._animationState.set(
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
         : this._progressEvent
           ? 'FINITE'
-          : 'STATIC';
+          : 'STATIC',
+    );
 
     const [error] = await safeAsync(this._service.request(request));
 
@@ -113,7 +114,7 @@ export class OutputDimmable {
   }
 
   private async _success(skipIndicator: boolean) {
-    this._actualBrightness.value = this.setBrightness.value;
+    this._actualBrightness.set(this.setBrightness.value);
 
     if (!this._indicator || skipIndicator) return;
     const blinkCount = this._actualBrightness.value ? 3 : 2;
@@ -122,8 +123,8 @@ export class OutputDimmable {
   }
 
   private _unknown() {
-    this._actualBrightness.value = null;
-    this._animationState.value = 'STATIC';
+    this._actualBrightness.set(null);
+    this._animationState.set('STATIC');
   }
 
   async blink(count?: number): Promise<void> {
@@ -140,7 +141,7 @@ export class OutputDimmable {
       observer.remove();
     }, true);
 
-    this._setBrightness.value = null;
+    this._setBrightness.set(null);
     await this._set(value);
 
     return promise;

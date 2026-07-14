@@ -139,7 +139,7 @@ export const logic = {
     properties.ceilingLight,
     [properties.motion, properties.door],
     [instances.wallswitch],
-    epochs.minute,
+    epochs.minute * 5,
   ),
 };
 
@@ -215,25 +215,27 @@ const $init: InitFunction = (room, introspection) => {
       }
     });
 
-  washerDryerNotificationEnable.observe((value) => {
-    if (value) return;
+  washerDryerNotificationEnable.observe(
+    (value, _observer, _changed, origin) => {
+      if (value) return;
 
-    washerDryerNotification.value = false;
-  });
+      washerDryerNotification.set(false, origin);
+    },
+  );
 
-  door.open.state.observe((value) => {
+  door.open.state.observe((value, _observer, _changed, origin) => {
     if (!value) return;
 
-    washerDryerNotification.value = false;
+    washerDryerNotification.set(false, origin);
   });
 
-  motion.state.observe((value) => {
+  motion.state.observe((value, _observer, _changed, origin) => {
     if (!value) return;
 
-    washerDryerNotification.value = false;
+    washerDryerNotification.set(false, origin);
   });
 
-  washer.isRunning.main.state.observe((value) => {
+  washer.isRunning.main.state.observe((value, _observer, _changed, origin) => {
     // do not set notification when running state is uncertain
     if (value === null) return;
 
@@ -247,10 +249,10 @@ const $init: InitFunction = (room, introspection) => {
     const now = new Date();
     if (now.getHours() > 23 || now.getHours() < 6) return;
 
-    washerDryerNotification.value = !value;
+    washerDryerNotification.set(!value, origin);
   });
 
-  dryer.isRunning.main.state.observe((value) => {
+  dryer.isRunning.main.state.observe((value, _observer, _changed, origin) => {
     // do not set notification when running state is uncertain
     if (value === null) return;
 
@@ -264,12 +266,12 @@ const $init: InitFunction = (room, introspection) => {
     const now = new Date();
     if (now.getHours() > 23 || now.getHours() < 6) return;
 
-    washerDryerNotification.value = !value;
+    washerDryerNotification.set(!value, origin);
   });
 
   let notificationPlayTimeout: NodeJS.Timeout | undefined;
 
-  washerDryerNotification.observe((value) => {
+  washerDryerNotification.observe((value, _observer, _changed, origin) => {
     clearTimeout(notificationPlayTimeout);
 
     try {
@@ -282,7 +284,7 @@ const $init: InitFunction = (room, introspection) => {
       get(wiimOfficePlayUrl, { agent, timeout: epochs.second });
 
       notificationPlayTimeout = setTimeout(
-        () => (washerDryerNotification.value = false),
+        () => washerDryerNotification.set(false, origin),
         WASHER_DRYER_NOTIFICATION_LENGTH_MS,
       );
     } catch {

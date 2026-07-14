@@ -47,9 +47,9 @@ export class TCPClient extends Duplex {
     this._socket = undefined;
 
     this._isDisconnecting = false;
-    this._isConnected.value = false;
+    this._isConnected.set(false);
 
-    this._lastInteraction.value = 0;
+    this._lastInteraction.set(0);
   }
 
   private async _connect(): Promise<void> {
@@ -65,9 +65,9 @@ export class TCPClient extends Duplex {
 
     this._socket.on('connect', () => {
       this._isConnecting = false;
-      this._isConnected.value = true;
+      this._isConnected.set(true);
 
-      this._lastInteraction.value = Date.now();
+      this._lastInteraction.set(Date.now());
 
       resolve();
 
@@ -75,7 +75,7 @@ export class TCPClient extends Duplex {
     });
 
     this._socket.on('data', (chunk: Buffer) => {
-      this._lastInteraction.value = Date.now();
+      this._lastInteraction.set(Date.now());
 
       const ok = this.push(chunk);
       if (!ok) this._socket?.pause();
@@ -157,7 +157,7 @@ export class TCPClient extends Duplex {
   ): void {
     if (this._socket && this._socket.writable) {
       this._socket.write(chunk, encoding, callback);
-      this._lastInteraction.value = Date.now();
+      this._lastInteraction.set(Date.now());
     } else {
       this._writeQueue.push({ callback, chunk, encoding });
     }

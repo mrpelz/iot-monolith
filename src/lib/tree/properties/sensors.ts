@@ -12,6 +12,7 @@ import {
   BooleanGroupStrategy,
   BooleanState,
   BooleanStateGroup,
+  NullState,
   ReadOnlyNullState,
 } from '@mrpelz/observable/state';
 import { Timer } from '@mrpelz/observable/timer';
@@ -50,6 +51,8 @@ import { Context } from '../context.js';
 import { ev1527MotionSensor } from '../devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
 import { getter } from '../elements/getter.js';
+import { setter } from '../elements/setter.js';
+import { trigger } from '../elements/trigger.js';
 import { Level, TValueType, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
 import { timer as timer_ } from './logic.js';
@@ -68,7 +71,7 @@ export const lastChange = <T>(_: Context, state: AnyObservable<T>) => {
     state.observe((value) => {
       if (value === null) return;
 
-      changed_.value = Date.now();
+      changed_.set(Date.now());
     });
   };
 
@@ -94,7 +97,7 @@ export const lastSeen = <T>(
     state.observe((value) => {
       if (state instanceof ReadOnlyObservable && value === null) return;
 
-      seen_.value = Date.now();
+      seen_.set(Date.now());
     }, true);
   };
 
@@ -119,12 +122,12 @@ export const metricStaleness = <T>(
 
   const $init: InitFunction = () => {
     const timer = new Timer(timeout + epochs.second * 10);
-    timer.observe(() => {
-      stale_.value = true;
+    timer.observe((_value, _observer, _changed, origin) => {
+      stale_.set(true, origin);
     });
 
     state.observe((value) => {
-      stale_.value = value === null;
+      stale_.set(value === null);
       timer.start();
     }, true);
   };
@@ -634,12 +637,14 @@ export const motion = <T extends string | undefined>(
 
   const timer = new Timer(cooloffTime);
   emitter.observe((value) => {
-    state_.value = value ?? false;
+    state_.set(value ?? false);
     if (!value) return;
 
     timer.start();
   });
-  timer.observe(() => (state_.value = false));
+  timer.observe((_value, _observer, _changed, origin) =>
+    state_.set(false, origin),
+  );
 
   const state = new ReadOnlyObservable(state_);
 
@@ -662,41 +667,45 @@ export const motionHMMDGuarded = (
     | ReturnType<typeof inputGrouping>
     | ReturnType<typeof motion>,
   cooloffTime: number,
-  triggerAfterCumulativeHMMDTriggers?: number,
+  triggerAfterCumulativeHMMDTriggersInitial = 0,
 ) => {
   const $ = 'hmmdMotion' as const;
 
   const timer = timer_(context, cooloffTime);
+  const triggerAfterCumulativeHMMDTriggers = new Observable(
+    triggerAfterCumulativeHMMDTriggersInitial,
+  );
   const state_ = new BooleanState(false);
-  let cumulativeHMMDTriggers = 0;
+  const cumulativeHMMDTriggers = new Observable(0);
 
-  motionHMMD_.state.observe((value) => {
-    if (triggerAfterCumulativeHMMDTriggers) {
-      cumulativeHMMDTriggers += 1;
+  motionHMMD_.state.observe((value, _observer, _changed, origin) => {
+    if (triggerAfterCumulativeHMMDTriggers.value) {
+      cumulativeHMMDTriggers.set(cumulativeHMMDTriggers.value + 1);
     }
 
     if (value) {
       if (
         timer.state.isActive.value ||
-        (triggerAfterCumulativeHMMDTriggers &&
-          cumulativeHMMDTriggers >= triggerAfterCumulativeHMMDTriggers)
+        (triggerAfterCumulativeHMMDTriggers.value &&
+          cumulativeHMMDTriggers.value >=
+            triggerAfterCumulativeHMMDTriggers.value)
       ) {
-        state_.value = true;
+        state_.set(true, origin);
         timer.state.start();
-        cumulativeHMMDTriggers = 0;
+        cumulativeHMMDTriggers.set(0);
       }
 
       return;
     }
 
-    state_.value = false;
+    state_.set(false, origin);
   }, true);
 
   guard.state.observe(() => timer.state.start(), true);
 
-  if (triggerAfterCumulativeHMMDTriggers) {
+  if (triggerAfterCumulativeHMMDTriggers.value) {
     timer.state.observe(() => {
-      cumulativeHMMDTriggers = 0;
+      cumulativeHMMDTriggers.set(0);
     });
   }
 
@@ -704,6 +713,10 @@ export const motionHMMDGuarded = (
 
   return {
     $,
+    cumulativeHMMDTriggers: getter(
+      ValueType.NUMBER,
+      new ReadOnlyObservable(cumulativeHMMDTriggers),
+    ),
     distance: motionHMMD_.distance,
     lastChange: lastChange(context, state),
     lastSeen: lastSeen(context, state),
@@ -712,6 +725,30 @@ export const motionHMMDGuarded = (
     state,
     timer,
     topic: 'motion' as const,
+    triggerAfterCumulativeHMMDTriggers: {
+      initialCount: triggerAfterCumulativeHMMDTriggersInitial,
+      isChanged: {
+        main: getter(
+          ValueType.BOOLEAN,
+          new ReadOnlyProxyObservable(
+            triggerAfterCumulativeHMMDTriggers,
+            (value) => value !== triggerAfterCumulativeHMMDTriggersInitial,
+          ),
+        ),
+      },
+      main: setter(ValueType.NUMBER, triggerAfterCumulativeHMMDTriggers),
+      reset: {
+        main: trigger(
+          ValueType.NULL,
+          new NullState((_value, _changed, origin) =>
+            triggerAfterCumulativeHMMDTriggers.set(
+              triggerAfterCumulativeHMMDTriggersInitial,
+              origin,
+            ),
+          ),
+        ),
+      },
+    },
   };
 };
 
@@ -749,35 +786,48 @@ export const rfReadout = (
   const state_ = new Observable<any>({});
   const state = new ReadOnlyObservable(state_);
 
-  espNowEvent.observable.observe(({ deviceIdentifier, data }) => {
-    state_.value = {
-      ...state_.value,
-      espNow: {
-        data: [...data],
-        macAddress: [...deviceIdentifier]
-          .map((octet) => octet.toString(16).padStart(2, '0'))
-          .join(':'),
-      },
-    };
-  });
+  espNowEvent.observable.observe(
+    ({ deviceIdentifier, data }, _observer, _changed, origin) => {
+      state_.set(
+        {
+          ...state_.value,
+          espNow: {
+            data: [...data],
+            macAddress: [...deviceIdentifier]
+              .map((octet) => octet.toString(16).padStart(2, '0'))
+              .join(':'),
+          },
+        },
+        origin,
+      );
+    },
+  );
 
   rf433Event.observable.observe(
-    ({ data, deviceIdentifier, protocol, value }) => {
-      state_.value = {
-        ...state_.value,
-        rf433: {
-          data: `0b${[...data]
-            .toReversed()
-            .map((byte) => byte.toString(2).padStart(8, '0'))
-            .join('')}`,
-          deviceIdentifier: deviceIdentifier.readUIntBE(0, byteLengthAddress),
-          protocol,
-          value: `0b${[...value]
-            .toReversed()
-            .map((byte) => byte.toString(2).padStart(8, '0'))
-            .join('')}`,
+    (
+      { data, deviceIdentifier, protocol, value },
+      _observer,
+      _changed,
+      origin,
+    ) => {
+      state_.set(
+        {
+          ...state_.value,
+          rf433: {
+            data: `0b${[...data]
+              .toReversed()
+              .map((byte) => byte.toString(2).padStart(8, '0'))
+              .join('')}`,
+            deviceIdentifier: deviceIdentifier.readUIntBE(0, byteLengthAddress),
+            protocol,
+            value: `0b${[...value]
+              .toReversed()
+              .map((byte) => byte.toString(2).padStart(8, '0'))
+              .join('')}`,
+          },
         },
-      };
+        origin,
+      );
     },
   );
 

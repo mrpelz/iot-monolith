@@ -11,7 +11,7 @@ export const setMain = <T>(
   then?: (value: T) => unknown,
 ): void => {
   then?.(value);
-  subject.main.setState.value = value;
+  subject.main.setState.set(value);
 };
 
 export const triggerMain = (

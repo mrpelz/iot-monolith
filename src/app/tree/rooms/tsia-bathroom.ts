@@ -1,6 +1,6 @@
 import { sleep } from '@mrpelz/misc-utils/sleep';
 import { epochs } from '@mrpelz/modifiable-date';
-import { ReadOnlyObservable } from '@mrpelz/observable';
+import { ObserverCallback, ReadOnlyObservable } from '@mrpelz/observable';
 import {
   BooleanGroupStrategy,
   BooleanState,
@@ -101,7 +101,7 @@ export const properties = {
     context,
     propertiesPartial.motionHMMD,
     propertiesPartial.motionPir,
-    epochs.second * 10,
+    epochs.second * 30,
     10,
   ),
 };
@@ -180,7 +180,7 @@ export const scenes = {
 
     if (isNight(elevation)) {
       if (devices.nightLight.device.online.main.state.value) {
-        scenes.nightLighting.main.setState.value = true;
+        scenes.nightLighting.main.setState.set(true);
 
         return;
       }
@@ -193,7 +193,7 @@ export const scenes = {
         devices.leds.device.online.main.state.value ||
         devices.nightLight.device.online.main.state.value
       ) {
-        scenes.astronomicalTwilightLighting.main.setState.value = true;
+        scenes.astronomicalTwilightLighting.main.setState.set(true);
 
         return;
       }
@@ -206,7 +206,7 @@ export const scenes = {
         devices.leds.device.online.main.state.value ||
         devices.mirrorLight.device.online.main.state.value
       ) {
-        scenes.nauticalTwilightLighting.main.setState.value = true;
+        scenes.nauticalTwilightLighting.main.setState.set(true);
 
         return;
       }
@@ -220,7 +220,7 @@ export const scenes = {
         devices.mirrorLight.device.online.main.state.value ||
         devices.nightLight.device.online.main.state.value)
     ) {
-      scenes.civilTwilightLighting.main.setState.value = true;
+      scenes.civilTwilightLighting.main.setState.set(true);
 
       return;
     }
@@ -230,12 +230,12 @@ export const scenes = {
       devices.leds.device.online.main.state.value ||
       devices.mirrorLight.device.online.main.state.value
     ) {
-      scenes.dayLighting.main.setState.value = true;
+      scenes.dayLighting.main.setState.set(true);
 
       return;
     }
 
-    groups.allLights.main.setState.value = true;
+    groups.allLights.main.setState.set(true);
   }),
   ...scenesPartial,
 };
@@ -277,9 +277,6 @@ export const logic = {
       let upstart = true;
       sleep(5000).then(() => (upstart = false));
 
-      // let outputSetterSourceIsAutomatedInput = false;
-      let outputSetterSourceIsTimerRunningOut = false;
-
       const parent = introspection.getObject(object)?.mainReference?.parent;
       const p = makePathStringRetriever(introspection);
       const l = makeCustomStringLogger(
@@ -305,36 +302,19 @@ export const logic = {
         );
       }
 
-      output.main.setState.observe((value) => {
+      output.main.setState.observe((value, _observer, _changed, origin) => {
         if (value) {
-          // if (
-          //   timerOutput.state.isEnabled.value &&
-          //   !outputSetterSourceIsAutomatedInput
-          // ) {
-          //   l(
-          //     `${p(output)} was turned on, "startTimerFromManualOn" is true and timer is enabled, (re)starting ${p(timerOutput)}`,
-          //   );
-
-          //   timerOutput.state.start();
-          // }
-
-          // outputSetterSourceIsAutomatedInput = false;
+          automationEnableManualState.set(true, origin);
 
           return;
         }
 
-        if (
-          !upstart &&
-          !outputSetterSourceIsTimerRunningOut &&
-          automationEnableState.value
-        ) {
+        if (!upstart && origin !== timerOutput.state) {
           l(
-            `${p(output)} was turned off from source that is not ${p(timerOutput)} and automation is active, disabling ${p(automationEnableManual)}`,
+            `${p(output)} was turned off from source that is not ${p(timerOutput)}, disabling ${p(automationEnableManual)}`,
           );
-          automationEnableManualState.value = false;
+          automationEnableManualState.set(false, origin);
         }
-
-        outputSetterSourceIsTimerRunningOut = false;
 
         if (timerOutput.state.isActive.value) {
           l(
@@ -342,12 +322,17 @@ export const logic = {
           );
           timerOutput.state.stop();
         }
-      });
+      }, true);
 
       for (const input of inputsAutomated) {
         let prime = false;
 
-        const fn = (value: boolean | null) => {
+        const fn: ObserverCallback<boolean | null> = (
+          value,
+          _observer,
+          _changed,
+          origin,
+        ) => {
           l(`${p(input)} turned ${JSON.stringify(value)}…`);
 
           if (!automationEnableState.value) {
@@ -367,9 +352,7 @@ export const logic = {
                 `${p(input)} turned true with output off, triggering ${p(autoLight)}`,
               );
 
-              // outputSetterSourceIsAutomatedInput = true;
-
-              autoLight.state.trigger();
+              autoLight.state.trigger(undefined, origin);
             }
 
             if (timerOutput.state.isActive.value) {
@@ -420,14 +403,6 @@ export const logic = {
       }
 
       automationEnableManualState.observe((value) => {
-        if (timerOutput.state.isActive.value) {
-          l(
-            `${p(automationEnableManual)} triggered with timer running, stopping ${p(timerOutput)}`,
-          );
-
-          timerOutput.state.stop();
-        }
-
         if (!value) {
           if (timerAutomation.state.isEnabled) {
             l(
@@ -448,14 +423,13 @@ export const logic = {
         }
       }, true);
 
-      timerOutput.state.observe(() => {
+      timerOutput.state.observe((_value, _observer, _changed, origin) => {
         if (output.main.setState.value) {
           l(
             `${p(timerOutput)} ran out with output on, turning off ${p(output)}`,
           );
 
-          outputSetterSourceIsTimerRunningOut = true;
-          output.main.setState.value = false;
+          output.main.setState.set(false, origin);
         }
       });
 
@@ -468,7 +442,7 @@ export const logic = {
               `${p(input)} was triggered wth output on, turning off ${p(output)}`,
             );
 
-            output.main.setState.value = false;
+            output.main.setState.set(false);
 
             return;
           }
@@ -493,13 +467,13 @@ export const logic = {
         }
       }
 
-      timerAutomation.state.observe(() => {
+      timerAutomation.state.observe((_value, _observer, _changed, origin) => {
         if (!automationEnableManualState.value) {
           l(
             `${p(timerAutomation)} ran out with automation disabled, turning on ${p(automationEnableManual)}`,
           );
 
-          automationEnableManualState.value = true;
+          automationEnableManualState.set(true, origin);
         }
       });
     };

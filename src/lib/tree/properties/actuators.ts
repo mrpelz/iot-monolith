@@ -65,16 +65,16 @@ const actuatorStaleness = <T>(
   const loading = new BooleanState(true);
 
   const $init: InitFunction = () => {
-    setState.observe((value) => {
+    setState.observe((value, _observer, _changed, origin) => {
       if (state.value === value) return;
-      loading.value = true;
+      loading.set(true, origin);
     }, true);
 
-    state.observe((value) => {
-      stale.value = value === null;
+    state.observe((value, _observer, _changed, origin) => {
+      stale.set(value === null);
 
       if (value !== null && setState.value !== value) return;
-      loading.value = false;
+      loading.set(false, origin);
     }, true);
   };
 

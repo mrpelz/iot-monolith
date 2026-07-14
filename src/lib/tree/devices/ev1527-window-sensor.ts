@@ -33,18 +33,21 @@ export const ev1527WindowSensor = (
     ]).state;
 
   const isOpen_ = new Observable<boolean | null>(receivedOpen.value);
-  receivedOpen.observe((value) => {
+  receivedOpen.observe((value, _observer, _changed, origin) => {
     if (value === null) return;
 
-    isOpen_.value = value;
+    isOpen_.set(value, origin);
   });
 
-  const persistedOpen = new Observable<boolean | null>(null, (value) => {
-    if (value === null) return;
-    if (isOpen_.value !== null) return;
+  const persistedOpen = new Observable<boolean | null>(
+    null,
+    (value, _changed, origin) => {
+      if (value === null) return;
+      if (isOpen_.value !== null) return;
 
-    isOpen_.value = value;
-  });
+      isOpen_.set(value, origin);
+    },
+  );
 
   const isOpen = new ReadOnlyObservable(isOpen_);
 
@@ -61,10 +64,10 @@ export const ev1527WindowSensor = (
   };
 
   const persistedTamperSwitch = new Observable<boolean | null>(null);
-  receivedTamperSwitch.observe((value) => {
+  receivedTamperSwitch.observe((value, _observer, _changed, origin) => {
     if (value === null) return;
 
-    persistedTamperSwitch.value = value;
+    persistedTamperSwitch.set(value, origin);
   });
   const tamperSwitch = new ReadOnlyProxyObservable(
     receivedTamperSwitch,
@@ -78,10 +81,10 @@ export const ev1527WindowSensor = (
     persistence.observe(mainReference.pathString, persistedTamperSwitch);
   };
 
-  receivedOpen.observe((value) => {
+  receivedOpen.observe((value, _observer, _changed, origin) => {
     if (value === null) return;
 
-    persistedOpen.value = value;
+    persistedOpen.set(value, origin);
   });
 
   return {

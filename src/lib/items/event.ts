@@ -17,7 +17,9 @@ export class SingleValueEvent<T = any> {
 
     this.state = new ReadOnlyObservable(this._state);
 
-    this._event.observable.observe((value) => (this._state.value = value));
+    this._event.observable.observe((value, _observer, _changed, origin) =>
+      this._state.set(value, origin),
+    );
   }
 }
 
@@ -40,9 +42,9 @@ export class MultiValueEvent<T extends Record<string, any>, K extends keyof T> {
       this.state[property] = new ReadOnlyObservable(this._state[property]);
     }
 
-    this._event.observable.observe((value) => {
+    this._event.observable.observe((value, _observer, _changed, origin) => {
       for (const property of this._properties) {
-        this._state[property].value = value[property];
+        this._state[property].set(value[property], origin);
       }
     });
   }
@@ -59,10 +61,10 @@ export class StatelessSingleValueEvent<T = any> {
 
     this.state = new ReadOnlyNullState(this._state);
 
-    this._event.observable.observe((value) => {
+    this._event.observable.observe((value, _observer, _changed, origin) => {
       if (!value) return;
 
-      this._state.trigger(value);
+      this._state.trigger(value, origin);
     });
   }
 }
@@ -89,12 +91,12 @@ export class StatelessMultiValueEvent<
       this.state[property] = new ReadOnlyNullState(this._state[property]);
     }
 
-    this._event.observable.observe((_value) => {
+    this._event.observable.observe((_value, _observer, _changed, origin) => {
       for (const property of this._properties) {
         const value = _value[property];
         if (!value) continue;
 
-        this._state[property].trigger(value);
+        this._state[property].trigger(value, origin);
       }
     });
   }

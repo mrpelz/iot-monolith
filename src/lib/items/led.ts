@@ -79,7 +79,7 @@ export class Led {
   }
 
   private _success(brightness: number, skipIndicator: boolean) {
-    this._actualBrightness.value = brightness;
+    this._actualBrightness.set(brightness);
 
     if (!this._indicator || skipIndicator) return;
     this._indicator
@@ -93,6 +93,6 @@ export class Led {
   }
 
   private _unknown() {
-    this._actualBrightness.value = null;
+    this._actualBrightness.set(null);
   }
 }

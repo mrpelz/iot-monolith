@@ -1,6 +1,7 @@
 import { safeAsync } from '@mrpelz/misc-utils/async';
 import { maxmin, round } from '@mrpelz/misc-utils/number';
 import { epochs } from '@mrpelz/modifiable-date';
+import { AnyObservableOrNullState } from '@mrpelz/observable';
 import { BooleanState } from '@mrpelz/observable/state';
 import pjlink from 'pjlink-control';
 
@@ -430,7 +431,7 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  const handleTerrariumLedsAutomation = () => {
+  const handleTerrariumLedsAutomation = (origin?: AnyObservableOrNullState) => {
     if (isTerrariumLedsOverride.value) {
       return;
     }
@@ -447,8 +448,14 @@ const $init: InitFunction = async (room, introspection) => {
 
     if (!getMain(terrariumLeds.device.online)) return;
 
-    terrariumLedRed.automated.led.brightness.setState.value = brightnessRed;
-    terrariumLedTop.automated.led.brightness.setState.value = brightnessWhite;
+    terrariumLedRed.automated.led.brightness.setState.set(
+      brightnessRed,
+      origin,
+    );
+    terrariumLedTop.automated.led.brightness.setState.set(
+      brightnessWhite,
+      origin,
+    );
   };
 
   isTerrariumLedsOverride.observe((value, _observer, changed) => {
@@ -472,8 +479,10 @@ const $init: InitFunction = async (room, introspection) => {
     setMain(terrariumLedTop.automated.led, false);
   });
 
-  isTerrariumLedsOverride.observe(handleTerrariumLedsAutomation);
-  every30Seconds.addTask(handleTerrariumLedsAutomation);
+  isTerrariumLedsOverride.observe((_value, _observer, _changed, origin) =>
+    handleTerrariumLedsAutomation(origin),
+  );
+  every30Seconds.addTask(() => handleTerrariumLedsAutomation());
   devices.terrariumLeds.device.online.main.state.observe((isOnline) => {
     if (!isOnline) return;
 
@@ -482,24 +491,24 @@ const $init: InitFunction = async (room, introspection) => {
     handleTerrariumLedsAutomation();
   });
 
-  overrideTimer.state.observe(() => {
+  overrideTimer.state.observe((_value, _observer, _changed, origin) => {
     l(
       `${p(terrariumLedsOverride)} was set false because ${p(overrideTimer)} ran out`,
     );
 
-    isTerrariumLedsOverride.value = false;
+    isTerrariumLedsOverride.set(false, origin);
   });
 
-  media.main.setState.observe(async (value) => {
+  media.main.setState.observe(async (value, _observer, _changed, origin) => {
     l(
       `${p(infoscreen.on)} was set ${value ? 'false' : 'true'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
     );
-    infoscreen.on.state.setState.value = !value;
+    infoscreen.on.state.setState.set(!value, origin);
 
     l(
       `${p(terrariumLedsOverride)} was set ${value ? 'true' : 'false'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
     );
-    isTerrariumLedsOverride.value = value;
+    isTerrariumLedsOverride.set(value, origin);
   });
 };
 

@@ -683,9 +683,9 @@ const $init: InitFunction = (room, introspection) => {
   );
 
   for (const aScene of Object.values(scenes)) {
-    aScene.main.state.observe((value) => {
+    aScene.main.state.observe((value, _observer, _changed, origin) => {
       if (!value) return;
-      sceneCycle.value = aScene;
+      sceneCycle.set(aScene, origin);
     });
   }
 };

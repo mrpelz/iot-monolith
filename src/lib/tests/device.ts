@@ -62,7 +62,9 @@ timedOn.observe((value) => {
   if (!value) return;
   timer.start();
 });
-timer.observe(() => (timedOn.value = false));
+timer.observe((_value, _observer, _changed, origin) =>
+  timedOn.set(false, origin),
+);
 
 const ledOn = new BooleanStateGroup(BooleanGroupStrategy.IS_TRUE_IF_SOME_TRUE, [
   on,
@@ -263,9 +265,9 @@ const doItem = <T>(deviceLabel: string, itemLabel: string, item: T): T => {
     'motion',
     new SingleValueEvent(doEvent(new Input(0), device)),
   );
-  motion.state.observe((value) => {
+  motion.state.observe((value, _observer, _changed, origin) => {
     if (!value) return;
-    timedOn.value = true;
+    timedOn.set(true, origin);
   });
 })();
 
@@ -290,7 +292,9 @@ const doItem = <T>(deviceLabel: string, itemLabel: string, item: T): T => {
     doLog('log', [deviceLabel, 'output', 'actualState'], value),
   );
 
-  on.observe((value) => (output.setState.value = value));
+  on.observe((value, _observer, _changed, origin) =>
+    output.setState.set(value, origin),
+  );
 
   const button = new Button(
     doEventWithLog(deviceLabel, 'button', new ButtonEvent(0), device),
@@ -322,31 +326,31 @@ const doItem = <T>(deviceLabel: string, itemLabel: string, item: T): T => {
   led0.actualBrightness.observe((value) => {
     doLog('log', [deviceLabel, 'led0', 'actualBrightness'], value);
   });
-  ledOn.observe((value) => (led0.setBrightness.value = value ? 255 : 0));
+  ledOn.observe((value) => led0.setBrightness.set(value ? 255 : 0));
 
   const led1 = new Led(doService(new LedService(1), device));
   led1.actualBrightness.observe((value) => {
     doLog('log', [deviceLabel, 'led1', 'actualBrightness'], value);
   });
-  ledOn.observe((value) => (led1.setBrightness.value = value ? 255 : 0));
+  ledOn.observe((value) => led1.setBrightness.set(value ? 255 : 0));
 
   const led2 = new Led(doService(new LedService(2), device));
   led2.actualBrightness.observe((value) => {
     doLog('log', [deviceLabel, 'led2', 'actualBrightness'], value);
   });
-  ledOn.observe((value) => (led2.setBrightness.value = value ? 255 : 0));
+  ledOn.observe((value) => led2.setBrightness.set(value ? 255 : 0));
 
   const led3 = new Led(doService(new LedService(3), device));
   led3.actualBrightness.observe((value) => {
     doLog('log', [deviceLabel, 'led3', 'actualBrightness'], value);
   });
-  ledOn.observe((value) => (led3.setBrightness.value = value ? 255 : 0));
+  ledOn.observe((value) => led3.setBrightness.set(value ? 255 : 0));
 
   const led4 = new Led(doService(new LedService(4), device));
   led4.actualBrightness.observe((value) => {
     doLog('log', [deviceLabel, 'led4', 'actualBrightness'], value);
   });
-  ledOn.observe((value) => (led4.setBrightness.value = value ? 255 : 0));
+  ledOn.observe((value) => led4.setBrightness.set(value ? 255 : 0));
 })();
 
 (() => {

@@ -174,7 +174,9 @@ export class Serialization<T extends object> {
     state: AnyWritableObservable<any> | NullState<any>,
     valueType: V,
   ) {
-    state.observe((value) => this._updates.trigger([id, value]));
+    state.observe((value, _observer, _changed, origin) =>
+      this._updates.trigger([id, value], origin),
+    );
 
     this._interactions.set(
       id,
@@ -193,7 +195,9 @@ export class Serialization<T extends object> {
     state: AnyReadOnlyObservable<any>,
     valueType: V,
   ) {
-    state.observe((value) => this._updates.trigger([id, value]));
+    state.observe((value, _observer, _changed, origin) =>
+      this._updates.trigger([id, value], origin),
+    );
 
     this._interactions.set(
       id,
@@ -316,7 +320,7 @@ export class Serialization<T extends object> {
       throw new Error('wrong value type given for interaction');
     }
 
-    state.value = value;
+    state.set(value);
   }
 
   interaction(reference: string): Interaction | undefined {

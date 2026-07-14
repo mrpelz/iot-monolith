@@ -131,7 +131,7 @@ export class TCPTransport extends Transport {
 
     this._log.info(() => 'is connected');
 
-    this._isConnected.value = true;
+    this._isConnected.set(true);
   }
 
   /**
@@ -148,7 +148,7 @@ export class TCPTransport extends Transport {
 
     this._log.info(() => 'is disconnected');
 
-    this._isConnected.value = false;
+    this._isConnected.set(false);
   }
 
   /**
@@ -242,7 +242,7 @@ export class TCPTransport extends Transport {
    * connect TCPTransport instance
    */
   connect(): void {
-    this._shouldBeConnected.value = true;
+    this._shouldBeConnected.set(true);
 
     this._log.info(() => 'set connect');
   }
@@ -251,7 +251,7 @@ export class TCPTransport extends Transport {
    * disconnect TCPTransport instance
    */
   disconnect(): void {
-    this._shouldBeConnected.value = false;
+    this._shouldBeConnected.set(false);
 
     this._log.info(() => 'set disconnect');
   }

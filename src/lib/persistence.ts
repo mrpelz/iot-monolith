@@ -140,7 +140,7 @@ export class Persistence {
       const observable = this._observables.get(identifier);
       if (!observable) continue;
 
-      observable.value = value;
+      observable.set(value);
     }
 
     this._pastPersistValues = restoreValues;

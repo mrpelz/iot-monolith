@@ -64,7 +64,7 @@ export class OutputBinary {
 
     this._progressEvent.observable.observe(({ isIterating }) => {
       if (isIterating) return;
-      this._animationState.value = 'STATIC';
+      this._animationState.set('STATIC');
     });
 
     this._setState = new Observable<boolean | null>(false, (value) => {
@@ -80,12 +80,13 @@ export class OutputBinary {
   }
 
   private async _set(request: OutputBinaryRequest, skipIndicator = false) {
-    this._animationState.value =
+    this._animationState.set(
       request.iterations === ITERATE_INFINITE
         ? 'INFINITE'
         : this._progressEvent
           ? 'FINITE'
-          : 'STATIC';
+          : 'STATIC',
+    );
 
     const [error] = await safeAsync(this._service.request(request));
 
@@ -98,7 +99,7 @@ export class OutputBinary {
   }
 
   private async _success(skipIndicator: boolean) {
-    this._actualState.value = this.setState.value;
+    this._actualState.set(this.setState.value);
 
     if (!this._indicator || skipIndicator) return;
     const blinkCount = this._actualState.value ? 3 : 2;
@@ -107,8 +108,8 @@ export class OutputBinary {
   }
 
   private _unknown() {
-    this._actualState.value = null;
-    this._animationState.value = 'STATIC';
+    this._actualState.set(null);
+    this._animationState.set('STATIC');
   }
 
   async blink(count?: number): Promise<void> {
@@ -125,7 +126,7 @@ export class OutputBinary {
       observer.remove();
     }, true);
 
-    this._setState.value = null;
+    this._setState.set(null);
     await this._set(value);
 
     return promise;

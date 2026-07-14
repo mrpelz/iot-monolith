@@ -320,13 +320,13 @@ export class Device<T extends Transport = Transport> {
       );
 
       this._keepaliveMissedPackets = 0;
-      this._isOnline.value = false;
+      this._isOnline.set(false);
 
       return;
     }
 
     this._keepaliveMissedPackets = 0;
-    this._isOnline.value = true;
+    this._isOnline.set(true);
   }
 
   /**

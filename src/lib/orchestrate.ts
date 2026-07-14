@@ -29,7 +29,7 @@ export const orchestrate =
       for (const [value, time] of orchestration) {
         count += 1;
 
-        state.value = value;
+        state.set(value);
 
         if (count === orchestration.length && !includeEndSleep) continue;
 
@@ -45,7 +45,7 @@ export const orchestrate =
     for (const value of values) {
       count += 1;
 
-      state.value = value;
+      state.set(value);
 
       if (count === values.length && !includeEndSleep) continue;
 

@@ -73,7 +73,9 @@ export const timer = (
       reset: {
         main: trigger(
           ValueType.NULL,
-          new NullState(() => (timer_.time.value = time)),
+          new NullState((_value, _changed, origin) =>
+            timer_.time.set(time, origin),
+          ),
         ),
       },
     },
@@ -111,7 +113,7 @@ export const scheduledRamp = (
 
     const now = Date.now();
     const timeElapsed = now - startTime;
-    progress.value = maxmin(timeElapsed / epoch);
+    progress.set(maxmin(timeElapsed / epoch));
 
     handler(progress.value);
 
