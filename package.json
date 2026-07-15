@@ -44,10 +44,10 @@
     "npm-shrinkwrap.json"
   ],
   "dependencies": {
-    "@mrpelz/misc-utils": "7.4.0",
-    "@mrpelz/modifiable-date": "7.4.0",
-    "@mrpelz/observable": "7.4.0",
-    "@mrpelz/struct": "7.4.0",
+    "@mrpelz/misc-utils": "7.4.4",
+    "@mrpelz/modifiable-date": "7.4.4",
+    "@mrpelz/observable": "7.4.4",
+    "@mrpelz/struct": "7.4.4",
     "pjlink-control": "1.1.0",
     "prom-client": "15.1.3",
     "proper-tags": "2.0.2",
