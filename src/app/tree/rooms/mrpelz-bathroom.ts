@@ -146,8 +146,8 @@ export const properties = {
     context,
     propertiesPartial.motionHMMD,
     groups.motionPir,
-    epochs.second * 30,
-    10,
+    epochs.second * 10,
+    20,
   ),
 };
 

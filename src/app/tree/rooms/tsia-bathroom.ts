@@ -101,8 +101,8 @@ export const properties = {
     context,
     propertiesPartial.motionHMMD,
     propertiesPartial.motionPir,
-    epochs.second * 30,
-    10,
+    epochs.second * 10,
+    20,
   ),
 };
 
