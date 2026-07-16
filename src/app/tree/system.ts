@@ -121,7 +121,9 @@ export const system: Promise<{
       logicReasoningLevel,
     );
 
-    allThings.main.setState.observe((value) => {
+    allThings.main.setState.observe((value, _observer, changed) => {
+      if (!value && !changed) return;
+
       l(
         `${p(allTimer)} was ${value ? 'started' : 'stopped'} because ${p(allThings)} was turned ${value ? 'on' : 'off'}`,
       );
