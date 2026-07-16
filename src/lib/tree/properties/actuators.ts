@@ -135,10 +135,11 @@ export const externalStateSettable = <
   };
 };
 
-export const led = (
+export const led = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
+  topic: T,
   indicator?: Indicator,
 ) => {
   const $ = 'led' as const;
@@ -169,11 +170,11 @@ export const led = (
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
-    topic: 'lighting' as const,
+    topic,
   };
 };
 
-export const outputNg = <T extends string | undefined>(
+export const outputNg = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
@@ -215,7 +216,7 @@ export const outputNg = <T extends string | undefined>(
   };
 };
 
-export const outputNgBuzzer = <T extends string | undefined>(
+export const outputNgBuzzer = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
@@ -256,10 +257,11 @@ export const outputNgBuzzer = <T extends string | undefined>(
   };
 };
 
-export const outputNgDimmable = (
+export const outputNgDimmable = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
+  topic: T,
   indicator?: OutputIndicator,
 ) => {
   const $ = 'led' as const;
@@ -303,14 +305,15 @@ export const outputNgDimmable = (
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
     state,
-    topic: 'lighting' as const,
+    topic,
   };
 };
 
-export const outputNgDimmableRGB = (
+export const outputNgDimmableRGB = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
+  topic: T,
   indicator?: OutputIndicator,
 ) => {
   const $ = 'ledRGB' as const;
@@ -345,11 +348,11 @@ export const outputNgDimmableRGB = (
     level: Level.PROPERTY as const,
     main: setter(ValueType.RAW, setState, actualState, 'rgb'),
     state,
-    topic: 'lighting' as const,
+    topic,
   };
 };
 
-export const output = <T extends string | undefined>(
+export const output = <T extends string>(
   context: Context,
   device: IpDevice,
   index = 0,
@@ -386,9 +389,10 @@ export const output = <T extends string | undefined>(
   };
 };
 
-export const ledGrouping = (
+export const ledGrouping = <T extends string>(
   context: Context,
   lights: (ReturnType<typeof led> | ReturnType<typeof outputNgDimmable>)[],
+  topic: T,
 ) => {
   const $ = 'ledGrouping' as const;
 
@@ -441,11 +445,11 @@ export const ledGrouping = (
     level: Level.PROPERTY as const,
     lights: lights_,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
-    topic: 'lighting' as const,
+    topic,
   };
 };
 
-export const outputGrouping = <T extends string | undefined>(
+export const outputGrouping = <T extends string>(
   context: Context,
   outputs: (
     | ReturnType<typeof output>

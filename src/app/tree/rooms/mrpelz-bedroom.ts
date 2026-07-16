@@ -167,36 +167,47 @@ export const groups = {
       properties.nightstandRightLedWWhite,
       properties.standingLamp,
     ],
-    undefined,
+    'output',
   ),
   allWindows: inputGrouping(
     context,
     [properties.windowLeft, properties.windowRight],
     'open',
   ),
-  bookshelfLedWWhite: ledGrouping(context, [
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpWWhite,
-  ]),
-  nightstandLedRed: ledGrouping(context, [
-    properties.nightstandLeftLedRed,
-    properties.nightstandRightLedRed,
-  ]),
-  nightstandLedWWhite: ledGrouping(context, [
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
-  redLeds: ledGrouping(context, [
-    properties.bookshelfLedUpRed,
-    properties.nightstandLeftLedRed,
-    properties.nightstandRightLedRed,
-  ]),
-  wWhiteLeds: ledGrouping(context, [
-    properties.bookshelfLedDown,
-    properties.bookshelfLedUpWWhite,
-    properties.nightstandLeftLedWWhite,
-    properties.nightstandRightLedWWhite,
-  ]),
+  bookshelfLedWWhite: ledGrouping(
+    context,
+    [properties.bookshelfLedDown, properties.bookshelfLedUpWWhite],
+    'lighting',
+  ),
+  nightstandLedRed: ledGrouping(
+    context,
+    [properties.nightstandLeftLedRed, properties.nightstandRightLedRed],
+    'lighting',
+  ),
+  nightstandLedWWhite: ledGrouping(
+    context,
+    [properties.nightstandLeftLedWWhite, properties.nightstandRightLedWWhite],
+    'lighting',
+  ),
+  redLeds: ledGrouping(
+    context,
+    [
+      properties.bookshelfLedUpRed,
+      properties.nightstandLeftLedRed,
+      properties.nightstandRightLedRed,
+    ],
+    'lighting',
+  ),
+  wWhiteLeds: ledGrouping(
+    context,
+    [
+      properties.bookshelfLedDown,
+      properties.bookshelfLedUpWWhite,
+      properties.nightstandLeftLedWWhite,
+      properties.nightstandRightLedWWhite,
+    ],
+    'lighting',
+  ),
 };
 
 const scenes = {

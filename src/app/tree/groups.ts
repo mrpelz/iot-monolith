@@ -16,7 +16,7 @@ export const allThings = (async () => {
       match({ $: 'output' as const }, excludePattern, wurstHome),
       match({ $: 'led' as const }, excludePattern, wurstHome),
     ].flat(),
-    undefined,
+    'output',
   );
 })();
 

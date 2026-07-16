@@ -66,33 +66,44 @@ export const groups = {
       properties.ledRightFloodlight,
       properties.ledRightWWhite,
     ],
-    'lighting' as const,
+    'lighting',
   ),
   allWindows: inputGrouping(context, [properties.window], 'open'),
-  cWhite: ledGrouping(context, [
-    properties.ledLeftCWhite,
-    properties.ledRightCWhite,
-  ]),
-  floodlight: ledGrouping(context, [
-    properties.ledLeftFloodlight,
-    properties.ledRightFloodlight,
-  ]),
-  wWhite: ledGrouping(context, [
-    properties.ledLeftFloodlight,
-    properties.ledLeftWWhite,
-    properties.ledRightFloodlight,
-    properties.ledRightWWhite,
-  ]),
-  worklight: ledGrouping(context, [
-    properties.ledLeftCWhite,
-    properties.ledLeftWWhite,
-    properties.ledRightCWhite,
-    properties.ledRightWWhite,
-  ]),
-  worklightWWhite: ledGrouping(context, [
-    properties.ledLeftWWhite,
-    properties.ledRightWWhite,
-  ]),
+  cWhite: ledGrouping(
+    context,
+    [properties.ledLeftCWhite, properties.ledRightCWhite],
+    'lighting',
+  ),
+  floodlight: ledGrouping(
+    context,
+    [properties.ledLeftFloodlight, properties.ledRightFloodlight],
+    'lighting',
+  ),
+  wWhite: ledGrouping(
+    context,
+    [
+      properties.ledLeftFloodlight,
+      properties.ledLeftWWhite,
+      properties.ledRightFloodlight,
+      properties.ledRightWWhite,
+    ],
+    'lighting',
+  ),
+  worklight: ledGrouping(
+    context,
+    [
+      properties.ledLeftCWhite,
+      properties.ledLeftWWhite,
+      properties.ledRightCWhite,
+      properties.ledRightWWhite,
+    ],
+    'lighting',
+  ),
+  worklightWWhite: ledGrouping(
+    context,
+    [properties.ledLeftWWhite, properties.ledRightWWhite],
+    'lighting',
+  ),
 };
 
 const $init: InitFunction = async (room, introspection) => {

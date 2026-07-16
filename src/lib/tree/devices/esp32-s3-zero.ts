@@ -19,11 +19,17 @@ export const esp32s3zero = (
 
   const device = new UDPDevice(logger, host, port);
 
-  const indicatorRGB0 = outputNgDimmableRGB(context, device, 0);
+  const indicatorRGB0 = outputNgDimmableRGB(context, device, 0, 'indicator');
 
   return {
     $noMainReference: true as const,
-    buzzer0: outputNgBuzzer(context, device, 0, undefined, indicatorRGB0.state),
+    buzzer0: outputNgBuzzer(
+      context,
+      device,
+      0,
+      'indicator',
+      indicatorRGB0.state,
+    ),
     device: ipDevice(
       context,
       device,
@@ -32,7 +38,13 @@ export const esp32s3zero = (
       initiallyOnline,
     ),
     indicatorRGB0,
-    led0: outputNgDimmable(context, device, 0, indicatorRGB0.state),
-    ledRGB1: outputNgDimmableRGB(context, device, 1, indicatorRGB0.state),
+    led0: outputNgDimmable(context, device, 0, 'lighting', indicatorRGB0.state),
+    ledRGB1: outputNgDimmableRGB(
+      context,
+      device,
+      1,
+      'lighting',
+      indicatorRGB0.state,
+    ),
   };
 };

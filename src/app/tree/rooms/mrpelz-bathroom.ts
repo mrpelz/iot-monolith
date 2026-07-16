@@ -127,7 +127,7 @@ export const groups = {
       propertiesPartial.mirrorLight,
       propertiesPartial.nightLight,
     ],
-    undefined,
+    'output',
   ),
   motionPir: inputGrouping(
     context,

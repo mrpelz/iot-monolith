@@ -70,6 +70,7 @@ export const devices = {
     h801Ng('livingroom-terrariumleds.lan.wurstsalat.cloud', context),
     'ledB',
     'ledR',
+    'indicatorR',
   ),
   wallswitch: shellyi3('livingroom-wallswitch.lan.wurstsalat.cloud', context),
 };
@@ -482,7 +483,7 @@ const $init: InitFunction = async (room, introspection) => {
   isTerrariumLedsOverride.observe((_value, _observer, _changed, origin) =>
     handleTerrariumLedsAutomation(origin),
   );
-  every30Seconds.addTask(() => handleTerrariumLedsAutomation());
+  every5Seconds.addTask(() => handleTerrariumLedsAutomation());
   devices.terrariumLeds.device.online.main.state.observe((isOnline) => {
     if (!isOnline) return;
 
