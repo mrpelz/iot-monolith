@@ -441,22 +441,13 @@ const $init: InitFunction = async (room, introspection) => {
 
     const { red: red_, white: white_ } = sunlightLeds();
 
-    const red = round(red_, 3);
-    const white = round(white_, 3);
-
-    const brightnessRed = red ? maxmin(red + 0.18) : 0;
-    const brightnessWhite = white ? maxmin(white + 0.18) : 0;
+    const red = maxmin(round(red_, 3));
+    const white = maxmin(round(white_, 3));
 
     if (!getMain(terrariumLeds.device.online)) return;
 
-    terrariumLedRed.automated.led.brightness.setState.set(
-      brightnessRed,
-      origin,
-    );
-    terrariumLedTop.automated.led.brightness.setState.set(
-      brightnessWhite,
-      origin,
-    );
+    terrariumLedRed.automated.led.brightness.setState.set(red, origin);
+    terrariumLedTop.automated.led.brightness.setState.set(white, origin);
   };
 
   isTerrariumLedsOverride.observe((value, _observer, changed) => {
