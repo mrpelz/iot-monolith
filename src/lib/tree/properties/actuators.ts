@@ -115,8 +115,8 @@ export const externalStateSettable = <
     valueType === ValueType.BOOLEAN
       ? trigger(
           ValueType.NULL,
-          new NullState(
-            () => ((state.setState.value as boolean) = !state.setState.value),
+          new NullState(() =>
+            state.setState.set(!state.setState.value as TValueType[V]),
           ),
         )
       : undefined;
