@@ -1,5 +1,7 @@
+import { safeAsync } from '@mrpelz/misc-utils/async';
 import { epochs, ModifiableDate, Unit } from '@mrpelz/modifiable-date';
 
+import { ExternalStateSettableScheduled } from '../../../lib/items/external-state.js';
 import { makeCustomStringLogger } from '../../../lib/log.js';
 import { Schedule } from '../../../lib/schedule.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
@@ -10,15 +12,21 @@ import {
 } from '../../../lib/tree/devices/shelly1.js';
 import { deviceMap } from '../../../lib/tree/elements/device.js';
 import { flipMain, getMain, setMain } from '../../../lib/tree/logic.js';
-import { Level } from '../../../lib/tree/main.js';
+import { Level, ValueType } from '../../../lib/tree/main.js';
 import { InitFunction } from '../../../lib/tree/operations/init.js';
 import { makePathStringRetriever } from '../../../lib/tree/operations/introspection.js';
-import { outputGrouping } from '../../../lib/tree/properties/actuators.js';
+import {
+  externalStateSettable,
+  outputGrouping,
+} from '../../../lib/tree/properties/actuators.js';
 import { door } from '../../../lib/tree/properties/sensors.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
+import { every5Seconds, every30Seconds } from '../../timings.js';
 import { automatedInputLogic, manualInputLogic } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
+
+const KIOSK_BASE_URL = 'http://hallway-kiosk.lan.wurstsalat.cloud';
 
 export const devices = {
   ceilingLightBack: shelly1(
@@ -61,6 +69,40 @@ export const properties = {
   ceilingLightFront: devices.ceilingLightFront.relay,
   ceilingLightMiddle: devices.ceilingLightMiddle.relay,
   door: door(context, devices.doorSensor, 'open'),
+  kiosk: externalStateSettable(
+    context,
+    ValueType.BOOLEAN,
+    new ExternalStateSettableScheduled(
+      false,
+      async () => {
+        const [error0, response] = await safeAsync(
+          fetch(new URL('/cgi/status', KIOSK_BASE_URL), {
+            signal: AbortSignal.timeout(epochs.second),
+          }),
+        );
+        if (error0) return ExternalStateSettableScheduled.doNotSet;
+
+        const [error1, isOn] = await safeAsync(response.json());
+        if (error1) return ExternalStateSettableScheduled.doNotSet;
+
+        return isOn === 1;
+      },
+      async (value, actualValue) => {
+        if (value === actualValue) return;
+
+        await safeAsync(
+          fetch(new URL(value ? '/cgi/on' : '/cgi/off', KIOSK_BASE_URL), {
+            method: 'POST',
+            signal: AbortSignal.timeout(epochs.second),
+          }),
+        );
+      },
+      every5Seconds,
+      every30Seconds,
+    ),
+    'output',
+    'media',
+  ),
   motion: devices.ceilingLightFront.input,
 };
 
