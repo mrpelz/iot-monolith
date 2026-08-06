@@ -53,14 +53,14 @@
     "proper-tags": "2.0.2",
     "suncalc": "2.0.1",
     "uuid": "14.0.1",
-    "ws": "8.21.1"
+    "ws": "8.21.2"
   },
   "devDependencies": {
     "@mrpelz/boilerplate-common": "16.3.0",
     "@mrpelz/boilerplate-node": "16.3.0",
     "@types/suncalc": "1.9.2",
     "@types/ws": "8.18.1",
-    "undici": "8.8.0"
+    "undici": "8.10.0"
   },
   "packageManager": "npm@11.14.1+sha512.6a8a4d67478497a2dbc6815cad72e64c43f33413717e242756047d466241ab39bee61e691683a64658e94496ec5f1a1c05e4a5ec62dcc773280dfd949443a367",
   "devEngines": {

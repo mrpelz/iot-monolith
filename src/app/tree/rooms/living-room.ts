@@ -48,6 +48,7 @@ import { ev1527Transport } from '../bridges.js';
 const AVR_DEBUG_CONNECT = false;
 const PJLINK_DEBUG_CONNECT = false;
 
+const PROJECTOR_HOST = 'beamer.lan.wurstsalat.cloud';
 const INFOSCREEN_BASE_URL = 'http://infoscreen.lan.wurstsalat.cloud:8080';
 
 type Projector = pjlink.default;
@@ -127,6 +128,8 @@ export const properties = {
       context,
       ValueType.BOOLEAN,
       new ExternalStateScheduled(async () => {
+        if (!context.connect) return ExternalStateScheduled.doNotSet;
+
         const [error0, response] = await safeAsync(
           fetch(new URL('/isMasked', INFOSCREEN_BASE_URL), {
             signal: AbortSignal.timeout(epochs.second),
@@ -150,6 +153,8 @@ export const properties = {
       new ExternalStateSettableScheduled(
         false,
         async () => {
+          if (!context.connect) return ExternalStateSettableScheduled.doNotSet;
+
           const [error0, response] = await safeAsync(
             fetch(new URL('/isOn', INFOSCREEN_BASE_URL), {
               signal: AbortSignal.timeout(epochs.second),
@@ -165,6 +170,7 @@ export const properties = {
           return isOn;
         },
         async (value, actualValue) => {
+          if (!context.connect) return;
           if (value === actualValue) return;
 
           await safeAsync(
@@ -190,6 +196,7 @@ export const properties = {
       new ExternalStateSettableScheduled(
         false,
         async () => {
+          if (!context.connect) return ExternalStateScheduled.doNotSet;
           if (!pjlinkProjector) return ExternalStateScheduled.doNotSet;
 
           const power = await pjlinkProjector.getPower();
@@ -209,6 +216,7 @@ export const properties = {
           }
         },
         async (value, actualValue) => {
+          if (!context.connect) return;
           if (value === actualValue) return;
 
           pjlinkProjector?.power(value ? 'on' : 'off');
@@ -224,6 +232,7 @@ export const properties = {
       ValueType.STRING,
       new ExternalStateScheduled<'on' | 'off' | 'cooling' | 'warm-up'>(
         async () => {
+          if (!context.connect) return ExternalStateScheduled.doNotSet;
           if (!pjlinkProjector) return ExternalStateScheduled.doNotSet;
 
           return pjlinkProjector.getPower();
@@ -290,6 +299,7 @@ const $init: InitFunction = async (room, introspection) => {
     ceilingLight,
     infoscreen,
     overrideTimer,
+    projector,
     standingLamp,
     terrariumLedRed,
     terrariumLedTop,
@@ -331,7 +341,7 @@ const $init: InitFunction = async (room, introspection) => {
 
   pjlinkProjector =
     (context.connect || PJLINK_DEBUG_CONNECT) && pjlinkPassword
-      ? new Projector('beamer.lan.wurstsalat.cloud', pjlinkPassword)
+      ? new Projector(PROJECTOR_HOST, pjlinkPassword)
       : undefined;
 
   const kitchenAdjecentsLightsOffKitchenBrightOn = (cause: string) => {
@@ -491,17 +501,19 @@ const $init: InitFunction = async (room, introspection) => {
     isTerrariumLedsOverride.set(false, origin);
   });
 
-  media.main.setState.observe(async (value, _observer, _changed, origin) => {
-    l(
-      `${p(infoscreen.on)} was set ${value ? 'false' : 'true'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
-    );
-    infoscreen.on.state.setState.set(!value, origin);
+  projector.power.main.setState.observe(
+    async (value, _observer, _changed, origin) => {
+      l(
+        `${p(infoscreen.on)} was set ${value ? 'false' : 'true'} because ${p(projector.power)} was turned ${value ? 'on' : 'off'}`,
+      );
+      infoscreen.on.state.setState.set(!value, origin);
 
-    l(
-      `${p(terrariumLedsOverride)} was set ${value ? 'true' : 'false'} because ${p(media)} was turned ${value ? 'on' : 'off'}`,
-    );
-    isTerrariumLedsOverride.set(value, origin);
-  });
+      l(
+        `${p(terrariumLedsOverride)} was set ${value ? 'true' : 'false'} because ${p(projector.power)} was turned ${value ? 'on' : 'off'}`,
+      );
+      isTerrariumLedsOverride.set(value, origin);
+    },
+  );
 };
 
 export const livingRoom = {

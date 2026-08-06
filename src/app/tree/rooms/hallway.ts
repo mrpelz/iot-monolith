@@ -75,6 +75,8 @@ export const properties = {
     new ExternalStateSettableScheduled(
       false,
       async () => {
+        if (!context.connect) return ExternalStateSettableScheduled.doNotSet;
+
         const [error0, response] = await safeAsync(
           fetch(new URL('/cgi/status', KIOSK_BASE_URL), {
             signal: AbortSignal.timeout(epochs.second),
@@ -88,6 +90,7 @@ export const properties = {
         return isOn === 1;
       },
       async (value, actualValue) => {
+        if (!context.connect) return;
         if (value === actualValue) return;
 
         await safeAsync(
