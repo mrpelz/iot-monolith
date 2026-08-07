@@ -53,11 +53,11 @@
     "proper-tags": "2.0.2",
     "suncalc": "2.0.1",
     "uuid": "14.0.1",
-    "ws": "8.21.2"
+    "ws": "8.21.3"
   },
   "devDependencies": {
-    "@mrpelz/boilerplate-common": "16.3.0",
-    "@mrpelz/boilerplate-node": "16.3.0",
+    "@mrpelz/boilerplate-common": "16.3.2",
+    "@mrpelz/boilerplate-node": "16.3.2",
     "@types/suncalc": "1.9.2",
     "@types/ws": "8.18.1",
     "undici": "8.10.0"
