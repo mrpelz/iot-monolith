@@ -75,7 +75,8 @@ const dryerSocket = new TCPClient(
 );
 
 const washerDryerNotification = new BooleanState(false);
-const washerDryerNotificationEnable = new BooleanState(true);
+const dryerNotificationEnable = new BooleanState(true);
+const washerNotificationEnable = new BooleanState(true);
 
 export const devices = {
   ceilingLight: shelly1WithInput(
@@ -144,14 +145,19 @@ export const logic = {
 };
 
 export const scenes = {
+  dryerNotificationEnable: scene(
+    context,
+    [new SceneMember(dryerNotificationEnable, true, false)],
+    'automation',
+  ),
   washerDryerNotification: scene(
     context,
     [new SceneMember(washerDryerNotification, true, false)],
     'notification',
   ),
-  washerDryerNotificationEnable: scene(
+  washerNotificationEnable: scene(
     context,
-    [new SceneMember(washerDryerNotificationEnable, true, false)],
+    [new SceneMember(washerNotificationEnable, true, false)],
     'automation',
   ),
 };
@@ -215,13 +221,17 @@ const $init: InitFunction = (room, introspection) => {
       }
     });
 
-  washerDryerNotificationEnable.observe(
-    (value, _observer, _changed, origin) => {
-      if (value) return;
+  dryerNotificationEnable.observe((value, _observer, _changed, origin) => {
+    if (value) return;
 
-      washerDryerNotification.set(false, origin);
-    },
-  );
+    washerDryerNotification.set(false, origin);
+  });
+
+  washerNotificationEnable.observe((value, _observer, _changed, origin) => {
+    if (value) return;
+
+    washerDryerNotification.set(false, origin);
+  });
 
   door.open.state.observe((value, _observer, _changed, origin) => {
     if (!value) return;
@@ -240,7 +250,7 @@ const $init: InitFunction = (room, introspection) => {
     if (value === null) return;
 
     // do not set notification when automation is disabled
-    if (!washerDryerNotificationEnable.value) return;
+    if (!washerNotificationEnable.value) return;
 
     // do not set notification when ceiling light is on and machine transitions to stopped
     if (ceilingLight.main.setState.value && !value) return;
@@ -257,7 +267,7 @@ const $init: InitFunction = (room, introspection) => {
     if (value === null) return;
 
     // do not set notification when automation is disabled
-    if (!washerDryerNotificationEnable.value) return;
+    if (!dryerNotificationEnable.value) return;
 
     // do not set notification when ceiling light is on and machine transitions to stopped
     if (ceilingLight.main.setState.value && !value) return;
