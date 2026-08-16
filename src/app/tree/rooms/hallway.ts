@@ -180,6 +180,8 @@ const $init: InitFunction = async (room, introspection) => {
     wallswitchMiddle,
   } = instances;
 
+  const { kiosk } = properties;
+
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
     logger.getInput({
@@ -215,6 +217,14 @@ const $init: InitFunction = async (room, introspection) => {
   wallswitchMiddle.state.longPress(() =>
     kitchenAdjecentsLightsOffKitchenChillaxOn(
       `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name}`,
+    ),
+  );
+
+  wallswitchMiddle.state.doublePress(() =>
+    flipMain(kiosk, () =>
+      l(
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.doublePress.name} flipped ${p(kiosk)}`,
+      ),
     ),
   );
 
