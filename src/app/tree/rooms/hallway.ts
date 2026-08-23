@@ -229,7 +229,7 @@ const $init: InitFunction = async (room, introspection) => {
           `${p(wallswitchMiddle)} ${wallswitchMiddle.state.doublePress.name} flipped ${p(kiosk)}`,
         ),
       ),
-    epochs.second,
+    600,
     epochs.second * 2,
   );
 
