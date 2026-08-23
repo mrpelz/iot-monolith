@@ -165,6 +165,10 @@ export const scenes = {
 const $init: InitFunction = (room, introspection) => {
   const { washerDryerBridge } = devices;
   const { ceilingLight, door, dryer, motion, washer } = properties;
+  const {
+    dryerNotificationEnable: dryerNotificationEnable_,
+    washerNotificationEnable: washerNotificationEnable_,
+  } = scenes;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -221,11 +225,27 @@ const $init: InitFunction = (room, introspection) => {
       }
     });
 
+  const pathDryerNotificationEnable = p(dryerNotificationEnable_);
+  if (pathDryerNotificationEnable) {
+    context.persistence.observe(
+      pathDryerNotificationEnable,
+      dryerNotificationEnable,
+    );
+  }
+
   dryerNotificationEnable.observe((value, _observer, _changed, origin) => {
     if (value) return;
 
     washerDryerNotification.set(false, origin);
   });
+
+  const pathWasherNotificationEnable = p(washerNotificationEnable_);
+  if (pathWasherNotificationEnable) {
+    context.persistence.observe(
+      pathWasherNotificationEnable,
+      washerNotificationEnable,
+    );
+  }
 
   washerNotificationEnable.observe((value, _observer, _changed, origin) => {
     if (value) return;

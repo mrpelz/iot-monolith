@@ -104,10 +104,17 @@ export class Button {
     );
   }
 
-  upAfter(callback: Callback, duration = 1500): Observer {
+  upAfter(
+    callback: Callback,
+    durationLowerBound = 300,
+    durationUpperBound = durationLowerBound + 300,
+  ): Observer {
     return this.match(
       callback,
-      ({ down, previousDuration }) => !down && previousDuration >= duration,
+      ({ down, previousDuration }) =>
+        !down &&
+        previousDuration >= durationLowerBound &&
+        previousDuration <= durationUpperBound,
     );
   }
 }
