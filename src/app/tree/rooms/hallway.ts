@@ -214,13 +214,15 @@ const $init: InitFunction = async (room, introspection) => {
     ),
   );
 
-  wallswitchMiddle.state.longPress(() =>
-    kitchenAdjecentsLightsOffKitchenChillaxOn(
-      `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name}`,
-    ),
+  wallswitchMiddle.state.longPress(
+    () =>
+      kitchenAdjecentsLightsOffKitchenChillaxOn(
+        `${p(wallswitchMiddle)} ${wallswitchMiddle.state.longPress.name}`,
+      ),
+    2000,
   );
 
-  wallswitchMiddle.state.doublePress(() =>
+  wallswitchMiddle.state.longPress(() =>
     flipMain(kiosk, () =>
       l(
         `${p(wallswitchMiddle)} ${wallswitchMiddle.state.doublePress.name} flipped ${p(kiosk)}`,
