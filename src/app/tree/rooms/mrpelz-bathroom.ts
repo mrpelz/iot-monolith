@@ -152,7 +152,7 @@ export const properties = {
     propertiesPartial.motionHMMD,
     groupsPartial.motionPirInit,
     epochs.second * 10,
-    20,
+    50,
   ),
 };
 
