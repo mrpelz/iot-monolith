@@ -167,6 +167,10 @@ export const overriddenLed = (
     (value) => (value ? 1 : 0),
   );
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setOn.set(false, offTimer.state));
+  setOn.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
@@ -186,6 +190,7 @@ export const overriddenLed = (
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    offTimer,
     overridden: isOverridden,
     topic,
   };

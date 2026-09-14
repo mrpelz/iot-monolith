@@ -48,7 +48,7 @@ import {
 } from '../../util.js';
 import { ev1527Transport } from '../bridges.js';
 
-const LIGHT_TIMER_DURATION = epochs.minute * 5;
+const LIGHT_TIMER_DURATION = epochs.minute * 2;
 
 export const devices = {
   ceilingLight: shelly1(
@@ -107,7 +107,7 @@ const propertiesPartial = {
   nightLight: devices.nightLight.relay,
 };
 
-export const groups = {
+const groupsPartial = {
   allLights: outputGrouping(
     context,
     [
@@ -138,16 +138,35 @@ export const groups = {
     ],
     'motion' as const,
   ),
+  motionPirInit: inputGrouping(
+    context,
+    [propertiesPartial.motionPir1, propertiesPartial.motionPir2],
+    'motion' as const,
+  ),
 };
 
 export const properties = {
   ...propertiesPartial,
-  motion: motionHMMDGuarded(
+  motionGuarded: motionHMMDGuarded(
     context,
     propertiesPartial.motionHMMD,
-    groups.motionPir,
+    groupsPartial.motionPirInit,
     epochs.second * 10,
     20,
+  ),
+};
+
+export const groups = {
+  ...groupsPartial,
+  motion: inputGrouping(
+    context,
+    [
+      properties.motionGuarded,
+      properties.motionPir0,
+      properties.motionPir1,
+      properties.motionPir2,
+    ],
+    'motion' as const,
   ),
 };
 
@@ -203,7 +222,7 @@ const scenesPartial = {
     context,
     [
       new SceneMember(properties.ceilingLight.main.setState, false),
-      new SceneMember(properties.mirrorLed.brightness.setState, 0.25, 0),
+      new SceneMember(properties.mirrorLed.brightness.setState, 0.5, 0),
       new SceneMember(properties.mirrorLight.main.setState, false),
       new SceneMember(properties.nightLight.main.setState, false),
     ],
@@ -222,7 +241,7 @@ export const logic = {
 
     const { allLights: output } = groups;
     const { autoLight } = scenes;
-    const inputsAutomated = [properties.door, properties.motion];
+    const inputsAutomated = [properties.door, groups.motion];
     const inputsManual = [
       instances.showerButton,
       instances.wallswitchDoor,
@@ -375,7 +394,7 @@ export const logic = {
             input.open.state.observe(fn, true);
             break;
           }
-          case 'hmmdMotion': {
+          case 'inputGrouping': {
             input.state.observe(fn, true);
             break;
           }

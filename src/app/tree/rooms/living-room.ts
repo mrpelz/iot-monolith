@@ -187,7 +187,7 @@ export const properties = {
       'media',
     ),
   },
-  overrideTimer: timer(context, epochs.hour * 3, true),
+  overrideTimer: timer(context, epochs.hour * 3),
   projector: {
     $: 'projector' as const,
     power: externalStateSettable(

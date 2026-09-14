@@ -51,6 +51,7 @@ import { setter, setterNullable } from '../elements/setter.js';
 import { trigger } from '../elements/trigger.js';
 import { Level, TValueType, ValueType } from '../main.js';
 import { InitFunction } from '../operations/init.js';
+import { timer } from './logic.js';
 import { lastChange, lastSeen } from './sensors.js';
 
 const actuatorStaleness = <T>(
@@ -149,6 +150,10 @@ export const led = <T extends string>(
     indicator,
   );
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setOn.set(false, offTimer.state));
+  setOn.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
 
@@ -170,6 +175,7 @@ export const led = <T extends string>(
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    offTimer,
     topic,
   };
 };
@@ -191,6 +197,10 @@ export const outputNg = <T extends string>(
 
   const { actualState, animationState, setState } = state;
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setState.set(false, offTimer.state));
+  setState.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
@@ -211,6 +221,7 @@ export const outputNg = <T extends string>(
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
+    offTimer,
     state,
     topic,
   };
@@ -233,6 +244,10 @@ export const outputNgBuzzer = <T extends string>(
 
   const { actualState, animationState, setState } = state;
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setState.set(0, offTimer.state));
+  setState.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
     if (!mainReference) return;
@@ -252,6 +267,7 @@ export const outputNgBuzzer = <T extends string>(
     animationState: getter(ValueType.STRING, animationState),
     level: Level.PROPERTY as const,
     main: setter(ValueType.NUMBER, setState, actualState, 'frequency'),
+    offTimer,
     state,
     topic,
   };
@@ -281,6 +297,10 @@ export const outputNgDimmable = <T extends string>(
     setOn,
   } = state;
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setOn.set(false, offTimer.state));
+  setOn.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
 
@@ -304,6 +324,7 @@ export const outputNgDimmable = <T extends string>(
     flip: trigger(ValueType.NULL, new NullState(() => setOn.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    offTimer,
     state,
     topic,
   };
@@ -326,6 +347,19 @@ export const outputNgDimmableRGB = <T extends string>(
 
   const { actualState, animationState, customRampTime, setState } = state;
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() =>
+    setState.set(
+      {
+        b: 0,
+        g: 0,
+        r: 0,
+      },
+      offTimer.state,
+    ),
+  );
+  setState.observe(() => offTimer.state.disable());
+
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
 
@@ -347,6 +381,7 @@ export const outputNgDimmableRGB = <T extends string>(
     customRampTime: setterNullable(ValueType.NUMBER, customRampTime),
     level: Level.PROPERTY as const,
     main: setter(ValueType.RAW, setState, actualState, 'rgb'),
+    offTimer,
     state,
     topic,
   };
@@ -365,6 +400,10 @@ export const output = <T extends string>(
     device.addService(new OutputService(index)),
     indicator,
   );
+
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setState.set(false, offTimer.state));
+  setState.observe(() => offTimer.state.disable());
 
   const $init: InitFunction = (self, introspection) => {
     const { mainReference } = introspection.getObject(self) ?? {};
@@ -385,6 +424,7 @@ export const output = <T extends string>(
     flip: trigger(ValueType.NULL, new NullState(() => setState.flip())),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
+    offTimer,
     topic,
   };
 };
@@ -435,6 +475,10 @@ export const ledGrouping = <T extends string>(
     lights_.map((light) => light.brightness.setState),
   );
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setOn.set(false, offTimer.state));
+  setOn.observe(() => offTimer.state.disable());
+
   return {
     $,
     $noMainReference: true as const,
@@ -445,6 +489,7 @@ export const ledGrouping = <T extends string>(
     level: Level.PROPERTY as const,
     lights: lights_,
     main: setter(ValueType.BOOLEAN, setOn, actualOn, 'on'),
+    offTimer,
     topic,
   };
 };
@@ -478,6 +523,10 @@ export const outputGrouping = <T extends string>(
     outputs_.map((outputElement) => outputElement.main.setState),
   );
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => setState.set(false, offTimer.state));
+  setState.observe(() => offTimer.state.disable());
+
   return {
     $,
     $noMainReference: true as const,
@@ -486,6 +535,7 @@ export const outputGrouping = <T extends string>(
     lastSeen: lastSeen(context, setState),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, setState, actualState, 'on'),
+    offTimer,
     outputs: outputs_,
     topic,
   };
@@ -612,6 +662,10 @@ export const scene = <T extends string>(
     proxyObservables,
   );
 
+  const offTimer = timer(context, 0, false);
+  offTimer.state.observe(() => set.set(false, offTimer.state));
+  set.observe(() => offTimer.state.disable());
+
   return {
     $,
     flip: trigger(ValueType.NULL, new NullState(() => set.flip())),
@@ -619,6 +673,7 @@ export const scene = <T extends string>(
     lastSeen: lastSeen(context, set),
     level: Level.PROPERTY as const,
     main: setter(ValueType.BOOLEAN, set, undefined, 'scene'),
+    offTimer,
     state: set,
     topic,
   };

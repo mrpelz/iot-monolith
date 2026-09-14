@@ -110,7 +110,7 @@ export const system: Promise<{
   const allThings = await allThings_;
   const allWindows = await allWindows_;
 
-  const allTimer = timer(context, epochs.day, true);
+  const allTimer = timer(context, epochs.day);
 
   const $init: InitFunction = (self, introspection) => {
     const p = makePathStringRetriever(introspection);

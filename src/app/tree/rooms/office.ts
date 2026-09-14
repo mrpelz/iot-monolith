@@ -49,7 +49,7 @@ export const instances = {
 export const properties = {
   ceilingLight: devices.ceilingLight.relay,
   floodlight: devices.floodlight.relay,
-  floodlightTimer: timer(context, epochs.hour, undefined),
+  floodlightTimer: timer(context, epochs.hour),
   window: window(context, devices.windowSensor, 'open'),
 };
 
