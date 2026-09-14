@@ -160,12 +160,7 @@ export const groups = {
   ...groupsPartial,
   motion: inputGrouping(
     context,
-    [
-      properties.motionGuarded,
-      properties.motionPir0,
-      properties.motionPir1,
-      properties.motionPir2,
-    ],
+    [properties.motionGuarded, properties.motionPir1, properties.motionPir2],
     'motion' as const,
   ),
 };
