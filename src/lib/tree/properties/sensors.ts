@@ -671,7 +671,9 @@ export const motionHMMDGuarded = (
 ) => {
   const $ = 'hmmdMotion' as const;
 
-  const timer = timer_(context, cooloffTime);
+  const resetTimer = timer_(context, cooloffTime);
+  const bypassTimer = timer_(context, cooloffTime);
+
   const triggerAfterCumulativeHMMDTriggers = new Observable(
     triggerAfterCumulativeHMMDTriggersInitial,
   );
@@ -683,13 +685,16 @@ export const motionHMMDGuarded = (
       cumulativeHMMDTriggers.set(cumulativeHMMDTriggers.value + 1);
     }
 
-    timer.state.start();
+    resetTimer.state.start();
 
     if (value) {
       if (
-        triggerAfterCumulativeHMMDTriggers.value &&
-        cumulativeHMMDTriggers.value >= triggerAfterCumulativeHMMDTriggers.value
+        bypassTimer.state.isActive.value ||
+        (triggerAfterCumulativeHMMDTriggers.value &&
+          cumulativeHMMDTriggers.value >=
+            triggerAfterCumulativeHMMDTriggers.value)
       ) {
+        bypassTimer.state.start();
         state_.set(true, origin);
         cumulativeHMMDTriggers.set(0);
       }
@@ -700,10 +705,13 @@ export const motionHMMDGuarded = (
     state_.set(false, origin);
   }, true);
 
-  guard.state.observe(() => timer.state.start(), true);
+  guard.state.observe(() => {
+    resetTimer.state.start();
+    bypassTimer.state.start();
+  }, true);
 
   if (triggerAfterCumulativeHMMDTriggers.value) {
-    timer.state.observe(() => {
+    resetTimer.state.observe(() => {
       cumulativeHMMDTriggers.set(0);
     });
   }
@@ -712,6 +720,7 @@ export const motionHMMDGuarded = (
 
   return {
     $,
+    bypassTimer,
     cumulativeHMMDTriggers: getter(
       ValueType.NUMBER,
       new ReadOnlyObservable(cumulativeHMMDTriggers),
@@ -722,7 +731,7 @@ export const motionHMMDGuarded = (
     level: Level.PROPERTY as const,
     main: getter(ValueType.BOOLEAN, state),
     state,
-    timer,
+    timer: resetTimer,
     topic: 'motion' as const,
     triggerAfterCumulativeHMMDTriggers: {
       initialCount: triggerAfterCumulativeHMMDTriggersInitial,
