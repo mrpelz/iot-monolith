@@ -63,7 +63,11 @@ export const roomSensor = (
       timings.default[1],
     ),
     state: temperatureState,
-    timeSeries: timeSeries(temperatureState, 'deg-c'),
+    timeSeries: timeSeries(
+      temperatureState,
+      'deg-c',
+      context.timings.default[1],
+    ),
   };
 
   const sgp30MeasurementInputGetter = () => {
