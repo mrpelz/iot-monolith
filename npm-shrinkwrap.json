@@ -9,10 +9,10 @@
       "version": "8.17.2",
       "license": "UNLICENSED",
       "dependencies": {
-        "@mrpelz/misc-utils": "7.6.0",
-        "@mrpelz/modifiable-date": "7.6.0",
-        "@mrpelz/observable": "7.6.0",
-        "@mrpelz/struct": "7.6.0",
+        "@mrpelz/misc-utils": "7.6.1",
+        "@mrpelz/modifiable-date": "7.6.1",
+        "@mrpelz/observable": "7.6.1",
+        "@mrpelz/struct": "7.6.1",
         "pjlink-control": "1.1.0",
         "prom-client": "15.1.3",
         "proper-tags": "2.0.2",
@@ -2047,27 +2047,27 @@
       "license": "MIT"
     },
     "node_modules/@mrpelz/misc-utils": {
-      "version": "7.6.0",
-      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/misc-utils/-/@mrpelz/misc-utils-7.6.0.tgz",
-      "integrity": "sha1-NztEji7+aI0AmlgGrE/7PrPJyuY="
+      "version": "7.6.1",
+      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/misc-utils/-/@mrpelz/misc-utils-7.6.1.tgz",
+      "integrity": "sha1-b8QPPSC7Ya9+zbsJB9p6VXtc64s="
     },
     "node_modules/@mrpelz/modifiable-date": {
-      "version": "7.6.0",
-      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/modifiable-date/-/@mrpelz/modifiable-date-7.6.0.tgz",
-      "integrity": "sha1-kiJEiv3gaFyvoL75H55I0Hs/QS4="
+      "version": "7.6.1",
+      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/modifiable-date/-/@mrpelz/modifiable-date-7.6.1.tgz",
+      "integrity": "sha1-faxrbARM8DnZmTge6gpZKtZzAUg="
     },
     "node_modules/@mrpelz/observable": {
-      "version": "7.6.0",
-      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/observable/-/@mrpelz/observable-7.6.0.tgz",
-      "integrity": "sha1-28pqW/c6md2ZbmAS+YSyAW7CwUw=",
+      "version": "7.6.1",
+      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/observable/-/@mrpelz/observable-7.6.1.tgz",
+      "integrity": "sha1-S741TvCHStaOv2EAGKG7qdLUTCw=",
       "dependencies": {
         "@mrpelz/misc-utils": "*"
       }
     },
     "node_modules/@mrpelz/struct": {
-      "version": "7.6.0",
-      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/struct/-/@mrpelz/struct-7.6.0.tgz",
-      "integrity": "sha1-ry9cXWJnkmS2u6aZS5uuZB4wf+Q=",
+      "version": "7.6.1",
+      "resolved": "https://git.i.wurstsalat.cloud/api/v4/projects/131/packages/npm/@mrpelz/struct/-/@mrpelz/struct-7.6.1.tgz",
+      "integrity": "sha1-A8xmYOqIMJLIWeiCgm5SekjdLjo=",
       "dependencies": {
         "@mrpelz/misc-utils": "*"
       }
