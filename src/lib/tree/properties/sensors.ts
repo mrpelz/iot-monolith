@@ -47,6 +47,13 @@ import { Sds011 } from '../../services/sds011.js';
 import { Sgp30, Sgp30Request } from '../../services/sgp30.js';
 import { Tsl2561 } from '../../services/tsl2561.js';
 import { Veml6070 } from '../../services/veml6070.js';
+import {
+  RollingLinearRegression,
+  RollingMean,
+  RollingMedian,
+  Timeseries,
+  TimeseriesLimitType,
+} from '../../time-series.js';
 import { Context } from '../context.js';
 import { ev1527MotionSensor } from '../devices/ev1527-motion-sensor.js';
 import { ev1527WindowSensor } from '../devices/ev1527-window-sensor.js';
@@ -143,6 +150,74 @@ export const metricStaleness = <T>(
   };
 };
 
+export const timeSeries = <U extends string | undefined>(
+  observable: AnyObservable<number | null>,
+  unit: U,
+) => {
+  const $ = 'timeSeries' as const;
+
+  const timeSeries_ = new Timeseries(observable, {
+    ms: epochs.hour,
+    type: TimeseriesLimitType.TIME,
+  });
+
+  const rollingLinearRegression = new RollingLinearRegression(timeSeries_);
+  const rollingMean = new RollingMean(timeSeries_);
+  const rollingMedian = new RollingMedian(timeSeries_);
+
+  return {
+    $,
+    linearRegression: {
+      intercept: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable(
+          rollingLinearRegression,
+          (value) => value?.intercept ?? null,
+        ),
+      ),
+      main: getter(
+        ValueType.RAW,
+        new ReadOnlyProxyObservable(rollingLinearRegression, (value) =>
+          value
+            ? Object.fromEntries(
+                value.prediction
+                  .entries()
+                  .map(([key, value_]) => [key.getTime(), value_] as const),
+              )
+            : undefined,
+        ),
+      ),
+      slope: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable(
+          rollingLinearRegression,
+          (value) => value?.slope ?? null,
+        ),
+      ),
+      state: rollingLinearRegression,
+    },
+    main: getter(
+      ValueType.RAW,
+      new ReadOnlyProxyObservable(timeSeries_.history, (value) =>
+        Object.fromEntries(
+          value
+            .entries()
+            .map(([key, value_]) => [key.getTime(), value_] as const),
+        ),
+      ),
+    ),
+    mean: {
+      main: getter(ValueType.NUMBER, rollingMean, unit),
+      state: rollingMean,
+    },
+    median: {
+      main: getter(ValueType.NUMBER, rollingMedian, unit),
+      state: rollingMedian,
+    },
+    state: timeSeries_,
+  };
+};
+
 export const async = (
   context: Context,
   device: Device,
@@ -185,6 +260,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
       metricStaleness: metricStaleness(context, state.humidity, epoch),
       state: state.humidity,
+      timeSeries: timeSeries(state.humidity, 'percent-rh'),
     },
     pressure: {
       $: 'pressure' as const,
@@ -192,6 +268,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.pressure, 'pa'),
       metricStaleness: metricStaleness(context, state.pressure, epoch),
       state: state.pressure,
+      timeSeries: timeSeries(state.pressure, 'pa'),
     },
     temperature: {
       $: 'temperature' as const,
@@ -199,6 +276,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
       metricStaleness: metricStaleness(context, state.temperature, epoch),
       state: state.temperature,
+      timeSeries: timeSeries(state.temperature, 'deg-c'),
     },
   };
 };
@@ -227,12 +305,14 @@ export const ccs811 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       state: state.tvoc,
+      timeSeries: timeSeries(state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
       eco2: {
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
         metricStaleness: metricStaleness(context, state.eco2, epoch),
         state: state.eco2,
+        timeSeries: timeSeries(state.eco2, 'ppm'),
       },
       metricStaleness: metricStaleness(context, state.tvoc, epoch),
       temperature: {
@@ -240,6 +320,7 @@ export const ccs811 = (
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
         metricStaleness: metricStaleness(context, state.temperature, epoch),
         state: state.temperature,
+        timeSeries: timeSeries(state.temperature, 'deg-c'),
       },
     },
   };
@@ -565,6 +646,7 @@ export const mcp9808 = (
       main: getter(ValueType.NUMBER, state, 'deg-c'),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
+      timeSeries: timeSeries(state, 'deg-c'),
     },
   };
 };
@@ -597,6 +679,7 @@ export const mhz19 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.co2, 'ppm'),
       state: state.co2,
+      timeSeries: timeSeries(state.co2, 'ppm'),
       // eslint-disable-next-line sort-keys
       abc: {
         main: getter(ValueType.BOOLEAN, state.abc),
@@ -607,17 +690,20 @@ export const mhz19 = (
         main: getter(ValueType.NUMBER, state.accuracy, 'percent'),
         metricStaleness: metricStaleness(context, state.accuracy, epoch),
         state: state.accuracy,
+        timeSeries: timeSeries(state.accuracy, 'percent'),
       },
       metricStaleness: metricStaleness(context, state.co2, epoch),
       temperature: {
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
         metricStaleness: metricStaleness(context, state.temperature, epoch),
         state: state.temperature,
+        timeSeries: timeSeries(state.temperature, 'deg-c'),
       },
       transmittance: {
         main: getter(ValueType.NUMBER, state.transmittance, 'percent'),
         metricStaleness: metricStaleness(context, state.transmittance, epoch),
         state: state.transmittance,
+        timeSeries: timeSeries(state.transmittance, 'percent'),
       },
     },
   };
@@ -872,6 +958,7 @@ export const sds011 = (
       main: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
       metricStaleness: metricStaleness(context, state.pm025, epoch),
       state: state.pm025,
+      timeSeries: timeSeries(state.pm025, 'micrograms/m3'),
     },
     pm10: {
       $: 'pm10' as const,
@@ -879,6 +966,7 @@ export const sds011 = (
       main: getter(ValueType.NUMBER, state.pm10, 'micrograms/m3'),
       metricStaleness: metricStaleness(context, state.pm10, epoch),
       state: state.pm10,
+      timeSeries: timeSeries(state.pm10, 'micrograms/m3'),
     },
   };
 };
@@ -907,21 +995,25 @@ export const sgp30 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       state: state.tvoc,
+      timeSeries: timeSeries(state.tvoc, 'ppb'),
       // eslint-disable-next-line sort-keys
       eco2: {
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
         metricStaleness: metricStaleness(context, state.eco2, epoch),
         state: state.eco2,
+        timeSeries: timeSeries(state.eco2, 'ppm'),
       },
       ethanol: {
         main: getter(ValueType.NUMBER, state.ethanol, 'ppm'),
         metricStaleness: metricStaleness(context, state.ethanol, epoch),
         state: state.ethanol,
+        timeSeries: timeSeries(state.ethanol, 'ppm'),
       },
       h2: {
         main: getter(ValueType.NUMBER, state.h2, 'ppm'),
         metricStaleness: metricStaleness(context, state.h2, epoch),
         state: state.h2,
+        timeSeries: timeSeries(state.h2, 'ppm'),
       },
       metricStaleness: metricStaleness(context, state.tvoc, epoch),
     },
@@ -948,6 +1040,7 @@ export const tsl2561 = (
       main: getter(ValueType.NUMBER, state, 'lux'),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
+      timeSeries: timeSeries(state, 'lux'),
     },
   };
 };
@@ -972,6 +1065,7 @@ export const veml6070 = (
       main: getter(ValueType.NUMBER, state),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
+      timeSeries: timeSeries(state, undefined),
     },
   };
 };
@@ -983,6 +1077,7 @@ export const vcc = (_: Context, device: Device) => {
     $: 'vcc' as const,
     level: Level.PROPERTY as const,
     main: getter(ValueType.NUMBER, state),
+    timeSeries: timeSeries(state, undefined),
   };
 };
 

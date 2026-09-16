@@ -1,11 +1,12 @@
 import {
   AnyObservable,
+  AnyObservableOrNullState,
   Observable,
   Observer,
   ProxyFn,
+  ReadOnlyObservable,
   ReadOnlyProxyObservable,
 } from '@mrpelz/observable';
-import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 export enum TimeseriesLimitType {
   ENTRIES,
@@ -23,39 +24,35 @@ export type TimeseriesLimit =
     };
 
 export class Timeseries<T> {
-  private readonly _history = new Map<Date, T>();
-  private readonly _updated = new NullState<Map<Date, T>>();
+  private readonly _history = new Observable(new Map<Date, T>());
+  readonly history: ReadOnlyObservable<Map<Date, T>>;
   readonly observer: Observer;
-  readonly updated: ReadOnlyNullState<Map<Date, T>>;
 
   constructor(
-    observable: AnyObservable<T>,
+    observable: AnyObservable<T | null>,
     private readonly _limit: TimeseriesLimit,
     observeAll = false,
   ) {
     this.observer = observable.observe(
-      (value) => this._handleObservableChange(value),
+      (value, _observer, _changed, origin) =>
+        this._handleObservableChange(value, origin),
       observeAll,
     );
 
-    this.updated = new ReadOnlyNullState(this._updated);
-    this._handleObservableChange(observable.value);
+    this.history = new ReadOnlyObservable(this._history);
+    this._handleObservableChange(observable.value, observable);
   }
 
-  get history(): Map<Date, T> {
-    return new Map(this._history);
-  }
-
-  private _handleCleanup() {
+  private _handleCleanup(history: Map<Date, T>) {
     const timeThreshold =
       this._limit.type === TimeseriesLimitType.TIME
         ? Date.now() - this._limit.ms
         : undefined;
 
-    for (const [date] of this._history) {
+    for (const [date] of history) {
       if (
         this._limit.type === TimeseriesLimitType.ENTRIES &&
-        this._history.size <= this._limit.entries
+        this._history.value.size <= this._limit.entries
       ) {
         break;
       }
@@ -64,15 +61,22 @@ export class Timeseries<T> {
         break;
       }
 
-      this._history.delete(date);
+      history.delete(date);
     }
   }
 
-  private _handleObservableChange(value: T) {
-    this._history.set(new Date(), value);
-    this._handleCleanup();
+  private _handleObservableChange(
+    value: T | null,
+    origin: AnyObservableOrNullState<T>,
+  ) {
+    if (value === null) return;
 
-    this._updated.trigger(this.history);
+    const history = this._history.value;
+    history.set(new Date(), value);
+
+    this._handleCleanup(history);
+
+    this._history.set(new Map(history), origin);
   }
 }
 
@@ -81,17 +85,11 @@ export class RollingProduct<T, S> extends ReadOnlyProxyObservable<
   S
 > {
   constructor(timeseries: Timeseries<T>, get: ProxyFn<Map<Date, T>, S>) {
-    const observable = new Observable<Map<Date, T>>(timeseries.history);
-
-    timeseries.updated.observe((history, _observer, _changed, origin) =>
-      observable.set(history, origin),
-    );
-
-    super(observable, get);
+    super(timeseries.history, get);
   }
 }
 
-export class RollingAverage extends RollingProduct<number, number> {
+export class RollingMean extends RollingProduct<number, number> {
   private static _fn(input: Map<Date, number>): number {
     let sum = 0;
     for (const value of input.values()) {
@@ -102,7 +100,7 @@ export class RollingAverage extends RollingProduct<number, number> {
   }
 
   constructor(timeseries: Timeseries<number>) {
-    super(timeseries, RollingAverage._fn);
+    super(timeseries, RollingMean._fn);
   }
 }
 
@@ -177,7 +175,7 @@ export class RollingLinearRegression extends RollingProduct<
     };
   }
 
-  constructor(timeseries: Timeseries<number>, predict = 10, step = 5000) {
+  constructor(timeseries: Timeseries<number>, predict = 720, step = 5000) {
     super(timeseries, RollingLinearRegression._fn(predict, step));
   }
 }

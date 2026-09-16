@@ -14,6 +14,7 @@ import {
   metricStaleness,
   // mhz19,
   sgp30 as sgp30_,
+  timeSeries,
   tsl2561 as tsl2561_,
 } from '../properties/sensors.js';
 
@@ -62,6 +63,7 @@ export const roomSensor = (
       timings.default[1],
     ),
     state: temperatureState,
+    timeSeries: timeSeries(temperatureState, 'deg-c'),
   };
 
   const sgp30MeasurementInputGetter = () => {
