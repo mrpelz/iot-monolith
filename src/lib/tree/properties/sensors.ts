@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 
+import { round } from '@mrpelz/misc-utils/number';
 import { epochs } from '@mrpelz/modifiable-date';
 import {
   AnyObservable,
@@ -153,65 +154,110 @@ export const metricStaleness = <T>(
 export const timeSeries = <U extends string | undefined>(
   observable: AnyObservable<number | null>,
   unit: U,
+  predictionStep = 0,
+  window = epochs.hour,
 ) => {
   const $ = 'timeSeries' as const;
 
   const timeSeries_ = new Timeseries(observable, {
-    ms: epochs.hour,
+    ms: window,
     type: TimeseriesLimitType.TIME,
   });
 
-  const rollingLinearRegression = new RollingLinearRegression(timeSeries_);
+  const rollingLinearRegression = predictionStep
+    ? new RollingLinearRegression(
+        timeSeries_,
+        Math.round(window / predictionStep),
+        predictionStep,
+      )
+    : undefined;
   const rollingMean = new RollingMean(timeSeries_);
   const rollingMedian = new RollingMedian(timeSeries_);
 
   return {
     $,
-    linearRegression: {
-      intercept: getter(
-        ValueType.NUMBER,
-        new ReadOnlyProxyObservable(
-          rollingLinearRegression,
-          (value) => value?.intercept ?? null,
-        ),
-      ),
-      main: getter(
-        ValueType.RAW,
-        new ReadOnlyProxyObservable(rollingLinearRegression, (value) =>
-          value
-            ? Object.fromEntries(
-                value.prediction
-                  .entries()
-                  .map(([key, value_]) => [key.getTime(), value_] as const),
-              )
-            : undefined,
-        ),
-      ),
-      slope: getter(
-        ValueType.NUMBER,
-        new ReadOnlyProxyObservable(
-          rollingLinearRegression,
-          (value) => value?.slope ?? null,
-        ),
-      ),
-      state: rollingLinearRegression,
-    },
+    linearRegression: rollingLinearRegression
+      ? {
+          correlation: getter(
+            ValueType.NUMBER,
+            new ReadOnlyProxyObservable(
+              rollingLinearRegression,
+              (value) => value?.correlation ?? null,
+            ),
+          ),
+          intercept: getter(
+            ValueType.NUMBER,
+            new ReadOnlyProxyObservable(
+              rollingLinearRegression,
+              (value) => value?.intercept ?? null,
+            ),
+          ),
+          main: getter(
+            ValueType.RAW,
+            new ReadOnlyProxyObservable(rollingLinearRegression, (value) =>
+              value
+                ? Object.fromEntries(
+                    value.prediction
+                      .entries()
+                      .map(
+                        ([key, value_]) =>
+                          [key.getTime(), round(value_, 4)] as const,
+                      ),
+                  )
+                : undefined,
+            ),
+          ),
+          rSquared: getter(
+            ValueType.NUMBER,
+            new ReadOnlyProxyObservable(
+              rollingLinearRegression,
+              (value) => value?.rSquared ?? null,
+            ),
+          ),
+          slope: getter(
+            ValueType.NUMBER,
+            new ReadOnlyProxyObservable(
+              rollingLinearRegression,
+              (value) => value?.slope ?? null,
+            ),
+          ),
+          slopeAngle: getter(
+            ValueType.NUMBER,
+            new ReadOnlyProxyObservable(rollingLinearRegression, (value) =>
+              value ? round(value.slopeAngle, 4) : null,
+            ),
+          ),
+          state: rollingLinearRegression,
+        }
+      : undefined,
     main: getter(
       ValueType.RAW,
       new ReadOnlyProxyObservable(timeSeries_.history, (value) =>
         Object.fromEntries(
           value
             .entries()
-            .map(([key, value_]) => [key.getTime(), value_] as const),
+            .map(([key, value_]) => [key.getTime(), round(value_, 4)] as const),
         ),
       ),
     ),
     mean: {
-      main: getter(ValueType.NUMBER, rollingMean, unit),
+      main: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable(rollingMean, (value) =>
+          value ? round(value, 4) : null,
+        ),
+        unit,
+      ),
       state: rollingMean,
     },
     median: {
-      main: getter(ValueType.NUMBER, rollingMedian, unit),
+      main: getter(
+        ValueType.NUMBER,
+        new ReadOnlyProxyObservable(rollingMedian, (value) =>
+          value ? round(value, 4) : null,
+        ),
+        unit,
+      ),
       state: rollingMedian,
     },
     state: timeSeries_,
@@ -260,7 +306,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.humidity, 'percent-rh'),
       metricStaleness: metricStaleness(context, state.humidity, epoch),
       state: state.humidity,
-      timeSeries: timeSeries(state.humidity, 'percent-rh'),
+      timeSeries: timeSeries(state.humidity, 'percent-rh', epoch),
     },
     pressure: {
       $: 'pressure' as const,
@@ -268,7 +314,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.pressure, 'pa'),
       metricStaleness: metricStaleness(context, state.pressure, epoch),
       state: state.pressure,
-      timeSeries: timeSeries(state.pressure, 'pa'),
+      timeSeries: timeSeries(state.pressure, 'pa', epoch),
     },
     temperature: {
       $: 'temperature' as const,
@@ -276,7 +322,7 @@ export const bme280 = (
       main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
       metricStaleness: metricStaleness(context, state.temperature, epoch),
       state: state.temperature,
-      timeSeries: timeSeries(state.temperature, 'deg-c'),
+      timeSeries: timeSeries(state.temperature, 'deg-c', epoch),
     },
   };
 };
@@ -305,14 +351,14 @@ export const ccs811 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       state: state.tvoc,
-      timeSeries: timeSeries(state.tvoc, 'ppb'),
+      timeSeries: timeSeries(state.tvoc, 'ppb', epoch),
       // eslint-disable-next-line sort-keys
       eco2: {
         level: Level.PROPERTY as const,
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
         metricStaleness: metricStaleness(context, state.eco2, epoch),
         state: state.eco2,
-        timeSeries: timeSeries(state.eco2, 'ppm'),
+        timeSeries: timeSeries(state.eco2, 'ppm', epoch),
       },
       metricStaleness: metricStaleness(context, state.tvoc, epoch),
       temperature: {
@@ -320,7 +366,7 @@ export const ccs811 = (
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
         metricStaleness: metricStaleness(context, state.temperature, epoch),
         state: state.temperature,
-        timeSeries: timeSeries(state.temperature, 'deg-c'),
+        timeSeries: timeSeries(state.temperature, 'deg-c', epoch),
       },
     },
   };
@@ -646,7 +692,7 @@ export const mcp9808 = (
       main: getter(ValueType.NUMBER, state, 'deg-c'),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
-      timeSeries: timeSeries(state, 'deg-c'),
+      timeSeries: timeSeries(state, 'deg-c', epoch),
     },
   };
 };
@@ -679,7 +725,7 @@ export const mhz19 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.co2, 'ppm'),
       state: state.co2,
-      timeSeries: timeSeries(state.co2, 'ppm'),
+      timeSeries: timeSeries(state.co2, 'ppm', epoch),
       // eslint-disable-next-line sort-keys
       abc: {
         main: getter(ValueType.BOOLEAN, state.abc),
@@ -690,20 +736,20 @@ export const mhz19 = (
         main: getter(ValueType.NUMBER, state.accuracy, 'percent'),
         metricStaleness: metricStaleness(context, state.accuracy, epoch),
         state: state.accuracy,
-        timeSeries: timeSeries(state.accuracy, 'percent'),
+        timeSeries: timeSeries(state.accuracy, 'percent', epoch),
       },
       metricStaleness: metricStaleness(context, state.co2, epoch),
       temperature: {
         main: getter(ValueType.NUMBER, state.temperature, 'deg-c'),
         metricStaleness: metricStaleness(context, state.temperature, epoch),
         state: state.temperature,
-        timeSeries: timeSeries(state.temperature, 'deg-c'),
+        timeSeries: timeSeries(state.temperature, 'deg-c', epoch),
       },
       transmittance: {
         main: getter(ValueType.NUMBER, state.transmittance, 'percent'),
         metricStaleness: metricStaleness(context, state.transmittance, epoch),
         state: state.transmittance,
-        timeSeries: timeSeries(state.transmittance, 'percent'),
+        timeSeries: timeSeries(state.transmittance, 'percent', epoch),
       },
     },
   };
@@ -958,7 +1004,7 @@ export const sds011 = (
       main: getter(ValueType.NUMBER, state.pm025, 'micrograms/m3'),
       metricStaleness: metricStaleness(context, state.pm025, epoch),
       state: state.pm025,
-      timeSeries: timeSeries(state.pm025, 'micrograms/m3'),
+      timeSeries: timeSeries(state.pm025, 'micrograms/m3', epoch),
     },
     pm10: {
       $: 'pm10' as const,
@@ -966,7 +1012,7 @@ export const sds011 = (
       main: getter(ValueType.NUMBER, state.pm10, 'micrograms/m3'),
       metricStaleness: metricStaleness(context, state.pm10, epoch),
       state: state.pm10,
-      timeSeries: timeSeries(state.pm10, 'micrograms/m3'),
+      timeSeries: timeSeries(state.pm10, 'micrograms/m3', epoch),
     },
   };
 };
@@ -995,25 +1041,25 @@ export const sgp30 = (
       level: Level.PROPERTY as const,
       main: getter(ValueType.NUMBER, state.tvoc, 'ppb'),
       state: state.tvoc,
-      timeSeries: timeSeries(state.tvoc, 'ppb'),
+      timeSeries: timeSeries(state.tvoc, 'ppb', epoch),
       // eslint-disable-next-line sort-keys
       eco2: {
         main: getter(ValueType.NUMBER, state.eco2, 'ppm'),
         metricStaleness: metricStaleness(context, state.eco2, epoch),
         state: state.eco2,
-        timeSeries: timeSeries(state.eco2, 'ppm'),
+        timeSeries: timeSeries(state.eco2, 'ppm', epoch),
       },
       ethanol: {
         main: getter(ValueType.NUMBER, state.ethanol, 'ppm'),
         metricStaleness: metricStaleness(context, state.ethanol, epoch),
         state: state.ethanol,
-        timeSeries: timeSeries(state.ethanol, 'ppm'),
+        timeSeries: timeSeries(state.ethanol, 'ppm', epoch),
       },
       h2: {
         main: getter(ValueType.NUMBER, state.h2, 'ppm'),
         metricStaleness: metricStaleness(context, state.h2, epoch),
         state: state.h2,
-        timeSeries: timeSeries(state.h2, 'ppm'),
+        timeSeries: timeSeries(state.h2, 'ppm', epoch),
       },
       metricStaleness: metricStaleness(context, state.tvoc, epoch),
     },
@@ -1040,7 +1086,7 @@ export const tsl2561 = (
       main: getter(ValueType.NUMBER, state, 'lux'),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
-      timeSeries: timeSeries(state, 'lux'),
+      timeSeries: timeSeries(state, 'lux', epoch),
     },
   };
 };
@@ -1065,7 +1111,7 @@ export const veml6070 = (
       main: getter(ValueType.NUMBER, state),
       metricStaleness: metricStaleness(context, state, epoch),
       state,
-      timeSeries: timeSeries(state, undefined),
+      timeSeries: timeSeries(state, undefined, epoch),
     },
   };
 };

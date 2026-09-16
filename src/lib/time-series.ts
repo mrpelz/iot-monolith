@@ -122,9 +122,12 @@ export class RollingMedian extends RollingProduct<number, number> {
 }
 
 export type LinearRegressionResult = {
+  correlation: number;
   intercept: number;
   prediction: Map<Date, number>;
+  rSquared: number;
   slope: number;
+  slopeAngle: number;
 };
 
 export class RollingLinearRegression extends RollingProduct<
@@ -133,12 +136,15 @@ export class RollingLinearRegression extends RollingProduct<
 > {
   private static _fn(predict: number, step: number) {
     return (input: Map<Date, number>): LinearRegressionResult | undefined => {
-      if (input.size < 2) return undefined;
+      const n = input.size;
+
+      if (n < 2) return undefined;
 
       let sumX = 0;
       let sumY = 0;
       let sumXY = 0;
-      let sumXX = 0;
+      let sumX2 = 0;
+      let sumY2 = 0;
 
       for (const [date, y] of input) {
         const x = date.getTime();
@@ -146,14 +152,31 @@ export class RollingLinearRegression extends RollingProduct<
         sumX += x;
         sumY += y;
         sumXY += x * y;
-        sumXX += x * x;
+        sumX2 += x * x;
+        sumY2 += y * y;
       }
 
-      const denominator = input.size * sumXX - sumX * sumX;
+      const meanX = sumX / n;
+      const meanY = sumY / n;
+
+      const numerator = n * sumXY - sumX * sumY;
+      const denominator = n * sumX2 - sumX * sumX;
       if (!denominator) return undefined;
 
-      const slope = (input.size * sumXY - sumX * sumY) / denominator;
-      const intercept = (sumY - slope * sumX) / input.size;
+      const slope = numerator / denominator;
+      const intercept = meanY - slope * meanX;
+
+      const correlationNumerator = numerator;
+      const correlationDenominator = Math.sqrt(
+        (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY),
+      );
+
+      const correlation =
+        correlationDenominator === 0
+          ? 0
+          : correlationNumerator / correlationDenominator;
+
+      const rSquared = correlation * correlation;
 
       const now = Date.now();
       const prediction = new Map<Date, number>();
@@ -168,9 +191,12 @@ export class RollingLinearRegression extends RollingProduct<
       }
 
       return {
+        correlation,
         intercept,
         prediction,
+        rSquared,
         slope,
+        slopeAngle: Math.atan(slope) * (180 / Math.PI),
       };
     };
   }

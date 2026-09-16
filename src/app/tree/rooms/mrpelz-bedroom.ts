@@ -74,6 +74,8 @@ export const devices = {
   roomSensor: roomSensor(
     'mrpelzbedroom-roomsensor.lan.wurstsalat.cloud',
     context,
+    undefined,
+    true,
   ),
   standingLamp: obiPlug(
     'lighting' as const,

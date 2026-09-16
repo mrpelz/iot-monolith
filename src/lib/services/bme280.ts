@@ -10,6 +10,8 @@ const response = new MappedStruct({
   pressure: new FloatLE(),
 });
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export type Bme280Response = TStruct<typeof response>;
 
 export class Bme280 extends Service<Bme280Response, void> {
