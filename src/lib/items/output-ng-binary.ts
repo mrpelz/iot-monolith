@@ -74,6 +74,7 @@ export class OutputBinary {
     });
     this.setState = new BooleanProxyState(
       this._setState,
+      // eslint-disable-next-line unicorn/prefer-logical-operator-over-ternary
       (value) => (value === null ? false : value),
       (value) => value,
     );

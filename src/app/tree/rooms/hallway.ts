@@ -85,13 +85,10 @@ export const properties = {
         if (error0) return ExternalStateSettableScheduled.doNotSet;
 
         const [error1, isOn] = await safeAsync(response.json());
-        if (error1) return ExternalStateSettableScheduled.doNotSet;
-
-        return isOn === 1;
+        return error1 ? ExternalStateSettableScheduled.doNotSet : isOn === 1;
       },
       async (value, actualValue) => {
-        if (!context.connect) return;
-        if (value === actualValue) return;
+        if (!context.connect || value === actualValue) return;
 
         await safeAsync(
           fetch(new URL(value ? '/cgi/on' : '/cgi/off', KIOSK_BASE_URL), {

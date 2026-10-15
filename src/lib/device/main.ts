@@ -125,8 +125,7 @@ export class Event<T = void> extends Property {
   }
 
   protected decode(input: Buffer): T | null {
-    if (input.length === 0) return null;
-    return input as unknown as T;
+    return input.length === 0 ? null : (input as unknown as T);
   }
 
   /**
@@ -293,8 +292,7 @@ export class Device<T extends Transport = Transport> {
   }
 
   private async _sendKeepAlive() {
-    if (!this._transport.isConnected.value) return;
-    if (!this._keepalive) return;
+    if (!this._transport.isConnected.value || !this._keepalive) return;
 
     const [error] = await safeAsync(
       this._keepalive.request(undefined, undefined, false, true),

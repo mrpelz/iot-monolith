@@ -640,6 +640,7 @@ export const scene = <T extends string>(
   context: Context,
   members: readonly SceneMember<unknown>[],
   topic: T,
+  persist = false,
 ) => {
   const $ = 'scene' as const;
 
@@ -651,8 +652,9 @@ export const scene = <T extends string>(
         (on) => {
           const target = on ? onValue : offValue;
 
-          if (observable.value === target) return ProxyObservable.doNotSet;
-          return target;
+          return observable.value === target
+            ? ProxyObservable.doNotSet
+            : target;
         },
       ),
   );
@@ -666,8 +668,18 @@ export const scene = <T extends string>(
   offTimer.state.observe(() => set.set(false, offTimer.state));
   set.observe(() => offTimer.state.disable());
 
+  const $init: InitFunction = (self, introspection) => {
+    if (!persist) return;
+
+    const { mainReference } = introspection.getObject(self) ?? {};
+    if (!mainReference) return;
+
+    context.persistence.observe(mainReference.pathString, set);
+  };
+
   return {
     $,
+    $init,
     flip: trigger(ValueType.NULL, new NullState(() => set.flip())),
     lastChange: lastChange(context, set),
     lastSeen: lastSeen(context, set),

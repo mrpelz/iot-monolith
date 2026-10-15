@@ -164,10 +164,7 @@ export const scheduledRamp = (
         ValueType.NUMBER,
         new ReadOnlyProxyObservable<Date | null, number>(
           schedule.nextExecution,
-          (date) => {
-            if (!date) return 0;
-            return date.getTime() + epoch;
-          },
+          (date) => (date ? date.getTime() + epoch : 0),
         ),
         'date',
       ),

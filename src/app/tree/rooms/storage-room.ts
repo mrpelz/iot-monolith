@@ -149,6 +149,7 @@ export const scenes = {
     context,
     [new SceneMember(dryerNotificationEnable, true, false)],
     'automation',
+    true,
   ),
   washerDryerNotification: scene(
     context,
@@ -159,6 +160,7 @@ export const scenes = {
     context,
     [new SceneMember(washerNotificationEnable, true, false)],
     'automation',
+    true,
   ),
 };
 

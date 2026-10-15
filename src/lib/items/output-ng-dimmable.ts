@@ -25,10 +25,7 @@ import {
 
 export const coerceActualBrightnessToOn = (
   value: number | null,
-): boolean | null => {
-  if (value === null) return null;
-  return Boolean(value);
-};
+): boolean | null => (value === null ? null : Boolean(value));
 
 export const coerceSetOnToBrightness = (value: boolean): number =>
   value ? 1 : 0;

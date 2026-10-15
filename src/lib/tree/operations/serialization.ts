@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-combined-guards */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   EmptyObject,
@@ -291,6 +292,7 @@ export class Serialization<T extends object> {
       return this._serializeObject(property);
     }
 
+    // eslint-disable-next-line unicorn/prefer-ternary
     if (!invalidValueTypes.includes(typeof property)) {
       return property;
     }

@@ -42,8 +42,7 @@ export const ev1527WindowSensor = (
   const persistedOpen = new Observable<boolean | null>(
     null,
     (value, _changed, origin) => {
-      if (value === null) return;
-      if (isOpen_.value !== null) return;
+      if (value === null || isOpen_.value !== null) return;
 
       isOpen_.set(value, origin);
     },

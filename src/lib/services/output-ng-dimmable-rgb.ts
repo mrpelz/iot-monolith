@@ -109,9 +109,11 @@ export type RGB = {
 };
 
 export const isRGB = (value: unknown): value is RGB => {
-  if (!isPlainObject(value)) return false;
-  if (!('r' in value) || !('g' in value) || !('b' in value)) return false;
   if (
+    !isPlainObject(value) ||
+    !('r' in value) ||
+    !('g' in value) ||
+    !('b' in value) ||
     typeof value.r !== 'number' ||
     typeof value.g !== 'number' ||
     typeof value.b !== 'number'

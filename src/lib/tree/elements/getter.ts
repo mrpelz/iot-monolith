@@ -28,8 +28,7 @@ export const getter = <
 export type Getter = ReturnType<typeof getter>;
 
 export const isGetter = (input: unknown): input is Getter => {
-  if (!isObject(input)) return false;
-  if (!isLocalMatch({ $ }, input)) return false;
+  if (!isObject(input) || !isLocalMatch({ $ }, input)) return false;
 
   return true;
 };

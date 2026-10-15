@@ -45,8 +45,7 @@ export type Setter =
   ReturnType<typeof setter> | ReturnType<typeof setterNullable>;
 
 export const isSetter = (input: unknown): input is Setter => {
-  if (!isObject(input)) return false;
-  if (!isLocalMatch({ $ }, input)) return false;
+  if (!isObject(input) || !isLocalMatch({ $ }, input)) return false;
 
   return true;
 };

@@ -53,10 +53,14 @@ export class TCPClient extends Duplex {
   }
 
   private async _connect(): Promise<void> {
-    if (!this._shouldBeConnected) return;
-    if (this._isConnected.value) return;
-
-    if (this._isConnecting || this._isDisconnecting) return;
+    if (
+      !this._shouldBeConnected ||
+      this._isConnected.value ||
+      this._isConnecting ||
+      this._isDisconnecting
+    ) {
+      return;
+    }
     this._isConnecting = true;
 
     const { promise, resolve } = Promise.withResolvers<void>();
@@ -97,20 +101,18 @@ export class TCPClient extends Duplex {
   }
 
   private _disconnect(): void {
-    if (!this._isConnected.value) return;
-
-    if (this._isDisconnecting) return;
+    if (!this._isConnected.value || this._isDisconnecting) return;
     this._isDisconnecting = true;
 
     this._cleanupSocket();
   }
 
   private _disconnectIfSilent() {
-    if (!this._reconnectAfterInteractionSilence) return;
-    if (!this._lastInteraction.value) return;
     if (
+      !this._reconnectAfterInteractionSilence ||
+      !this._lastInteraction.value ||
       Date.now() - this._lastInteraction.value <
-      this._reconnectAfterInteractionSilence
+        this._reconnectAfterInteractionSilence
     ) {
       return;
     }

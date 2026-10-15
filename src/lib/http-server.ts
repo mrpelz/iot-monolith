@@ -26,7 +26,7 @@ export type Route = {
 };
 
 export class HttpServer {
-  static badRequest(response: ServerResponse, body?: string): void {
+  static badRequest(response: ServerResponse, body = ''): void {
     response.writeHead(400, 'Bad request');
 
     response.end(
@@ -34,7 +34,7 @@ export class HttpServer {
         400 Bad request
         The request could not be understood by the server due to malformed syntax.
 
-        ${body || ''}
+        ${body}
       `,
     );
   }
@@ -43,7 +43,7 @@ export class HttpServer {
     allowedMethod: string | string[],
     response: ServerResponse,
     { method }: IncomingMessage,
-    body?: string,
+    body = '',
   ): boolean {
     const allowedMethods = [allowedMethod].flat();
 
@@ -58,7 +58,7 @@ export class HttpServer {
           This resource is only available via these methods:
           ${allowedMethods.join(', ')}
 
-          ${body || ''}
+          ${body}
         `,
       );
 
@@ -68,19 +68,19 @@ export class HttpServer {
     return false;
   }
 
-  static internalServerError(response: ServerResponse, body?: string): void {
+  static internalServerError(response: ServerResponse, body = ''): void {
     response.writeHead(500, 'Internal server error');
 
     response.end(
       stripIndents`
         500 Internal server error
 
-        ${body || ''}
+        ${body}
       `,
     );
   }
 
-  static notFound(response: ServerResponse, body?: string): void {
+  static notFound(response: ServerResponse, body = ''): void {
     response.writeHead(404, 'Not found');
 
     response.end(
@@ -88,7 +88,7 @@ export class HttpServer {
         404 Not found
         The resource could not be found.
 
-        ${body || ''}
+        ${body}
       `,
     );
   }

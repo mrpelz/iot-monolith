@@ -12,8 +12,9 @@ export class Cache<T> {
   hit(): boolean {
     const now = Date.now();
 
-    if (this.time === null) return false;
-    if (now > this.time.getTime() + this.timeout) return false;
+    if (this.time === null || now > this.time.getTime() + this.timeout) {
+      return false;
+    }
 
     return true;
   }
@@ -113,6 +114,7 @@ export class CachePromise<T> {
 
   hit(): boolean {
     if (this.requestTime === null) return false;
+    // eslint-disable-next-line unicorn/prefer-ternary
     if (!this._fulfilled) return true;
 
     return Boolean(this._timer);

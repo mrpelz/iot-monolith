@@ -110,8 +110,7 @@ export const properties = {
       new ExternalStateSettable(
         false,
         async (value, actualValue) => {
-          if (!avrSocket.isConnected.value) return;
-          if (value === actualValue) return;
+          if (!avrSocket.isConnected.value || value === actualValue) return;
 
           avrSocket.write(value ? 'ZMON\r' : 'ZMOFF\r', 'ascii');
         },
@@ -140,9 +139,7 @@ export const properties = {
         const [error1, isMasked] = await safeAsync(
           response.json() as Promise<boolean>,
         );
-        if (error1) return ExternalStateScheduled.doNotSet;
-
-        return isMasked;
+        return error1 ? ExternalStateScheduled.doNotSet : isMasked;
       }, every5Seconds),
       'masked',
       'media',
@@ -165,13 +162,10 @@ export const properties = {
           const [error1, isOn] = await safeAsync(
             response.json() as Promise<boolean>,
           );
-          if (error1) return ExternalStateSettableScheduled.doNotSet;
-
-          return isOn;
+          return error1 ? ExternalStateSettableScheduled.doNotSet : isOn;
         },
         async (value, actualValue) => {
-          if (!context.connect) return;
-          if (value === actualValue) return;
+          if (!context.connect || value === actualValue) return;
 
           await safeAsync(
             fetch(new URL(value ? '/on' : '/off', INFOSCREEN_BASE_URL), {
@@ -216,8 +210,7 @@ export const properties = {
           }
         },
         async (value, actualValue) => {
-          if (!context.connect) return;
-          if (value === actualValue) return;
+          if (!context.connect || value === actualValue) return;
 
           pjlinkProjector?.power(value ? 'on' : 'off');
         },
@@ -231,12 +224,10 @@ export const properties = {
       context,
       ValueType.STRING,
       new ExternalStateScheduled<'on' | 'off' | 'cooling' | 'warm-up'>(
-        async () => {
-          if (!context.connect) return ExternalStateScheduled.doNotSet;
-          if (!pjlinkProjector) return ExternalStateScheduled.doNotSet;
-
-          return pjlinkProjector.getPower();
-        },
+        async () =>
+          !context.connect || !pjlinkProjector
+            ? ExternalStateScheduled.doNotSet
+            : pjlinkProjector.getPower(),
         every5Seconds,
       ),
       'state',
@@ -384,9 +375,23 @@ const $init: InitFunction = async (room, introspection) => {
     kitchenAdjecentsLightsOffKitchenChillaxOn(`${p(couchButtonTopLeft)}`),
   );
 
-  couchButtonTopRight.state.observe(() =>
-    kitchenAdjecentsLightsOffKitchenBrightOn(`${p(couchButtonTopRight)}`),
-  );
+  couchButtonTopRight.state.observe(() => {
+    if (getMain(kitchenAdjacentLights)) {
+      setMain(kitchenAdjacentLights, false, () =>
+        l(
+          `${p(couchButtonTopRight)} turned off ${p(kitchenAdjacentLights)} because ${p(kitchenAdjacentLights)} was on`,
+        ),
+      );
+
+      return;
+    }
+
+    setMain(ceilingLight, true, () =>
+      l(
+        `${p(couchButtonTopRight)} turned on ${p(ceilingLight)} because ${p(kitchenAdjacentLights)} was off`,
+      ),
+    );
+  });
 
   couchButtonBottomLeft.state.observe(() =>
     setMain(media, true, () =>

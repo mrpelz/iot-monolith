@@ -21,8 +21,7 @@ export const trigger = <N extends string | undefined, V extends ValueType>(
 export type Trigger = ReturnType<typeof trigger>;
 
 export const isTrigger = (input: unknown): input is Trigger => {
-  if (!isObject(input)) return false;
-  if (!isLocalMatch({ $ }, input)) return false;
+  if (!isObject(input) || !isLocalMatch({ $ }, input)) return false;
 
   return true;
 };

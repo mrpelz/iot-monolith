@@ -46,9 +46,7 @@ export const getObjectFromPath = <S extends object>(
   const property = source[key as keyof S];
   if (!property || !isPlainObject(property)) return undefined;
 
-  if (rest.length === 0) return property;
-
-  return getObjectFromPath(property, rest);
+  return rest.length === 0 ? property : getObjectFromPath(property, rest);
 };
 
 export class Paths {
@@ -104,8 +102,6 @@ export class Paths {
 
   getParent(object: object): PathRecord | undefined {
     const path = this.getByObject(object);
-    if (!path) return undefined;
-
-    return this.getByPath(path.path.slice(0, -1));
+    return path ? this.getByPath(path.path.slice(0, -1)) : undefined;
   }
 }

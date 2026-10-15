@@ -125,16 +125,14 @@ export const overriddenLed = (
   const setBrightness = new Observable(
     brightness.setState.value,
     (value, _changed, origin) => {
-      if (value === brightness.setState.value) return;
-      if (!isOverridden.value) return;
+      if (value === brightness.setState.value || !isOverridden.value) return;
 
       brightness.setState.set(value, origin);
     },
     true,
   );
   brightness.setState.observe((value, _observer, _changed, origin) => {
-    if (value === setBrightness.value) return;
-    if (!isOverridden.value) return;
+    if (value === setBrightness.value || !isOverridden.value) return;
 
     setBrightness.set(value, origin);
   }, true);
@@ -150,8 +148,7 @@ export const overriddenLed = (
   });
 
   every5Seconds.addTask(() => {
-    if (isOverridden.value) return;
-    if (setBrightness.value === 0) return;
+    if (isOverridden.value || setBrightness.value === 0) return;
 
     setBrightness.set(0);
     actualBrightness_.set(0);
