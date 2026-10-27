@@ -38,8 +38,7 @@ const DRYER_MESSAGE_END = Buffer.from([
 ]);
 
 const WIIM_OFFICE_BASE_URL = 'https://wiim-office.lan.wurstsalat.cloud';
-const WASHER_DRYER_NOTIFICATION_URL =
-  'http://seaweedfs.lan.wurstsalat.cloud:8333/zeyel-public/washer_done.mp3';
+const WASHER_DRYER_NOTIFICATION_URL = 'https://cdn.zeyel.net/washer_done.mp3';
 const WASHER_DRYER_NOTIFICATION_LENGTH_MS = 35000;
 
 const wiimOfficeVolumeUrl = new URL(
