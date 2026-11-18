@@ -10,18 +10,30 @@ import { Observable, Observer, ReadOnlyObservable } from '@mrpelz/observable';
 import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 import type { TCPClient } from '../tcp-client.js';
-import { ApplianceBus, type Frame, FrameType } from './appliance-bus.js';
+import {
+  ApplianceBus,
+  type Frame,
+  FrameType,
+  Resolved,
+  resolveLabel,
+} from './appliance-bus.js';
 
 // ---------------------------------------------------------------- enums
 
-export enum BusNode {
+export enum WasherBusNode {
   CONTROLLER = 0x2,
   PANEL = 0x3,
   /** Destination of the panel's empty "nothing to send" reply. */
   NONE = 0xf,
 }
 
-export enum MessageKind {
+export const WASHER_BUS_NODE_LABELS = {
+  [WasherBusNode.CONTROLLER]: 'Controller',
+  [WasherBusNode.PANEL]: 'Panel',
+  [WasherBusNode.NONE]: 'None',
+} as const satisfies Record<WasherBusNode, string>;
+
+export enum WasherMessageKind {
   ACK = 'ACK',
   ACTIVITY = 'ACTIVITY',
   ESTIMATE = 'ESTIMATE',
@@ -34,13 +46,18 @@ export enum MessageKind {
   UNKNOWN = 'UNKNOWN',
 }
 
-export enum AckStatus {
+export enum WasherAckStatus {
   OK = 0x00,
   /** Tentative: seen only for commands 0x13 and 0x1b. */
   REJECTED = 0x05,
 }
 
-export enum Program {
+export const WASHER_ACK_STATUS_LABELS = {
+  [WasherAckStatus.OK]: 'OK',
+  [WasherAckStatus.REJECTED]: 'Rejected',
+} as const satisfies Record<WasherAckStatus, string>;
+
+export enum WasherProgram {
   ECO_COTTON = 0x00,
   COTTON = 0x01,
   MIXED = 0x02,
@@ -62,6 +79,28 @@ export enum Program {
   MINI_LOAD = 0x12,
 }
 
+export const WASHER_PROGRAM_LABELS = {
+  [WasherProgram.ECO_COTTON]: 'Eco Cotton',
+  [WasherProgram.COTTON]: 'Cotton',
+  [WasherProgram.MIXED]: 'Mixed',
+  [WasherProgram.SYNTHETICS]: 'Synthetics',
+  [WasherProgram.DELICATES]: 'Delicates',
+  [WasherProgram.WOOL]: 'Wool',
+  [WasherProgram.COLORS]: 'Colors',
+  [WasherProgram.RAPID_30]: 'Rapid 30′',
+  [WasherProgram.RINSE_AND_SPIN]: 'Rinse & Spin',
+  [WasherProgram.SPIN]: 'Spin',
+  [WasherProgram.DRAIN]: 'Drain',
+  [WasherProgram.SHIRTS]: 'Shirts',
+  [WasherProgram.DUVET]: 'Duvet',
+  [WasherProgram.BED_LINEN]: 'Bed Linen',
+  [WasherProgram.CASHMERE]: 'Cashmere',
+  [WasherProgram.SPORT]: 'Sport',
+  [WasherProgram.JEANS]: 'Jeans',
+  [WasherProgram.BABY]: 'Baby',
+  [WasherProgram.MINI_LOAD]: 'Mini Load',
+} as const satisfies Record<WasherProgram, string>;
+
 export enum TemperatureSetting {
   /** Sent as 20 °C on the bus. */
   C20 = 0,
@@ -71,6 +110,15 @@ export enum TemperatureSetting {
   C60 = 4,
   C95 = 5,
 }
+
+export const TEMPERATURE_SETTING_LABELS = {
+  [TemperatureSetting.C20]: 'Cold (20 °C)',
+  [TemperatureSetting.C30]: '30 °C',
+  [TemperatureSetting.C40]: '40 °C',
+  [TemperatureSetting.C50]: '50 °C',
+  [TemperatureSetting.C60]: '60 °C',
+  [TemperatureSetting.C95]: '95 °C',
+} as const satisfies Record<TemperatureSetting, string>;
 
 /** Panel labels; the rpm sent on the bus is about 96 % of these. */
 export enum SpinSetting {
@@ -82,7 +130,16 @@ export enum SpinSetting {
   RPM_1400 = 5,
 }
 
-export enum WashOption {
+export const SPIN_SETTING_LABELS = {
+  [SpinSetting.NO_SPIN]: 'No spin',
+  [SpinSetting.RPM_400]: '400 rpm',
+  [SpinSetting.RPM_800]: '800 rpm',
+  [SpinSetting.RPM_1000]: '1000 rpm',
+  [SpinSetting.RPM_1200]: '1200 rpm',
+  [SpinSetting.RPM_1400]: '1400 rpm',
+} as const satisfies Record<SpinSetting, string>;
+
+export enum WasherOption {
   BIO_STAIN_15 = 'BIO_STAIN_15',
   COLORS_15 = 'COLORS_15',
   DOSING_AID = 'DOSING_AID',
@@ -95,15 +152,22 @@ export enum WashOption {
   RINSE_HOLD = 'RINSE_HOLD',
 }
 
-export enum PanelKey {
+export enum WasherPanelKey {
   START = 0x01,
   PAUSE = 0x02,
   ABORT = 0x03,
   POWER_OFF = 0x06,
 }
 
+export const WASHER_PANEL_KEY_LABELS = {
+  [WasherPanelKey.START]: 'Start',
+  [WasherPanelKey.PAUSE]: 'Pause',
+  [WasherPanelKey.ABORT]: 'Abort',
+  [WasherPanelKey.POWER_OFF]: 'Power off',
+} as const satisfies Record<WasherPanelKey, string>;
+
 /** Which controller command carried a status record. */
-export enum StatusSource {
+export enum WasherStatusSource {
   /** Unsolicited update (0x09). */
   UPDATE = 0x09,
   /** Answer to a selection change (0x0b). */
@@ -112,7 +176,13 @@ export enum StatusSource {
   REQUEST_REPLY = 0x29,
 }
 
-export enum CycleStage {
+export const WASHER_STATUS_SOURCE_LABELS = {
+  [WasherStatusSource.UPDATE]: 'Update',
+  [WasherStatusSource.SELECTION_REPLY]: 'Selection reply',
+  [WasherStatusSource.REQUEST_REPLY]: 'Request reply',
+} as const satisfies Record<WasherStatusSource, string>;
+
+export enum WasherCycleStage {
   IDLE = 0x00,
   ABORTING = 0x01,
   PRE_PHASE = 0x03,
@@ -124,13 +194,31 @@ export enum CycleStage {
   FRESH_FINISH = 0x0e,
 }
 
-export enum RunMode {
+export const WASHER_CYCLE_STAGE_LABELS = {
+  [WasherCycleStage.IDLE]: 'Idle',
+  [WasherCycleStage.ABORTING]: 'Aborting',
+  [WasherCycleStage.PRE_PHASE]: 'Pre-phase',
+  [WasherCycleStage.MAIN_WASH]: 'Main wash',
+  [WasherCycleStage.FIRST_RINSE]: 'First rinse',
+  [WasherCycleStage.LAST_RINSE]: 'Last rinse',
+  [WasherCycleStage.FINAL_SPIN]: 'Final spin',
+  [WasherCycleStage.END]: 'End',
+  [WasherCycleStage.FRESH_FINISH]: 'Fresh Finish',
+} as const satisfies Record<WasherCycleStage, string>;
+
+export enum WasherRunMode {
   SELECTING = 0x01,
   STARTED = 0x02,
   PAUSED = 0x06,
 }
 
-export enum Activity {
+export const WASHER_RUN_MODE_LABELS = {
+  [WasherRunMode.SELECTING]: 'Selecting',
+  [WasherRunMode.STARTED]: 'Started',
+  [WasherRunMode.PAUSED]: 'Paused',
+} as const satisfies Record<WasherRunMode, string>;
+
+export enum WasherActivity {
   DRAIN = 0x01,
   /** Tentative: first 20 s after start, during load sensing. */
   START_SENSE = 0x02,
@@ -142,25 +230,34 @@ export enum Activity {
   AGITATE = 0x06,
 }
 
+export const WASHER_ACTIVITY_LABELS = {
+  [WasherActivity.DRAIN]: 'Drain',
+  [WasherActivity.START_SENSE]: 'Load sensing',
+  [WasherActivity.FILL]: 'Fill',
+  [WasherActivity.TUMBLE]: 'Tumble',
+  [WasherActivity.SPIN]: 'Spin',
+  [WasherActivity.AGITATE]: 'Agitate',
+} as const satisfies Record<WasherActivity, string>;
+
 // ---------------------------------------------------------------- messages
 
 type MessageBase = {
   frame: Frame;
 };
 
-export type AckMessage = MessageBase & {
+export type WasherAckMessage = MessageBase & {
   /** Command byte of the message being acknowledged. */
   command: number;
-  kind: MessageKind.ACK;
-  status: AckStatus;
+  kind: WasherMessageKind.ACK;
+  status: WasherAckStatus;
 };
 
-export type SelectionMessage = MessageBase & {
-  kind: MessageKind.SELECTION;
+export type WasherSelectionMessage = MessageBase & {
+  kind: WasherMessageKind.SELECTION;
   /** The three option bytes as sent, for bits not decoded yet. */
   optionBytes: Buffer;
-  options: WashOption[];
-  program: Program;
+  options: WasherOption[];
+  program: WasherProgram;
   /** True while the special-programme menu is open and not yet confirmed. */
   specialMenuOpen: boolean;
   spin: SpinSetting;
@@ -169,16 +266,16 @@ export type SelectionMessage = MessageBase & {
   temperatureCelsius: number;
 };
 
-export type KeyMessage = MessageBase & {
-  key: PanelKey;
-  kind: MessageKind.KEY;
+export type WasherKeyMessage = MessageBase & {
+  key: WasherPanelKey;
+  kind: WasherMessageKind.KEY;
 };
 
-export type StatusRequestMessage = MessageBase & {
-  kind: MessageKind.STATUS_REQUEST;
+export type WasherStatusRequestMessage = MessageBase & {
+  kind: WasherMessageKind.STATUS_REQUEST;
 };
 
-export type StatusMessage = MessageBase & {
+export type WasherStatusMessage = MessageBase & {
   /** True while the display shows "Anpassen" and the remaining time is being recalculated. */
   adjusting: boolean;
   /** Undecoded adjusting byte (0x81 and 0x82 seen). */
@@ -187,56 +284,56 @@ export type StatusMessage = MessageBase & {
   doorOpen: boolean;
   /** Undecoded flags byte. */
   flags: number;
-  kind: MessageKind.STATUS;
-  mode: RunMode;
+  kind: WasherMessageKind.STATUS;
+  mode: WasherRunMode;
   remainingMinutes: number;
-  source: StatusSource;
+  source: WasherStatusSource;
   spin: SpinSetting;
-  stage: CycleStage;
+  stage: WasherCycleStage;
   temperature: TemperatureSetting;
   temperatureCelsius: number;
   /** The four undecoded trailing bytes. */
   trailer: Buffer;
 };
 
-export type ActivityMessage = MessageBase & {
-  activity: Activity;
-  kind: MessageKind.ACTIVITY;
+export type WasherActivityMessage = MessageBase & {
+  activity: WasherActivity;
+  kind: WasherMessageKind.ACTIVITY;
   /** Step number within the programme; counts up as the cycle proceeds. */
   step: number;
 };
 
-export type MaxLoadMessage = MessageBase & {
+export type WasherMaxLoadMessage = MessageBase & {
   kilograms: number;
-  kind: MessageKind.MAX_LOAD;
+  kind: WasherMessageKind.MAX_LOAD;
 };
 
-export type EstimateMessage = MessageBase & {
+export type WasherEstimateMessage = MessageBase & {
   /** Tentative: probably Wh. */
   energy: number;
-  kind: MessageKind.ESTIMATE;
+  kind: WasherMessageKind.ESTIMATE;
   waterLitres: number;
 };
 
-export type PowerOffMessage = MessageBase & {
-  kind: MessageKind.POWER_OFF;
+export type WasherPowerOffMessage = MessageBase & {
+  kind: WasherMessageKind.POWER_OFF;
 };
 
-export type UnknownMessage = MessageBase & {
-  kind: MessageKind.UNKNOWN;
+export type WasherUnknownMessage = MessageBase & {
+  kind: WasherMessageKind.UNKNOWN;
 };
 
-export type Message =
-  | AckMessage
-  | ActivityMessage
-  | EstimateMessage
-  | KeyMessage
-  | MaxLoadMessage
-  | PowerOffMessage
-  | SelectionMessage
-  | StatusMessage
-  | StatusRequestMessage
-  | UnknownMessage;
+export type WasherMessage =
+  | WasherAckMessage
+  | WasherActivityMessage
+  | WasherEstimateMessage
+  | WasherKeyMessage
+  | WasherMaxLoadMessage
+  | WasherPowerOffMessage
+  | WasherSelectionMessage
+  | WasherStatusMessage
+  | WasherStatusRequestMessage
+  | WasherUnknownMessage;
 
 // ---------------------------------------------------------------- decoding
 
@@ -265,17 +362,17 @@ enum DisplayItem {
 const SELECTION_OPTION_BITS: readonly (readonly [
   byteIndex: number,
   mask: number,
-  option: WashOption,
+  option: WasherOption,
 ])[] = [
-  [0, 0x01, WashOption.PREWASH],
-  [0, 0x02, WashOption.BIO_STAIN_15],
-  [0, 0x04, WashOption.HEAVY_SOIL],
-  [0, 0x80, WashOption.INTENSIVE_RINSE],
-  [1, 0x04, WashOption.HOT_FINISH],
-  [1, 0x08, WashOption.RINSE_HOLD],
-  [1, 0x10, WashOption.COLORS_15],
-  [1, 0x80, WashOption.DOSING_AID],
-  [2, 0x08, WashOption.FRESH_FINISH],
+  [0, 0x01, WasherOption.PREWASH],
+  [0, 0x02, WasherOption.BIO_STAIN_15],
+  [0, 0x04, WasherOption.HEAVY_SOIL],
+  [0, 0x80, WasherOption.INTENSIVE_RINSE],
+  [1, 0x04, WasherOption.HOT_FINISH],
+  [1, 0x08, WasherOption.RINSE_HOLD],
+  [1, 0x10, WasherOption.COLORS_15],
+  [1, 0x80, WasherOption.DOSING_AID],
+  [2, 0x08, WasherOption.FRESH_FINISH],
 ];
 
 const SELECTION_MODE_MASK = 0x03;
@@ -286,7 +383,10 @@ const STATUS_FLAG_DOOR_OPEN = 0x02;
 
 const byteAt = (buffer: Buffer, index: number): number => buffer[index] ?? 0;
 
-const decodeSelection = (frame: Frame, args: Buffer): SelectionMessage => {
+const decodeSelection = (
+  frame: Frame,
+  args: Buffer,
+): WasherSelectionMessage => {
   const optionBytes = args.subarray(6, 9);
 
   const options = SELECTION_OPTION_BITS.filter(
@@ -295,12 +395,12 @@ const decodeSelection = (frame: Frame, args: Buffer): SelectionMessage => {
   ).map(([, , option]) => option);
 
   if ((byteAt(optionBytes, 2) & SELECTION_MODE_MASK) === SELECTION_MODE_RAPID) {
-    options.push(WashOption.RAPID);
+    options.push(WasherOption.RAPID);
   }
 
   return {
     frame,
-    kind: MessageKind.SELECTION,
+    kind: WasherMessageKind.SELECTION,
     optionBytes,
     options,
     program: byteAt(args, 0),
@@ -314,9 +414,9 @@ const decodeSelection = (frame: Frame, args: Buffer): SelectionMessage => {
 
 const decodeStatus = (
   frame: Frame,
-  source: StatusSource,
+  source: WasherStatusSource,
   args: Buffer,
-): StatusMessage => {
+): WasherStatusMessage => {
   const flags = byteAt(args, 2);
   const adjustingRaw = byteAt(args, 7);
 
@@ -327,7 +427,7 @@ const decodeStatus = (
     doorOpen: (flags & STATUS_FLAG_DOOR_OPEN) !== 0,
     flags,
     frame,
-    kind: MessageKind.STATUS,
+    kind: WasherMessageKind.STATUS,
     mode: byteAt(args, 1),
     remainingMinutes: args.readUInt16BE(5),
     source,
@@ -343,34 +443,34 @@ const decodePanelMessage = (
   frame: Frame,
   command: number,
   args: Buffer,
-): Message | undefined => {
+): WasherMessage | undefined => {
   switch (command) {
     case Command.SELECTION: {
       return args.length === 11 ? decodeSelection(frame, args) : undefined;
     }
     case Command.KEY_START: {
       return args.length <= 1
-        ? { frame, key: PanelKey.START, kind: MessageKind.KEY }
+        ? { frame, key: WasherPanelKey.START, kind: WasherMessageKind.KEY }
         : undefined;
     }
     case Command.KEY_PAUSE: {
       return args.length <= 1
-        ? { frame, key: PanelKey.PAUSE, kind: MessageKind.KEY }
+        ? { frame, key: WasherPanelKey.PAUSE, kind: WasherMessageKind.KEY }
         : undefined;
     }
     case Command.KEY_ABORT: {
       return args.length <= 1
-        ? { frame, key: PanelKey.ABORT, kind: MessageKind.KEY }
+        ? { frame, key: WasherPanelKey.ABORT, kind: WasherMessageKind.KEY }
         : undefined;
     }
     case Command.POWER_OFF: {
       return args.length <= 1
-        ? { frame, key: PanelKey.POWER_OFF, kind: MessageKind.KEY }
+        ? { frame, key: WasherPanelKey.POWER_OFF, kind: WasherMessageKind.KEY }
         : undefined;
     }
     case Command.STATUS: {
       return args.length === 0
-        ? { frame, kind: MessageKind.STATUS_REQUEST }
+        ? { frame, kind: WasherMessageKind.STATUS_REQUEST }
         : undefined;
     }
     default: {
@@ -383,21 +483,21 @@ const decodeControllerMessage = (
   frame: Frame,
   command: number,
   args: Buffer,
-): Message | undefined => {
+): WasherMessage | undefined => {
   switch (command) {
     case Command.STATUS: {
       return args.length === 13
-        ? decodeStatus(frame, StatusSource.UPDATE, args)
+        ? decodeStatus(frame, WasherStatusSource.UPDATE, args)
         : undefined;
     }
     case Command.SELECTION_REPLY: {
       return args.length === 13
-        ? decodeStatus(frame, StatusSource.SELECTION_REPLY, args)
+        ? decodeStatus(frame, WasherStatusSource.SELECTION_REPLY, args)
         : undefined;
     }
     case Command.STATUS_REPLY: {
       return args.length === 13
-        ? decodeStatus(frame, StatusSource.REQUEST_REPLY, args)
+        ? decodeStatus(frame, WasherStatusSource.REQUEST_REPLY, args)
         : undefined;
     }
     case Command.DISPLAY: {
@@ -405,13 +505,17 @@ const decodeControllerMessage = (
         return {
           activity: byteAt(args, 1),
           frame,
-          kind: MessageKind.ACTIVITY,
+          kind: WasherMessageKind.ACTIVITY,
           step: byteAt(args, 2),
         };
       }
 
       return args.length === 2 && args[0] === DisplayItem.MAX_LOAD
-        ? { frame, kilograms: byteAt(args, 1) / 10, kind: MessageKind.MAX_LOAD }
+        ? {
+            frame,
+            kilograms: byteAt(args, 1) / 10,
+            kind: WasherMessageKind.MAX_LOAD,
+          }
         : undefined;
     }
     case Command.ESTIMATE: {
@@ -419,14 +523,14 @@ const decodeControllerMessage = (
         ? {
             energy: args.readUInt16BE(5),
             frame,
-            kind: MessageKind.ESTIMATE,
+            kind: WasherMessageKind.ESTIMATE,
             waterLitres: byteAt(args, 8),
           }
         : undefined;
     }
     case Command.POWER_OFF: {
       return args.length === 0
-        ? { frame, kind: MessageKind.POWER_OFF }
+        ? { frame, kind: WasherMessageKind.POWER_OFF }
         : undefined;
     }
     default: {
@@ -437,9 +541,9 @@ const decodeControllerMessage = (
 
 /**
  * Interprets a data frame. Never throws; anything not understood comes back
- * as `MessageKind.UNKNOWN`.
+ * as `WasherMessageKind.UNKNOWN`.
  */
-export const decodeMessage = (frame: Frame): Message => {
+export const decodeWasherMessage = (frame: Frame): WasherMessage => {
   const { payload, source } = frame;
 
   if (
@@ -451,13 +555,13 @@ export const decodeMessage = (frame: Frame): Message => {
     return {
       command: byteAt(payload, 4),
       frame,
-      kind: MessageKind.ACK,
+      kind: WasherMessageKind.ACK,
       status: byteAt(payload, 2),
     };
   }
 
   if (payload.length < 2 || payload[0] !== SERVICE) {
-    return { frame, kind: MessageKind.UNKNOWN };
+    return { frame, kind: WasherMessageKind.UNKNOWN };
   }
 
   const command = byteAt(payload, 1);
@@ -465,10 +569,10 @@ export const decodeMessage = (frame: Frame): Message => {
 
   const decoded = (() => {
     switch (source) {
-      case BusNode.PANEL: {
+      case WasherBusNode.PANEL: {
         return decodePanelMessage(frame, command, args);
       }
-      case BusNode.CONTROLLER: {
+      case WasherBusNode.CONTROLLER: {
         return decodeControllerMessage(frame, command, args);
       }
       default: {
@@ -477,8 +581,38 @@ export const decodeMessage = (frame: Frame): Message => {
     }
   })();
 
-  return decoded ?? { frame, kind: MessageKind.UNKNOWN };
+  return decoded ?? { frame, kind: WasherMessageKind.UNKNOWN };
 };
+
+export type ResolvedWasherSelection = Resolved<
+  WasherSelectionMessage,
+  'program' | 'spin' | 'temperature'
+>;
+
+export const resolveWasherSelection = (
+  message: WasherSelectionMessage,
+): ResolvedWasherSelection => ({
+  ...message,
+  program: resolveLabel(WASHER_PROGRAM_LABELS, message.program),
+  spin: resolveLabel(SPIN_SETTING_LABELS, message.spin),
+  temperature: resolveLabel(TEMPERATURE_SETTING_LABELS, message.temperature),
+});
+
+export type ResolvedWasherStatus = Resolved<
+  WasherStatusMessage,
+  'mode' | 'source' | 'spin' | 'stage' | 'temperature'
+>;
+
+export const resolveWasherStatus = (
+  message: WasherStatusMessage,
+): ResolvedWasherStatus => ({
+  ...message,
+  mode: resolveLabel(WASHER_RUN_MODE_LABELS, message.mode),
+  source: resolveLabel(WASHER_STATUS_SOURCE_LABELS, message.source),
+  spin: resolveLabel(SPIN_SETTING_LABELS, message.spin),
+  stage: resolveLabel(WASHER_CYCLE_STAGE_LABELS, message.stage),
+  temperature: resolveLabel(TEMPERATURE_SETTING_LABELS, message.temperature),
+});
 
 // ---------------------------------------------------------------- device
 
@@ -495,7 +629,7 @@ export const decodeMessage = (frame: Frame): Message => {
  * are null states: observe them, they hold no value.
  */
 export class WashingMachine {
-  private static _update<T extends Message>(
+  private static _update<T extends WasherMessage>(
     observable: Observable<T | null>,
     message: T,
   ): void {
@@ -505,22 +639,32 @@ export class WashingMachine {
   }
 
   private readonly _activeObserver: Observer;
-  private readonly _activity = new Observable<ActivityMessage | null>(null);
-  private readonly _estimate = new Observable<EstimateMessage | null>(null);
+  private readonly _activity = new Observable<WasherActivityMessage | null>(
+    null,
+  );
+
+  private readonly _estimate = new Observable<WasherEstimateMessage | null>(
+    null,
+  );
+
   private readonly _frameObserver: Observer;
   private readonly _isDoorLocked = new Observable<boolean | null>(null);
+  private readonly _isDoorOpen = new Observable<boolean | null>(null);
   private readonly _isRunning = new Observable<boolean | null>(null);
   private readonly _isRunningExcludingFreshFinish = new Observable<
     boolean | null
   >(null);
 
-  private readonly _key = new NullState<PanelKey>();
-  private readonly _maxLoad = new Observable<MaxLoadMessage | null>(null);
-  private readonly _message = new NullState<Message>();
+  private readonly _key = new NullState<WasherPanelKey>();
+  private readonly _maxLoad = new Observable<WasherMaxLoadMessage | null>(null);
+  private readonly _message = new NullState<WasherMessage>();
   private readonly _remainingMinutes = new Observable<number | null>(null);
-  private readonly _selection = new Observable<SelectionMessage | null>(null);
-  private readonly _stage = new Observable<CycleStage | null>(null);
-  private readonly _status = new Observable<StatusMessage | null>(null);
+  private readonly _selection = new Observable<WasherSelectionMessage | null>(
+    null,
+  );
+
+  private readonly _stage = new Observable<WasherCycleStage | null>(null);
+  private readonly _status = new Observable<WasherStatusMessage | null>(null);
 
   /** What the drum is doing right now. */
   readonly activity = new ReadOnlyObservable(this._activity);
@@ -528,6 +672,7 @@ export class WashingMachine {
   /** Consumption estimate for the current selection. */
   readonly estimate = new ReadOnlyObservable(this._estimate);
   readonly isDoorLocked = new ReadOnlyObservable(this._isDoorLocked);
+  readonly isDoorOpen = new ReadOnlyObservable(this._isDoorOpen);
   /** True while the appliance is switched on and the bridge is delivering frames. */
   readonly isOn: ReadOnlyObservable<boolean>;
   /** True from the moment Start is accepted until the end stage, including pauses. */
@@ -562,72 +707,70 @@ export class WashingMachine {
     });
 
     this._status.observe((value) => {
-      if (!value) return;
+      if (!value) {
+        this._isDoorLocked.set(null, this._status);
+        this._isDoorOpen.set(null, this._status);
+        this._isRunning.set(null, this._status);
+        this._isRunningExcludingFreshFinish.set(null, this._status);
+        this._remainingMinutes.set(null, this._status);
+        this._stage.set(null, this._status);
 
-      const { doorLocked, mode, remainingMinutes, stage } = value;
+        return;
+      }
+      const { doorLocked, doorOpen, mode, remainingMinutes, stage } = value;
 
-      this._isDoorLocked.set(value ? doorLocked : null, this._status);
-
+      this._isDoorLocked.set(doorLocked, this._status);
+      this._isDoorOpen.set(doorOpen, this._status);
       this._isRunning.set(
-        value ? mode !== RunMode.SELECTING && stage !== CycleStage.END : null,
+        mode !== WasherRunMode.SELECTING && stage !== WasherCycleStage.END,
         this._status,
       );
-
       this._isRunningExcludingFreshFinish.set(
-        value
-          ? mode !== RunMode.SELECTING &&
-              stage !== CycleStage.END &&
-              stage !== CycleStage.FRESH_FINISH
-          : null,
+        mode !== WasherRunMode.SELECTING &&
+          stage !== WasherCycleStage.END &&
+          stage !== WasherCycleStage.FRESH_FINISH,
         this._status,
       );
-
-      this._remainingMinutes.set(value ? remainingMinutes : null, this._status);
-
-      this._stage.set(value ? stage : null, this._status);
+      this._remainingMinutes.set(remainingMinutes, this._status);
+      this._stage.set(stage, this._status);
     });
   }
 
   private _clear(): void {
     this._activity.set(null);
     this._estimate.set(null);
-    this._isDoorLocked.set(null);
-    this._isRunning.set(null);
-    this._isRunningExcludingFreshFinish.set(null);
     this._maxLoad.set(null);
-    this._remainingMinutes.set(null);
     this._selection.set(null);
-    this._stage.set(null);
     this._status.set(null);
   }
 
   private _handleFrame(frame: Frame): void {
     if (frame.type !== FrameType.DATA) return;
 
-    const message = decodeMessage(frame);
+    const message = decodeWasherMessage(frame);
 
     switch (message.kind) {
-      case MessageKind.SELECTION: {
+      case WasherMessageKind.SELECTION: {
         WashingMachine._update(this._selection, message);
         break;
       }
-      case MessageKind.STATUS: {
+      case WasherMessageKind.STATUS: {
         WashingMachine._update(this._status, message);
         break;
       }
-      case MessageKind.ACTIVITY: {
+      case WasherMessageKind.ACTIVITY: {
         WashingMachine._update(this._activity, message);
         break;
       }
-      case MessageKind.MAX_LOAD: {
+      case WasherMessageKind.MAX_LOAD: {
         WashingMachine._update(this._maxLoad, message);
         break;
       }
-      case MessageKind.ESTIMATE: {
+      case WasherMessageKind.ESTIMATE: {
         WashingMachine._update(this._estimate, message);
         break;
       }
-      case MessageKind.KEY: {
+      case WasherMessageKind.KEY: {
         this._key.trigger(message.key);
         break;
       }

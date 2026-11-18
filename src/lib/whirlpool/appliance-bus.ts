@@ -28,6 +28,18 @@ import { NullState, ReadOnlyNullState } from '@mrpelz/observable/state';
 
 import type { TCPClient } from '../tcp-client.js';
 
+/** A message with the given enum fields replaced by their labels. */
+export type Resolved<T, K extends keyof T> = Omit<T, K> & Record<K, string>;
+
+/**
+ * Looks a wire value up in a label map. Values the map does not know (the bus
+ * can carry ones the enums do not list yet) come back as hex, e.g. `0x11`.
+ */
+export const resolveLabel = (
+  labels: Readonly<Record<number, string>>,
+  value: number,
+): string => labels[value] ?? `0x${value.toString(16).padStart(2, '0')}`;
+
 // ---------------------------------------------------------------- frames
 
 export enum FrameType {

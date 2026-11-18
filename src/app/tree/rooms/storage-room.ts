@@ -1,10 +1,11 @@
 import { Agent, get } from 'node:https';
 
 import { epochs } from '@mrpelz/modifiable-date';
+import { ReadOnlyProxyObservable } from '@mrpelz/observable';
 import { BooleanState } from '@mrpelz/observable/state';
 
 import { makeCustomStringLogger } from '../../../lib/log.js';
-import { DelimitedStream, TCPClient } from '../../../lib/tcp-client.js';
+import { TCPClient } from '../../../lib/tcp-client.js';
 import { bareDevice } from '../../../lib/tree/devices/bare-device.js';
 import { ev1527WindowSensor } from '../../../lib/tree/devices/ev1527-window-sensor.js';
 import { shelly1WithInput } from '../../../lib/tree/devices/shelly1.js';
@@ -20,24 +21,25 @@ import {
 } from '../../../lib/tree/properties/actuators.js';
 import {
   door as door_,
-  externalState,
   lastChange,
 } from '../../../lib/tree/properties/sensors.js';
 import {
-  CycleStage,
+  Dryer,
+  resolveDryerSelection,
+  resolveDryerStatus,
+} from '../../../lib/whirlpool/dryer.js';
+import {
+  resolveWasherSelection,
+  resolveWasherStatus,
+  WasherCycleStage,
   WashingMachine,
-} from '../../../lib/whirlpool/washing-machine.js';
+} from '../../../lib/whirlpool/washer.js';
 import { context } from '../../context.js';
 import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 import { automatedInputLogic } from '../../util.js';
 
 const WASHER_DRYER_DEBUG_CONNECT = false;
-const WASHER_DRYER_MESSAGE_SEPARATOR = Buffer.from([0x00, 0x09]);
-const DRYER_MESSAGE_START = Buffer.from([0xbb, 0xb6, 0x11, 0x43]);
-const DRYER_MESSAGE_END = Buffer.from([
-  0x67, 0x5d, 0x7f, 0x6f, 0xa5, 0xe9, 0xd9, 0x6d, 0x00,
-]);
 
 const WIIM_OFFICE_BASE_URL = 'https://wiim-office.lan.wurstsalat.cloud';
 const WASHER_DRYER_NOTIFICATION_URL = 'https://cdn.zeyel.net/washer_done.mp3';
@@ -69,12 +71,33 @@ const washerSocket = new TCPClient(
   epochs.minute * 5,
 );
 const washerState = new WashingMachine(washerSocket);
+const washerStateSelectionReadable = new ReadOnlyProxyObservable(
+  washerState.selection,
+  (message) => (message ? resolveWasherSelection(message) : null),
+);
+const washerStateStatusReadable = new ReadOnlyProxyObservable(
+  washerState.status,
+  (message) => (message ? resolveWasherStatus(message) : null),
+);
+const washerStateStageReadable = new ReadOnlyProxyObservable(
+  washerState.stage,
+  (value) => (value === null ? null : WasherCycleStage[value]),
+);
 
 const dryerSocket = new TCPClient(
   'storageroom-washerdryerbridge.lan.wurstsalat.cloud',
   1337,
   undefined,
   epochs.minute * 5,
+);
+const dryerState = new Dryer(dryerSocket);
+const dryerStateSelectionReadable = new ReadOnlyProxyObservable(
+  dryerState.selection,
+  (message) => (message ? resolveDryerSelection(message) : null),
+);
+const dryerStateStatusReadable = new ReadOnlyProxyObservable(
+  dryerState.status,
+  (message) => (message ? resolveDryerStatus(message) : null),
 );
 
 const washerDryerNotification = new BooleanState(false);
@@ -107,16 +130,36 @@ export const properties = {
   door: door_(context, devices.doorSensor, undefined),
   dryer: {
     $: 'dryer' as const,
-    isRunning: externalState(
-      context,
+    isAntiCreaseTumbling: getter(
       ValueType.BOOLEAN,
-      'isRunning',
-      'appliance',
+      dryerState.isAntiCreaseTumbling,
+    ),
+    isBottomFilterNeedsCleaning: getter(
+      ValueType.BOOLEAN,
+      dryerState.isBottomFilterNeedsCleaning,
+    ),
+    isBottomFilterPresent: getter(
+      ValueType.BOOLEAN,
+      dryerState.isBottomFilterPresent,
+    ),
+    isDoorOpen: getter(ValueType.BOOLEAN, dryerState.isDoorOpen),
+    isOn: getter(ValueType.BOOLEAN, dryerState.isOn),
+    isRunning: getter(ValueType.BOOLEAN, dryerState.isRunning),
+    isRunningExcludingFreshFinish: getter(
+      ValueType.BOOLEAN,
+      dryerState.isRunningExcludingFreshFinish,
     ),
     isSocketConnected: {
       lastChange: lastChange(context, dryerSocket.isConnected),
       main: getter(ValueType.BOOLEAN, dryerSocket.isConnected),
     },
+    mode: getter(ValueType.NUMBER, dryerState.mode),
+    phase: getter(ValueType.NUMBER, dryerState.phase),
+    remainingMinutes: getter(ValueType.NUMBER, dryerState.remainingMinutes),
+    selection: getter(ValueType.RAW, dryerState.selection),
+    selectionReadable: getter(ValueType.RAW, dryerStateSelectionReadable),
+    status: getter(ValueType.RAW, dryerState.status),
+    statusReadable: getter(ValueType.RAW, dryerStateStatusReadable),
   },
   motion: devices.ceilingLight.input,
   washer: {
@@ -124,6 +167,7 @@ export const properties = {
     activity: getter(ValueType.RAW, washerState.activity),
     estimate: getter(ValueType.RAW, washerState.estimate),
     isDoorLocked: getter(ValueType.BOOLEAN, washerState.isDoorLocked),
+    isDoorOpen: getter(ValueType.BOOLEAN, washerState.isDoorOpen),
     isOn: getter(ValueType.BOOLEAN, washerState.isOn),
     isRunning: getter(ValueType.BOOLEAN, washerState.isRunning),
     isRunningExcludingFreshFinish: getter(
@@ -137,8 +181,11 @@ export const properties = {
     maxLoad: getter(ValueType.RAW, washerState.maxLoad),
     remainingMinutes: getter(ValueType.NUMBER, washerState.remainingMinutes),
     selection: getter(ValueType.RAW, washerState.selection),
+    selectionReadable: getter(ValueType.RAW, washerStateSelectionReadable),
     stage: getter(ValueType.NUMBER, washerState.stage),
+    stageReadable: getter(ValueType.STRING, washerStateStageReadable),
     status: getter(ValueType.RAW, washerState.status),
+    statusReadable: getter(ValueType.RAW, washerStateStatusReadable),
   },
 };
 
@@ -177,7 +224,7 @@ export const scenes = {
 
 const $init: InitFunction = (room, introspection) => {
   const { washerDryerBridge } = devices;
-  const { ceilingLight, door, dryer, motion } = properties;
+  const { ceilingLight, door, motion } = properties;
 
   const p = makePathStringRetriever(introspection);
   const l = makeCustomStringLogger(
@@ -208,6 +255,9 @@ const $init: InitFunction = (room, introspection) => {
   washerState.isDoorLocked.observe((value) => {
     l(`washerState isDoorLocked: ${value}`);
   });
+  washerState.isDoorOpen.observe((value) => {
+    l(`washerState isDoorOpen: ${value}`);
+  });
   washerState.isOn.observe((value) => {
     l(`washerState isOn: ${value}`);
   });
@@ -220,23 +270,35 @@ const $init: InitFunction = (room, introspection) => {
   washerState.remainingMinutes.observe((value) => {
     l(`washerState remainingMinutes: ${value}`);
   });
-  washerState.stage.observe((value) => {
-    l(`washerState stage: ${value === null ? null : CycleStage[value]}`);
+  washerStateStageReadable.observe((value) => {
+    l(`washerState stage: ${value}`);
   });
 
   dryerSocket.isConnected.observe((online) => {
     l(`dryerSocket ${online ? '' : 'dis'}connected`);
   });
 
-  dryerSocket
-    .pipe(new DelimitedStream(WASHER_DRYER_MESSAGE_SEPARATOR))
-    .on('data', (data: Buffer) => {
-      if (data.equals(DRYER_MESSAGE_START)) {
-        dryer.isRunning.state.inject(true);
-      } else if (data.equals(DRYER_MESSAGE_END)) {
-        dryer.isRunning.state.inject(false);
-      }
-    });
+  dryerState.isBottomFilterNeedsCleaning.observe((value) => {
+    l(`dryerState isBottomFilterNeedsCleaning: ${value}`);
+  });
+  dryerState.isBottomFilterPresent.observe((value) => {
+    l(`dryerState isBottomFilterPresent: ${value}`);
+  });
+  dryerState.isDoorOpen.observe((value) => {
+    l(`dryerState isDoorOpen: ${value}`);
+  });
+  dryerState.isOn.observe((value) => {
+    l(`dryerState isOn: ${value}`);
+  });
+  dryerState.isRunning.observe((value) => {
+    l(`dryerState isRunning: ${value}`);
+  });
+  dryerState.isRunningExcludingFreshFinish.observe((value) => {
+    l(`dryerState isRunningExcludingFreshFinish: ${value}`);
+  });
+  dryerState.remainingMinutes.observe((value) => {
+    l(`dryerState remainingMinutes: ${value}`);
+  });
 
   dryerNotificationEnable.observe((value, _observer, _changed, origin) => {
     if (value) return;
@@ -270,7 +332,7 @@ const $init: InitFunction = (room, introspection) => {
     if (!washerNotificationEnable.value) return;
 
     const hasEnded =
-      value === CycleStage.END || value === CycleStage.FRESH_FINISH;
+      value === WasherCycleStage.END || value === WasherCycleStage.FRESH_FINISH;
 
     // do not set notification when ceiling light is on and machine transitions to stopped
     if (ceilingLight.main.setState.value && hasEnded) return;
@@ -282,22 +344,24 @@ const $init: InitFunction = (room, introspection) => {
     washerDryerNotification.set(hasEnded, origin);
   });
 
-  dryer.isRunning.main.state.observe((value, _observer, _changed, origin) => {
-    // do not set notification when running state is uncertain
-    if (value === null) return;
+  dryerState.isRunningExcludingFreshFinish.observe(
+    (value, _observer, _changed, origin) => {
+      // do not set notification when running state is uncertain
+      if (value === null) return;
 
-    // do not set notification when automation is disabled
-    if (!dryerNotificationEnable.value) return;
+      // do not set notification when automation is disabled
+      if (!dryerNotificationEnable.value) return;
 
-    // do not set notification when ceiling light is on and machine transitions to stopped
-    if (ceilingLight.main.setState.value && !value) return;
+      // do not set notification when ceiling light is on and machine transitions to stopped
+      if (ceilingLight.main.setState.value && !value) return;
 
-    // do not run if night
-    const now = new Date();
-    if (now.getHours() > 23 || now.getHours() < 6) return;
+      // do not run if night
+      const now = new Date();
+      if (now.getHours() > 23 || now.getHours() < 6) return;
 
-    washerDryerNotification.set(!value, origin);
-  });
+      washerDryerNotification.set(!value, origin);
+    },
+  );
 
   let notificationPlayTimeout: NodeJS.Timeout | undefined;
 
