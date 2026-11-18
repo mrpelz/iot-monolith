@@ -404,20 +404,20 @@ export const attachMetrics = async (
     const labels = Metrics.hierarchyLabels(introspection, item);
     if (!labels) continue;
 
-    metrics.addMetric('sgp30_eco2', item.tvoc.eco2.state, {
-      ...labels,
-      unit: 'ppm',
-    });
+    // metrics.addMetric('sgp30_eco2', item.tvoc.eco2.state, {
+    //   ...labels,
+    //   unit: 'ppm',
+    // });
 
-    metrics.addMetric('sgp30_ethanol', item.tvoc.ethanol.state, {
-      ...labels,
-      unit: 'ppm',
-    });
+    // metrics.addMetric('sgp30_ethanol', item.tvoc.ethanol.state, {
+    //   ...labels,
+    //   unit: 'ppm',
+    // });
 
-    metrics.addMetric('sgp30_h2', item.tvoc.h2.state, {
-      ...labels,
-      unit: 'ppm',
-    });
+    // metrics.addMetric('sgp30_h2', item.tvoc.h2.state, {
+    //   ...labels,
+    //   unit: 'ppm',
+    // });
   }
 
   // for (const item of match({ $: 'pm025' as const }, excludePattern, system_)) {
