@@ -47,7 +47,7 @@ export enum FrameType {
   DATA = 0x4,
 }
 
-export interface Frame {
+export type Frame = {
   /** Node address, 0x0..0xf. */
   destination: number;
   payload: Buffer;
@@ -56,7 +56,7 @@ export interface Frame {
   /** Node address, 0x0..0xf. */
   source: number;
   type: FrameType;
-}
+};
 
 export enum ParseEventKind {
   FRAME = 'FRAME',
