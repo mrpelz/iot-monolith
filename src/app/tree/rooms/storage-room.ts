@@ -41,7 +41,7 @@ import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 import { automatedInputLogic } from '../../util.js';
 
-const WASHER_DRYER_DEBUG_CONNECT = true;
+const WASHER_DRYER_DEBUG_CONNECT = false;
 
 const WIIM_OFFICE_BASE_URL = 'https://wiim-office.lan.wurstsalat.cloud';
 const WASHER_DRYER_NOTIFICATION_URL = 'https://cdn.zeyel.net/washer_done.mp3';
