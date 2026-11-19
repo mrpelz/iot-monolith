@@ -647,6 +647,7 @@ export class WashingMachine {
     null,
   );
 
+  private readonly _finished = new NullState();
   private readonly _frameObserver: Observer;
   private readonly _isDoorLocked = new Observable<boolean | null>(null);
   private readonly _isDoorOpen = new Observable<boolean | null>(null);
@@ -672,6 +673,13 @@ export class WashingMachine {
   readonly bus: ApplianceBus;
   /** Consumption estimate for the current selection. */
   readonly estimate = new ReadOnlyObservable(this._estimate);
+  /**
+   * Triggers once per programme run, when the final spin is over: on entering
+   * Fresh Finish if it is selected, otherwise on entering the end stage. Not
+   * triggered when a run is aborted, or when the end happened while the bus
+   * was not being received.
+   */
+  readonly finished = new ReadOnlyNullState(this._finished);
   readonly isDoorLocked = new ReadOnlyObservable(this._isDoorLocked);
   readonly isDoorOpen = new ReadOnlyObservable(this._isDoorOpen);
   /** True while the appliance is switched on and the bridge is delivering frames. */
@@ -709,6 +717,8 @@ export class WashingMachine {
     });
 
     this._status.observe((value) => {
+      const wasActive = this._isRunningExcludingFreshFinish.value === true;
+
       if (!value) {
         this._isDoorLocked.set(null, this._status);
         this._isDoorOpen.set(null, this._status);
@@ -737,6 +747,15 @@ export class WashingMachine {
       this._remainingMinutes.set(remainingMinutes, this._status);
       this._runMode.set(mode, this._status);
       this._stage.set(stage, this._status);
+
+      if (
+        wasActive &&
+        mode !== WasherRunMode.SELECTING &&
+        (stage === WasherCycleStage.END ||
+          stage === WasherCycleStage.FRESH_FINISH)
+      ) {
+        this._finished.trigger(null, this._status);
+      }
     });
   }
 

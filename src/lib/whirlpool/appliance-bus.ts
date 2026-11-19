@@ -9,7 +9,7 @@
  *   ED | addr | ctl | payload (0..15 bytes) | CRC16 (big-endian)
  *
  *   addr  high nibble = source node, low nibble = destination node
- *   ctl   high nibble = frame type (0 = empty, 4 = data), low nibble = payload length
+ *   ctl   high nibble = frame type (see `FrameType`), low nibble = payload length
  *   CRC   CRC-16/CCITT-FALSE over addr, ctl and payload
  *
  * The controller precedes each of its frames with a line break, which a UART
@@ -42,8 +42,16 @@ export const resolveLabel = (
 
 // ---------------------------------------------------------------- frames
 
+/**
+ * Types seen so far. Type 3 also occurs (on the dryer, between the controller
+ * and a third node) but is not understood; it passes through as a plain number.
+ */
 export enum FrameType {
+  /** Polls and "nothing to send" replies. */
   EMPTY = 0x0,
+  /** Periodic records sent by the controller to all nodes (destination 0xf). */
+  BROADCAST = 0x1,
+  /** Application messages. */
   DATA = 0x4,
 }
 

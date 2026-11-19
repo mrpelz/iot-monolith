@@ -26,6 +26,7 @@ import {
 import {
   Dryer,
   DryerRunMode,
+  DryerStage,
   resolveDryerSelection,
   resolveDryerStatus,
 } from '../../../lib/whirlpool/dryer.js';
@@ -109,6 +110,10 @@ const dryerStateRunModeReadable = new ReadOnlyProxyObservable(
   dryerState.runMode,
   (value) => (value ? DryerRunMode[value] : null),
 );
+const dryerStateStageReadable = new ReadOnlyProxyObservable(
+  dryerState.stage,
+  (value) => (value === null ? null : DryerStage[value]),
+);
 
 const washerDryerNotification = new BooleanState(false);
 const dryerNotificationEnable = new BooleanState(true);
@@ -163,12 +168,13 @@ export const properties = {
       lastChange: lastChange(context, dryerSocket.isConnected),
       main: getter(ValueType.BOOLEAN, dryerSocket.isConnected),
     },
-    phase: getter(ValueType.NUMBER, dryerState.phase),
     remainingMinutes: getter(ValueType.NUMBER, dryerState.remainingMinutes),
     runMode: getter(ValueType.NUMBER, dryerState.runMode),
     runModeReadable: getter(ValueType.STRING, dryerStateRunModeReadable),
     selection: getter(ValueType.RAW, dryerState.selection),
     selectionReadable: getter(ValueType.RAW, dryerStateSelectionReadable),
+    stage: getter(ValueType.NUMBER, dryerState.stage),
+    stageReadable: getter(ValueType.STRING, dryerStateStageReadable),
     status: getter(ValueType.RAW, dryerState.status),
     statusReadable: getter(ValueType.RAW, dryerStateStatusReadable),
   },
@@ -343,57 +349,33 @@ const $init: InitFunction = (room, introspection) => {
     washerDryerNotification.set(false, origin);
   });
 
-  washerState.isRunningExcludingFreshFinish.observe(
-    (isRunning, _observer, _changed, origin) => {
-      // do not set notification when running state is uncertain
-      if (isRunning === null) return;
+  washerState.finished.observe((_value, _observer, _changed, origin) => {
+    // do not set notification when automation is disabled
+    if (!washerNotificationEnable.value) return;
 
-      if (
-        washerState.runMode.value === WasherRunMode.SELECTING ||
-        washerState.runMode.value === WasherRunMode.PAUSED
-      ) {
-        return;
-      }
+    // do not set notification when ceiling light is on
+    if (ceilingLight.main.setState.value) return;
 
-      // do not set notification when automation is disabled
-      if (!washerNotificationEnable.value) return;
+    // do not run if night
+    const now = new Date();
+    if (now.getHours() > 23 || now.getHours() < 6) return;
 
-      // do not set notification when ceiling light is on and machine transitions to stopped
-      if (ceilingLight.main.setState.value && isRunning) return;
+    washerDryerNotification.set(true, origin);
+  });
 
-      // do not run if night
-      const now = new Date();
-      if (now.getHours() > 23 || now.getHours() < 6) return;
+  dryerState.finished.observe((_value, _observer, _changed, origin) => {
+    // do not set notification when automation is disabled
+    if (!dryerNotificationEnable.value) return;
 
-      washerDryerNotification.set(!isRunning, origin);
-    },
-  );
+    // do not set notification when ceiling light is on and machine transitions to stopped
+    if (ceilingLight.main.setState.value) return;
 
-  dryerState.isRunningExcludingFreshFinish.observe(
-    (value, _observer, _changed, origin) => {
-      // do not set notification when running state is uncertain
-      if (value === null) return;
+    // do not run if night
+    const now = new Date();
+    if (now.getHours() > 23 || now.getHours() < 6) return;
 
-      if (
-        dryerState.runMode.value === DryerRunMode.SELECTING ||
-        dryerState.runMode.value === DryerRunMode.PAUSED
-      ) {
-        return;
-      }
-
-      // do not set notification when automation is disabled
-      if (!dryerNotificationEnable.value) return;
-
-      // do not set notification when ceiling light is on and machine transitions to stopped
-      if (ceilingLight.main.setState.value && !value) return;
-
-      // do not run if night
-      const now = new Date();
-      if (now.getHours() > 23 || now.getHours() < 6) return;
-
-      washerDryerNotification.set(!value, origin);
-    },
-  );
+    washerDryerNotification.set(true, origin);
+  });
 
   let notificationPlayTimeout: NodeJS.Timeout | undefined;
 

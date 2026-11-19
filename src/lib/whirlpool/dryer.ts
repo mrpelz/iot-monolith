@@ -28,11 +28,14 @@ import {
 export enum DryerBusNode {
   CONTROLLER = 0x1,
   PANEL = 0x3,
+  /** Destination of the controller's broadcasts. */
+  ALL = 0xf,
 }
 
 export const DRYER_BUS_NODE_LABELS = {
   [DryerBusNode.CONTROLLER]: 'Controller',
   [DryerBusNode.PANEL]: 'Panel',
+  [DryerBusNode.ALL]: 'All',
 } as const satisfies Record<DryerBusNode, string>;
 
 export enum DryerMessageKind {
@@ -135,7 +138,7 @@ export const DRYER_STATUS_SOURCE_LABELS = {
 } as const satisfies Record<DryerStatusSource, string>;
 
 /** Values 0x01, 0x02, 0x03, 0x05 and 0x09 also occur, briefly, at transitions. */
-export enum DryerPhase {
+export enum DryerStage {
   IDLE = 0x00,
   /** Display shows "Trocknen". */
   DRYING = 0x04,
@@ -145,12 +148,12 @@ export enum DryerPhase {
   END = 0x0a,
 }
 
-export const DRYER_PHASE_LABELS = {
-  [DryerPhase.IDLE]: 'Idle',
-  [DryerPhase.DRYING]: 'Drying',
-  [DryerPhase.COOLING]: 'Cooling',
-  [DryerPhase.END]: 'End',
-} as const satisfies Record<DryerPhase, string>;
+export const DRYER_STAGE_LABELS = {
+  [DryerStage.IDLE]: 'Idle',
+  [DryerStage.DRYING]: 'Drying',
+  [DryerStage.COOLING]: 'Cooling',
+  [DryerStage.END]: 'End',
+} as const satisfies Record<DryerStage, string>;
 
 export enum DryerRunMode {
   SELECTING = 0x01,
@@ -212,8 +215,8 @@ export type DryerStatusMessage = MessageBase & {
   doorClosed: boolean;
   kind: DryerMessageKind.STATUS;
   mode: DryerRunMode;
-  phase: DryerPhase;
   source: DryerStatusSource;
+  stage: DryerStage;
 };
 
 export type DryerStatusRequestMessage = MessageBase & {
@@ -279,7 +282,29 @@ const STATUS_FLAG_BOTTOM_FILTER_PRESENT = 0x02;
 const STATUS_FLAG_BOTTOM_FILTER_NEEDS_CLEANING = 0x10;
 const STATUS_FLAG_ANTI_CREASE_TUMBLING = 0x80;
 
+/**
+ * The controller broadcasts three 14-byte records in turn, about twice a
+ * second, as `FrameType.BROADCAST` frames. Only the running
+ * minute countdown in record 2 is decoded; it is a single byte and has matched
+ * the display to within a minute. Outside a run it holds a stale value.
+ */
+const BROADCAST_LENGTH = 14;
+const BROADCAST_RECORD_PROGRESS = 0x02;
+const BROADCAST_PROGRESS_MINUTES_INDEX = 11;
+
 const byteAt = (buffer: Buffer, index: number): number => buffer[index] ?? 0;
+
+const decodeBroadcastMinutes = (frame: Frame): number | undefined => {
+  const { destination, payload, source, type } = frame;
+
+  return type === FrameType.BROADCAST &&
+    source === DryerBusNode.CONTROLLER &&
+    destination === DryerBusNode.ALL &&
+    payload.length === BROADCAST_LENGTH &&
+    payload[0] === BROADCAST_RECORD_PROGRESS
+    ? byteAt(payload, BROADCAST_PROGRESS_MINUTES_INDEX)
+    : undefined;
+};
 
 const decodeSelection = (frame: Frame, args: Buffer): DryerSelectionMessage => {
   const optionByte = byteAt(args, 3);
@@ -312,8 +337,8 @@ const decodeStatus = (
     frame,
     kind: DryerMessageKind.STATUS,
     mode: byteAt(args, 1),
-    phase: byteAt(args, 0),
     source,
+    stage: byteAt(args, 0),
   };
 };
 
@@ -477,7 +502,7 @@ export const resolveDryerSelection = (
 
 export type ResolvedDryerStatus = Resolved<
   DryerStatusMessage,
-  'mode' | 'phase' | 'source'
+  'mode' | 'source' | 'stage'
 >;
 
 export const resolveDryerStatus = (
@@ -485,8 +510,8 @@ export const resolveDryerStatus = (
 ): ResolvedDryerStatus => ({
   ...message,
   mode: resolveLabel(DRYER_RUN_MODE_LABELS, message.mode),
-  phase: resolveLabel(DRYER_PHASE_LABELS, message.phase),
   source: resolveLabel(DRYER_STATUS_SOURCE_LABELS, message.source),
+  stage: resolveLabel(DRYER_STAGE_LABELS, message.stage),
 });
 
 // ---------------------------------------------------------------- device
@@ -513,6 +538,9 @@ export class Dryer {
   }
 
   private readonly _activeObserver: Observer;
+  /** Last countdown value from the broadcasts, valid or not. */
+  private _broadcastMinutes: number | null = null;
+  private readonly _finished = new NullState();
   private readonly _frameObserver: Observer;
   private readonly _isAntiCreaseTumbling = new Observable<boolean | null>(null);
 
@@ -532,16 +560,29 @@ export class Dryer {
 
   private readonly _key = new NullState<DryerPanelKey>();
   private readonly _message = new NullState<DryerMessage>();
-  private readonly _phase = new Observable<DryerPhase | null>(null);
   private readonly _remainingMinutes = new Observable<number | null>(null);
   private readonly _runMode = new Observable<DryerRunMode | null>(null);
   private readonly _selection = new Observable<DryerSelectionMessage | null>(
     null,
   );
 
+  private readonly _stage = new Observable<DryerStage | null>(null);
+  /**
+   * Countdown value the broadcasts still carried when the run started. It is
+   * left over from the previous run and ignored until the controller sends a
+   * different one.
+   */
+  private _staleBroadcastMinutes: number | null = null;
   private readonly _status = new Observable<DryerStatusMessage | null>(null);
 
   readonly bus: ApplianceBus;
+  /**
+   * Triggers once per programme run, when the dryer reaches "Programmende",
+   * whether or not Fresh Care or the anti-crease period follows. Not triggered
+   * when a run is cancelled, or when the end happened while the bus was not
+   * being received.
+   */
+  readonly finished = new ReadOnlyNullState(this._finished);
   /** True during each tumbling burst of the anti-crease period after the programme end. */
   readonly isAntiCreaseTumbling = new ReadOnlyObservable(
     this._isAntiCreaseTumbling,
@@ -574,16 +615,17 @@ export class Dryer {
   readonly key = new ReadOnlyNullState(this._key);
   /** Every data message in bus order, decoded or not. Empty polls and replies are not included. */
   readonly message = new ReadOnlyNullState(this._message);
-  readonly phase = new ReadOnlyObservable(this._phase);
   /**
-   * Minutes as last reported by the controller: the nominal programme time
-   * after a selection, then each new estimate during a run. The panel counts
-   * down by itself in between, so this steps rather than ticks.
+   * Remaining minutes: the nominal programme time after a selection, then the
+   * controller's running countdown during a run, updated every minute. The
+   * display can run up to a minute ahead of it. After the programme end it
+   * keeps its last value.
    */
   readonly remainingMinutes = new ReadOnlyObservable(this._remainingMinutes);
   readonly runMode = new ReadOnlyObservable(this._runMode);
   /** Programme, dryness level and options as currently set on the panel. */
   readonly selection = new ReadOnlyObservable(this._selection);
+  readonly stage = new ReadOnlyObservable(this._stage);
   /** Latest status record from the controller, whichever command carried it. */
   readonly status = new ReadOnlyObservable(this._status);
 
@@ -600,15 +642,19 @@ export class Dryer {
     });
 
     this._status.observe((value) => {
+      /** `null` while no status has been seen since the bus became active. */
+      const previouslyActive = this._isRunningExcludingFreshFinish.value;
+      const wasActive = previouslyActive === true;
+
       if (!value) {
         this._isAntiCreaseTumbling.set(null, this._status);
+        this._isBottomFilterNeedsCleaning.set(null, this._status);
         this._isBottomFilterPresent.set(null, this._status);
         this._isDoorOpen.set(null, this._status);
         this._isRunning.set(null, this._status);
         this._isRunningExcludingFreshFinish.set(null, this._status);
-        this._isBottomFilterNeedsCleaning.set(null, this._status);
-        this._phase.set(null, this._status);
         this._runMode.set(null, this._status);
+        this._stage.set(null, this._status);
 
         return;
       }
@@ -619,39 +665,75 @@ export class Dryer {
         bottomFilterPresent,
         doorClosed,
         mode,
-        phase,
+        stage,
       } = value;
 
       const isStarted =
         mode === DryerRunMode.RUNNING || mode === DryerRunMode.PAUSED;
+
+      const isActive = isStarted && stage !== DryerStage.END;
+
+      if (isActive && !wasActive) {
+        if (previouslyActive === false) {
+          // the run has just started; the broadcasts still carry the last run's value
+          this._staleBroadcastMinutes = this._broadcastMinutes;
+        } else if (this._broadcastMinutes !== null) {
+          // joined a run already in progress; the broadcast value is current
+          this._remainingMinutes.set(this._broadcastMinutes);
+        }
+      }
 
       this._isAntiCreaseTumbling.set(antiCreaseTumbling, this._status);
       this._isBottomFilterPresent.set(bottomFilterPresent, this._status);
       this._isDoorOpen.set(!doorClosed, this._status);
       this._isRunning.set(isStarted, this._status);
 
-      this._isRunningExcludingFreshFinish.set(
-        isStarted && phase !== DryerPhase.END,
-        this._status,
-      );
+      this._isRunningExcludingFreshFinish.set(isActive, this._status);
 
       this._isBottomFilterNeedsCleaning.set(
         bottomFilterNeedsCleaning,
         this._status,
       );
 
-      this._phase.set(phase, this._status);
       this._runMode.set(mode, this._status);
+      this._stage.set(stage, this._status);
+
+      if (wasActive && isStarted && stage === DryerStage.END) {
+        this._finished.trigger(null, this._status);
+      }
     });
   }
 
   private _clear(): void {
+    this._broadcastMinutes = null;
+    this._staleBroadcastMinutes = null;
     this._remainingMinutes.set(null);
     this._selection.set(null);
     this._status.set(null);
   }
 
+  private _handleBroadcastMinutes(minutes: number): void {
+    this._broadcastMinutes = minutes;
+
+    if (
+      this._isRunningExcludingFreshFinish.value !== true ||
+      minutes === this._staleBroadcastMinutes
+    ) {
+      return;
+    }
+
+    this._staleBroadcastMinutes = null;
+    this._remainingMinutes.set(minutes);
+  }
+
   private _handleFrame(frame: Frame): void {
+    const broadcastMinutes = decodeBroadcastMinutes(frame);
+
+    if (broadcastMinutes !== undefined) {
+      this._handleBroadcastMinutes(broadcastMinutes);
+      return;
+    }
+
     if (frame.type !== FrameType.DATA) return;
 
     const message = decodeDryerMessage(frame);
