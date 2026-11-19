@@ -25,6 +25,7 @@ import {
 } from '../../../lib/tree/properties/sensors.js';
 import {
   Dryer,
+  DryerRunMode,
   resolveDryerSelection,
   resolveDryerStatus,
 } from '../../../lib/whirlpool/dryer.js';
@@ -32,6 +33,7 @@ import {
   resolveWasherSelection,
   resolveWasherStatus,
   WasherCycleStage,
+  WasherRunMode,
   WashingMachine,
 } from '../../../lib/whirlpool/washer.js';
 import { context } from '../../context.js';
@@ -39,7 +41,7 @@ import { logger, logicReasoningLevel } from '../../logging.js';
 import { ev1527Transport, rfBridge } from '../../tree/bridges.js';
 import { automatedInputLogic } from '../../util.js';
 
-const WASHER_DRYER_DEBUG_CONNECT = false;
+const WASHER_DRYER_DEBUG_CONNECT = true;
 
 const WIIM_OFFICE_BASE_URL = 'https://wiim-office.lan.wurstsalat.cloud';
 const WASHER_DRYER_NOTIFICATION_URL = 'https://cdn.zeyel.net/washer_done.mp3';
@@ -79,6 +81,10 @@ const washerStateStatusReadable = new ReadOnlyProxyObservable(
   washerState.status,
   (message) => (message ? resolveWasherStatus(message) : null),
 );
+const washerStateRunModeReadable = new ReadOnlyProxyObservable(
+  washerState.runMode,
+  (value) => (value === null ? null : WasherRunMode[value]),
+);
 const washerStateStageReadable = new ReadOnlyProxyObservable(
   washerState.stage,
   (value) => (value === null ? null : WasherCycleStage[value]),
@@ -98,6 +104,10 @@ const dryerStateSelectionReadable = new ReadOnlyProxyObservable(
 const dryerStateStatusReadable = new ReadOnlyProxyObservable(
   dryerState.status,
   (message) => (message ? resolveDryerStatus(message) : null),
+);
+const dryerStateRunModeReadable = new ReadOnlyProxyObservable(
+  dryerState.runMode,
+  (value) => (value ? DryerRunMode[value] : null),
 );
 
 const washerDryerNotification = new BooleanState(false);
@@ -153,9 +163,10 @@ export const properties = {
       lastChange: lastChange(context, dryerSocket.isConnected),
       main: getter(ValueType.BOOLEAN, dryerSocket.isConnected),
     },
-    mode: getter(ValueType.NUMBER, dryerState.mode),
     phase: getter(ValueType.NUMBER, dryerState.phase),
     remainingMinutes: getter(ValueType.NUMBER, dryerState.remainingMinutes),
+    runMode: getter(ValueType.NUMBER, dryerState.runMode),
+    runModeReadable: getter(ValueType.STRING, dryerStateRunModeReadable),
     selection: getter(ValueType.RAW, dryerState.selection),
     selectionReadable: getter(ValueType.RAW, dryerStateSelectionReadable),
     status: getter(ValueType.RAW, dryerState.status),
@@ -180,6 +191,8 @@ export const properties = {
     },
     maxLoad: getter(ValueType.RAW, washerState.maxLoad),
     remainingMinutes: getter(ValueType.NUMBER, washerState.remainingMinutes),
+    runMode: getter(ValueType.NUMBER, washerState.runMode),
+    runModeReadable: getter(ValueType.STRING, washerStateRunModeReadable),
     selection: getter(ValueType.RAW, washerState.selection),
     selectionReadable: getter(ValueType.RAW, washerStateSelectionReadable),
     stage: getter(ValueType.NUMBER, washerState.stage),
@@ -270,6 +283,9 @@ const $init: InitFunction = (room, introspection) => {
   washerState.remainingMinutes.observe((value) => {
     l(`washerState remainingMinutes: ${value}`);
   });
+  washerStateRunModeReadable.observe((value) => {
+    l(`washerState runMode: ${value}`);
+  });
   washerStateStageReadable.observe((value) => {
     l(`washerState stage: ${value}`);
   });
@@ -299,6 +315,9 @@ const $init: InitFunction = (room, introspection) => {
   dryerState.remainingMinutes.observe((value) => {
     l(`dryerState remainingMinutes: ${value}`);
   });
+  dryerStateRunModeReadable.observe((value) => {
+    l(`dryerState runMode: ${value}`);
+  });
 
   dryerNotificationEnable.observe((value, _observer, _changed, origin) => {
     if (value) return;
@@ -324,30 +343,43 @@ const $init: InitFunction = (room, introspection) => {
     washerDryerNotification.set(false, origin);
   });
 
-  washerState.stage.observe((value, _observer, _changed, origin) => {
-    // do not set notification when running state is uncertain
-    if (value === null) return;
+  washerState.isRunningExcludingFreshFinish.observe(
+    (isRunning, _observer, _changed, origin) => {
+      // do not set notification when running state is uncertain
+      if (isRunning === null) return;
 
-    // do not set notification when automation is disabled
-    if (!washerNotificationEnable.value) return;
+      if (
+        washerState.runMode.value === WasherRunMode.SELECTING ||
+        washerState.runMode.value === WasherRunMode.PAUSED
+      ) {
+        return;
+      }
 
-    const hasEnded =
-      value === WasherCycleStage.END || value === WasherCycleStage.FRESH_FINISH;
+      // do not set notification when automation is disabled
+      if (!washerNotificationEnable.value) return;
 
-    // do not set notification when ceiling light is on and machine transitions to stopped
-    if (ceilingLight.main.setState.value && hasEnded) return;
+      // do not set notification when ceiling light is on and machine transitions to stopped
+      if (ceilingLight.main.setState.value && isRunning) return;
 
-    // do not run if night
-    const now = new Date();
-    if (now.getHours() > 23 || now.getHours() < 6) return;
+      // do not run if night
+      const now = new Date();
+      if (now.getHours() > 23 || now.getHours() < 6) return;
 
-    washerDryerNotification.set(hasEnded, origin);
-  });
+      washerDryerNotification.set(!isRunning, origin);
+    },
+  );
 
   dryerState.isRunningExcludingFreshFinish.observe(
     (value, _observer, _changed, origin) => {
       // do not set notification when running state is uncertain
       if (value === null) return;
+
+      if (
+        dryerState.runMode.value === DryerRunMode.SELECTING ||
+        dryerState.runMode.value === DryerRunMode.PAUSED
+      ) {
+        return;
+      }
 
       // do not set notification when automation is disabled
       if (!dryerNotificationEnable.value) return;

@@ -532,10 +532,9 @@ export class Dryer {
 
   private readonly _key = new NullState<DryerPanelKey>();
   private readonly _message = new NullState<DryerMessage>();
-  private readonly _mode = new Observable<DryerRunMode | null>(null);
-
   private readonly _phase = new Observable<DryerPhase | null>(null);
   private readonly _remainingMinutes = new Observable<number | null>(null);
+  private readonly _runMode = new Observable<DryerRunMode | null>(null);
   private readonly _selection = new Observable<DryerSelectionMessage | null>(
     null,
   );
@@ -575,8 +574,6 @@ export class Dryer {
   readonly key = new ReadOnlyNullState(this._key);
   /** Every data message in bus order, decoded or not. Empty polls and replies are not included. */
   readonly message = new ReadOnlyNullState(this._message);
-  readonly mode = new ReadOnlyObservable(this._mode);
-
   readonly phase = new ReadOnlyObservable(this._phase);
   /**
    * Minutes as last reported by the controller: the nominal programme time
@@ -584,6 +581,7 @@ export class Dryer {
    * down by itself in between, so this steps rather than ticks.
    */
   readonly remainingMinutes = new ReadOnlyObservable(this._remainingMinutes);
+  readonly runMode = new ReadOnlyObservable(this._runMode);
   /** Programme, dryness level and options as currently set on the panel. */
   readonly selection = new ReadOnlyObservable(this._selection);
   /** Latest status record from the controller, whichever command carried it. */
@@ -608,9 +606,9 @@ export class Dryer {
         this._isDoorOpen.set(null, this._status);
         this._isRunning.set(null, this._status);
         this._isRunningExcludingFreshFinish.set(null, this._status);
-        this._mode.set(null, this._status);
         this._isBottomFilterNeedsCleaning.set(null, this._status);
         this._phase.set(null, this._status);
+        this._runMode.set(null, this._status);
 
         return;
       }
@@ -637,13 +635,13 @@ export class Dryer {
         this._status,
       );
 
-      this._mode.set(mode, this._status);
       this._isBottomFilterNeedsCleaning.set(
         bottomFilterNeedsCleaning,
         this._status,
       );
 
       this._phase.set(phase, this._status);
+      this._runMode.set(mode, this._status);
     });
   }
 

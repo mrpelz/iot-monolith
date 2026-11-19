@@ -659,6 +659,7 @@ export class WashingMachine {
   private readonly _maxLoad = new Observable<WasherMaxLoadMessage | null>(null);
   private readonly _message = new NullState<WasherMessage>();
   private readonly _remainingMinutes = new Observable<number | null>(null);
+  private readonly _runMode = new Observable<WasherRunMode | null>(null);
   private readonly _selection = new Observable<WasherSelectionMessage | null>(
     null,
   );
@@ -688,6 +689,7 @@ export class WashingMachine {
   /** Every data message in bus order, decoded or not. Empty polls and replies are not included. */
   readonly message = new ReadOnlyNullState(this._message);
   readonly remainingMinutes = new ReadOnlyObservable(this._remainingMinutes);
+  readonly runMode = new ReadOnlyObservable(this._runMode);
   /** Programme, temperature, spin and options as currently set on the panel. */
   readonly selection = new ReadOnlyObservable(this._selection);
   readonly stage = new ReadOnlyObservable(this._stage);
@@ -713,6 +715,7 @@ export class WashingMachine {
         this._isRunning.set(null, this._status);
         this._isRunningExcludingFreshFinish.set(null, this._status);
         this._remainingMinutes.set(null, this._status);
+        this._runMode.set(null, this._status);
         this._stage.set(null, this._status);
 
         return;
@@ -732,6 +735,7 @@ export class WashingMachine {
         this._status,
       );
       this._remainingMinutes.set(remainingMinutes, this._status);
+      this._runMode.set(mode, this._status);
       this._stage.set(stage, this._status);
     });
   }
