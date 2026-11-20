@@ -258,7 +258,7 @@ export type WasherSelectionMessage = MessageBase & {
   optionBytes: Buffer;
   options: WasherOption[];
   program: WasherProgram;
-  /** True while the special-programme menu is open and not yet confirmed. */
+  /** True while the special-program menu is open and not yet confirmed. */
   specialMenuOpen: boolean;
   spin: SpinSetting;
   spinRpm: number;
@@ -299,7 +299,7 @@ export type WasherStatusMessage = MessageBase & {
 export type WasherActivityMessage = MessageBase & {
   activity: WasherActivity;
   kind: WasherMessageKind.ACTIVITY;
-  /** Step number within the programme; counts up as the cycle proceeds. */
+  /** Step number within the program; counts up as the cycle proceeds. */
   step: number;
 };
 
@@ -312,7 +312,7 @@ export type WasherEstimateMessage = MessageBase & {
   /** Tentative: probably Wh. */
   energy: number;
   kind: WasherMessageKind.ESTIMATE;
-  waterLitres: number;
+  waterLiters: number;
 };
 
 export type WasherPowerOffMessage = MessageBase & {
@@ -524,7 +524,7 @@ const decodeControllerMessage = (
             energy: args.readUInt16BE(5),
             frame,
             kind: WasherMessageKind.ESTIMATE,
-            waterLitres: byteAt(args, 8),
+            waterLiters: byteAt(args, 8),
           }
         : undefined;
     }
@@ -674,7 +674,7 @@ export class WashingMachine {
   /** Consumption estimate for the current selection. */
   readonly estimate = new ReadOnlyObservable(this._estimate);
   /**
-   * Triggers once per programme run, when the final spin is over: on entering
+   * Triggers once per program run, when the final spin is over: on entering
    * Fresh Finish if it is selected, otherwise on entering the end stage. Not
    * triggered when a run is aborted, or when the end happened while the bus
    * was not being received.
@@ -698,7 +698,7 @@ export class WashingMachine {
   readonly message = new ReadOnlyNullState(this._message);
   readonly remainingMinutes = new ReadOnlyObservable(this._remainingMinutes);
   readonly runMode = new ReadOnlyObservable(this._runMode);
-  /** Programme, temperature, spin and options as currently set on the panel. */
+  /** Program, temperature, spin and options as currently set on the panel. */
   readonly selection = new ReadOnlyObservable(this._selection);
   readonly stage = new ReadOnlyObservable(this._stage);
   /** Latest status record from the controller, whichever command carried it. */

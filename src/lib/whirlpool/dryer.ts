@@ -94,7 +94,7 @@ export const DRYER_PROGRAM_LABELS = {
 } as const satisfies Record<DryerProgram, string>;
 
 export enum DrynessLevel {
-  /** Sent by the timed programmes (Airing, Drying time), which have no dryness level. */
+  /** Sent by the timed programs (Airing, Drying time), which have no dryness level. */
   NONE = 0x01,
   IRON_DRY = 0x02,
   CUPBOARD_DRY = 0x04,
@@ -137,22 +137,34 @@ export const DRYER_STATUS_SOURCE_LABELS = {
   [DryerStatusSource.REQUEST_REPLY]: 'Request reply',
 } as const satisfies Record<DryerStatusSource, string>;
 
-/** Values 0x01, 0x02, 0x03, 0x05 and 0x09 also occur, briefly, at transitions. */
+/** Values 0x01, 0x02 and 0x03 also occur, briefly, right after Start. */
 export enum DryerStage {
   IDLE = 0x00,
   /** Display shows "Trocknen". */
   DRYING = 0x04,
+  /** Brief transition from drying into cooling (about 2 s). */
+  ENTERING_COOLING = 0x05,
   /** Display shows "Abkühlen". */
   COOLING = 0x06,
-  /** Display shows "Programmende". */
+  /** Brief transition from cooling into the end stage (about 2 s). */
+  ENTERING_END = 0x09,
+  /** Display shows "Programmende"; the anti-crease period runs in this stage. */
   END = 0x0a,
+  /** Brief transition from the end stage into Fresh Care (about 2 s). */
+  ENTERING_FRESH_CARE = 0x0b,
+  /** Follows ten minutes after the end when Fresh Care is selected. */
+  FRESH_CARE = 0x0c,
 }
 
 export const DRYER_STAGE_LABELS = {
   [DryerStage.IDLE]: 'Idle',
   [DryerStage.DRYING]: 'Drying',
+  [DryerStage.ENTERING_COOLING]: 'Entering Cooling',
   [DryerStage.COOLING]: 'Cooling',
+  [DryerStage.ENTERING_END]: 'Entering End',
   [DryerStage.END]: 'End',
+  [DryerStage.ENTERING_FRESH_CARE]: 'Entering Fresh Care',
+  [DryerStage.FRESH_CARE]: 'Fresh Care',
 } as const satisfies Record<DryerStage, string>;
 
 export enum DryerRunMode {
@@ -188,7 +200,7 @@ export type DryerKeyMessage = MessageBase & {
 };
 
 export type DryerSelectionMessage = MessageBase & {
-  /** Set time in minutes; only meaningful for the timed programmes, otherwise 0. */
+  /** Set time in minutes; only meaningful for the timed programs, otherwise 0. */
   dryingTimeMinutes: number;
   dryness: DrynessLevel;
   kind: DryerMessageKind.SELECTION;
@@ -205,7 +217,7 @@ export type DryerSelectionReplyMessage = MessageBase & {
 
 export type DryerStatusMessage = MessageBase & {
   /**
-   * True during the short tumbling bursts after the programme end
+   * True during the short tumbling bursts after the program end
    * ("Knitterschutz"): about 20 s in every 80 s. Not set while drying.
    */
   antiCreaseTumbling: boolean;
@@ -276,6 +288,13 @@ const SELECTION_OPTION_BITS: readonly (readonly [
   [0x08, DryerOption.RAPID],
   [0x80, DryerOption.STEAM],
 ];
+
+/** Stages after the program proper is done, while the drum may still tumble. */
+const POST_PROGRAM_STAGES: ReadonlySet<number> = new Set([
+  DryerStage.END,
+  DryerStage.ENTERING_FRESH_CARE,
+  DryerStage.FRESH_CARE,
+]);
 
 const STATUS_FLAG_DOOR_CLOSED = 0x01;
 const STATUS_FLAG_BOTTOM_FILTER_PRESENT = 0x02;
@@ -542,6 +561,11 @@ export class Dryer {
   private _broadcastMinutes: number | null = null;
   private readonly _finished = new NullState();
   private readonly _frameObserver: Observer;
+  /**
+   * Set once the current run has reached its end, so that later stages the
+   * enum does not know yet cannot make it look active again.
+   */
+  private _hasFinished = false;
   private readonly _isAntiCreaseTumbling = new Observable<boolean | null>(null);
 
   private readonly _isBottomFilterNeedsCleaning = new Observable<
@@ -577,13 +601,13 @@ export class Dryer {
 
   readonly bus: ApplianceBus;
   /**
-   * Triggers once per programme run, when the dryer reaches "Programmende",
-   * whether or not Fresh Care or the anti-crease period follows. Not triggered
-   * when a run is cancelled, or when the end happened while the bus was not
+   * Triggers once per program run, when the dryer reaches "Programmende",
+   * whether or not the anti-crease period and Fresh Care follow. Not triggered
+   * when a run is canceled, or when the end happened while the bus was not
    * being received.
    */
   readonly finished = new ReadOnlyNullState(this._finished);
-  /** True during each tumbling burst of the anti-crease period after the programme end. */
+  /** True during each tumbling burst of the anti-crease period after the program end. */
   readonly isAntiCreaseTumbling = new ReadOnlyObservable(
     this._isAntiCreaseTumbling,
   );
@@ -601,12 +625,16 @@ export class Dryer {
   /** True while the appliance is switched on and the bridge is delivering frames. */
   readonly isOn: ReadOnlyObservable<boolean>;
   /**
-   * True from the moment Start is accepted until the programme is cancelled,
+   * True from the moment Start is accepted until the program is canceled,
    * the door is opened after the end, or the dryer is switched off. Includes
-   * pauses and the anti-crease period ("Knitterschutz") after the programme end.
+   * pauses, the anti-crease period ("Knitterschutz") and Fresh Care after the
+   * program end.
    */
   readonly isRunning = new ReadOnlyObservable(this._isRunning);
-  /** True from the moment Start is accepted until the end phase, including pauses. */
+  /**
+   * True from the moment Start is accepted until "Programmende", including
+   * pauses. Stays false through the anti-crease period and Fresh Care.
+   */
   readonly isRunningExcludingFreshFinish = new ReadOnlyObservable(
     this._isRunningExcludingFreshFinish,
   );
@@ -616,14 +644,14 @@ export class Dryer {
   /** Every data message in bus order, decoded or not. Empty polls and replies are not included. */
   readonly message = new ReadOnlyNullState(this._message);
   /**
-   * Remaining minutes: the nominal programme time after a selection, then the
+   * Remaining minutes: the nominal program time after a selection, then the
    * controller's running countdown during a run, updated every minute. The
-   * display can run up to a minute ahead of it. After the programme end it
-   * keeps its last value.
+   * display can run up to a minute ahead of it. 0 from the program end on,
+   * through the anti-crease period and Fresh Care.
    */
   readonly remainingMinutes = new ReadOnlyObservable(this._remainingMinutes);
   readonly runMode = new ReadOnlyObservable(this._runMode);
-  /** Programme, dryness level and options as currently set on the panel. */
+  /** Program, dryness level and options as currently set on the panel. */
   readonly selection = new ReadOnlyObservable(this._selection);
   readonly stage = new ReadOnlyObservable(this._stage);
   /** Latest status record from the controller, whichever command carried it. */
@@ -671,7 +699,12 @@ export class Dryer {
       const isStarted =
         mode === DryerRunMode.RUNNING || mode === DryerRunMode.PAUSED;
 
-      const isActive = isStarted && stage !== DryerStage.END;
+      if (!isStarted) this._hasFinished = false;
+
+      const isPostProgram =
+        isStarted && (this._hasFinished || POST_PROGRAM_STAGES.has(stage));
+
+      const isActive = isStarted && !isPostProgram;
 
       if (isActive && !wasActive) {
         if (previouslyActive === false) {
@@ -698,14 +731,22 @@ export class Dryer {
       this._runMode.set(mode, this._status);
       this._stage.set(stage, this._status);
 
-      if (wasActive && isStarted && stage === DryerStage.END) {
-        this._finished.trigger(null, this._status);
+      if (isPostProgram) {
+        const isFirstEndStatus = !this._hasFinished;
+
+        this._hasFinished = true;
+        this._remainingMinutes.set(0, this._status);
+
+        if (isFirstEndStatus && wasActive) {
+          this._finished.trigger(null, this._status);
+        }
       }
     });
   }
 
   private _clear(): void {
     this._broadcastMinutes = null;
+    this._hasFinished = false;
     this._staleBroadcastMinutes = null;
     this._remainingMinutes.set(null);
     this._selection.set(null);
